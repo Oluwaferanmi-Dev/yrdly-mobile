@@ -1,6 +1,10 @@
 import { supabase } from './supabase';
 import { User } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
+import { makeRedirectUri } from 'expo-auth-session';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export interface AuthUser {
   id: string;
@@ -41,7 +45,13 @@ export interface AuthUser {
 
 export class AuthService {
   private static getRedirectUrl() {
-    return Linking.createURL('auth/callback');
+    const url = makeRedirectUri({
+      path: 'auth/callback'
+    });
+    console.log('--- SUPABASE REDIRECT URL ---');
+    console.log(url);
+    console.log('-----------------------------');
+    return url;
   }
 
   // Sign up with email and password
@@ -82,17 +92,42 @@ export class AuthService {
     }
   }
 
-  // Sign in with Google (OAuth in Expo usually requires a specific flow, but supabase-js handles deep linking if configured right in Supabase Dashboard)
+  // Sign in with Google
   static async signInWithGoogle() {
     try {
+      const redirectTo = this.getRedirectUrl();
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: this.getRedirectUrl(),
+          redirectTo,
+          skipBrowserRedirect: true, // Prevents default web redirect, required for native
         },
       });
 
       if (error) throw error;
+
+      if (data?.url) {
+        // Opens the secure native browser to complete OAuth
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        
+        if (result.type === 'success' && result.url) {
+          // If Supabase uses PKCE flow (default in v2), extract code:
+          const urlParams = new URLSearchParams(result.url.split('?')[1] || '');
+          const code = urlParams.get('code');
+          if (code) {
+             await supabase.auth.exchangeCodeForSession(code);
+          } else {
+             // If Implicit flow (hash), extract token:
+             const hashParams = new URLSearchParams(result.url.split('#')[1] || '');
+             const access_token = hashParams.get('access_token');
+             const refresh_token = hashParams.get('refresh_token');
+             if (access_token && refresh_token) {
+               await supabase.auth.setSession({ access_token, refresh_token });
+             }
+          }
+        }
+      }
+
       return { data, error: null };
     } catch (error) {
       console.error('Google sign in error:', error);

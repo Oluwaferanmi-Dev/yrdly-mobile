@@ -6,13 +6,18 @@ import { Platform } from 'react-native';
 import { useAuth } from './use-supabase-auth';
 import { AuthService } from '@/lib/auth-service';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// Only set handler if not in Expo Go (SDK 53+ removed push support from Expo Go)
+const isExpoGo = Constants.appOwnership === 'expo';
+
+if (!isExpoGo) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
 
 export function usePushNotifications() {
   const [expoPushToken, setExpoPushToken] = useState('');
@@ -22,6 +27,9 @@ export function usePushNotifications() {
   const { user } = useAuth();
 
   useEffect(() => {
+    // Skip all notification setup in Expo Go — not supported in SDK 53+
+    if (isExpoGo || Platform.OS === 'web') return;
+
     registerForPushNotificationsAsync().then(token => {
       if (token) {
         setExpoPushToken(token);
@@ -31,8 +39,8 @@ export function usePushNotifications() {
       }
     });
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
+    notificationListener.current = Notifications.addNotificationReceivedListener(n => {
+      setNotification(n);
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
@@ -40,12 +48,8 @@ export function usePushNotifications() {
     });
 
     return () => {
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
+      notificationListener.current?.remove();
+      responseListener.current?.remove();
     };
   }, [user]);
 
@@ -53,6 +57,10 @@ export function usePushNotifications() {
 }
 
 async function registerForPushNotificationsAsync() {
+  if (Platform.OS === 'web') {
+    return;
+  }
+
   let token;
 
   if (Platform.OS === 'android') {
