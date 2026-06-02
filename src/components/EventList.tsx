@@ -3,12 +3,14 @@ import { View, StyleSheet, FlatList, ActivityIndicator, Text } from 'react-nativ
 import { EventCard } from './EventCard';
 import { supabase } from '../lib/supabase';
 import { Post } from '../types';
+import { useRouter } from 'expo-router';
 
 interface EventListProps {
   searchQuery?: string;
 }
 
 export function EventList({ searchQuery = '' }: EventListProps) {
+  const router = useRouter();
   const [events, setEvents] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -67,7 +69,7 @@ export function EventList({ searchQuery = '' }: EventListProps) {
       renderItem={({ item }) => (
         <EventCard 
           event={item} 
-          onPress={() => console.log('View Event', item.id)}
+          onPress={() => router.push(`/events/${item.id}`)}
         />
       )}
       contentContainerStyle={styles.listContent}

@@ -3,12 +3,14 @@ import { View, StyleSheet, FlatList, ActivityIndicator, Text } from 'react-nativ
 import { MarketplaceItemCard } from './MarketplaceItemCard';
 import { supabase } from '../lib/supabase';
 import { Post } from '../types';
+import { useRouter } from 'expo-router';
 
 interface MarketplaceGridProps {
   searchQuery?: string;
 }
 
 export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
+  const router = useRouter();
   const [items, setItems] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,6 +71,7 @@ export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
       renderItem={({ item }) => (
         <MarketplaceItemCard 
           item={item} 
+          onPress={() => router.push(`/marketplace/${item.id}`)}
           onMessageSeller={() => {
             // Future navigation to messages
             console.log('Message seller', item.user?.name);

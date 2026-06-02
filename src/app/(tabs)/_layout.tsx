@@ -36,7 +36,7 @@ export default function TabLayout() {
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
               <Ionicons name="map-outline" size={24} color="#1C1C1C" />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/notifications')}>
               <Ionicons name="notifications-outline" size={24} color="#1C1C1C" />
             </TouchableOpacity>
           </View>

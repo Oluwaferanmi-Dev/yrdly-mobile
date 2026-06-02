@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, FlatList, RefreshControl, ActivityIndicator, Sa
 import { PostCard } from '../../components/PostCard';
 import { supabase } from '../../lib/supabase';
 import { Post } from '../../types';
+import { useRouter } from 'expo-router';
 
 export default function HomeTab() {
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -52,7 +54,12 @@ export default function HomeTab() {
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <PostCard post={item} />}
+        renderItem={({ item }) => (
+          <PostCard 
+            post={item} 
+            onPress={() => router.push(`/posts/${item.id}`)}
+          />
+        )}
         refreshControl={
           <RefreshControl 
             refreshing={refreshing} 
