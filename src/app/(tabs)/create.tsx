@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../hooks/use-supabase-auth';
 
 const GREEN = '#388E3C';
 type PostCategory = 'General' | 'For Sale' | 'Event';
 
 export default function CreateTab() {
+  const router = useRouter();
+  const { user } = useAuth();
   const [category, setCategory] = useState<PostCategory>('General');
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
@@ -18,7 +23,7 @@ export default function CreateTab() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      alert('Sorry, we need camera roll permissions to make this work!');
+      Alert.alert('Permission Required', 'Please allow access to your photo library in Settings.');
       return;
     }
 
@@ -33,18 +38,100 @@ export default function CreateTab() {
     }
   };
 
+  // ── Upload image to Supabase Storage ─────────────────────────────
+  const uploadImage = async (uri: string): Promise<string | null> => {
+    try {
+      // Read the file as a blob
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      // Build a unique file path: posts/<user_id>/<timestamp>.jpg
+      const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
+      const filePath = `posts/${user!.id}/${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('posts')
+        .upload(filePath, blob, { contentType: `image/${ext}`, upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      // Get the public URL
+      const { data } = supabase.storage.from('posts').getPublicUrl(filePath);
+      return data.publicUrl;
+    } catch (e) {
+      console.error('Image upload error:', e);
+      return null;
+    }
+  };
+
+  // ── Submit post to Supabase ───────────────────────────────────────
   const handleSubmit = async () => {
-    // Step 5 implementation goes here!
+    if (!user) {
+      Alert.alert('Not signed in', 'You must be logged in to create a post.');
+      return;
+    }
+    if (!text.trim() && !title.trim()) {
+      Alert.alert('Missing Content', 'Please add some text before posting.');
+      return;
+    }
+
     setIsSubmitting(true);
-    console.log('Submitting post with:', { category, title, text, price, imageUri });
-    setTimeout(() => {
+    try {
+      // 1. Upload image (if any) and get the public URL
+      let imageUrl: string | null = null;
+      if (imageUri) {
+        imageUrl = await uploadImage(imageUri);
+        if (!imageUrl) {
+          Alert.alert('Upload Failed', 'Could not upload your image. Please try again.');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // 2. Build the post record matching the web app's schema
+      const postData: Record<string, unknown> = {
+        user_id: user.id,
+        author_name: user.user_metadata?.name || user.email,
+        author_image: user.user_metadata?.avatar_url || null,
+        text: text.trim() || null,
+        title: title.trim() || null,
+        category,
+        image_url: imageUrl,
+        image_urls: imageUrl ? [imageUrl] : [],
+        timestamp: new Date().toISOString(),
+        liked_by: [],
+        comment_count: 0,
+        is_sold: false,
+      };
+
+      // Add price for marketplace items
+      if (category === 'For Sale') {
+        postData.price = price ? parseFloat(price) : 0;
+      }
+
+      // 3. Insert into the posts table
+      const { error: insertError } = await supabase.from('posts').insert(postData);
+      if (insertError) throw insertError;
+
+      // 4. Success — reset form and navigate to home feed
+      Alert.alert('Posted! 🎉', 'Your post is now live on Yrdly.', [
+        {
+          text: 'View Feed',
+          onPress: () => {
+            setTitle('');
+            setText('');
+            setPrice('');
+            setImageUri(null);
+            router.push('/(tabs)/');
+          },
+        },
+      ]);
+    } catch (e: any) {
+      console.error('Post submit error:', e);
+      Alert.alert('Error', e?.message || 'Something went wrong. Please try again.');
+    } finally {
       setIsSubmitting(false);
-      // Reset form
-      setTitle('');
-      setText('');
-      setPrice('');
-      setImageUri(null);
-    }, 1000);
+    }
   };
 
   return (
