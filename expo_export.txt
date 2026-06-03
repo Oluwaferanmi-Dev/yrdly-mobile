@@ -1,0 +1,14 @@
+env: load .env
+env: export EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_FLUTTERWAVE_PUBLIC_KEY
+Using src/app as the root directory for Expo Router.
+Starting Metro Bundler
+Android node_modules/expo-router/entry.js ▓▓▓░░░░░░░░░░░░░ 20.7% ( 6/18)
+Android node_modules/expo-router/entry.js ▓▓▓░░░░░░░░░░░░░ 20.7% ( 42/174)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 39.7% (260/440)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 56.5% (405/539)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 64.4% (513/641)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.8% (610/779)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.8% (796/985)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 86.7% (1001/1075)
+Android node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.5% (1182/1226)
+Android Bundling failed 32843ms node_modules/expo-router/entry.js (1294 modules)

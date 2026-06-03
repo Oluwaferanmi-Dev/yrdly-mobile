@@ -48,9 +48,7 @@ export class AuthService {
     const url = makeRedirectUri({
       path: 'auth/callback'
     });
-    console.log('--- SUPABASE REDIRECT URL ---');
-    console.log(url);
-    console.log('-----------------------------');
+
     return url;
   }
 

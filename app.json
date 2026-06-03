@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "yrdly-mobile",
-    "slug": "yrdly-mobile",
+    "slug": "yrdly",
     "version": "1.0.0",
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
@@ -45,9 +45,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "f45b4366-5ac5-44ae-9f24-7b7ee04dc720"
+        "projectId": "daf41020-9d5d-4b26-91f9-1d9bf5573511"
       }
-    }
+    },
+    "owner": "yrdly"
   }
 }
-
