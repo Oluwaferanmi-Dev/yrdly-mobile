@@ -1,32 +1,39 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, ActivityIndicator, SafeAreaView } from 'react-native';
-import { PostCard } from '../../components/PostCard';
+import { EventCard } from '../../components/EventCard';
 import { supabase } from '../../lib/supabase';
-import { Post } from '../../types';
 import { useRouter } from 'expo-router';
 import { theme } from '../../theme';
 
-export default function HomeTab() {
+export default function EventsTab() {
   const router = useRouter();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchPosts = async () => {
+  const fetchEvents = async () => {
     try {
       const { data, error } = await supabase
-        .from('posts')
+        .from('events')
         .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(30);
+        .eq('status', 'PUBLISHED')
+        .order('start_time', { ascending: true });
 
       if (error) {
-        console.error('Error fetching posts:', error);
+        console.error('Error fetching events:', error);
       } else {
-        setPosts(data as Post[]);
+        // Map fields to match what EventCard expects from Post type
+        const mappedEvents = data?.map(evt => ({
+          ...evt,
+          event_date: evt.start_time,
+          event_location: evt.location,
+          image_url: evt.cover_image,
+        })) || [];
+        
+        setEvents(mappedEvents);
       }
     } catch (error) {
-      console.error('Unexpected error fetching posts:', error);
+      console.error('Unexpected error fetching events:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -34,12 +41,12 @@ export default function HomeTab() {
   };
 
   useEffect(() => {
-    fetchPosts();
+    fetchEvents();
   }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchPosts();
+    fetchEvents();
   }, []);
 
   if (loading && !refreshing) {
@@ -52,13 +59,17 @@ export default function HomeTab() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Events</Text>
+      </View>
+
       <FlatList
-        data={[...posts]}
+        data={events}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <PostCard 
-            post={item} 
-            onPress={() => router.push(`/posts/${item.id}`)}
+          <EventCard 
+            event={item} 
+            onPress={() => router.push(`/events/${item.id}`)}
           />
         )}
         refreshControl={
@@ -72,7 +83,8 @@ export default function HomeTab() {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No posts yet. Be the first to post!</Text>
+            <Text style={styles.emptyText}>No upcoming events</Text>
+            <Text style={styles.emptySubtext}>Check back soon</Text>
           </View>
         }
       />
@@ -84,6 +96,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: theme.colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  headerTitle: {
+    fontSize: theme.typography.sizes.xl,
+    fontFamily: theme.typography.fonts.heading,
+    color: theme.colors.textPrimary,
   },
   centerContainer: {
     flex: 1,
@@ -97,8 +121,15 @@ const styles = StyleSheet.create({
   emptyContainer: {
     padding: 40,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyText: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.sizes.lg,
+    fontFamily: theme.typography.fonts.heading,
+    marginBottom: 8,
+  },
+  emptySubtext: {
     color: theme.colors.textSecondary,
     fontSize: theme.typography.sizes.base,
     fontFamily: theme.typography.fonts.body,

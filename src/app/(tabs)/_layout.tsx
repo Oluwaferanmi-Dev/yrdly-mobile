@@ -1,6 +1,7 @@
 import { Tabs, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Map, Bell, House, Users, ShoppingBag, Calendar, Briefcase } from 'lucide-react-native';
 import { View, TouchableOpacity, Text } from 'react-native';
+import { theme } from '../../theme';
 
 export default function TabLayout() {
   const router = useRouter();
@@ -8,12 +9,16 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        tabBarActiveTintColor: '#388E3C', // Yrdly Green
-        tabBarInactiveTintColor: '#616161', // Muted text
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textSecondary,
+        tabBarLabelStyle: {
+          fontFamily: theme.typography.fonts.body,
+          fontSize: theme.typography.sizes.xs,
+        },
         tabBarStyle: {
           borderTopWidth: 1,
-          borderTopColor: '#E0E0E0',
-          backgroundColor: '#FFFFFF',
+          borderTopColor: theme.colors.border,
+          backgroundColor: theme.colors.card,
           elevation: 0,
           shadowOpacity: 0,
           height: 60,
@@ -34,10 +39,10 @@ export default function TabLayout() {
         headerRight: () => (
           <View style={{ flexDirection: 'row', marginRight: 16 }}>
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-              <Ionicons name="map-outline" size={24} color="#1C1C1C" />
+              <Map size={24} color="#1C1C1C" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications')}>
-              <Ionicons name="notifications-outline" size={24} color="#1C1C1C" />
+              <Bell size={24} color="#1C1C1C" />
             </TouchableOpacity>
           </View>
         ),
@@ -49,60 +54,45 @@ export default function TabLayout() {
           title: 'Home',
           headerTitle: 'Yrdly',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <House size={size} color={color} />
           ),
-        }}
-      />
+        }} />
       <Tabs.Screen
-        name="catalog"
+        name="community"
         options={{
-          title: 'Explore',
-          headerTitle: 'Explore',
+          title: 'Community',
+          headerTitle: 'Community',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
+            <Users size={size} color={color} />
           ),
-        }}
-      />
+        }} />
       <Tabs.Screen
-        name="create"
+        name="marketplace"
         options={{
-          title: 'Create',
-          headerTitle: 'Create Post',
+          title: 'Market',
+          headerTitle: 'Market',
           tabBarIcon: ({ color, size }) => (
-            <View style={{ 
-              backgroundColor: '#388E3C', 
-              width: 44, 
-              height: 44, 
-              borderRadius: 22, 
-              justifyContent: 'center', 
-              alignItems: 'center',
-              marginBottom: 4
-            }}>
-              <Ionicons name="add" size={28} color="#FFF" />
-            </View>
+            <ShoppingBag size={size} color={color} />
           ),
-        }}
-      />
+        }} />
       <Tabs.Screen
-        name="messages"
+        name="events"
         options={{
-          title: 'Messages',
-          headerTitle: 'Messages',
+          title: 'Events',
+          headerTitle: 'Events',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubbles" size={size} color={color} />
+            <Calendar size={size} color={color} />
           ),
-        }}
-      />
+        }} />
       <Tabs.Screen
-        name="profile"
+        name="businesses"
         options={{
-          title: 'Profile',
-          headerTitle: 'Profile',
+          title: 'Business',
+          headerTitle: 'Business',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <Briefcase size={size} color={color} />
           ),
-        }}
-      />
+        }} />
     </Tabs>
   );
 }

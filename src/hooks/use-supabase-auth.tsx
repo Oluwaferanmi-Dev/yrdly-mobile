@@ -98,8 +98,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const setupProfileRealtime = (userId: string) => {
       // Set up real-time subscription for profile updates
+      const channelId = `user-profile-${userId}-${Math.random().toString(36).substring(7)}`;
       profileChannel = supabase
-        .channel(`user-profile-${userId}`)
+        .channel(channelId)
         .on(
           'postgres_changes',
           {

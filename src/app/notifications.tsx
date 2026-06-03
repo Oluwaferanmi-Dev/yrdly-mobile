@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   SafeAreaView, ActivityIndicator, Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MessageCircle, Heart, MessageSquare, Calendar, Bell, ArrowLeft, CheckCheck, BellOff } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
@@ -165,15 +165,15 @@ export default function NotificationsScreen() {
     switch (type) {
       case 'message':
       case 'message_reaction':
-        return <Ionicons name="chatbubble" size={16} color="#60A5FA" />;
+        return <MessageCircle size={16} color="#60A5FA" />;
       case 'post_like':
-        return <Ionicons name="heart" size={16} color="#F87171" />;
+        return <Heart size={16} color="#F87171" />;
       case 'post_comment':
-        return <Ionicons name="chatbubbles" size={16} color="#C084FC" />;
+        return <MessageSquare size={16} color="#C084FC" />;
       case 'event_invite':
-        return <Ionicons name="calendar" size={16} color="#FB923C" />;
+        return <Calendar size={16} color="#FB923C" />;
       default:
-        return <Ionicons name="notifications" size={16} color="#9E9E9E" />;
+        return <Bell size={16} color="#9E9E9E" />;
     }
   };
 
@@ -223,13 +223,13 @@ export default function NotificationsScreen() {
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+            <ArrowLeft size={24} color="#1C1C1C" />
             <Text style={styles.headerTitle}>Notifications</Text>
           </TouchableOpacity>
         </View>
         {unreadCount > 0 && (
           <TouchableOpacity style={styles.markAllBtn} onPress={handleMarkAllRead}>
-            <Ionicons name="checkmark-done" size={16} color={GREEN} />
+            <CheckCheck size={16} color={GREEN} />
           </TouchableOpacity>
         )}
       </View>
@@ -258,8 +258,7 @@ export default function NotificationsScreen() {
                 )}
               </TouchableOpacity>
             );
-          }}
-        />
+          }} />
       </View>
 
       {/* List */}
@@ -269,7 +268,7 @@ export default function NotificationsScreen() {
         </View>
       ) : filteredNotifications.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="notifications-off-outline" size={48} color="#E0E0E0" />
+          <BellOff size={48} color="#E0E0E0" />
           <Text style={styles.emptyTitle}>No notifications yet</Text>
           <Text style={styles.emptySubtitle}>You're all caught up!</Text>
         </View>
@@ -279,8 +278,7 @@ export default function NotificationsScreen() {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
+          showsVerticalScrollIndicator={false} />
       )}
     </SafeAreaView>
   );

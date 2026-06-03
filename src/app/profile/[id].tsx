@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, SafeAreaView } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { MessageCircle, ArrowLeft } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -170,7 +170,7 @@ export default function UserProfileScreen() {
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
-              <Ionicons name="chatbubble-outline" size={20} color={GREEN} />
+              <MessageCircle size={20} color={GREEN} />
               <Text style={styles.messageButtonText}>Message</Text>
             </TouchableOpacity>
           </View>
@@ -186,7 +186,7 @@ export default function UserProfileScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.navHeader}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <ArrowLeft size={24} color="#1C1C1C" />
         </TouchableOpacity>
         <Text style={styles.navHeaderTitle}>{profile.name}</Text>
         <View style={{ width: 40 }} />
@@ -205,8 +205,7 @@ export default function UserProfileScreen() {
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>This user hasn't posted anything yet.</Text>
           </View>
-        }
-      />
+        } />
     </SafeAreaView>
   );
 }

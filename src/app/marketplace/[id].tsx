@@ -4,7 +4,7 @@ import {
   TouchableOpacity, SafeAreaView, ActivityIndicator, Dimensions
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, ShoppingCart, MessageCircle } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -108,7 +108,7 @@ export default function MarketplaceDetailScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <ArrowLeft size={24} color="#1C1C1C" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Item Details</Text>
         <View style={{ width: 40 }} />
@@ -124,7 +124,7 @@ export default function MarketplaceDetailScreen() {
           </ScrollView>
         ) : (
           <View style={styles.placeholderImage}>
-            <Ionicons name="cart-outline" size={64} color="rgba(56, 142, 60, 0.5)" />
+            <ShoppingCart size={64} color="rgba(56, 142, 60, 0.5)" />
           </View>
         )}
 
@@ -170,7 +170,7 @@ export default function MarketplaceDetailScreen() {
         ) : (
           <>
             <TouchableOpacity style={styles.messageButton} onPress={handleMessageSeller}>
-              <Ionicons name="chatbubble-outline" size={20} color={GREEN} />
+              <MessageCircle size={20} color={GREEN} />
               <Text style={styles.messageButtonText}>Message</Text>
             </TouchableOpacity>
             <TouchableOpacity 

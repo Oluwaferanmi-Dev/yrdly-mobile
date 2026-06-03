@@ -2,21 +2,12 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Dimensions } from 'react-native';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { Ionicons } from '@expo/vector-icons';
+import { AlertTriangle, Mail, Eye, EyeOff } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
+import { theme } from '../../theme';
 
 const { width, height } = Dimensions.get('window');
-
-const colors = {
-  background: '#F2F2F2',
-  blob: '#A154F2',
-  primary: '#388E3C',
-  text: '#1C1C1C',
-  textFaded: '#616161',
-  border: '#E0E0E0',
-  inputBorder: '#388E3C',
-  link: '#1976D2',
-};
 
 export default function Login() {
   const router = useRouter();
@@ -102,7 +93,7 @@ export default function Login() {
 
         {error ? (
           <View style={styles.errorBox}>
-            <Ionicons name="warning" size={16} color="#E53935" />
+            <AlertTriangle size={16} color="#E53935" />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         ) : null}
@@ -117,8 +108,7 @@ export default function Login() {
               onChangeText={setName}
               autoCapitalize="words"
               editable={!loading}
-              placeholderTextColor="#9ca3af"
-            />
+              placeholderTextColor={theme.colors.textSecondary} />
           </View>
         )}
 
@@ -131,9 +121,8 @@ export default function Login() {
             autoCapitalize="none"
             keyboardType="email-address"
             editable={!loading}
-            placeholderTextColor="#9ca3af"
-          />
-          <Ionicons name="mail-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+            placeholderTextColor={theme.colors.textSecondary} />
+          <Mail size={20} color={theme.colors.textSecondary} style={styles.inputIcon} />
         </View>
         
         <View style={styles.inputContainer}>
@@ -144,13 +133,12 @@ export default function Login() {
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
             editable={!loading}
-            placeholderTextColor="#9ca3af"
-          />
+            placeholderTextColor={theme.colors.textSecondary} />
           <TouchableOpacity 
             style={styles.inputIcon}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#9ca3af" />
+            {showPassword ? <EyeOff size={20} color={theme.colors.textSecondary} /> : <Eye size={20} color={theme.colors.textSecondary} />}
           </TouchableOpacity>
         </View>
 
@@ -210,14 +198,14 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.colors.background,
   },
   blob: {
     position: 'absolute',
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.blob,
+    backgroundColor: theme.colors.primary,
     opacity: 0.55,
   },
   formContainer: {
@@ -234,12 +222,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    color: colors.text,
+    fontFamily: theme.typography.fonts.brand,
+    color: theme.colors.textPrimary,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 14,
-    color: colors.textFaded,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
     marginTop: 4,
@@ -258,9 +248,10 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 26,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: theme.colors.primary,
     padding: 4,
     marginBottom: 24,
+    backgroundColor: theme.colors.surfaceDim,
   },
   segmentButton: {
     flex: 1,
@@ -269,15 +260,16 @@ const styles = StyleSheet.create({
     borderRadius: 22,
   },
   segmentButtonActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: theme.colors.primary,
   },
   segmentText: {
-    fontSize: 14,
-    color: colors.textFaded,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textSecondary,
   },
   segmentTextActive: {
-    color: '#fff',
-    fontWeight: '600',
+    color: theme.colors.background,
+    fontFamily: theme.typography.fonts.heading,
   },
   errorBox: {
     flexDirection: 'row',
@@ -302,12 +294,13 @@ const styles = StyleSheet.create({
   input: {
     height: 54,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: theme.colors.border,
     borderRadius: 27,
     paddingHorizontal: 20,
-    fontSize: 14,
-    backgroundColor: 'transparent',
-    color: colors.text,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
+    backgroundColor: theme.colors.surfaceDim,
+    color: theme.colors.textPrimary,
   },
   inputIcon: {
     position: 'absolute',
@@ -319,22 +312,22 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   forgotPasswordText: {
-    color: colors.link,
-    fontSize: 12,
-    fontWeight: '500',
+    color: theme.colors.primary,
+    fontSize: theme.typography.sizes.xs,
+    fontFamily: theme.typography.fonts.heading,
   },
   button: {
     height: 54,
-    backgroundColor: colors.primary,
+    backgroundColor: theme.colors.primary,
     borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    color: theme.colors.background,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.heading,
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -344,28 +337,29 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: theme.colors.border,
   },
   dividerText: {
     marginHorizontal: 12,
-    fontSize: 12,
-    color: colors.textFaded,
+    fontSize: theme.typography.sizes.xs,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textSecondary,
     letterSpacing: 1,
   },
   googleButton: {
     height: 54,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: theme.colors.border,
     borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    backgroundColor: 'transparent',
+    backgroundColor: theme.colors.card,
   },
   googleButtonText: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: '500',
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.heading,
   },
   footer: {
     flexDirection: 'row',
@@ -373,12 +367,13 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
-    color: colors.textFaded,
-    fontSize: 13,
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
   },
   footerLink: {
-    color: colors.link,
-    fontSize: 13,
-    fontWeight: '600',
+    color: theme.colors.primary,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.heading,
   },
 });

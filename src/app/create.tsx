@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Camera } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/use-supabase-auth';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/use-supabase-auth';
 
 const GREEN = '#388E3C';
 type PostCategory = 'General' | 'For Sale' | 'Event';
@@ -122,7 +122,7 @@ export default function CreateTab() {
             setText('');
             setPrice('');
             setImageUri(null);
-            router.push('/(tabs)/');
+            router.push('/');
           },
         },
       ]);
@@ -164,8 +164,7 @@ export default function CreateTab() {
               placeholder="Give it a title (optional)"
               placeholderTextColor="#9E9E9E"
               value={title}
-              onChangeText={setTitle}
-            />
+              onChangeText={setTitle} />
 
             <TextInput
               style={styles.inputBody}
@@ -174,8 +173,7 @@ export default function CreateTab() {
               value={text}
               onChangeText={setText}
               multiline
-              textAlignVertical="top"
-            />
+              textAlignVertical="top" />
 
             {category === 'For Sale' && (
               <TextInput
@@ -184,8 +182,7 @@ export default function CreateTab() {
                 placeholderTextColor="#9E9E9E"
                 value={price}
                 onChangeText={setPrice}
-                keyboardType="numeric"
-              />
+                keyboardType="numeric" />
             )}
           </View>
 
@@ -196,7 +193,7 @@ export default function CreateTab() {
               <Image source={{ uri: imageUri }} style={styles.previewImage} contentFit="cover" />
             ) : (
               <View style={styles.imagePlaceholder}>
-                <Ionicons name="camera-outline" size={32} color="#9E9E9E" />
+                <Camera size={32} color="#9E9E9E" />
                 <Text style={styles.imagePlaceholderText}>Tap to add a photo</Text>
               </View>
             )}

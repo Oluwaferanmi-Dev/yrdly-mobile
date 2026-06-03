@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Scro
 import { Briefcase, Search, SlidersHorizontal } from 'lucide-react-native';
 import { MarketplaceGrid } from '../../components/MarketplaceGrid';
 import { EventList } from '../../components/EventList';
+import { theme } from '../../theme';
 
 type TabType = 'Marketplace' | 'Events' | 'Businesses';
 
@@ -31,17 +32,17 @@ export default function CatalogTab() {
       {/* Search Header */}
       <View style={styles.header}>
         <View style={styles.searchContainer}>
-          <Search size={20} color="#616161" style={styles.searchIcon} />
+          <Search size={20} color={theme.colors.textSecondary} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search Yrdly..."
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={theme.colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
             returnKeyType="search" />
         </View>
         <TouchableOpacity style={styles.filterButton}>
-          <SlidersHorizontal size={24} color="#1C1C1C" />
+          <SlidersHorizontal size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -74,34 +75,37 @@ export default function CatalogTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F2',
+    borderBottomColor: theme.colors.border,
   },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F2F2F2',
+    backgroundColor: theme.colors.surfaceDim,
     borderRadius: 8,
     paddingHorizontal: 12,
     height: 40,
     marginRight: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   searchIcon: {
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
-    color: '#1C1C1C',
+    fontSize: theme.typography.sizes.base,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textPrimary,
     height: '100%',
   },
   filterButton: {
@@ -109,16 +113,18 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F2F2F2',
+    backgroundColor: theme.colors.surfaceDim,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   segmentedControl: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: theme.colors.border,
   },
   tabButton: {
     flex: 1,
@@ -126,17 +132,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 20,
     marginHorizontal: 4,
+    backgroundColor: theme.colors.surfaceDim,
   },
   activeTabButton: {
-    backgroundColor: '#E8F5E9', // Light green bg for active tab
+    backgroundColor: theme.colors.primary,
   },
   tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#616161',
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textSecondary,
   },
   activeTabText: {
-    color: '#388E3C', // Yrdly Green
+    color: theme.colors.background,
   },
   contentArea: {
     flex: 1,
@@ -148,8 +155,8 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     marginTop: 16,
-    fontSize: 16,
-    color: '#9E9E9E',
-    fontWeight: '500',
+    fontSize: theme.typography.sizes.base,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textSecondary,
   },
 });

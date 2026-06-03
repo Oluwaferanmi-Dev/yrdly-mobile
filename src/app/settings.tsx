@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, User } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { AuthService } from '../lib/auth-service';
 import { supabase } from '../lib/supabase';
+import { StorageService } from '../lib/storage-service';
 
 const GREEN = '#388E3C';
 
@@ -53,21 +54,18 @@ export default function SettingsScreen() {
     try {
       const ext = localUri.split('.').pop()?.split('?')[0] || 'jpeg';
       const fileName = `${user.id}_${Date.now()}.${ext}`;
-      const filePath = `avatars/${fileName}`;
+      
+      const file = {
+        uri: localUri,
+        name: fileName,
+        type: `image/${ext}`,
+      };
 
-      // Fetch the local file as a blob — no extra package needed
-      const response = await fetch(localUri);
-      const blob = await response.blob();
+      const { url, error } = await StorageService.uploadUserAvatar(user.id, file);
 
-      const { error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(filePath, blob, { contentType: `image/${ext}`, upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage.from('images').getPublicUrl(filePath);
-      if (data.publicUrl) {
-        setAvatarUrl(data.publicUrl);
+      if (error) throw error;
+      if (url) {
+        setAvatarUrl(url);
       }
     } catch (e) {
       console.error(e);
@@ -110,7 +108,7 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <ArrowLeft size={24} color="#1C1C1C" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Profile</Text>
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving || uploadingImage}>
@@ -125,7 +123,7 @@ export default function SettingsScreen() {
               <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={40} color={GREEN} />
+                <User size={40} color={GREEN} />
               </View>
             )}
             {uploadingImage && (
@@ -146,8 +144,7 @@ export default function SettingsScreen() {
             value={name}
             onChangeText={setName}
             placeholder="Your name"
-            placeholderTextColor="#9E9E9E"
-          />
+            placeholderTextColor="#9E9E9E" />
         </View>
 
         <View style={styles.formGroup}>
@@ -159,8 +156,7 @@ export default function SettingsScreen() {
             placeholder="Tell your neighbors about yourself..."
             placeholderTextColor="#9E9E9E"
             multiline
-            numberOfLines={4}
-          />
+            numberOfLines={4} />
         </View>
       </View>
     </SafeAreaView>

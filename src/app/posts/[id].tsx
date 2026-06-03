@@ -5,7 +5,7 @@ import {
   SafeAreaView, ActivityIndicator, Keyboard,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, MessageSquare, Send } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -164,7 +164,7 @@ export default function PostDetailScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <ArrowLeft size={24} color="#1C1C1C" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Post</Text>
         <View style={{ width: 40 }} />
@@ -185,11 +185,10 @@ export default function PostDetailScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="chatbubbles-outline" size={40} color="#E0E0E0" />
+              <MessageSquare size={40} color="#E0E0E0" />
               <Text style={styles.emptyText}>No comments yet. Be the first!</Text>
             </View>
-          }
-        />
+          } />
       )}
 
       {/* Input */}
@@ -201,8 +200,7 @@ export default function PostDetailScreen() {
             placeholderTextColor="#9E9E9E"
             value={inputText}
             onChangeText={setInputText}
-            multiline
-          />
+            multiline />
           <TouchableOpacity
             style={[styles.sendBtn, !inputText.trim() && styles.sendBtnDisabled]}
             onPress={handleSendComment}
@@ -210,7 +208,7 @@ export default function PostDetailScreen() {
           >
             {sending
               ? <ActivityIndicator size="small" color="#FFF" />
-              : <Ionicons name="send" size={18} color="#FFFFFF" />
+              : <Send size={18} color="#FFFFFF" />
             }
           </TouchableOpacity>
         </View>

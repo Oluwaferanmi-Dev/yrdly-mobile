@@ -1,12 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Calendar, MapPin } from 'lucide-react-native';
 import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
-
-const GREEN = '#388E3C';
+import { theme } from '../theme';
 
 interface EventCardProps {
   event: Post;
@@ -60,13 +59,13 @@ export function EventCard({ event, onPress }: EventCardProps) {
         <View style={styles.metaContainer}>
           {!!event.event_date && (
             <View style={styles.metaRow}>
-              <Ionicons name="calendar-outline" size={16} color="#616161" />
+              <Calendar size={16} color={theme.colors.textSecondary} />
               <Text style={styles.metaText}>{getEventDate()}</Text>
             </View>
           )}
           {!!event.event_location && (
             <View style={styles.metaRow}>
-              <Ionicons name="location-outline" size={16} color="#616161" />
+              <MapPin size={16} color={theme.colors.textSecondary} />
               <Text style={styles.metaText} numberOfLines={1}>
                 {getLocation(event.event_location)}
               </Text>
@@ -93,12 +92,12 @@ export function EventCard({ event, onPress }: EventCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.lg,
     marginHorizontal: 16,
     marginVertical: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: theme.colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -109,19 +108,19 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     height: 180,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: theme.colors.surfaceDim,
   },
   image: {
     width: '100%',
     height: '100%',
   },
   content: {
-    padding: 16,
+    padding: theme.spacing.base,
   },
   title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1C1C1C',
+    fontSize: theme.typography.sizes.lg,
+    fontFamily: theme.typography.fonts.heading,
+    color: theme.colors.textPrimary,
     marginBottom: 12,
   },
   metaContainer: {
@@ -133,8 +132,9 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   metaText: {
-    fontSize: 14,
-    color: '#616161',
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textSecondary,
     marginLeft: 8,
     flex: 1,
   },
@@ -143,31 +143,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderTopWidth: 1,
-    borderTopColor: '#F2F2F2',
+    borderTopColor: theme.colors.border,
     paddingTop: 12,
   },
   price: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: GREEN,
+    fontFamily: theme.typography.fonts.heading,
+    color: theme.colors.primary,
   },
   actionButton: {
-    backgroundColor: GREEN,
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   actionText: {
-    color: '#FFFFFF',
+    color: theme.colors.background,
     fontSize: 14,
     fontWeight: '600',
   },
   editButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: GREEN,
+    borderColor: theme.colors.primary,
   },
   editButtonText: {
-    color: GREEN,
+    color: theme.colors.primary,
   },
 });

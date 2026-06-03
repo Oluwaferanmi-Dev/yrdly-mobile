@@ -4,12 +4,11 @@ import {
   TouchableOpacity, ActivityIndicator, SafeAreaView,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { ShoppingCart, Briefcase, Search, MessageSquare } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/use-supabase-auth';
-
-const GREEN = '#388E3C';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/use-supabase-auth';
+import { theme } from '../theme';
 
 // ── Types ─────────────────────────────────────────────────────────
 type ConvType = 'friend' | 'marketplace' | 'business';
@@ -196,12 +195,12 @@ export default function MessagesTab() {
           {/* Type badge */}
           {item.type === 'marketplace' && (
             <View style={styles.typeBadge}>
-              <Ionicons name="cart" size={9} color="#FFF" />
+              <ShoppingCart size={9} color="#FFF" />
             </View>
           )}
           {item.type === 'business' && (
             <View style={[styles.typeBadge, { backgroundColor: '#1565C0' }]}>
-              <Ionicons name="business" size={9} color="#FFF" />
+              <Briefcase size={9} color="#FFF" />
             </View>
           )}
         </View>
@@ -212,7 +211,7 @@ export default function MessagesTab() {
             <Text style={[styles.convName, unread && styles.convNameBold]} numberOfLines={1}>
               {item.participantName}
             </Text>
-            <Text style={[styles.convTime, unread && { color: GREEN }]}>
+            <Text style={[styles.convTime, unread && { color: theme.colors.primary }]}>
               {timeLabel(item.timestamp)}
             </Text>
           </View>
@@ -240,14 +239,13 @@ export default function MessagesTab() {
     <SafeAreaView style={styles.container}>
       {/* Search */}
       <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={18} color="#9E9E9E" style={styles.searchIcon} />
+        <Search size={18} color={theme.colors.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search conversations..."
-          placeholderTextColor="#9E9E9E"
+          placeholderTextColor={theme.colors.textSecondary}
           value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+          onChangeText={setSearchQuery} />
       </View>
 
       {/* Filter tabs */}
@@ -268,11 +266,11 @@ export default function MessagesTab() {
       {/* List */}
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={GREEN} />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       ) : filtered.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="chatbubbles-outline" size={48} color="#BDBDBD" />
+          <MessageSquare size={48} color={theme.colors.textSecondary} />
           <Text style={styles.emptyText}>
             {searchQuery ? 'No results found' : 'No conversations yet'}
           </Text>
@@ -283,33 +281,32 @@ export default function MessagesTab() {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
+          showsVerticalScrollIndicator={false} />
       )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: theme.colors.background },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     margin: 16,
     marginBottom: 8,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: theme.colors.surfaceDim,
     borderRadius: 12,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: theme.colors.border,
   },
   searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, height: 44, fontSize: 15, color: '#1C1C1C' },
+  searchInput: { flex: 1, height: 44, fontSize: theme.typography.sizes.base, fontFamily: theme.typography.fonts.body, color: theme.colors.textPrimary },
   filterRow: {
     flexDirection: 'row',
     marginHorizontal: 16,
     marginBottom: 8,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: theme.colors.surfaceDim,
     borderRadius: 10,
     padding: 3,
   },
@@ -319,42 +316,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
   },
-  filterTabActive: { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 2, elevation: 2 },
-  filterTabText: { fontSize: 12, fontWeight: '600', color: '#9E9E9E' },
-  filterTabTextActive: { color: GREEN },
+  filterTabActive: { backgroundColor: theme.colors.card, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 2, elevation: 2 },
+  filterTabText: { fontSize: 12, fontFamily: theme.typography.fonts.body, color: theme.colors.textSecondary },
+  filterTabTextActive: { color: theme.colors.primary },
   listContent: { paddingHorizontal: 16, paddingBottom: 80 },
   convRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
+    backgroundColor: theme.colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F2',
+    borderBottomColor: theme.colors.border,
   },
-  convRowUnread: { borderLeftWidth: 3, borderLeftColor: GREEN, paddingLeft: 12 },
+  convRowUnread: { borderLeftWidth: 3, borderLeftColor: theme.colors.primary, paddingLeft: 12 },
   avatarContainer: { position: 'relative', marginRight: 12 },
-  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#E8F5E9' },
-  avatarFallback: { justifyContent: 'center', alignItems: 'center', backgroundColor: GREEN },
-  avatarFallbackText: { color: '#FFFFFF', fontSize: 20, fontWeight: 'bold' },
+  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: theme.colors.surfaceDim },
+  avatarFallback: { justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.primary },
+  avatarFallbackText: { color: theme.colors.background, fontSize: 20, fontFamily: theme.typography.fonts.heading },
   typeBadge: {
     position: 'absolute', bottom: -2, right: -2,
     width: 18, height: 18, borderRadius: 9,
-    backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center',
-    borderWidth: 2, borderColor: '#FFFFFF',
+    backgroundColor: theme.colors.primary, justifyContent: 'center', alignItems: 'center',
+    borderWidth: 2, borderColor: theme.colors.background,
   },
   convContent: { flex: 1, minWidth: 0 },
   convTopRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
-  convName: { fontSize: 15, color: '#1C1C1C', flex: 1 },
-  convNameBold: { fontWeight: 'bold' },
-  convTime: { fontSize: 12, color: '#9E9E9E', marginLeft: 8 },
-  convItemTitle: { fontSize: 11, color: GREEN, marginBottom: 2, fontStyle: 'italic' },
-  convLastMsg: { fontSize: 13, color: '#9E9E9E' },
-  convLastMsgBold: { color: '#424242', fontWeight: '500' },
+  convName: { fontSize: theme.typography.sizes.base, fontFamily: theme.typography.fonts.heading, color: theme.colors.textPrimary, flex: 1 },
+  convNameBold: { fontFamily: theme.typography.fonts.heading }, // Since heading is usually bold, we might just keep it
+  convTime: { fontSize: theme.typography.sizes.xs, fontFamily: theme.typography.fonts.body, color: theme.colors.textSecondary, marginLeft: 8 },
+  convItemTitle: { fontSize: theme.typography.sizes.xs, fontFamily: theme.typography.fonts.body, color: theme.colors.primary, marginBottom: 2, fontStyle: 'italic' },
+  convLastMsg: { fontSize: theme.typography.sizes.sm, fontFamily: theme.typography.fonts.body, color: theme.colors.textSecondary },
+  convLastMsgBold: { color: theme.colors.textPrimary },
   unreadBadge: {
-    backgroundColor: GREEN, borderRadius: 10,
+    backgroundColor: theme.colors.primary, borderRadius: 10,
     minWidth: 20, height: 20, justifyContent: 'center', alignItems: 'center',
     paddingHorizontal: 5, marginLeft: 8,
   },
-  unreadBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: 'bold' },
+  unreadBadgeText: { color: theme.colors.background, fontSize: 11, fontFamily: theme.typography.fonts.heading },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: '#9E9E9E', marginTop: 12 },
+  emptyText: { fontSize: theme.typography.sizes.base, fontFamily: theme.typography.fonts.body, color: theme.colors.textSecondary, marginTop: 12 },
 });

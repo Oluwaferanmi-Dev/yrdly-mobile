@@ -5,7 +5,7 @@ import {
   SafeAreaView, ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, Send } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -166,7 +166,7 @@ export default function ChatScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <ArrowLeft size={24} color="#1C1C1C" />
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
@@ -218,8 +218,7 @@ export default function ChatScreen() {
             <View style={styles.center}>
               <Text style={styles.emptyText}>No messages yet. Say hi! 👋</Text>
             </View>
-          }
-        />
+          } />
       )}
 
       {/* Input */}
@@ -232,8 +231,7 @@ export default function ChatScreen() {
             value={inputText}
             onChangeText={setInputText}
             multiline
-            onSubmitEditing={sendMessage}
-          />
+            onSubmitEditing={sendMessage} />
           <TouchableOpacity
             style={[styles.sendBtn, !inputText.trim() && styles.sendBtnDisabled]}
             onPress={sendMessage}
@@ -241,7 +239,7 @@ export default function ChatScreen() {
           >
             {sending
               ? <ActivityIndicator size="small" color="#FFF" />
-              : <Ionicons name="send" size={20} color="#FFFFFF" />
+              : <Send size={20} color="#FFFFFF" />
             }
           </TouchableOpacity>
         </View>

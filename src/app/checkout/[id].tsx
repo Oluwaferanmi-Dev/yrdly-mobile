@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, X, AlertTriangle, Lock } from 'lucide-react-native';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { Post } from '../../types';
@@ -152,7 +152,7 @@ export default function CheckoutScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <ArrowLeft size={24} color="#1C1C1C" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Checkout</Text>
         <View style={{ width: 40 }} />
@@ -173,10 +173,9 @@ export default function CheckoutScreen() {
             onLoadEnd={() => setWebViewLoading(false)}
             javaScriptEnabled
             domStorageEnabled
-            style={{ flex: 1 }}
-          />
+            style={{ flex: 1 }} />
           <TouchableOpacity style={styles.cancelWebView} onPress={() => setShowWebView(false)}>
-            <Ionicons name="close" size={20} color="#FFFFFF" />
+            <X size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       )}
@@ -202,14 +201,14 @@ export default function CheckoutScreen() {
 
         {missingKey ? (
           <View style={styles.errorBox}>
-            <Ionicons name="warning-outline" size={24} color="#E53935" />
+            <AlertTriangle size={24} color="#E53935" />
             <Text style={styles.errorText}>
               Flutterwave Public Key is missing.{'\n'}Add it to your .env file to enable payments.
             </Text>
           </View>
         ) : (
           <TouchableOpacity style={styles.payBtn} onPress={() => { setShowWebView(true); setWebViewLoading(true); }}>
-            <Ionicons name="lock-closed" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Lock size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
             <Text style={styles.payBtnText}>Pay {formatPrice(post.price || 0)} securely</Text>
           </TouchableOpacity>
         )}

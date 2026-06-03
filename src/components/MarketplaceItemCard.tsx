@@ -1,15 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { ShoppingCart, Pencil, MessageCircle } from 'lucide-react-native';
 import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { theme } from '../theme';
 
 const { width } = Dimensions.get('window');
 // Calculate card width for 2 columns with padding
 const cardWidth = (width - 48) / 2;
-const GREEN = '#388E3C';
 
 interface MarketplaceItemCardProps {
   item: Post;
@@ -32,7 +32,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
           <Image source={{ uri: imageUrl }} style={styles.image} contentFit="cover" />
         ) : (
           <View style={styles.placeholderImage}>
-            <Ionicons name="cart-outline" size={32} color="rgba(56, 142, 60, 0.5)" />
+            <ShoppingCart size={32} color="rgba(56, 142, 60, 0.5)" />
           </View>
         )}
       </View>
@@ -49,7 +49,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
         <View style={styles.actionsRow}>
           {isOwner ? (
             <TouchableOpacity style={[styles.actionButton, styles.editButton]}>
-              <Ionicons name="pencil" size={14} color={GREEN} />
+              <Pencil size={14} color={theme.colors.primary} />
               <Text style={styles.editButtonText}>Edit</Text>
             </TouchableOpacity>
           ) : (
@@ -60,7 +60,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.messageButton} onPress={onMessageSeller}>
-                <Ionicons name="chatbubble-outline" size={16} color={GREEN} />
+                <MessageCircle size={16} color={theme.colors.primary} />
               </TouchableOpacity>
             </>
           )}
@@ -71,8 +71,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
             {item.user?.avatar_url || item.author_image ? (
               <Image 
                 source={{ uri: item.user?.avatar_url || item.author_image }} 
-                style={styles.avatarImage} 
-              />
+                style={styles.avatarImage} />
             ) : (
               <Text style={styles.avatarText}>
                 {getInitials(item.user?.name || item.author_name)}
@@ -91,11 +90,11 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
 const styles = StyleSheet.create({
   card: {
     width: cardWidth,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.lg,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: theme.colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -106,7 +105,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     height: 140,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: theme.colors.surfaceDim,
   },
   image: {
     width: '100%',
@@ -116,23 +115,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
+    backgroundColor: theme.colors.surfaceDim,
   },
   infoContainer: {
-    padding: 10,
+    padding: theme.spacing.sm,
   },
   title: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#1C1C1C',
+    fontSize: theme.typography.sizes.base,
+    fontFamily: theme.typography.fonts.heading,
+    color: theme.colors.textPrimary,
     lineHeight: 18,
     marginBottom: 4,
     height: 36, // Force two lines height
   },
   price: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: GREEN,
+    fontSize: theme.typography.sizes.lg,
+    fontFamily: theme.typography.fonts.heading,
+    color: theme.colors.primary,
     marginBottom: 8,
   },
   actionsRow: {
@@ -150,7 +149,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buyButton: {
-    backgroundColor: GREEN,
+    backgroundColor: theme.colors.primary,
     marginRight: 6,
   },
   buyButtonText: {
@@ -163,18 +162,18 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: GREEN,
+    borderColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(56, 142, 60, 0.05)',
   },
   editButton: {
     borderWidth: 1,
-    borderColor: GREEN,
+    borderColor: theme.colors.primary,
     backgroundColor: 'transparent',
   },
   editButtonText: {
-    color: GREEN,
+    color: theme.colors.primary,
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
@@ -183,14 +182,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#F2F2F2',
+    borderTopColor: theme.colors.border,
     paddingTop: 8,
   },
   avatar: {
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: GREEN,
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -207,7 +206,8 @@ const styles = StyleSheet.create({
   },
   sellerName: {
     flex: 1,
-    fontSize: 10,
-    color: '#616161',
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textSecondary,
   },
 });

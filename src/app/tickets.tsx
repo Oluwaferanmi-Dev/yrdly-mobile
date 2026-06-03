@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, SafeAreaView, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Calendar, MapPin, QrCode, Ticket } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
@@ -81,7 +81,7 @@ export default function TicketsScreen() {
             <Image source={{ uri: imageUrl }} style={styles.ticketImage} contentFit="cover" />
           ) : (
             <View style={[styles.ticketImage, styles.ticketImagePlaceholder]}>
-              <Ionicons name="calendar" size={28} color={GREEN} />
+              <Calendar size={28} color={GREEN} />
             </View>
           )}
         </View>
@@ -92,12 +92,12 @@ export default function TicketsScreen() {
             {event?.title || 'Event'}
           </Text>
           <View style={styles.ticketMeta}>
-            <Ionicons name="calendar-outline" size={13} color="#9E9E9E" />
+            <Calendar size={13} color="#9E9E9E" />
             <Text style={styles.ticketMetaText}>{formattedDate}</Text>
           </View>
           {!!event?.location && (
             <View style={styles.ticketMeta}>
-              <Ionicons name="location-outline" size={13} color="#9E9E9E" />
+              <MapPin size={13} color="#9E9E9E" />
               <Text style={styles.ticketMetaText} numberOfLines={1}>{event.location}</Text>
             </View>
           )}
@@ -116,7 +116,7 @@ export default function TicketsScreen() {
         {/* QR placeholder */}
         <View style={styles.qrSection}>
           <View style={styles.qrPlaceholder}>
-            <Ionicons name="qr-code" size={48} color={GREEN} />
+            <QrCode size={48} color={GREEN} />
           </View>
         </View>
       </TouchableOpacity>
@@ -143,18 +143,17 @@ export default function TicketsScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={GREEN} />}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="ticket-outline" size={72} color="rgba(56,142,60,0.3)" />
+              <Ticket size={72} color="rgba(56,142,60,0.3)" />
               <Text style={styles.emptyTitle}>No Tickets Yet</Text>
               <Text style={styles.emptySubtitle}>Buy tickets to events to see them here.</Text>
               <TouchableOpacity
                 style={styles.browseButton}
-                onPress={() => router.push('/(tabs)/catalog')}
+                onPress={() => router.push('/(tabs)/marketplace')}
               >
                 <Text style={styles.browseButtonText}>Browse Events</Text>
               </TouchableOpacity>
             </View>
-          }
-        />
+          } />
       )}
     </SafeAreaView>
   );

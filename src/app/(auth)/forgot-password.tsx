@@ -1,21 +1,12 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, AlertTriangle, CheckCircle, Mail } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { supabase } from '../../lib/supabase';
+import { theme } from '../../theme';
 
 const { width, height } = Dimensions.get('window');
-
-const colors = {
-  background: '#F2F2F2',
-  blob: '#A154F2',
-  primary: '#388E3C',
-  text: '#1C1C1C',
-  textFaded: '#616161',
-  border: '#E0E0E0',
-  inputBorder: '#388E3C',
-};
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -74,7 +65,7 @@ export default function ForgotPassword() {
       <View style={styles.formContainer}>
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <ArrowLeft size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
 
         {/* Header */}
@@ -85,14 +76,14 @@ export default function ForgotPassword() {
 
         {error ? (
           <View style={styles.errorBox}>
-            <Ionicons name="warning" size={16} color="#E53935" />
+            <AlertTriangle size={16} color="#E53935" />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         ) : null}
 
         {message ? (
           <View style={styles.successBox}>
-            <Ionicons name="checkmark-circle" size={16} color="#388E3C" />
+            <CheckCircle size={16} color={theme.colors.primary} />
             <Text style={styles.successText}>{message}</Text>
           </View>
         ) : null}
@@ -107,9 +98,8 @@ export default function ForgotPassword() {
             autoCapitalize="none"
             keyboardType="email-address"
             editable={!loading}
-            placeholderTextColor="#9ca3af"
-          />
-          <Ionicons name="mail-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+            placeholderTextColor={theme.colors.textSecondary} />
+          <Mail size={20} color={theme.colors.textSecondary} style={styles.inputIcon} />
         </View>
 
         <TouchableOpacity 
@@ -131,14 +121,14 @@ export default function ForgotPassword() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.colors.background,
   },
   blob: {
     position: 'absolute',
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.blob,
+    backgroundColor: theme.colors.primary,
     opacity: 0.55,
   },
   formContainer: {
@@ -162,13 +152,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    color: colors.text,
+    color: theme.colors.textPrimary,
     textAlign: 'center',
-    fontWeight: '600',
+    fontFamily: theme.typography.fonts.brand,
   },
   subtitle: {
-    fontSize: 14,
-    color: colors.textFaded,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     marginTop: 8,
   },
@@ -183,25 +174,27 @@ const styles = StyleSheet.create({
     borderColor: '#FCA5A5',
   },
   errorText: {
-    color: '#E53935',
+    color: theme.colors.error,
     marginLeft: 8,
-    fontSize: 13,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
     flex: 1,
   },
   successBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
+    backgroundColor: theme.colors.surfaceDim,
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#A5D6A7',
+    borderColor: theme.colors.primary,
   },
   successText: {
-    color: '#2E7D32',
+    color: theme.colors.primary,
     marginLeft: 8,
-    fontSize: 13,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
     flex: 1,
   },
   inputContainer: {
@@ -211,12 +204,13 @@ const styles = StyleSheet.create({
   input: {
     height: 54,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: theme.colors.border,
     borderRadius: 27,
     paddingHorizontal: 20,
-    fontSize: 14,
-    backgroundColor: 'transparent',
-    color: colors.text,
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
+    backgroundColor: theme.colors.surfaceDim,
+    color: theme.colors.textPrimary,
   },
   inputIcon: {
     position: 'absolute',
@@ -225,14 +219,14 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 54,
-    backgroundColor: colors.primary,
+    backgroundColor: theme.colors.primary,
     borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    color: theme.colors.background,
+    fontSize: theme.typography.sizes.base,
+    fontFamily: theme.typography.fonts.heading,
   },
 });

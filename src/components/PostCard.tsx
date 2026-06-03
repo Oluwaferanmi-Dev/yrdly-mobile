@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { MessageCircle, Share2, Heart } from 'lucide-react-native';
 import { Post } from '../types';
 import { timeAgo, formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { theme } from '../theme';
 
 const { width } = Dimensions.get('window');
-const GREEN = '#388E3C';
 
 interface PostCardProps {
   post: Post;
@@ -89,25 +89,24 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
       <View style={styles.footer}>
         <View style={styles.actionRow}>
           <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
-            <Ionicons 
-              name={isLiked ? "heart" : "heart-outline"} 
+            <Heart
               size={22} 
-              color={isLiked ? "#ED1111" : "#616161"} 
-            />
+              color={isLiked ? theme.colors.primary : theme.colors.textSecondary}
+              fill={isLiked ? theme.colors.primary : "transparent"} />
             <Text style={styles.actionText}>{likesCount > 0 ? likesCount : ''}</Text>
           </TouchableOpacity>
 
           <View style={styles.dot} />
 
           <TouchableOpacity style={styles.actionButton} onPress={onComment}>
-            <Ionicons name="chatbubble-outline" size={20} color="#616161" />
+            <MessageCircle size={20} color={theme.colors.textSecondary} />
             <Text style={styles.actionText}>{post.comment_count || 0}</Text>
           </TouchableOpacity>
 
           <View style={styles.dot} />
 
           <TouchableOpacity style={styles.actionButton} onPress={onShare}>
-            <Ionicons name="share-social-outline" size={20} color="#616161" />
+            <Share2 size={20} color={theme.colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -117,13 +116,13 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.base,
     marginHorizontal: 16,
     marginVertical: 8,
-    padding: 16,
+    padding: theme.spacing.base,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: theme.colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -144,7 +143,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: theme.colors.surfaceDim,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -154,55 +153,57 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   avatarText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: GREEN,
+    fontSize: theme.typography.sizes.lg,
+    fontFamily: theme.typography.fonts.heading,
+    color: theme.colors.primary,
   },
   authorText: {
     marginLeft: 10,
   },
   authorName: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1C1C1C',
+    fontSize: theme.typography.sizes.base,
+    fontFamily: theme.typography.fonts.heading,
+    color: theme.colors.textPrimary,
   },
   timeAgo: {
-    fontSize: 12,
-    color: '#616161',
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textSecondary,
     marginTop: 2,
   },
   categoryBadge: {
-    backgroundColor: '#F2F2F2',
+    backgroundColor: theme.colors.surfaceDim,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   categoryText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#1C1C1C',
+    fontSize: theme.typography.sizes.xs,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textPrimary,
   },
   content: {
     marginBottom: 12,
   },
   title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1C1C1C',
+    fontSize: theme.typography.sizes.base,
+    fontFamily: theme.typography.fonts.heading,
+    color: theme.colors.textPrimary,
     marginBottom: 4,
   },
   bodyText: {
-    fontSize: 14,
-    color: '#424242',
+    fontSize: theme.typography.sizes.base,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textPrimary,
     lineHeight: 20,
   },
   imageContainer: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
+    borderRadius: theme.radius.base,
     overflow: 'hidden',
     marginBottom: 12,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: theme.colors.surfaceDim,
   },
   postImage: {
     width: '100%',
@@ -217,19 +218,19 @@ const styles = StyleSheet.create({
   overlayText: {
     color: '#FFFFFF',
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: theme.typography.fonts.heading,
   },
   price: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: GREEN,
+    fontFamily: theme.typography.fonts.heading,
+    color: theme.colors.primary,
     marginBottom: 12,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#F2F2F2',
+    borderTopColor: theme.colors.border,
     paddingTop: 12,
   },
   actionRow: {
@@ -243,16 +244,16 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   actionText: {
-    fontSize: 13,
-    color: '#616161',
+    fontSize: theme.typography.sizes.sm,
+    fontFamily: theme.typography.fonts.body,
+    color: theme.colors.textSecondary,
     marginLeft: 4,
-    fontWeight: '500',
   },
   dot: {
     width: 3,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: '#BDBDBD',
+    backgroundColor: theme.colors.border,
     marginHorizontal: 12,
   },
 });

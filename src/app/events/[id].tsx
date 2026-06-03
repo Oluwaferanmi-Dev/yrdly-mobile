@@ -4,7 +4,7 @@ import {
   TouchableOpacity, SafeAreaView, ActivityIndicator, Dimensions, Alert
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, Calendar, Clock, MapPin } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -75,7 +75,7 @@ export default function EventDetailScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <ArrowLeft size={24} color="#1C1C1C" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Event Details</Text>
         <View style={{ width: 40 }} />
@@ -91,7 +91,7 @@ export default function EventDetailScreen() {
           </ScrollView>
         ) : (
           <View style={styles.placeholderImage}>
-            <Ionicons name="calendar-outline" size={64} color="rgba(56, 142, 60, 0.5)" />
+            <Calendar size={64} color="rgba(56, 142, 60, 0.5)" />
           </View>
         )}
 
@@ -100,16 +100,16 @@ export default function EventDetailScreen() {
           
           <View style={styles.dateTimeContainer}>
             <View style={styles.dateTimeRow}>
-              <Ionicons name="calendar" size={20} color={GREEN} />
+              <Calendar size={20} color={GREEN} />
               <Text style={styles.dateTimeText}>{formattedDate}</Text>
             </View>
             <View style={styles.dateTimeRow}>
-              <Ionicons name="time" size={20} color={GREEN} />
+              <Clock size={20} color={GREEN} />
               <Text style={styles.dateTimeText}>{formattedTime}</Text>
             </View>
             {!!event.location && (
               <View style={styles.dateTimeRow}>
-                <Ionicons name="location" size={20} color={GREEN} />
+                <MapPin size={20} color={GREEN} />
                 <Text style={styles.dateTimeText}>{event.location}</Text>
               </View>
             )}
