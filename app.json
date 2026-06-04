@@ -37,7 +37,28 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Yrdly uses your location to connect you with your local neighbourhood — nearby posts, events, and marketplace listings.",
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Yrdly needs camera access to scan event tickets at check-in.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Yrdly needs photo library access to attach evidence to disputes and update your profile picture.",
+          "cameraPermission": "Yrdly needs camera access to take photos for disputes."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

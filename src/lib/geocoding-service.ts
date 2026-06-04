@@ -1,239 +1,93 @@
 /**
- * Geocoding Service — Reverse-geocodes GPS coordinates into Nigerian
- * administrative units (State → LGA → Ward).
- *
- * Strategy:
- *  1. Google Maps REST Geocoding API → reliable for State + LGA in urban areas.
- *  2. Ward: Google never returns ward data for Nigeria, so we use the local
- *     wards.json dataset (8,800+ entries with lat/lng) and find the nearest
- *     ward via haversine distance within the matched State+LGA.
- *  3. If Google can't resolve an LGA we fall back to the nearest LGA from
- *     the wards dataset.
+ * Mobile Geocoding Service
+ * Uses expo-location for GPS + Nominatim (free, no key) for reverse geocoding
+ * into Nigerian State → LGA. Falls back to manual picker if outside Nigeria.
  */
 
-// ── Types ───────────────────────────────────────────────────────
+import * as Location from 'expo-location';
+import lgasData from '../data/lgas.json';
 
 export interface ResolvedLocation {
   state: string;
   lga: string;
-  ward: string;
   displayAddress: string;
   lat: number;
   lng: number;
 }
 
-interface WardEntry {
-  State: string;
-  LGA: string;
-  Ward: string;
-  Latitude: number;
-  Longitude: number;
-}
+export const OUTSIDE_NIGERIA = 'outside_nigeria';
+export const PERMISSION_DENIED = 'permission_denied';
 
-// ── Haversine helper (km) ───────────────────────────────────────
+const LGAS: Record<string, string[]> = lgasData;
 
-function haversine(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number,
-): number {
-  const R = 6371; // Earth's radius in km
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-export const OUTSIDE_NIGERIA = "outside_nigeria";
-
-// ── Normalisation helper ────────────────────────────────────────
-// Google might return "Eti-Osa Local Government Area" while our dataset has
-// "Eti-Osa". Strip suffixes and normalise whitespace/hyphens for matching.
-
-function normaliseName(name: string): string {
+function normalise(name: string): string {
   return name
-    .replace(/ Local Government Area$/i, "")
-    .replace(/ LGA$/i, "")
-    .replace(/ State$/i, "")
+    .replace(/ Local Government Area$/i, '')
+    .replace(/ LGA$/i, '')
+    .replace(/ State$/i, '')
     .trim()
-    .toLowerCase()
-    .replace(/[- ]+/g, ""); // "Eti-Osa" & "Eti Osa" → "etiosa"
+    .toLowerCase();
 }
 
-// ── Lazy-loaded wards dataset ───────────────────────────────────
-
-let wardsCache: WardEntry[] | null = null;
-
-async function getWards(): Promise<WardEntry[]> {
-  if (wardsCache) return wardsCache;
-  const mod = await import("@/data/wards.json");
-  wardsCache = mod.default as WardEntry[];
-  return wardsCache;
+function matchState(nominatimState: string): string | null {
+  const norm = normalise(nominatimState);
+  return Object.keys(LGAS).find((k) => normalise(k) === norm) ?? null;
 }
 
-// ── Find nearest ward from the local dataset ────────────────────
-
-async function findNearestWard(
-  lat: number,
-  lng: number,
-  state?: string,
-  lga?: string,
-): Promise<{ state: string; lga: string; ward: string; distance: number }> {
-  const wards = await getWards();
-
-  // Start with the tightest possible scope
-  let candidates = wards;
-  if (state && lga) {
-    const ns = normaliseName(state);
-    const nl = normaliseName(lga);
-    const filtered = wards.filter(
-      (w) => normaliseName(w.State) === ns && normaliseName(w.LGA) === nl,
-    );
-    if (filtered.length > 0) candidates = filtered;
-  }
-  if (candidates === wards && state) {
-    const ns = normaliseName(state);
-    const filtered = wards.filter((w) => normaliseName(w.State) === ns);
-    if (filtered.length > 0) candidates = filtered;
-  }
-
-  let best = candidates[0];
-  let bestDist = Infinity;
-
-  for (const w of candidates) {
-    const d = haversine(lat, lng, w.Latitude, w.Longitude);
-    if (d < bestDist) {
-      bestDist = d;
-      best = w;
-    }
-  }
-
-  return { state: best.State, lga: best.LGA, ward: best.Ward, distance: bestDist };
+function matchLga(state: string, nominatimCounty: string): string | null {
+  const lgas = LGAS[state] ?? [];
+  const norm = normalise(nominatimCounty);
+  return lgas.find((l) => normalise(l) === norm) ?? null;
 }
 
-// ── LGA fuzzy match against our dataset ─────────────────────────
-// Google might return "Eti-Osa" but our lgas.json has "Eti Osa" (or vice
-// versa). We try to find the canonical form.
-
-let lgasCache: Record<string, string[]> | null = null;
-
-async function getLgas(): Promise<Record<string, string[]>> {
-  if (lgasCache) return lgasCache;
-  const mod = await import("@/data/lgas.json");
-  lgasCache = mod.default as Record<string, string[]>;
-  return lgasCache;
+async function nominatimReverseGeocode(lat: number, lng: number) {
+  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
+  const res = await fetch(url, {
+    headers: { 'Accept-Language': 'en', 'User-Agent': 'Yrdly-Mobile/1.0' },
+  });
+  if (!res.ok) throw new Error('Nominatim request failed');
+  return res.json();
 }
 
-async function matchLga(state: string, googleLga: string): Promise<string> {
-  const lgas = await getLgas();
-  const stateKey = Object.keys(lgas).find(
-    (k) => normaliseName(k) === normaliseName(state),
-  );
-  if (!stateKey) return googleLga; // can't match state, return Google's answer
+export async function detectLocation(): Promise<
+  ResolvedLocation | { status: typeof OUTSIDE_NIGERIA | typeof PERMISSION_DENIED }
+> {
+  const { status } = await Location.requestForegroundPermissionsAsync();
+  if (status !== 'granted') return { status: PERMISSION_DENIED };
 
-  const stateLgas = lgas[stateKey];
-  // Exact match first
-  const exact = stateLgas.find((l) => l === googleLga);
-  if (exact) return exact;
-  // Normalised match
-  const norm = normaliseName(googleLga);
-  const fuzzy = stateLgas.find((l) => normaliseName(l) === norm);
-  return fuzzy || googleLga;
+  const pos = await Location.getCurrentPositionAsync({
+    accuracy: Location.Accuracy.Balanced,
+  });
+  const { latitude: lat, longitude: lng } = pos.coords;
+
+  let nominatim: any;
+  try {
+    nominatim = await nominatimReverseGeocode(lat, lng);
+  } catch {
+    return { status: OUTSIDE_NIGERIA };
+  }
+
+  const addr = nominatim?.address ?? {};
+  const countryCode = (addr.country_code ?? '').toLowerCase();
+  if (countryCode !== 'ng') return { status: OUTSIDE_NIGERIA };
+
+  const rawState = addr.state ?? addr.region ?? '';
+  const matchedState = matchState(rawState);
+  if (!matchedState) return { status: OUTSIDE_NIGERIA };
+
+  const rawLga = addr.county ?? addr.city_district ?? addr.city ?? '';
+  const matchedLga = matchLga(matchedState, rawLga) ?? (LGAS[matchedState]?.[0] ?? '');
+
+  const city = addr.city ?? addr.town ?? addr.village ?? '';
+  const displayAddress = [city, matchedLga, matchedState].filter(Boolean).join(', ');
+
+  return { state: matchedState, lga: matchedLga, displayAddress, lat, lng };
 }
 
-async function matchState(googleState: string): Promise<string> {
-  const lgas = await getLgas();
-  const stateKey = Object.keys(lgas).find(
-    (k) => normaliseName(k) === normaliseName(googleState),
-  );
-  return stateKey || googleState;
+export function getAllStates(): string[] {
+  return Object.keys(LGAS).sort();
 }
 
-// ── Public: reverse-geocode coordinates ─────────────────────────
-
-export async function reverseGeocode(
-  lat: number,
-  lng: number,
-): Promise<ResolvedLocation | { status: typeof OUTSIDE_NIGERIA }> {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-  let googleState = "";
-  let googleLga = "";
-  let displayAddress = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-
-  // Step 1 — Google REST Geocoding API
-  if (apiKey) {
-    try {
-      const res = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=en`,
-      );
-      const data = await res.json();
-
-      if (data.status === "OK" && data.results?.length > 0) {
-        displayAddress = data.results[0].formatted_address || displayAddress;
-        
-        let country = "";
-
-        for (const result of data.results) {
-          for (const comp of result.address_components || []) {
-            if (comp.types.includes("country") && !country) {
-              country = comp.long_name;
-            }
-            if (
-              comp.types.includes("administrative_area_level_1") &&
-              !googleState
-            ) {
-              googleState = comp.long_name
-                .replace(/ State$/i, "")
-                .trim();
-            }
-            if (
-              comp.types.includes("administrative_area_level_2") &&
-              !googleLga
-            ) {
-              googleLga = comp.long_name
-                .replace(/ Local Government Area$/i, "")
-                .replace(/ LGA$/i, "")
-                .trim();
-            }
-          }
-        }
-        
-        if (!country || country !== "Nigeria") {
-          return { status: OUTSIDE_NIGERIA };
-        }
-      }
-    } catch {
-      // Google API failed — fall through to dataset fallback
-    }
-  }
-
-  // Step 2 — Normalise against our canonical dataset
-  if (googleState) {
-    googleState = await matchState(googleState);
-  }
-  if (googleState && googleLga) {
-    googleLga = await matchLga(googleState, googleLga);
-  }
-
-  // Step 3 — Ward lookup (always from our dataset)
-  const nearest = await findNearestWard(lat, lng, googleState, googleLga);
-
-  // If Google couldn't resolve state or LGA, use the dataset's answer
-  const finalState = googleState || nearest.state;
-  const finalLga = googleLga || nearest.lga;
-  const finalWard = nearest.ward;
-
-  return {
-    state: finalState,
-    lga: finalLga,
-    ward: finalWard,
-    displayAddress,
-    lat,
-    lng,
-  };
+export function getLgasForState(state: string): string[] {
+  return LGAS[state] ?? [];
 }

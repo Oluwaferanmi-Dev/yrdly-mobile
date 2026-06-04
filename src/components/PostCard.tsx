@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Post } from '../types';
 import { timeAgo, formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { GlassCard } from './GlassCard';
 
 const { width } = Dimensions.get('window');
 const GREEN = '#388E3C';
@@ -40,7 +41,13 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
   const urls = post.image_urls?.length ? post.image_urls : post.image_url ? [post.image_url] : [];
 
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.card}>
+    <GlassCard
+      style={styles.card}
+      borderRadius={16}
+      intensity={Platform.OS === 'ios' ? 50 : undefined}
+      tint="systemChromeMaterial"
+    >
+      <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.inner}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.authorRow}>
@@ -111,24 +118,20 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
           </TouchableOpacity>
         </View>
       </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </GlassCard>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
     marginHorizontal: 16,
     marginVertical: 8,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  inner: {
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   header: {
     flexDirection: 'row',

@@ -42,7 +42,12 @@ export default function Login() {
       if (signInError) setError(signInError.message);
     } else {
       const { error: signUpError } = await signUp(email, password, name);
-      if (signUpError) setError(signUpError.message);
+      if (signUpError) {
+        setError(signUpError.message);
+      } else {
+        // Supabase sent OTP — navigate to verification screen
+        router.push({ pathname: '/(auth)/verify-otp', params: { email } } as any);
+      }
     }
   };
 

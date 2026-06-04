@@ -1,153 +1,208 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import {
+  View, Text, StyleSheet, SafeAreaView, ActivityIndicator,
+  TouchableOpacity, Alert, ScrollView,
+} from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { supabase } from '../../lib/supabase';
+import { api, WEB_APP_URL } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { Post } from '../../types';
 import { formatPrice } from '../../lib/utils';
-import { useEffect } from 'react';
 
 const GREEN = '#388E3C';
-const FLW_KEY = process.env.EXPO_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || '';
+const COMMISSION_RATE = 0.05; // 5% — kept in sync with backend
+
+interface ItemDetails {
+  id: string;
+  title: string;
+  price: number;
+  images?: string[];
+  user_id: string;
+  seller?: { id: string; name: string; email: string };
+}
+
+type Stage = 'loading' | 'summary' | 'paying' | 'verifying' | 'error';
 
 export default function CheckoutScreen() {
   const router = useRouter();
-  const { id, type } = useLocalSearchParams<{ id: string; type: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { user, profile } = useAuth();
 
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [webViewLoading, setWebViewLoading] = useState(true);
-  const [showWebView, setShowWebView] = useState(false);
-  const txRef = useRef(`tx-${user?.id}-${Date.now()}`);
+  const [stage, setStage] = useState<Stage>('loading');
+  const [item, setItem] = useState<ItemDetails | null>(null);
+  const [paymentLink, setPaymentLink] = useState('');
+  const [transactionId, setTransactionId] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
+  const webViewRef = useRef<any>(null);
+
+  // 1. Fetch item + seller info
   const fetchItem = useCallback(async () => {
     if (!id) return;
     try {
       const { data, error } = await supabase
         .from('posts')
-        .select('*')
+        .select('id, title, price, images, user_id, users:user_id(id, name, email)')
         .eq('id', id)
         .single();
-      if (error) throw error;
-      setPost(data as Post);
+      if (error || !data) throw error ?? new Error('Not found');
+
+      const seller = Array.isArray(data.users) ? data.users[0] : data.users;
+      setItem({ ...data, seller } as any);
+      setStage('summary');
     } catch {
-      Alert.alert('Error', 'Item not found');
-      router.back();
-    } finally {
-      setLoading(false);
+      Alert.alert('Error', 'Item not found.', [{ text: 'OK', onPress: () => router.back() }]);
     }
   }, [id]);
 
   useEffect(() => { fetchItem(); }, [fetchItem]);
 
-  const handlePaymentSuccess = async (transactionId: string) => {
-    try {
-      await supabase.from('transactions').insert({
-        user_id: user?.id,
-        post_id: post?.id,
-        amount: post?.price,
-        status: 'completed',
-        tx_ref: transactionId || txRef.current,
-        type,
-      });
+  // 2. Initialize escrow payment via web API
+  const handleInitializePayment = async () => {
+    if (!item || !user || !profile) return;
 
-      if (type === 'event') {
-        await supabase.from('my_tickets').insert({
-          user_id: user?.id,
-          event_id: post?.id,
-          status: 'active',
-        });
-      } else if (type === 'marketplace') {
-        await supabase.from('posts').update({ is_sold: true }).eq('id', post?.id);
-      }
-
-      Alert.alert('Payment Successful! 🎉', 'Your order has been confirmed.', [
-        { text: 'View Tickets', onPress: () => router.push('/tickets') },
-        { text: 'OK', onPress: () => router.back() },
-      ]);
-    } catch (e) {
-      console.error(e);
-      Alert.alert('Success', 'Payment received. Please contact support if your ticket is missing.');
+    if (item.user_id === user.id) {
+      Alert.alert('Error', "You can't buy your own item.");
+      return;
     }
-  };
 
-  // Inline Flutterwave HTML page
-  const flutterwaveHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://checkout.flutterwave.com/v3.js"></script>
-  <style>
-    body { font-family: -apple-system, sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#F9FBF9; }
-    button { background:#388E3C; color:white; border:none; padding:16px 40px; font-size:18px; border-radius:30px; cursor:pointer; font-weight:bold; }
-    button:active { opacity:0.8; }
-  </style>
-</head>
-<body>
-  <button onclick="pay()">Complete Payment</button>
-  <script>
-    function pay() {
-      FlutterwaveCheckout({
-        public_key: "${FLW_KEY}",
-        tx_ref: "${txRef.current}",
-        amount: ${post?.price || 0},
-        currency: "NGN",
-        payment_options: "card,ussd,banktransfer",
-        customer: {
-          email: "${user?.email || 'user@yrdly.com'}",
-          name: "${profile?.full_name || user?.user_metadata?.name || 'Yrdly User'}",
-        },
-        customizations: {
-          title: "Yrdly",
-          description: "${post?.title || 'Purchase'}",
-          logo: "https://yrdly.com/logo.png",
-        },
-        callback: function(data) {
-          window.ReactNativeWebView.postMessage(JSON.stringify(data));
-        },
-        onclose: function() {
-          window.ReactNativeWebView.postMessage(JSON.stringify({ status: 'cancelled' }));
+    setStage('paying');
+    setErrorMsg('');
+    try {
+      const result = await api.post<{ paymentLink: string; transactionId: string }>(
+        '/api/payment/initialize',
+        {
+          itemId: item.id,
+          buyerId: user.id,
+          sellerId: item.user_id,
+          price: item.price,
+          buyerEmail: user.email,
+          buyerName: profile.name ?? user.user_metadata?.name ?? 'Yrdly User',
+          itemTitle: item.title,
+          sellerName: item.seller?.name ?? 'Seller',
         }
-      });
-    }
-    // Auto-open payment on load
-    window.onload = function() { setTimeout(pay, 500); };
-  </script>
-</body>
-</html>`;
-
-  const handleWebViewMessage = (event: any) => {
-    try {
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.status === 'successful') {
-        setShowWebView(false);
-        handlePaymentSuccess(data.transaction_id?.toString() || txRef.current);
-      } else if (data.status === 'cancelled') {
-        setShowWebView(false);
-        Alert.alert('Payment Cancelled', 'Your payment was not completed.');
-      } else {
-        setShowWebView(false);
-        Alert.alert('Payment Failed', 'Please try again.');
-      }
-    } catch (e) {
-      console.error(e);
+      );
+      setPaymentLink(result.paymentLink);
+      setTransactionId(result.transactionId);
+    } catch (e: any) {
+      setStage('error');
+      setErrorMsg(e?.message ?? 'Could not initialize payment.');
     }
   };
 
-  if (loading || !post || !user) {
+  // 3. Intercept Flutterwave's redirect back to /payment/verify
+  const handleNavigationChange = useCallback(async (navState: any) => {
+    const url: string = navState.url ?? '';
+    if (!url.includes('/payment/verify') && !url.includes('payment/verify')) return;
+
+    // Stop WebView from loading that page
+    webViewRef.current?.stopLoading();
+    setStage('verifying');
+
+    try {
+      // Extract Flutterwave numeric transaction_id from redirect URL
+      const urlObj = new URL(url.startsWith('http') ? url : `https://placeholder.com${url}`);
+      const flwTxId = urlObj.searchParams.get('transaction_id');
+      const txRef = urlObj.searchParams.get('tx_ref') ?? transactionId;
+      const status = urlObj.searchParams.get('status');
+
+      if (status === 'cancelled') {
+        setStage('summary');
+        Alert.alert('Cancelled', 'Payment was not completed.');
+        return;
+      }
+
+      const result = await api.post('/api/payment/verify', {
+        transactionReference: flwTxId ? parseInt(flwTxId) : null,
+        txRef,
+      });
+
+      if (result.success) {
+        router.replace({
+          pathname: '/checkout/success',
+          params: {
+            transactionId: result.transactionId ?? txRef,
+            itemTitle: item?.title ?? 'Item',
+            amount: String(item?.price ?? 0),
+          },
+        } as any);
+      } else {
+        throw new Error('Payment verification failed');
+      }
+    } catch (e: any) {
+      setStage('error');
+      setErrorMsg(e?.message ?? 'Payment verification failed. Please contact support.');
+    }
+  }, [transactionId, item]);
+
+  const commission = item ? Math.round(item.price * COMMISSION_RATE) : 0;
+  const thumbnail = item?.images?.[0];
+
+  // ── Loading ──────────────────────────────────────────────────
+  if (stage === 'loading') {
     return (
-      <SafeAreaView style={styles.centerContainer}>
+      <SafeAreaView style={styles.center}>
         <ActivityIndicator size="large" color={GREEN} />
       </SafeAreaView>
     );
   }
 
-  const missingKey = !FLW_KEY || FLW_KEY === 'FLWPUBK_TEST-PLACEHOLDER';
+  // ── Payment WebView ──────────────────────────────────────────
+  if (stage === 'paying' || stage === 'verifying') {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF' }}>
+        <View style={styles.webHeader}>
+          <TouchableOpacity onPress={() => setStage('summary')} style={styles.backBtn}>
+            <Ionicons name="close" size={24} color="#1C1C1C" />
+          </TouchableOpacity>
+          <Text style={styles.webHeaderTitle}>Secure Payment</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        {stage === 'verifying' ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={GREEN} />
+            <Text style={styles.verifyingText}>Verifying your payment…</Text>
+          </View>
+        ) : paymentLink ? (
+          <WebView
+            ref={webViewRef}
+            source={{ uri: paymentLink }}
+            onNavigationStateChange={handleNavigationChange}
+            startInLoadingState
+            renderLoading={() => (
+              <View style={styles.center}>
+                <ActivityIndicator size="large" color={GREEN} />
+              </View>
+            )}
+          />
+        ) : (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={GREEN} />
+            <Text style={{ marginTop: 12, color: '#9E9E9E' }}>Preparing payment…</Text>
+          </View>
+        )}
+      </SafeAreaView>
+    );
+  }
 
+  // ── Error ────────────────────────────────────────────────────
+  if (stage === 'error') {
+    return (
+      <SafeAreaView style={styles.center}>
+        <Ionicons name="warning-outline" size={48} color="#E53935" />
+        <Text style={styles.errorTitle}>Payment failed</Text>
+        <Text style={styles.errorMsg}>{errorMsg}</Text>
+        <TouchableOpacity style={styles.retryBtn} onPress={() => setStage('summary')}>
+          <Text style={styles.retryBtnText}>Go Back</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Order Summary ────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -158,104 +213,130 @@ export default function CheckoutScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Flutterwave WebView overlay */}
-      {showWebView && (
-        <View style={StyleSheet.absoluteFillObject}>
-          {webViewLoading && (
-            <View style={styles.webViewLoader}>
-              <ActivityIndicator size="large" color={GREEN} />
-              <Text style={styles.webViewLoaderText}>Loading secure payment...</Text>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {/* Item card */}
+        <View style={styles.itemCard}>
+          {thumbnail ? (
+            <Image source={{ uri: thumbnail }} style={styles.itemThumb} contentFit="cover" />
+          ) : (
+            <View style={[styles.itemThumb, styles.itemThumbPlaceholder]}>
+              <Ionicons name="image-outline" size={32} color="#9E9E9E" />
             </View>
           )}
-          <WebView
-            source={{ html: flutterwaveHtml }}
-            onMessage={handleWebViewMessage}
-            onLoadEnd={() => setWebViewLoading(false)}
-            javaScriptEnabled
-            domStorageEnabled
-            style={{ flex: 1 }}
-          />
-          <TouchableOpacity style={styles.cancelWebView} onPress={() => setShowWebView(false)}>
-            <Ionicons name="close" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
+          <View style={styles.itemInfo}>
+            <Text style={styles.itemTitle} numberOfLines={2}>{item?.title}</Text>
+            <Text style={styles.sellerName}>by {item?.seller?.name ?? 'Seller'}</Text>
+          </View>
         </View>
-      )}
 
-      <View style={styles.content}>
+        {/* Price breakdown */}
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Order Summary</Text>
+          <Text style={styles.sectionTitle}>Order Summary</Text>
           <View style={styles.divider} />
+
           <View style={styles.row}>
-            <Text style={styles.itemTitle} numberOfLines={2}>{post.title || 'Item'}</Text>
-            <Text style={styles.itemPrice}>{formatPrice(post.price || 0)}</Text>
+            <Text style={styles.rowLabel}>Item price</Text>
+            <Text style={styles.rowValue}>{formatPrice(item?.price ?? 0)}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.feeTitle}>Platform Fee</Text>
-            <Text style={styles.feePrice}>FREE</Text>
+            <Text style={styles.rowLabel}>Platform fee</Text>
+            <Text style={[styles.rowValue, { color: GREEN }]}>FREE</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.row}>
-            <Text style={styles.totalTitle}>Total</Text>
-            <Text style={styles.totalPrice}>{formatPrice(post.price || 0)}</Text>
+            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalValue}>{formatPrice(item?.price ?? 0)}</Text>
           </View>
         </View>
 
-        {missingKey ? (
-          <View style={styles.errorBox}>
-            <Ionicons name="warning-outline" size={24} color="#E53935" />
-            <Text style={styles.errorText}>
-              Flutterwave Public Key is missing.{'\n'}Add it to your .env file to enable payments.
+        {/* Escrow explanation */}
+        <View style={styles.escrowBanner}>
+          <Ionicons name="shield-checkmark" size={22} color={GREEN} />
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={styles.escrowTitle}>Protected by Yrdly Escrow</Text>
+            <Text style={styles.escrowBody}>
+              Your money is held securely until you confirm you've received the item. If anything goes wrong, we'll help resolve it.
             </Text>
           </View>
-        ) : (
-          <TouchableOpacity style={styles.payBtn} onPress={() => { setShowWebView(true); setWebViewLoading(true); }}>
-            <Ionicons name="lock-closed" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-            <Text style={styles.payBtnText}>Pay {formatPrice(post.price || 0)} securely</Text>
-          </TouchableOpacity>
-        )}
+        </View>
+      </ScrollView>
 
-        <Text style={styles.secureNote}>🔒 Payments powered by Flutterwave</Text>
+      {/* CTA */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.payBtn} onPress={handleInitializePayment} activeOpacity={0.85}>
+          <Ionicons name="lock-closed" size={18} color="#FFF" style={{ marginRight: 8 }} />
+          <Text style={styles.payBtnText}>Pay {formatPrice(item?.price ?? 0)} securely</Text>
+        </TouchableOpacity>
+        <Text style={styles.poweredBy}>🔒 Powered by Flutterwave Escrow</Text>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FBF9' },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#FAFAFA' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFF', padding: 24 },
+  scroll: { padding: 20, paddingBottom: 120 },
+
   header: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#F2F2F2', backgroundColor: '#FFFFFF',
+    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
+    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F2F2F2', backgroundColor: '#FFF',
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', flex: 1, textAlign: 'center' },
-  content: { padding: 20 },
+  headerTitle: { fontSize: 18, fontWeight: '800', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+
+  webHeader: {
+    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
+    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F0F0F0', backgroundColor: '#FFF',
+  },
+  webHeaderTitle: { fontSize: 16, fontWeight: '700', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+
+  itemCard: {
+    flexDirection: 'row', backgroundColor: '#FFF', borderRadius: 16,
+    padding: 16, marginBottom: 16, alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
+  },
+  itemThumb: { width: 72, height: 72, borderRadius: 12, marginRight: 14 },
+  itemThumbPlaceholder: { backgroundColor: '#F2F2F2', justifyContent: 'center', alignItems: 'center' },
+  itemInfo: { flex: 1 },
+  itemTitle: { fontSize: 16, fontWeight: '700', color: '#1C1C1C', marginBottom: 4 },
+  sellerName: { fontSize: 13, color: '#9E9E9E' },
+
   summaryCard: {
-    backgroundColor: '#FFFFFF', borderRadius: 12, padding: 20, marginBottom: 24,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    backgroundColor: '#FFF', borderRadius: 16, padding: 20, marginBottom: 16,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
   },
-  summaryTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', marginBottom: 16 },
-  divider: { height: 1, backgroundColor: '#F2F2F2', marginVertical: 16 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  itemTitle: { fontSize: 16, color: '#424242', flex: 1, marginRight: 12 },
-  itemPrice: { fontSize: 16, fontWeight: 'bold', color: '#1C1C1C' },
-  feeTitle: { fontSize: 14, color: '#9E9E9E', flex: 1 },
-  feePrice: { fontSize: 14, color: '#9E9E9E' },
-  totalTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C' },
-  totalPrice: { fontSize: 24, fontWeight: 'bold', color: GREEN },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1C1C1C', marginBottom: 16 },
+  divider: { height: 1, backgroundColor: '#F2F2F2', marginVertical: 14 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  rowLabel: { fontSize: 15, color: '#616161' },
+  rowValue: { fontSize: 15, fontWeight: '600', color: '#1C1C1C' },
+  totalLabel: { fontSize: 17, fontWeight: '800', color: '#1C1C1C' },
+  totalValue: { fontSize: 22, fontWeight: '800', color: GREEN },
+
+  escrowBanner: {
+    flexDirection: 'row', backgroundColor: '#E8F5E9', borderRadius: 16,
+    padding: 16, alignItems: 'flex-start',
+  },
+  escrowTitle: { fontSize: 14, fontWeight: '700', color: '#2E7D32', marginBottom: 4 },
+  escrowBody: { fontSize: 12, color: '#388E3C', lineHeight: 18 },
+
+  footer: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    padding: 20, backgroundColor: '#FAFAFA',
+    borderTopWidth: 1, borderTopColor: '#F2F2F2',
+  },
   payBtn: {
-    flexDirection: 'row', width: '100%', height: 56, borderRadius: 28,
-    backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center',
-    shadowColor: GREEN, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+    flexDirection: 'row', height: 56, borderRadius: 28, backgroundColor: GREEN,
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: GREEN, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 10, elevation: 4,
   },
-  payBtnText: { color: '#FFFFFF', fontSize: 17, fontWeight: 'bold' },
-  secureNote: { textAlign: 'center', marginTop: 16, color: '#9E9E9E', fontSize: 13 },
-  errorBox: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#FFEBEE', padding: 16, borderRadius: 10 },
-  errorText: { color: '#E53935', marginLeft: 12, flex: 1, lineHeight: 22 },
-  webViewLoader: { ...StyleSheet.absoluteFillObject, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', zIndex: 10 },
-  webViewLoaderText: { marginTop: 12, color: '#616161', fontSize: 15 },
-  cancelWebView: {
-    position: 'absolute', top: 50, right: 16, width: 36, height: 36,
-    borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 20,
-  },
+  payBtnText: { fontSize: 17, fontWeight: '800', color: '#FFF' },
+  poweredBy: { textAlign: 'center', marginTop: 10, color: '#9E9E9E', fontSize: 12 },
+
+  verifyingText: { marginTop: 16, color: '#616161', fontSize: 15 },
+  errorTitle: { fontSize: 22, fontWeight: '800', color: '#1C1C1C', marginTop: 16, marginBottom: 8 },
+  errorMsg: { fontSize: 14, color: '#616161', textAlign: 'center', lineHeight: 20, marginBottom: 24, maxWidth: 280 },
+  retryBtn: { paddingHorizontal: 32, paddingVertical: 14, backgroundColor: GREEN, borderRadius: 24 },
+  retryBtnText: { color: '#FFF', fontWeight: '700', fontSize: 15 },
 });

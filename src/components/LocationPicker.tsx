@@ -1,0 +1,329 @@
+import React, { useState, useCallback } from 'react';
+import {
+  View, Text, StyleSheet, TouchableOpacity,
+  ActivityIndicator, ScrollView, Modal, FlatList,
+  TextInput, SafeAreaView,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import {
+  detectLocation,
+  getAllStates,
+  getLgasForState,
+  OUTSIDE_NIGERIA,
+  PERMISSION_DENIED,
+  ResolvedLocation,
+} from '../lib/geocoding-service';
+
+const GREEN = '#388E3C';
+
+export interface LocationValue {
+  state: string;
+  lga: string;
+  displayAddress?: string;
+  lat?: number;
+  lng?: number;
+}
+
+interface LocationPickerProps {
+  value: LocationValue;
+  onChange: (loc: LocationValue) => void;
+}
+
+type PickerMode = 'state' | 'lga';
+
+export function LocationPicker({ value, onChange }: LocationPickerProps) {
+  const [detecting, setDetecting] = useState(false);
+  const [detectionResult, setDetectionResult] = useState<
+    'success' | 'outside' | 'denied' | null
+  >(null);
+
+  // Modal state
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [pickerMode, setPickerMode] = useState<PickerMode>('state');
+  const [search, setSearch] = useState('');
+
+  const allStates = getAllStates();
+  const lgas = value.state ? getLgasForState(value.state) : [];
+
+  const handleAutoDetect = useCallback(async () => {
+    setDetecting(true);
+    setDetectionResult(null);
+    try {
+      const result = await detectLocation();
+      if ('status' in result) {
+        setDetectionResult(result.status === PERMISSION_DENIED ? 'denied' : 'outside');
+      } else {
+        const loc = result as ResolvedLocation;
+        onChange({
+          state: loc.state,
+          lga: loc.lga,
+          displayAddress: loc.displayAddress,
+          lat: loc.lat,
+          lng: loc.lng,
+        });
+        setDetectionResult('success');
+      }
+    } catch {
+      setDetectionResult('outside');
+    } finally {
+      setDetecting(false);
+    }
+  }, [onChange]);
+
+  const openPicker = (mode: PickerMode) => {
+    setPickerMode(mode);
+    setSearch('');
+    setPickerVisible(true);
+  };
+
+  const handleSelectState = (state: string) => {
+    onChange({ state, lga: '' });
+    setPickerVisible(false);
+  };
+
+  const handleSelectLga = (lga: string) => {
+    onChange({ ...value, lga });
+    setPickerVisible(false);
+  };
+
+  const filteredItems =
+    pickerMode === 'state'
+      ? allStates.filter((s) => s.toLowerCase().includes(search.toLowerCase()))
+      : lgas.filter((l) => l.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <View>
+      {/* GPS Auto-detect button */}
+      <TouchableOpacity
+        style={[styles.gpsBtn, detecting && styles.gpsBtnLoading]}
+        onPress={handleAutoDetect}
+        disabled={detecting}
+        activeOpacity={0.8}
+      >
+        {detecting ? (
+          <>
+            <ActivityIndicator size="small" color={GREEN} style={{ marginRight: 8 }} />
+            <Text style={styles.gpsBtnText}>Detecting your location…</Text>
+          </>
+        ) : (
+          <>
+            <Ionicons name="location" size={18} color={GREEN} style={{ marginRight: 8 }} />
+            <Text style={styles.gpsBtnText}>Auto-detect my location</Text>
+          </>
+        )}
+      </TouchableOpacity>
+
+      {/* Detection result feedback */}
+      {detectionResult === 'success' && (
+        <View style={[styles.feedback, styles.feedbackSuccess]}>
+          <Ionicons name="checkmark-circle" size={16} color="#2E7D32" />
+          <Text style={styles.feedbackTextSuccess}>Location detected successfully!</Text>
+        </View>
+      )}
+      {detectionResult === 'outside' && (
+        <View style={[styles.feedback, styles.feedbackWarn]}>
+          <Ionicons name="warning-outline" size={16} color="#E65100" />
+          <Text style={styles.feedbackTextWarn}>
+            Couldn't detect a Nigerian location. Please select manually below.
+          </Text>
+        </View>
+      )}
+      {detectionResult === 'denied' && (
+        <View style={[styles.feedback, styles.feedbackWarn]}>
+          <Ionicons name="lock-closed-outline" size={16} color="#E65100" />
+          <Text style={styles.feedbackTextWarn}>
+            Location permission denied. Please select manually below.
+          </Text>
+        </View>
+      )}
+
+      {/* Divider */}
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>or select manually</Text>
+        <View style={styles.dividerLine} />
+      </View>
+
+      {/* State selector */}
+      <View style={styles.fieldGroup}>
+        <Text style={styles.label}>State *</Text>
+        <TouchableOpacity
+          style={[styles.selector, value.state ? styles.selectorFilled : null]}
+          onPress={() => openPicker('state')}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.selectorText, !value.state && styles.selectorPlaceholder]}>
+            {value.state || 'Select your state'}
+          </Text>
+          <Ionicons name="chevron-down" size={18} color={value.state ? GREEN : '#9E9E9E'} />
+        </TouchableOpacity>
+      </View>
+
+      {/* LGA selector */}
+      <View style={styles.fieldGroup}>
+        <Text style={styles.label}>Local Government Area *</Text>
+        <TouchableOpacity
+          style={[
+            styles.selector,
+            value.lga ? styles.selectorFilled : null,
+            !value.state && styles.selectorDisabled,
+          ]}
+          onPress={() => value.state && openPicker('lga')}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.selectorText, !value.lga && styles.selectorPlaceholder]}>
+            {value.lga || (!value.state ? 'Select state first' : 'Select your LGA')}
+          </Text>
+          <Ionicons name="chevron-down" size={18} color={value.lga ? GREEN : '#9E9E9E'} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Picker Modal */}
+      <Modal visible={pickerVisible} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={styles.modal}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {pickerMode === 'state' ? 'Select State' : 'Select LGA'}
+            </Text>
+            <TouchableOpacity onPress={() => setPickerVisible(false)} style={styles.modalClose}>
+              <Ionicons name="close" size={24} color="#1C1C1C" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Search */}
+          <View style={styles.searchBox}>
+            <Ionicons name="search" size={18} color="#9E9E9E" style={{ marginRight: 8 }} />
+            <TextInput
+              style={styles.searchInput}
+              value={search}
+              onChangeText={setSearch}
+              placeholder={pickerMode === 'state' ? 'Search states…' : 'Search LGAs…'}
+              placeholderTextColor="#BDBDBD"
+              autoFocus
+            />
+          </View>
+
+          <FlatList
+            data={filteredItems}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => {
+              const isSelected =
+                pickerMode === 'state' ? item === value.state : item === value.lga;
+              return (
+                <TouchableOpacity
+                  style={[styles.listItem, isSelected && styles.listItemSelected]}
+                  onPress={() =>
+                    pickerMode === 'state' ? handleSelectState(item) : handleSelectLga(item)
+                  }
+                >
+                  <Text style={[styles.listItemText, isSelected && styles.listItemTextSelected]}>
+                    {item}
+                  </Text>
+                  {isSelected && <Ionicons name="checkmark" size={18} color={GREEN} />}
+                </TouchableOpacity>
+              );
+            }}
+            ItemSeparatorComponent={() => <View style={styles.itemSep} />}
+            keyboardShouldPersistTaps="handled"
+          />
+        </SafeAreaView>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  gpsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: GREEN,
+    paddingVertical: 14,
+    marginBottom: 12,
+    backgroundColor: '#E8F5E9',
+  },
+  gpsBtnLoading: { opacity: 0.7 },
+  gpsBtnText: { fontSize: 15, fontWeight: '700', color: GREEN },
+
+  feedback: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  feedbackSuccess: { backgroundColor: '#E8F5E9' },
+  feedbackWarn: { backgroundColor: '#FFF3E0' },
+  feedbackTextSuccess: { fontSize: 13, color: '#2E7D32', flex: 1, lineHeight: 18 },
+  feedbackTextWarn: { fontSize: 13, color: '#E65100', flex: 1, lineHeight: 18 },
+
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 16 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: '#E0E0E0' },
+  dividerText: { fontSize: 12, color: '#9E9E9E', marginHorizontal: 12, fontWeight: '600' },
+
+  fieldGroup: { marginBottom: 16 },
+  label: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#424242',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  selector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  selectorFilled: { borderColor: GREEN },
+  selectorDisabled: { opacity: 0.5 },
+  selectorText: { fontSize: 16, color: '#1C1C1C', flex: 1 },
+  selectorPlaceholder: { color: '#BDBDBD' },
+
+  modal: { flex: 1, backgroundColor: '#FAFAFA' },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  modalTitle: { fontSize: 18, fontWeight: '800', color: '#1C1C1C' },
+  modalClose: { padding: 4 },
+
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    margin: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  searchInput: { flex: 1, fontSize: 15, color: '#1C1C1C' },
+
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  listItemSelected: { backgroundColor: '#E8F5E9' },
+  listItemText: { fontSize: 15, color: '#1C1C1C' },
+  listItemTextSelected: { color: GREEN, fontWeight: '700' },
+  itemSep: { height: 1, backgroundColor: '#F5F5F5', marginLeft: 20 },
+});

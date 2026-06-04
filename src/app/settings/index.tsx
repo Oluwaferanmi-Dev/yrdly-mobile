@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, SafeAreaView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, SafeAreaView, Alert, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
-import { useAuth } from '../hooks/use-supabase-auth';
-import { AuthService } from '../lib/auth-service';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../../hooks/use-supabase-auth';
+import { AuthService } from '../../lib/auth-service';
+import { supabase } from '../../lib/supabase';
+import { useAppTheme, ThemePreference } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, profile } = useAuth();
+  const { themePreference, setThemePreference } = useAppTheme();
 
-  const [name, setName] = useState(profile?.full_name || user?.user_metadata?.name || '');
+  const [name, setName] = useState(profile?.name || user?.user_metadata?.name || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || user?.user_metadata?.avatar_url || '');
   const [saving, setSaving] = useState(false);
@@ -22,7 +24,7 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     if (profile) {
-      setName(profile.full_name || profile.name || '');
+      setName(profile.name || '');
       setBio(profile.bio || '');
       setAvatarUrl(profile.avatar_url || '');
     }
@@ -108,6 +110,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+    <ScrollView showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
@@ -162,13 +165,75 @@ export default function SettingsScreen() {
             numberOfLines={4}
           />
         </View>
+
+        {/* Commerce & Account */}
+        <Text style={styles.sectionHeader}>Commerce & Account</Text>
+        {[
+          { icon: 'receipt-outline',   label: 'Transactions',       route: '/transactions' },
+          { icon: 'wallet-outline',    label: 'Payouts',            route: '/settings/payouts' },
+          { icon: 'business-outline',  label: 'Bank Account',       route: '/settings/payout-settings' },
+          { icon: 'location-outline',  label: 'Location',           route: '/settings/location' },
+        ].map((item) => (
+          <TouchableOpacity
+            key={item.route}
+            style={styles.navRow}
+            onPress={() => router.push(item.route as any)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.navIconWrap}>
+              <Ionicons name={item.icon as any} size={20} color={GREEN} />
+            </View>
+            <Text style={styles.navLabel}>{item.label}</Text>
+            <Ionicons name="chevron-forward" size={18} color="#BDBDBD" />
+          </TouchableOpacity>
+        ))}
+
+        {/* Preferences */}
+        <Text style={styles.sectionHeader}>Preferences</Text>
+        <TouchableOpacity
+          style={styles.navRow}
+          onPress={() => router.push('/settings/notifications' as any)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.navIconWrap}>
+            <Ionicons name="notifications-outline" size={20} color={GREEN} />
+          </View>
+          <Text style={styles.navLabel}>Notifications</Text>
+          <Ionicons name="chevron-forward" size={18} color="#BDBDBD" />
+        </TouchableOpacity>
+
+        {/* Theme Selector */}
+        <View style={styles.themeSection}>
+          <Text style={styles.themeLabel}>Appearance</Text>
+          <View style={styles.themeRow}>
+            {(['light', 'dark', 'system'] as ThemePreference[]).map(pref => {
+              const icons = { light: 'sunny-outline', dark: 'moon-outline', system: 'phone-portrait-outline' };
+              const labels = { light: 'Light', dark: 'Dark', system: 'System' };
+              const active = themePreference === pref;
+              return (
+                <TouchableOpacity
+                  key={pref}
+                  style={[styles.themeOption, active && styles.themeOptionActive]}
+                  onPress={() => setThemePreference(pref)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name={icons[pref] as any} size={18} color={active ? GREEN : '#9E9E9E'} />
+                  <Text style={[styles.themeOptionText, active && styles.themeOptionTextActive]}>
+                    {labels[pref]}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
       </View>
+    </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#FAFAFA' },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
     borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
@@ -199,4 +264,35 @@ const styles = StyleSheet.create({
     borderRadius: 8, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: '#1C1C1C'
   },
   textArea: { height: 100, textAlignVertical: 'top' },
+  sectionHeader: {
+    fontSize: 12, fontWeight: '800', color: '#9E9E9E',
+    textTransform: 'uppercase', letterSpacing: 0.8,
+    marginBottom: 12, marginTop: 8,
+  },
+  navRow: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF',
+    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 10,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
+  },
+  navIconWrap: {
+    width: 36, height: 36, borderRadius: 10, backgroundColor: '#E8F5E9',
+    justifyContent: 'center', alignItems: 'center', marginRight: 14,
+  },
+  navLabel: { flex: 1, fontSize: 15, fontWeight: '600', color: '#1C1C1C' },
+
+  // Theme selector
+  themeSection: {
+    backgroundColor: '#FFF', borderRadius: 12, padding: 16, marginBottom: 10,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
+  },
+  themeLabel: { fontSize: 11, fontWeight: '800', color: '#9E9E9E', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12 },
+  themeRow: { flexDirection: 'row', gap: 10 },
+  themeOption: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, borderColor: '#E0E0E0',
+    backgroundColor: '#FAFAFA',
+  },
+  themeOptionActive: { borderColor: GREEN, backgroundColor: '#E8F5E9' },
+  themeOptionText: { fontSize: 13, fontWeight: '600', color: '#9E9E9E' },
+  themeOptionTextActive: { color: GREEN },
 });

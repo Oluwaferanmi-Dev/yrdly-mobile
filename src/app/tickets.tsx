@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, SafeAreaView, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
+import {
+  View, Text, StyleSheet, FlatList, SafeAreaView, ActivityIndicator,
+  TouchableOpacity, RefreshControl, Modal,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import QRCode from 'react-native-qrcode-svg';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { Post } from '../types';
@@ -14,6 +18,7 @@ interface Ticket {
   event_id: string;
   status: string;
   created_at: string;
+  token?: string;
   event?: Post;
 }
 
@@ -24,6 +29,7 @@ export default function TicketsScreen() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
   const fetchTickets = useCallback(async () => {
     if (!user) return;
@@ -49,30 +55,25 @@ export default function TicketsScreen() {
     }
   }, [user]);
 
-  useEffect(() => {
-    fetchTickets();
-  }, [fetchTickets]);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchTickets();
-  }, [fetchTickets]);
+  useEffect(() => { fetchTickets(); }, [fetchTickets]);
+  const onRefresh = useCallback(() => { setRefreshing(true); fetchTickets(); }, [fetchTickets]);
 
   const renderTicket = ({ item }: { item: Ticket }) => {
     const event = item.event;
     const imageUrl = event?.image_urls?.[0] || event?.image_url;
     const formattedDate = event?.event_date
       ? new Date(event.event_date).toLocaleDateString('en-US', {
-          weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+          weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
         })
       : 'Date TBD';
 
     return (
       <TouchableOpacity
         style={styles.ticketCard}
-        onPress={() => event && router.push(`/events/${event.id}`)}
+        onPress={() => setSelectedTicket(item)}
+        activeOpacity={0.8}
       >
-        {/* Left color bar */}
+        {/* Left accent bar */}
         <View style={styles.ticketAccent} />
 
         {/* Image */}
@@ -95,10 +96,12 @@ export default function TicketsScreen() {
             <Ionicons name="calendar-outline" size={13} color="#9E9E9E" />
             <Text style={styles.ticketMetaText}>{formattedDate}</Text>
           </View>
-          {!!event?.location && (
+          {!!((event as any)?.location || (event as any)?.metadata?.location) && (
             <View style={styles.ticketMeta}>
-              <Ionicons name="location-outline" size={13} color="#9E9E9E" />
-              <Text style={styles.ticketMetaText} numberOfLines={1}>{event.location}</Text>
+              <Ionicons name="location-outline" size={14} color="#616161" style={{ marginTop: 2 }} />
+              <Text style={styles.eventLocation} numberOfLines={1}>
+                {(event as any)?.metadata?.location || (event as any)?.location || 'TBA'}
+              </Text>
             </View>
           )}
           <View style={[styles.statusBadge, item.status === 'active' ? styles.activeBadge : styles.usedBadge]}>
@@ -113,11 +116,10 @@ export default function TicketsScreen() {
           <View style={styles.tearCircleBottom} />
         </View>
 
-        {/* QR placeholder */}
+        {/* QR hint */}
         <View style={styles.qrSection}>
-          <View style={styles.qrPlaceholder}>
-            <Ionicons name="qr-code" size={48} color={GREEN} />
-          </View>
+          <Ionicons name="qr-code" size={40} color={GREEN} />
+          <Text style={styles.tapText}>Tap to view</Text>
         </View>
       </TouchableOpacity>
     );
@@ -156,6 +158,78 @@ export default function TicketsScreen() {
           }
         />
       )}
+
+      {/* QR Ticket Modal */}
+      <Modal
+        visible={!!selectedTicket}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setSelectedTicket(null)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setSelectedTicket(null)} style={styles.modalClose}>
+              <Ionicons name="close" size={26} color="#1C1C1C" />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Your Ticket</Text>
+            <View style={{ width: 40 }} />
+          </View>
+
+          {selectedTicket && (
+            <View style={styles.modalContent}>
+              {/* Event card */}
+              <View style={styles.modalEventCard}>
+                {(selectedTicket.event?.image_urls?.[0] || selectedTicket.event?.image_url) && (
+                  <Image
+                    source={{ uri: selectedTicket.event?.image_urls?.[0] || selectedTicket.event?.image_url }}
+                    style={styles.modalEventImage}
+                    contentFit="cover"
+                  />
+                )}
+                <View style={styles.modalEventInfo}>
+                  <Text style={styles.modalEventTitle}>{selectedTicket.event?.title || 'Event'}</Text>
+                  <Text style={styles.modalEventDate}>
+                    {selectedTicket.event?.event_date
+                      ? new Date(selectedTicket.event.event_date).toLocaleDateString('en-US', {
+                          weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+                        })
+                      : 'Date TBD'
+                    }
+                  </Text>
+                </View>
+              </View>
+
+              {/* QR Code */}
+              <View style={styles.qrContainer}>
+                <QRCode
+                  value={selectedTicket.token || selectedTicket.id}
+                  size={220}
+                  color="#1C1C1C"
+                  backgroundColor="#FFFFFF"
+                />
+              </View>
+
+              {/* Ticket token */}
+              <Text style={styles.tokenLabel}>TICKET ID</Text>
+              <Text style={styles.tokenValue}>{(selectedTicket.token || selectedTicket.id).slice(0, 16).toUpperCase()}</Text>
+
+              {/* Status */}
+              <View style={[
+                styles.modalStatusBadge,
+                selectedTicket.status === 'active' ? styles.activeBadge : styles.usedBadge
+              ]}>
+                <Text style={styles.modalStatusText}>
+                  {selectedTicket.status === 'active' ? '✓ Valid Ticket' : selectedTicket.status.toUpperCase()}
+                </Text>
+              </View>
+
+              <Text style={styles.scanInstructions}>
+                Present this QR code to the event organizer for check-in
+              </Text>
+            </View>
+          )}
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -165,12 +239,11 @@ const styles = StyleSheet.create({
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     paddingHorizontal: 20, paddingVertical: 16,
-    backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F2F2F2'
+    backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
   },
   headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#1C1C1C' },
   listContent: { padding: 16, paddingBottom: 100 },
 
-  // Ticket Card
   ticketCard: {
     flexDirection: 'row', backgroundColor: '#FFFFFF', borderRadius: 12, marginBottom: 16,
     overflow: 'hidden',
@@ -184,28 +257,54 @@ const styles = StyleSheet.create({
   ticketTitle: { fontSize: 15, fontWeight: 'bold', color: '#1C1C1C', marginBottom: 6 },
   ticketMeta: { flexDirection: 'row', alignItems: 'center', marginBottom: 3 },
   ticketMetaText: { fontSize: 12, color: '#9E9E9E', marginLeft: 4 },
+  eventLocation: { fontSize: 12, color: '#616161', marginLeft: 4, flex: 1 },
   statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginTop: 6 },
   activeBadge: { backgroundColor: 'rgba(56,142,60,0.12)' },
   usedBadge: { backgroundColor: '#F2F2F2' },
   statusBadgeText: { fontSize: 10, fontWeight: 'bold', color: GREEN },
 
-  // Tear line
   tearLine: { width: 20, alignItems: 'center', justifyContent: 'center' },
   tearCircleTop: { width: 14, height: 14, borderRadius: 7, backgroundColor: '#F4F6F4', marginBottom: 4 },
   tearCircleBottom: { width: 14, height: 14, borderRadius: 7, backgroundColor: '#F4F6F4', marginTop: 4 },
   tearDashes: { flex: 1, borderLeftWidth: 1.5, borderLeftColor: '#E0E0E0', borderStyle: 'dashed' },
 
-  // QR Section
-  qrSection: { padding: 12, justifyContent: 'center', alignItems: 'center', width: 80 },
-  qrPlaceholder: { width: 64, height: 64, justifyContent: 'center', alignItems: 'center' },
+  qrSection: { width: 80, justifyContent: 'center', alignItems: 'center', gap: 4 },
+  tapText: { fontSize: 9, color: '#9E9E9E', fontWeight: '600' },
 
-  // Empty State
   emptyContainer: { flex: 1, paddingTop: 80, alignItems: 'center', paddingHorizontal: 40 },
   emptyTitle: { fontSize: 22, fontWeight: 'bold', color: '#1C1C1C', marginTop: 20, marginBottom: 8 },
   emptySubtitle: { fontSize: 16, color: '#9E9E9E', textAlign: 'center', lineHeight: 22 },
   browseButton: {
-    marginTop: 28, paddingVertical: 14, paddingHorizontal: 32,
-    backgroundColor: GREEN, borderRadius: 24
+    marginTop: 28, paddingVertical: 14, paddingHorizontal: 32, backgroundColor: GREEN, borderRadius: 24,
   },
   browseButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
+
+  // Modal
+  modalContainer: { flex: 1, backgroundColor: '#FFFFFF' },
+  modalHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
+  },
+  modalClose: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
+  modalTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold', color: '#1C1C1C' },
+  modalContent: { flex: 1, alignItems: 'center', padding: 24 },
+  modalEventCard: {
+    width: '100%', flexDirection: 'row', backgroundColor: '#F4F6F4',
+    borderRadius: 12, overflow: 'hidden', marginBottom: 32, gap: 12,
+  },
+  modalEventImage: { width: 80, height: 80 },
+  modalEventInfo: { flex: 1, padding: 12, justifyContent: 'center' },
+  modalEventTitle: { fontSize: 15, fontWeight: 'bold', color: '#1C1C1C', marginBottom: 4 },
+  modalEventDate: { fontSize: 12, color: '#616161' },
+  qrContainer: {
+    padding: 24, backgroundColor: '#FFFFFF',
+    borderRadius: 20, marginBottom: 20,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4,
+  },
+  tokenLabel: { fontSize: 11, fontWeight: '800', color: '#9E9E9E', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 },
+  tokenValue: { fontSize: 14, fontWeight: '700', color: '#1C1C1C', letterSpacing: 2, marginBottom: 20 },
+  modalStatusBadge: { paddingHorizontal: 20, paddingVertical: 8, borderRadius: 20, marginBottom: 16 },
+  modalStatusText: { fontSize: 14, fontWeight: 'bold', color: GREEN },
+  scanInstructions: { fontSize: 13, color: '#9E9E9E', textAlign: 'center', paddingHorizontal: 32 },
 });

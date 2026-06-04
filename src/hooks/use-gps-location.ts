@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import * as Location from "expo-location";
-import { reverseGeocode, ResolvedLocation, OUTSIDE_NIGERIA } from "@/lib/geocoding-service";
+import { detectLocation as detectLocationService, ResolvedLocation, OUTSIDE_NIGERIA } from "@/lib/geocoding-service";
 
 // ── Types ───────────────────────────────────────────────────────
 
@@ -64,8 +64,8 @@ export function useGpsLocation() {
 
       setState((prev) => ({ ...prev, status: "geocoding" }));
 
-      const resolved = await reverseGeocode(latitude, longitude);
-
+      const resolved = await detectLocationService();
+      
       if ("status" in resolved && resolved.status === OUTSIDE_NIGERIA) {
         setState({
           status: OUTSIDE_NIGERIA,

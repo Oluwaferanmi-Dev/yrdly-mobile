@@ -122,7 +122,7 @@ export default function CreateTab() {
             setText('');
             setPrice('');
             setImageUri(null);
-            router.push('/(tabs)/');
+            router.push('/');
           },
         },
       ]);

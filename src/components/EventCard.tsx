@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { GlassCard } from './GlassCard';
 
 const GREEN = '#388E3C';
 
@@ -42,7 +43,8 @@ export function EventCard({ event, onPress }: EventCardProps) {
   };
 
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.card}>
+    <GlassCard style={styles.card} borderRadius={16} intensity={Platform.OS === 'ios' ? 50 : undefined} tint="systemChromeMaterial">
+      <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
       {/* Header Image */}
       {imageUrl ? (
         <View style={styles.imageContainer}>
@@ -87,23 +89,16 @@ export function EventCard({ event, onPress }: EventCardProps) {
           </TouchableOpacity>
         </View>
       </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </GlassCard>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     marginHorizontal: 16,
     marginVertical: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
     overflow: 'hidden',
   },
   imageContainer: {

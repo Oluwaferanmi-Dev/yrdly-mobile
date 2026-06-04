@@ -1,33 +1,43 @@
 import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Platform, StyleSheet } from 'react-native';
+import { BlurView } from 'expo-blur';
+
+function GlassTabBarBackground() {
+  if (Platform.OS === 'ios') {
+    return (
+      <BlurView
+        intensity={80}
+        tint="systemChromeMaterial"
+        style={StyleSheet.absoluteFill}
+      />
+    );
+  }
+  return null;
+}
 
 export default function TabLayout() {
   const router = useRouter();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: true,
-        tabBarActiveTintColor: '#388E3C', // Yrdly Green
-        tabBarInactiveTintColor: '#616161', // Muted text
-        tabBarStyle: {
-          borderTopWidth: 1,
-          borderTopColor: '#E0E0E0',
-          backgroundColor: '#FFFFFF',
-          elevation: 0,
-          shadowOpacity: 0,
-          height: 60,
-          paddingBottom: 10,
-        },
+        // Solid header — no transparent overlay so content starts below it
         headerStyle: {
-          backgroundColor: '#FFFFFF',
-          borderBottomWidth: 1,
-          borderBottomColor: '#E0E0E0',
-          height: 100, // accommodate safe area
+          backgroundColor: Platform.OS === 'ios' ? 'rgba(255,255,255,0.92)' : '#FFFFFF',
+          borderBottomWidth: 0.5,
+          borderBottomColor: 'rgba(0,0,0,0.1)',
+          // iOS shadow-based border instead of a hard line
+          elevation: 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 0.5 },
+          shadowOpacity: 0.1,
+          shadowRadius: 0,
         },
         headerTitleStyle: {
           fontSize: 20,
-          fontWeight: 'bold',
+          fontWeight: '700',
           color: '#1C1C1C',
         },
         headerTintColor: '#1C1C1C',
@@ -41,6 +51,21 @@ export default function TabLayout() {
             </TouchableOpacity>
           </View>
         ),
+        // Glass tab bar using tabBarBackground (preserves layout space, no overlap)
+        tabBarBackground: () => <GlassTabBarBackground />,
+        tabBarStyle: {
+          borderTopWidth: 0.5,
+          borderTopColor: 'rgba(0,0,0,0.1)',
+          backgroundColor: Platform.OS === 'ios'
+            ? 'transparent'   // BlurView fills it
+            : 'rgba(255,255,255,0.96)',
+          elevation: 8,
+        },
+        tabBarActiveTintColor: '#388E3C',
+        tabBarInactiveTintColor: Platform.OS === 'ios'
+          ? 'rgba(60,60,67,0.45)'
+          : '#9E9E9E',
+        tabBarShowLabel: false,  // icon-only pill look
       }}
     >
       <Tabs.Screen
@@ -68,16 +93,8 @@ export default function TabLayout() {
         options={{
           title: 'Create',
           headerTitle: 'Create Post',
-          tabBarIcon: ({ color, size }) => (
-            <View style={{ 
-              backgroundColor: '#388E3C', 
-              width: 44, 
-              height: 44, 
-              borderRadius: 22, 
-              justifyContent: 'center', 
-              alignItems: 'center',
-              marginBottom: 4
-            }}>
+          tabBarIcon: ({ color, focused }) => (
+            <View style={[styles.createButton, focused && styles.createButtonActive]}>
               <Ionicons name="add" size={28} color="#FFF" />
             </View>
           ),
@@ -106,3 +123,22 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  createButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#388E3C',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#388E3C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  createButtonActive: {
+    backgroundColor: '#2E7D32',
+  },
+});

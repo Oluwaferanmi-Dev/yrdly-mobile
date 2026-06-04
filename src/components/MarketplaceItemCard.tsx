@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { GlassCard } from './GlassCard';
 
 const { width } = Dimensions.get('window');
 // Calculate card width for 2 columns with padding
@@ -14,7 +15,7 @@ const GREEN = '#388E3C';
 interface MarketplaceItemCardProps {
   item: Post;
   onPress?: () => void;
-  onMessageSeller?: () => void;
+  onMessageSeller?: (item: Post) => void;
 }
 
 export function MarketplaceItemCard({ item, onPress, onMessageSeller }: MarketplaceItemCardProps) {
@@ -25,7 +26,8 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
   const imageUrl = item.image_urls?.[0] || item.image_url;
 
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.card}>
+    <GlassCard style={styles.card} borderRadius={12} intensity={Platform.OS === 'ios' ? 50 : undefined} tint="systemChromeMaterial">
+      <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
       {/* Image Container */}
       <View style={styles.imageContainer}>
         {imageUrl ? (
@@ -59,7 +61,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
                   {item.price === 0 ? 'Claim Free' : 'Buy Now'}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.messageButton} onPress={onMessageSeller}>
+              <TouchableOpacity style={styles.messageButton} onPress={() => onMessageSeller?.(item)}>
                 <Ionicons name="chatbubble-outline" size={16} color={GREEN} />
               </TouchableOpacity>
             </>
@@ -84,23 +86,16 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </GlassCard>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     width: cardWidth,
-    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
     overflow: 'hidden',
   },
   imageContainer: {

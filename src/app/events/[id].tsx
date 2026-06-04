@@ -60,7 +60,7 @@ export default function EventDetailScreen() {
   }
 
   const imageUrls = event.image_urls?.length ? event.image_urls : event.image_url ? [event.image_url] : [];
-  const isOwner = user?.id === event.user_id;
+  const isOwner = user?.id === event.user_id || user?.id === (event as any).organizer_id;
 
   const formattedDate = event.event_date 
     ? new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
@@ -107,12 +107,12 @@ export default function EventDetailScreen() {
               <Ionicons name="time" size={20} color={GREEN} />
               <Text style={styles.dateTimeText}>{formattedTime}</Text>
             </View>
-            {!!event.location && (
-              <View style={styles.dateTimeRow}>
-                <Ionicons name="location" size={20} color={GREEN} />
-                <Text style={styles.dateTimeText}>{event.location}</Text>
-              </View>
-            )}
+            {!!((event as any)?.location) && (
+            <View style={styles.dateTimeRow}>
+              <Ionicons name="location" size={20} color={GREEN} />
+              <Text style={styles.dateTimeText}>{(event as any).location}</Text>
+            </View>
+          )}
           </View>
 
           <View style={styles.ticketBox}>
@@ -148,15 +148,18 @@ export default function EventDetailScreen() {
       {/* Footer Actions */}
       <View style={styles.footer}>
         {isOwner ? (
-          <TouchableOpacity style={[styles.actionButton, styles.editButton]}>
-            <Text style={styles.editButtonText}>Edit Event</Text>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.manageButton]}
+            onPress={() => router.push(`/events/${event.id}/manage` as any)}
+          >
+            <Ionicons name="settings-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Text style={styles.manageButtonText}>Manage Event</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.buyButton}
             onPress={() => {
               if (event.price === 0 || !event.price) {
-                // Free RSVP logic could go here
                 Alert.alert('RSVP', 'You have successfully RSVPd to this free event!');
               } else {
                 router.push({ pathname: '/checkout/[id]', params: { id: event.id, type: 'event' } });
@@ -209,7 +212,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row', padding: 16, borderTopWidth: 1, borderTopColor: '#F2F2F2',
     backgroundColor: '#FFFFFF', paddingBottom: 30,
   },
-  actionButton: { flex: 1, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
+  actionButton: { flex: 1, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' },
+  manageButton: { backgroundColor: GREEN },
+  manageButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
   editButton: { backgroundColor: '#F2F2F2' },
   editButtonText: { color: '#1C1C1C', fontSize: 16, fontWeight: 'bold' },
   buyButton: { flex: 1, height: 50, borderRadius: 25, backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center' },

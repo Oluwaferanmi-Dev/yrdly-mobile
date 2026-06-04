@@ -57,11 +57,11 @@ export default function ProfileTab() {
             />
           ) : (
             <Text style={styles.avatarText}>
-              {profile?.full_name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}
+              {profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}
             </Text>
           )}
         </View>
-        <Text style={styles.name}>{profile?.full_name || user?.user_metadata?.name || 'User'}</Text>
+        <Text style={styles.name}>{profile?.name || user?.user_metadata?.name || 'No Name'}</Text>
         <Text style={styles.email}>{user?.email}</Text>
 
         <View style={styles.actionRow}>
