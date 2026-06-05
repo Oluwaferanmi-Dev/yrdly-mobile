@@ -8,6 +8,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { AuthService } from '../../lib/auth-service';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme, ThemePreference } from '../../context/ThemeContext';
+import { StorageService } from '../../lib/storage-service';
 
 const GREEN = '#388E3C';
 
@@ -38,7 +39,7 @@ export default function SettingsScreen() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.6,
@@ -55,21 +56,16 @@ export default function SettingsScreen() {
     try {
       const ext = localUri.split('.').pop()?.split('?')[0] || 'jpeg';
       const fileName = `${user.id}_${Date.now()}.${ext}`;
-      const filePath = `avatars/${fileName}`;
+      const file = {
+        uri: localUri,
+        name: fileName,
+        type: `image/${ext}`
+      };
 
-      // Fetch the local file as a blob — no extra package needed
-      const response = await fetch(localUri);
-      const blob = await response.blob();
-
-      const { error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(filePath, blob, { contentType: `image/${ext}`, upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage.from('images').getPublicUrl(filePath);
-      if (data.publicUrl) {
-        setAvatarUrl(data.publicUrl);
+      const { url, error } = await StorageService.uploadUserAvatar(user.id, file);
+      if (error) throw error;
+      if (url) {
+        setAvatarUrl(url);
       }
     } catch (e) {
       console.error(e);
