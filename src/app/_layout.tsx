@@ -19,7 +19,6 @@ function RootNavigationGuard() {
 
     const inAuth = segments[0] === '(auth)';
     const inOnboarding = segments[0] === '(onboarding)';
-    const inTabs = segments[0] === '(tabs)';
 
     if (!user) {
       // Not signed in → always go to login
@@ -27,25 +26,26 @@ function RootNavigationGuard() {
       return;
     }
 
-    // Signed in — check onboarding state
-    if (profile) {
-      const needsProfile = !profile.profile_completed;
-      const needsWelcome = profile.profile_completed && !(profile as any).welcome_message_sent;
-      const needsTour = profile.profile_completed && (profile as any).welcome_message_sent && !(profile as any).tour_completed;
+    // Signed in — wait for profile to load
+    if (!profile) return;
 
-      if (needsProfile && !inOnboarding) {
-        router.replace('/(onboarding)/profile');
-      } else if (needsWelcome && !inOnboarding) {
-        router.replace('/(onboarding)/welcome');
-      } else if (needsTour && !inOnboarding) {
-        router.replace('/(onboarding)/tour');
-      } else if (!needsProfile && !needsWelcome && !needsTour && !inTabs) {
-        // Onboarding complete — go to tabs
+    // Signed in and profile loaded — check onboarding state
+    const needsProfile = !profile.profile_completed;
+    const needsWelcome = profile.profile_completed && !(profile as any).welcome_message_sent;
+    const needsTour = profile.profile_completed && (profile as any).welcome_message_sent && !(profile as any).tour_completed;
+
+    if (needsProfile) {
+      if (!inOnboarding) router.replace('/(onboarding)/profile');
+    } else if (needsWelcome) {
+      if (!inOnboarding) router.replace('/(onboarding)/welcome');
+    } else if (needsTour) {
+      if (!inOnboarding) router.replace('/(onboarding)/tour');
+    } else {
+      // Onboarding complete — redirect out of auth/onboarding/root to tabs
+      const isRoot = segments.length === 0 || segments[0] === 'index' || segments[0] === '';
+      if (inAuth || inOnboarding || isRoot) {
         router.replace('/(tabs)');
       }
-    } else if (inAuth) {
-      // profile not yet loaded but user exists and is on auth — wait
-      return;
     }
   }, [user, profile, loading, segments, router]);
 
