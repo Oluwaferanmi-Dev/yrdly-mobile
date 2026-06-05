@@ -6,9 +6,9 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/use-supabase-auth';
-import { formatPrice } from '../../lib/utils';
+import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../../hooks/use-supabase-auth';
+import { formatPrice } from '../../../lib/utils';
 
 const GREEN = '#388E3C';
 

@@ -6,10 +6,10 @@ import {
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/use-supabase-auth';
-import { Post } from '../../types';
-import { formatPrice } from '../../lib/utils';
+import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../../../hooks/use-supabase-auth';
+import { Post } from '../../../types';
+import { formatPrice } from '../../../lib/utils';
 
 const { width } = Dimensions.get('window');
 const GREEN = '#388E3C';
