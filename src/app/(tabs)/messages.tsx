@@ -138,18 +138,6 @@ export default function MessagesTab() {
     }
   };
 
-  useEffect(() => {
-    fetchConversations();
-
-    // Realtime subscription
-    if (!user) return;
-    const ch = supabase
-      .channel('conversations-mobile')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, fetchConversations)
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [user]);
-
   const filtered = useMemo(() => {
     return conversations.filter((c) => {
       const tabOk =
@@ -158,10 +146,38 @@ export default function MessagesTab() {
         (activeFilter === 'marketplace' && c.type === 'marketplace') ||
         (activeFilter === 'businesses' && c.type === 'business');
       const q = searchQuery.toLowerCase();
-      const searchOk = !q || c.participantName.toLowerCase().includes(q) || c.lastMessage.toLowerCase().includes(q);
+      const searchOk = !q || 
+        (c.participantName || '').toLowerCase().includes(q) || 
+        (c.lastMessage || '').toLowerCase().includes(q);
       return tabOk && searchOk;
     });
   }, [conversations, activeFilter, searchQuery]);
+
+  useEffect(() => {
+    fetchConversations();
+
+    // Realtime subscription
+    if (!user) return;
+    let ch: any = null;
+    try {
+      ch = supabase
+        .channel(`conversations-mobile-${user.id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, fetchConversations)
+        .subscribe();
+    } catch (e) {
+      console.error('Error subscribing to conversations realtime:', e);
+    }
+
+    return () => {
+      if (ch) {
+        try {
+          supabase.removeChannel(ch);
+        } catch (e) {
+          console.error('Error removing conversations channel:', e);
+        }
+      }
+    };
+  }, [user]);
 
   const FILTERS: { key: FilterTab; label: string }[] = [
     { key: 'all', label: 'All' },
@@ -189,7 +205,7 @@ export default function MessagesTab() {
           ) : (
             <View style={[styles.avatar, styles.avatarFallback]}>
               <Text style={styles.avatarFallbackText}>
-                {item.participantName.charAt(0).toUpperCase()}
+                {(item.participantName || 'Unknown').charAt(0).toUpperCase()}
               </Text>
             </View>
           )}
