@@ -79,7 +79,7 @@ export default function TransactionDetailScreen() {
           id, amount, commission, seller_amount, status,
           created_at, paid_at, shipped_at, delivered_at, completed_at,
           buyer_id, seller_id,
-          item:posts(id, title, images, price),
+          item:posts(id, title, images:image_urls, price),
           buyer:users!escrow_transactions_buyer_id_fkey(id, name, avatar_url),
           seller:users!escrow_transactions_seller_id_fkey(id, name, avatar_url)
         `)

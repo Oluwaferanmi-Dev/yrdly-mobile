@@ -57,7 +57,7 @@ export default function TransactionsScreen() {
         .from('escrow_transactions')
         .select(`
           id, amount, status, created_at, buyer_id, seller_id,
-          item:posts(id, title, images),
+          item:posts(id, title, images:image_urls),
           buyer:users!escrow_transactions_buyer_id_fkey(name, avatar_url),
           seller:users!escrow_transactions_seller_id_fkey(name, avatar_url)
         `)
