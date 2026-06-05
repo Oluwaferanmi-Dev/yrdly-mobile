@@ -149,7 +149,7 @@ export default function ScanTicketScreen() {
           </View>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
