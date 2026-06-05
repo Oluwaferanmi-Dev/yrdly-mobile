@@ -7,12 +7,14 @@ import { supabase } from '../../lib/supabase';
 import { PostCard } from '../../components/PostCard';
 import { Post } from '../../types';
 import { useRouter } from 'expo-router';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
 export default function ProfileTab() {
   const { user, profile, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { colors } = useAppTheme();
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
@@ -47,7 +49,7 @@ export default function ProfileTab() {
   }, [fetchUserPosts]);
 
   const ListHeader = () => (
-    <View style={styles.headerContainer}>
+    <View style={[styles.headerContainer, { backgroundColor: colors.card }]}>
       <View style={styles.header}>
         <View style={styles.avatarPlaceholder}>
           {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
@@ -61,8 +63,8 @@ export default function ProfileTab() {
             </Text>
           )}
         </View>
-        <Text style={styles.name}>{profile?.name || user?.user_metadata?.name || 'No Name'}</Text>
-        <Text style={styles.email}>{user?.email}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{profile?.name || user?.user_metadata?.name || 'No Name'}</Text>
+        <Text style={[styles.email, { color: colors.textSecondary }]}>{user?.email}</Text>
 
         <View style={styles.actionRow}>
           <TouchableOpacity 
@@ -74,10 +76,10 @@ export default function ProfileTab() {
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.settingsButton} 
+            style={[styles.settingsButton, { backgroundColor: colors.borderLight }]} 
             onPress={() => router.push('/settings')}
           >
-            <Ionicons name="settings-outline" size={20} color="#1C1C1C" />
+            <Ionicons name="settings-outline" size={20} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -89,13 +91,13 @@ export default function ProfileTab() {
         </View>
       </View>
 
-      <View style={styles.divider} />
-      <Text style={styles.sectionTitle}>My Posts</Text>
+      <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>My Posts</Text>
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
@@ -112,7 +114,7 @@ export default function ProfileTab() {
         ListEmptyComponent={
           !loadingPosts ? (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>You haven't posted anything yet.</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>You haven't posted anything yet.</Text>
             </View>
           ) : (
             <ActivityIndicator size="large" color={GREEN} style={{ marginTop: 40 }} />
@@ -121,7 +123,7 @@ export default function ProfileTab() {
         ListFooterComponent={
           <View style={styles.footerContainer}>
             <TouchableOpacity 
-              style={styles.logoutButton} 
+              style={[styles.logoutButton, { backgroundColor: colors.card }]} 
               onPress={() => signOut()}
               disabled={authLoading}
             >
@@ -139,9 +141,9 @@ export default function ProfileTab() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F2F2' },
+  container: { flex: 1 },
   listContent: { paddingBottom: 40 },
-  headerContainer: { backgroundColor: '#FFFFFF', paddingBottom: 16 },
+  headerContainer: { paddingBottom: 16 },
   header: { alignItems: 'center', paddingTop: 30, paddingHorizontal: 20 },
   avatarPlaceholder: {
     width: 100, height: 100, borderRadius: 50, backgroundColor: '#E8F5E9',
@@ -149,8 +151,8 @@ const styles = StyleSheet.create({
   },
   avatarImage: { width: '100%', height: '100%' },
   avatarText: { fontSize: 36, fontWeight: 'bold', color: GREEN },
-  name: { fontSize: 24, fontWeight: 'bold', color: '#1C1C1C', marginBottom: 4 },
-  email: { fontSize: 16, color: '#616161', marginBottom: 20 },
+  name: { fontSize: 24, fontWeight: 'bold', marginBottom: 4 },
+  email: { fontSize: 16, marginBottom: 20 },
   actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 12 },
   communityButton: {
     flex: 1, flexDirection: 'row', height: 44, backgroundColor: GREEN, borderRadius: 22,
@@ -158,21 +160,22 @@ const styles = StyleSheet.create({
   },
   communityButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold', marginLeft: 8 },
   settingsButton: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#F2F2F2',
+    width: 44, height: 44, borderRadius: 22,
     justifyContent: 'center', alignItems: 'center',
   },
   ticketsButton: {
     width: 44, height: 44, borderRadius: 22, backgroundColor: '#E8F5E9',
     justifyContent: 'center', alignItems: 'center',
   },
-  divider: { height: 8, backgroundColor: '#F2F2F2', width: '100%', marginTop: 24 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', paddingHorizontal: 16, paddingTop: 16 },
+  divider: { height: 8, width: '100%', marginTop: 24 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', paddingHorizontal: 16, paddingTop: 16 },
   emptyContainer: { padding: 40, alignItems: 'center' },
-  emptyText: { color: '#616161', fontSize: 16 },
+  emptyText: { fontSize: 16 },
   footerContainer: { padding: 24, marginTop: 20 },
   logoutButton: {
-    height: 54, borderWidth: 1, borderColor: '#E53935', backgroundColor: '#FFFFFF',
+    height: 54, borderWidth: 1, borderColor: '#E53935',
     borderRadius: 8, justifyContent: 'center', alignItems: 'center',
   },
   logoutText: { color: '#E53935', fontSize: 16, fontWeight: 'bold' },
 });
+

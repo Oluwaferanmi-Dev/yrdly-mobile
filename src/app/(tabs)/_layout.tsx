@@ -2,13 +2,15 @@ import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { View, TouchableOpacity, Platform, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { useAppTheme } from '../../context/ThemeContext';
 
 function GlassTabBarBackground() {
+  const { isDarkMode } = useAppTheme();
   if (Platform.OS === 'ios') {
     return (
       <BlurView
         intensity={80}
-        tint="systemChromeMaterial"
+        tint={isDarkMode ? 'dark' : 'systemChromeMaterial'}
         style={StyleSheet.absoluteFill}
       />
     );
@@ -18,17 +20,18 @@ function GlassTabBarBackground() {
 
 export default function TabLayout() {
   const router = useRouter();
+  const { colors, isDarkMode } = useAppTheme();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: true,
-        // Solid header — no transparent overlay so content starts below it
         headerStyle: {
-          backgroundColor: Platform.OS === 'ios' ? 'rgba(255,255,255,0.92)' : '#FFFFFF',
+          backgroundColor: Platform.OS === 'ios'
+            ? (isDarkMode ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)')
+            : colors.card,
           borderBottomWidth: 0.5,
-          borderBottomColor: 'rgba(0,0,0,0.1)',
-          // iOS shadow-based border instead of a hard line
+          borderBottomColor: colors.border,
           elevation: 0,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 0.5 },
@@ -38,34 +41,31 @@ export default function TabLayout() {
         headerTitleStyle: {
           fontSize: 20,
           fontWeight: '700',
-          color: '#1C1C1C',
+          color: colors.text,
         },
-        headerTintColor: '#1C1C1C',
+        headerTintColor: colors.text,
         headerRight: () => (
           <View style={{ flexDirection: 'row', marginRight: 16 }}>
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-              <Ionicons name="map-outline" size={24} color="#1C1C1C" />
+              <Ionicons name="map-outline" size={24} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications')}>
-              <Ionicons name="notifications-outline" size={24} color="#1C1C1C" />
+              <Ionicons name="notifications-outline" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
         ),
-        // Glass tab bar using tabBarBackground (preserves layout space, no overlap)
         tabBarBackground: () => <GlassTabBarBackground />,
         tabBarStyle: {
           borderTopWidth: 0.5,
-          borderTopColor: 'rgba(0,0,0,0.1)',
+          borderTopColor: colors.border,
           backgroundColor: Platform.OS === 'ios'
-            ? 'transparent'   // BlurView fills it
-            : 'rgba(255,255,255,0.96)',
+            ? 'transparent'
+            : (isDarkMode ? colors.card : 'rgba(255,255,255,0.96)'),
           elevation: 8,
         },
         tabBarActiveTintColor: '#388E3C',
-        tabBarInactiveTintColor: Platform.OS === 'ios'
-          ? 'rgba(60,60,67,0.45)'
-          : '#9E9E9E',
-        tabBarShowLabel: false,  // icon-only pill look
+        tabBarInactiveTintColor: colors.tabIconDefault,
+        tabBarShowLabel: false,
       }}
     >
       <Tabs.Screen

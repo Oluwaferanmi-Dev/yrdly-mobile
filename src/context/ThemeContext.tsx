@@ -1,60 +1,57 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useColorScheme as useColorSchemeCore } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import Colors from '../constants/Colors';
 
-export type ThemePreference = 'light' | 'dark' | 'system';
 export type ActiveTheme = 'light' | 'dark';
 
 interface ThemeContextType {
-  themePreference: ThemePreference;
+  isDarkMode: boolean;
+  toggleTheme: () => Promise<void>;
   activeTheme: ActiveTheme;
-  setThemePreference: (pref: ThemePreference) => Promise<void>;
+  colors: typeof Colors.light;
 }
 
 export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_KEY = 'yrdly_theme_preference';
+const THEME_KEY = 'yrdly_dark_mode_enabled';
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [themePreference, setThemePreferenceState] = useState<ThemePreference>('system');
   const systemScheme = useColorSchemeCore() || 'light';
-  const [activeTheme, setActiveTheme] = useState<ActiveTheme>(systemScheme);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(systemScheme === 'dark');
 
   // Load saved preference on mount
   useEffect(() => {
     async function loadTheme() {
       try {
         const saved = await SecureStore.getItemAsync(THEME_KEY);
-        if (saved === 'light' || saved === 'dark' || saved === 'system') {
-          setThemePreferenceState(saved);
+        if (saved !== null) {
+          setIsDarkMode(saved === 'true');
+        } else {
+          setIsDarkMode(systemScheme === 'dark');
         }
       } catch (e) {
         console.error('Failed to load theme preference', e);
       }
     }
     loadTheme();
-  }, []);
+  }, [systemScheme]);
 
-  // Update active theme based on preference and system theme
-  useEffect(() => {
-    if (themePreference === 'system') {
-      setActiveTheme(systemScheme);
-    } else {
-      setActiveTheme(themePreference);
-    }
-  }, [themePreference, systemScheme]);
-
-  const setThemePreference = async (pref: ThemePreference) => {
-    setThemePreferenceState(pref);
+  const toggleTheme = async () => {
+    const newVal = !isDarkMode;
+    setIsDarkMode(newVal);
     try {
-      await SecureStore.setItemAsync(THEME_KEY, pref);
+      await SecureStore.setItemAsync(THEME_KEY, String(newVal));
     } catch (e) {
       console.error('Failed to save theme preference', e);
     }
   };
 
+  const activeTheme: ActiveTheme = isDarkMode ? 'dark' : 'light';
+  const colors = Colors[activeTheme];
+
   return (
-    <ThemeContext.Provider value={{ themePreference, activeTheme, setThemePreference }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, activeTheme, colors }}>
       {children}
     </ThemeContext.Provider>
   );

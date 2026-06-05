@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
@@ -252,10 +253,12 @@ export default function MessagesTab() {
     );
   };
 
+  const { colors } = useAppTheme();
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.card }]}>
       {/* Search */}
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
         <Ionicons name="search-outline" size={18} color="#9E9E9E" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
@@ -267,11 +270,12 @@ export default function MessagesTab() {
       </View>
 
       {/* Filter tabs */}
-      <View style={styles.filterRow}>
+      <View style={[styles.filterRow, { backgroundColor: colors.borderLight }]}
+      >
         {FILTERS.map(({ key, label }) => (
           <TouchableOpacity
             key={key}
-            style={[styles.filterTab, activeFilter === key && styles.filterTabActive]}
+            style={[styles.filterTab, activeFilter === key && [styles.filterTabActive, { backgroundColor: colors.card }]]}
             onPress={() => setActiveFilter(key)}
           >
             <Text style={[styles.filterTabText, activeFilter === key && styles.filterTabTextActive]}>
@@ -307,17 +311,15 @@ export default function MessagesTab() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1 },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     margin: 16,
     marginBottom: 8,
-    backgroundColor: '#F2F2F2',
     borderRadius: 12,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, height: 44, fontSize: 15, color: '#1C1C1C' },

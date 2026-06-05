@@ -5,4 +5,3 @@ export const useColorScheme = () => {
   const context = useContext(ThemeContext);
   return context?.activeTheme || 'light';
 };
-
