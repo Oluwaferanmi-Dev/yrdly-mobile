@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
@@ -32,6 +33,7 @@ interface ConversationMeta {
 }
 
 export default function ChatScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -162,7 +164,7 @@ export default function ChatScreen() {
     : (otherUser?.name || 'Chat');
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>

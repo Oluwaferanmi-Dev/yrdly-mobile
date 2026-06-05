@@ -3,10 +3,12 @@ import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Scro
 import { Ionicons } from '@expo/vector-icons';
 import { MarketplaceGrid } from '../../components/MarketplaceGrid';
 import { EventList } from '../../components/EventList';
+import { useAppTheme } from '../../context/ThemeContext';
 
 type TabType = 'Marketplace' | 'Events' | 'Businesses';
 
 export default function CatalogTab() {
+  const { colors } = useAppTheme();
   const [activeTab, setActiveTab] = useState<TabType>('Marketplace');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -27,7 +29,7 @@ export default function CatalogTab() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Search Header */}
       <View style={styles.header}>
         <View style={styles.searchContainer}>

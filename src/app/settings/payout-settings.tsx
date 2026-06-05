@@ -9,12 +9,14 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { api } from '../../lib/api';
 import banksData from '../../data/nigerian-banks.json';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 interface Bank { code: string; name: string }
 const BANKS: Bank[] = banksData as Bank[];
 
 export default function PayoutSettingsScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
   const [existing, setExisting] = useState<any>(null);

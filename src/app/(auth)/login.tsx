@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,6 +20,7 @@ const colors = {
 };
 
 export default function Login() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

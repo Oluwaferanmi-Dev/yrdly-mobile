@@ -12,6 +12,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { PostCard } from '../../components/PostCard';
 import { Post } from '../../types';
 import { timeAgo } from '../../lib/utils';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
@@ -26,6 +27,7 @@ interface Comment {
 }
 
 export default function PostDetailScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -161,7 +163,7 @@ export default function PostDetailScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#1C1C1C" />

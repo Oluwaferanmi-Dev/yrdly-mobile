@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabase';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
@@ -36,6 +37,7 @@ function fmt(iso: string) {
 }
 
 export default function PayoutsScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -130,7 +132,7 @@ export default function PayoutsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#1C1C1C" />

@@ -6,6 +6,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const GREEN = '#388E3C';
@@ -50,6 +51,7 @@ const SLIDES = [
 ];
 
 export default function OnboardingTourScreen() {
+  const { colors } = useAppTheme();
   const { updateProfile } = useAuth();
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);

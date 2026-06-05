@@ -8,10 +8,12 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { LocationPicker, LocationValue } from '../../components/LocationPicker';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
 export default function OnboardingProfileScreen() {
+  const { colors } = useAppTheme();
   const { profile, updateProfile } = useAuth();
   const router = useRouter();
 

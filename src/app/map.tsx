@@ -6,11 +6,13 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { User, Business } from '../types';
+import { useAppTheme } from '../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 const GREEN = '#388E3C';
 
 export default function MapScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -86,7 +88,7 @@ export default function MapScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>

@@ -3,10 +3,12 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Animated } from
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { formatPrice } from '../../lib/utils';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
 export default function CheckoutSuccessScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { transactionId, itemTitle, amount } = useLocalSearchParams<{
     transactionId: string; itemTitle: string; amount: string;
@@ -23,7 +25,7 @@ export default function CheckoutSuccessScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
         {/* Animated checkmark */}
         <Animated.View style={[styles.iconRing, { transform: [{ scale: scaleAnim }] }]}>

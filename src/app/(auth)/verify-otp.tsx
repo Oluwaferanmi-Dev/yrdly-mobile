@@ -8,6 +8,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { supabase } from '../../lib/supabase';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -15,6 +16,7 @@ const GREEN = '#388E3C';
 const OTP_LENGTH = 6;
 
 export default function VerifyOtpScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email: string }>();
 

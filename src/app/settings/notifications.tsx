@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
@@ -62,6 +63,7 @@ const NOTIFICATION_GROUPS = [
 ];
 
 export default function NotificationsScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
@@ -104,7 +106,7 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#1C1C1C" />

@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { supabase } from '../../../lib/supabase';
+import { useAppTheme } from '../../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 const RED = '#B71C1C';
@@ -14,6 +15,7 @@ const RED = '#B71C1C';
 type ScanResult = { success: true; attendee: string } | { success: false; message: string } | null;
 
 export default function ScanTicketScreen() {
+  const { colors } = useAppTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
@@ -93,7 +95,7 @@ export default function ScanTicketScreen() {
   const flashBg = result?.success ? GREEN : RED;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <CameraView
         style={StyleSheet.absoluteFillObject}
         facing="back"

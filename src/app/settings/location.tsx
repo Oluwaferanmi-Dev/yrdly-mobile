@@ -7,10 +7,12 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { LocationPicker, LocationValue } from '../../components/LocationPicker';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
 export default function LocationSettingsScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { profile, updateProfile } = useAuth();
   const [location, setLocation] = useState<LocationValue>({
@@ -57,7 +59,7 @@ export default function LocationSettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#1C1C1C" />

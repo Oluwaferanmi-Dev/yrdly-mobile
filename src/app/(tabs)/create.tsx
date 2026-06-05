@@ -6,11 +6,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 type PostCategory = 'General' | 'For Sale' | 'Event';
 
 export default function CreateTab() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
   const [category, setCategory] = useState<PostCategory>('General');
@@ -135,7 +137,7 @@ export default function CreateTab() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

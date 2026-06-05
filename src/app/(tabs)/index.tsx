@@ -4,8 +4,10 @@ import { PostCard } from '../../components/PostCard';
 import { supabase } from '../../lib/supabase';
 import { Post } from '../../types';
 import { useRouter } from 'expo-router';
+import { useAppTheme } from '../../context/ThemeContext';
 
 export default function HomeTab() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ export default function HomeTab() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}

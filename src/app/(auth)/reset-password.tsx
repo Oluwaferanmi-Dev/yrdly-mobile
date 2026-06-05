@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { supabase } from '../../lib/supabase';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -18,6 +19,7 @@ const colors = {
 };
 
 export default function ResetPassword() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const [password, setPassword] = useState('');

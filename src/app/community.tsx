@@ -5,10 +5,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { useAppTheme } from '../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
 export default function CommunityScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { user: currentUser } = useAuth();
 
@@ -147,7 +149,7 @@ export default function CommunityScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#1C1C1C" />

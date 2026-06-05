@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
@@ -17,6 +18,7 @@ interface CommunityStats {
 }
 
 export default function OnboardingWelcomeScreen() {
+  const { colors } = useAppTheme();
   const { profile, updateProfile } = useAuth();
   const router = useRouter();
 

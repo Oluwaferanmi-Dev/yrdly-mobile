@@ -9,6 +9,7 @@ import { Image } from 'expo-image';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { formatPrice } from '../../../lib/utils';
+import { useAppTheme } from '../../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
@@ -60,6 +61,7 @@ function fmt(iso: string | null): string {
 }
 
 export default function TransactionDetailScreen() {
+  const { colors } = useAppTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
@@ -193,7 +195,7 @@ export default function TransactionDetailScreen() {
   const canReview = isBuyer && tx.status === 'completed';
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>

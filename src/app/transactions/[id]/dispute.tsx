@@ -10,6 +10,7 @@ import { Image } from 'expo-image';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { DisputeService } from '../../../lib/dispute-service';
+import { useAppTheme } from '../../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
@@ -23,6 +24,7 @@ const DISPUTE_REASONS = [
 ];
 
 export default function DisputeScreen() {
+  const { colors } = useAppTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
@@ -125,7 +127,7 @@ export default function DisputeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#1C1C1C" />

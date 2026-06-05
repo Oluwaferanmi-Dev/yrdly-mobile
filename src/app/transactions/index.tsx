@@ -9,6 +9,7 @@ import { Image } from 'expo-image';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
@@ -39,6 +40,7 @@ const STATUS_META: Record<EscrowStatus, { label: string; color: string; bg: stri
 type Tab = 'purchases' | 'sales';
 
 export default function TransactionsScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -128,7 +130,7 @@ export default function TransactionsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>

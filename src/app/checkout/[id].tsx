@@ -11,6 +11,7 @@ import { supabase } from '../../lib/supabase';
 import { api, WEB_APP_URL } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const GREEN = '#388E3C';
 const COMMISSION_RATE = 0.05; // 5% — kept in sync with backend
@@ -27,6 +28,7 @@ interface ItemDetails {
 type Stage = 'loading' | 'summary' | 'paying' | 'verifying' | 'error';
 
 export default function CheckoutScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user, profile } = useAuth();
@@ -204,7 +206,7 @@ export default function CheckoutScreen() {
 
   // ── Order Summary ────────────────────────────────────────────
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color="#1C1C1C" />

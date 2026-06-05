@@ -1,13 +1,15 @@
 import { Redirect } from 'expo-router';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { useAppTheme } from '../context/ThemeContext';
 
 export default function Index() {
+  const { colors } = useAppTheme();
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color="#0ea5e9" />
       </View>
     );

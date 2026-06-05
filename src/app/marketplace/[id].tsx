@@ -10,11 +10,13 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { Post } from '../../types';
 import { formatPrice, timeAgo } from '../../lib/utils';
+import { useAppTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const GREEN = '#388E3C';
 
 export default function MarketplaceDetailScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -104,7 +106,7 @@ export default function MarketplaceDetailScreen() {
   const isOwner = user?.id === post.user_id;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>

@@ -10,6 +10,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { Post } from '../types';
+import { useAppTheme } from '../context/ThemeContext';
 
 const GREEN = '#388E3C';
 
@@ -23,6 +24,7 @@ interface Ticket {
 }
 
 export default function TicketsScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -126,7 +128,7 @@ export default function TicketsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Tickets</Text>
       </View>

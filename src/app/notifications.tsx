@@ -8,6 +8,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { useAppTheme } from '../context/ThemeContext';
 
 const GREEN = '#388E3C';
 const GREEN_LIGHT = '#82DB7E';
@@ -48,6 +49,7 @@ function timeAgo(dateString: string) {
 }
 
 export default function NotificationsScreen() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -218,7 +220,7 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
