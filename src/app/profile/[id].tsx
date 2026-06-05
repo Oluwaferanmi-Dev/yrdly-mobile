@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center', maxWidth: 150,
   },
   messageButtonText: { color: GREEN, fontSize: 14, fontWeight: 'bold', marginLeft: 6 },
-  divider: { height: 8, backgroundColor: '#F2F2F2', width: '100%', marginTop: 24 },
+  divider: { height: 8, backgroundColor: '#F2F2F2', alignSelf: 'stretch', marginTop: 24 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', paddingHorizontal: 16, paddingTop: 16 },
   emptyContainer: { padding: 40, alignItems: 'center' },
   emptyText: { color: '#616161', fontSize: 16 },

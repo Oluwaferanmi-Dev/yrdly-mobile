@@ -15,7 +15,7 @@ const GREEN = '#388E3C';
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, profile } = useAuth();
-  const { isDarkMode, toggleTheme } = useAppTheme();
+  const { isDarkMode, toggleTheme, colors } = useAppTheme();
 
   const [name, setName] = useState(profile?.name || user?.user_metadata?.name || '');
   const [bio, setBio] = useState(profile?.bio || '');
