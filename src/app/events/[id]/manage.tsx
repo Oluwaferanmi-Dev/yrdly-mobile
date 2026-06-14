@@ -11,8 +11,6 @@ import { useAuth } from '../../../hooks/use-supabase-auth';
 import { formatPrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
 
-const GREEN = '#388E3C';
-
 interface Ticket {
   id: string;
   status: string;
@@ -118,8 +116,8 @@ export default function ManageEventScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color={GREEN} />
+      <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
   }
@@ -132,20 +130,20 @@ export default function ManageEventScreen() {
   const renderTicket = ({ item }: { item: Ticket }) => {
     const isCheckedIn = item.status === 'checked_in' || !!item.checked_in_at;
     return (
-      <View style={styles.ticketRow}>
+      <View style={[styles.ticketRow, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         {item.buyer?.avatar_url
           ? <Image source={{ uri: item.buyer.avatar_url }} style={styles.avatar} contentFit="cover" />
           : <View style={[styles.avatar, styles.avatarFallback]}>
-              <Text style={styles.avatarInitial}>{item.buyer?.name?.[0]?.toUpperCase() ?? '?'}</Text>
+              <Text style={[styles.avatarInitial, { color: colors.tint }]}>{item.buyer?.name?.[0]?.toUpperCase() ?? '?'}</Text>
             </View>
         }
         <View style={styles.ticketInfo}>
-          <Text style={styles.ticketName}>{item.buyer?.name ?? 'Attendee'}</Text>
-          <Text style={styles.ticketType}>{item.ticket_type || 'General Admission'}</Text>
+          <Text style={[styles.ticketName, { color: colors.text }]}>{item.buyer?.name ?? 'Attendee'}</Text>
+          <Text style={[styles.ticketType, { color: colors.textMuted }]}>{item.ticket_type || 'General Admission'}</Text>
         </View>
-        <View style={[styles.statusBadge, isCheckedIn ? styles.checkedInBadge : styles.activeBadge]}>
-          <Ionicons name={isCheckedIn ? 'checkmark-circle' : 'ticket-outline'} size={12} color={isCheckedIn ? '#2E7D32' : '#616161'} />
-          <Text style={[styles.statusText, isCheckedIn ? styles.checkedInText : styles.activeText]}>
+        <View style={[styles.statusBadge, isCheckedIn ? styles.checkedInBadge : [styles.activeBadge, { backgroundColor: colors.borderLight }]]}>
+          <Ionicons name={isCheckedIn ? 'checkmark-circle' : 'ticket-outline'} size={12} color={isCheckedIn ? '#2E7D32' : colors.textMuted} />
+          <Text style={[styles.statusText, isCheckedIn ? styles.checkedInText : [styles.activeText, { color: colors.textMuted }]]}>
             {isCheckedIn ? 'Checked In' : 'Active'}
           </Text>
         </View>
@@ -155,11 +153,11 @@ export default function ManageEventScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>Manage Event</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>Manage Event</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -167,13 +165,13 @@ export default function ManageEventScreen() {
         data={tickets}
         keyExtractor={t => t.id}
         renderItem={renderTicket}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={GREEN} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
         ListHeaderComponent={
           <>
             {/* Event Banner */}
-            <View style={styles.eventBanner}>
+            <View style={[styles.eventBanner, { backgroundColor: colors.card }]}>
               {eventImage && <Image source={{ uri: eventImage }} style={styles.bannerImg} contentFit="cover" />}
               <View style={styles.bannerOverlay} />
               <View style={styles.bannerContent}>
@@ -184,17 +182,17 @@ export default function ManageEventScreen() {
 
             {/* Stats */}
             <View style={styles.statsRow}>
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>{totalSold}</Text>
-                <Text style={styles.statLabel}>Tickets Sold</Text>
+              <View style={[styles.statCard, { backgroundColor: colors.card }]}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{totalSold}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Tickets Sold</Text>
               </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>{checkedIn}</Text>
-                <Text style={styles.statLabel}>Checked In</Text>
+              <View style={[styles.statCard, { backgroundColor: colors.card }]}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{checkedIn}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Checked In</Text>
               </View>
-              <View style={styles.statCard}>
-                <Text style={[styles.statValue, { color: GREEN }]}>{formatPrice(revenue)}</Text>
-                <Text style={styles.statLabel}>Revenue</Text>
+              <View style={[styles.statCard, { backgroundColor: colors.card }]}>
+                <Text style={[styles.statValue, { color: colors.tint }]}>{formatPrice(revenue)}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Revenue</Text>
               </View>
             </View>
 
@@ -202,18 +200,18 @@ export default function ManageEventScreen() {
             {totalSold > 0 && (
               <View style={styles.progressSection}>
                 <View style={styles.progressHeader}>
-                  <Text style={styles.progressLabel}>Check-in Progress</Text>
-                  <Text style={styles.progressPct}>{Math.round((checkedIn / totalSold) * 100)}%</Text>
+                  <Text style={[styles.progressLabel, { color: colors.text }]}>Check-in Progress</Text>
+                  <Text style={[styles.progressPct, { color: colors.tint }]}>{Math.round((checkedIn / totalSold) * 100)}%</Text>
                 </View>
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, { width: `${(checkedIn / totalSold) * 100}%` as any }]} />
+                <View style={[styles.progressBar, { backgroundColor: colors.borderLight }]}>
+                  <View style={[styles.progressFill, { backgroundColor: colors.tint, width: `${(checkedIn / totalSold) * 100}%` as any }]} />
                 </View>
               </View>
             )}
 
             {/* Scan Button */}
             <TouchableOpacity
-              style={styles.scanBtn}
+              style={[styles.scanBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }]}
               onPress={() => router.push(`/events/${id}/scan` as any)}
               activeOpacity={0.85}
             >
@@ -221,13 +219,13 @@ export default function ManageEventScreen() {
               <Text style={styles.scanBtnText}>Start Scanning Tickets</Text>
             </TouchableOpacity>
 
-            <Text style={styles.listHeader}>ATTENDEES ({totalSold})</Text>
+            <Text style={[styles.listHeader, { color: colors.textMuted }]}>ATTENDEES ({totalSold})</Text>
           </>
         }
         ListEmptyComponent={
           <View style={styles.emptyBox}>
-            <Ionicons name="ticket-outline" size={52} color="rgba(56,142,60,0.25)" />
-            <Text style={styles.emptyText}>No tickets sold yet</Text>
+            <Ionicons name="ticket-outline" size={52} color={colors.tint} style={{ opacity: 0.25 }} />
+            <Text style={[styles.emptyText, { color: colors.textMuted }]}>No tickets sold yet</Text>
           </View>
         }
         ListFooterComponent={
@@ -242,17 +240,17 @@ export default function ManageEventScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F6F4' },
+  container: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 12, paddingVertical: 12,
-    backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
+    borderBottomWidth: 1,
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold', color: '#1C1C1C' },
+  headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold' },
 
-  eventBanner: { height: 180, position: 'relative', backgroundColor: '#1C1C1C' },
+  eventBanner: { height: 180, position: 'relative' },
   bannerImg: { ...StyleSheet.absoluteFillObject },
   bannerOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
   bannerContent: { position: 'absolute', bottom: 16, left: 16, right: 16 },
@@ -261,53 +259,53 @@ const styles = StyleSheet.create({
 
   statsRow: { flexDirection: 'row', gap: 10, padding: 16 },
   statCard: {
-    flex: 1, backgroundColor: '#FFFFFF', borderRadius: 14, padding: 14, alignItems: 'center',
+    flex: 1, borderRadius: 14, padding: 14, alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
   },
-  statValue: { fontSize: 22, fontWeight: '800', color: '#1C1C1C', marginBottom: 2 },
-  statLabel: { fontSize: 11, color: '#9E9E9E', textTransform: 'uppercase', fontWeight: '600' },
+  statValue: { fontSize: 22, fontWeight: '800', marginBottom: 2 },
+  statLabel: { fontSize: 11, textTransform: 'uppercase', fontWeight: '600' },
 
   progressSection: { marginHorizontal: 16, marginBottom: 16 },
   progressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  progressLabel: { fontSize: 13, fontWeight: '600', color: '#424242' },
-  progressPct: { fontSize: 13, fontWeight: '700', color: GREEN },
-  progressBar: { height: 8, backgroundColor: '#E0E0E0', borderRadius: 4, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: GREEN, borderRadius: 4 },
+  progressLabel: { fontSize: 13, fontWeight: '600' },
+  progressPct: { fontSize: 13, fontWeight: '700' },
+  progressBar: { height: 8, borderRadius: 4, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 4 },
 
   scanBtn: {
-    flexDirection: 'row', height: 54, borderRadius: 27, backgroundColor: GREEN,
+    flexDirection: 'row', height: 54, borderRadius: 27,
     justifyContent: 'center', alignItems: 'center',
     marginHorizontal: 16, marginBottom: 20,
-    shadowColor: GREEN, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
   },
   scanBtnText: { fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' },
 
   listHeader: {
-    fontSize: 11, fontWeight: '800', color: '#9E9E9E',
+    fontSize: 11, fontWeight: '800',
     textTransform: 'uppercase', letterSpacing: 0.8,
     paddingHorizontal: 16, marginBottom: 8,
   },
 
   ticketRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFFFFF', paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: '#F5F5F5', gap: 12,
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderBottomWidth: 1, gap: 12,
   },
   avatar: { width: 40, height: 40, borderRadius: 20 },
   avatarFallback: { backgroundColor: '#E8F5E9', justifyContent: 'center', alignItems: 'center' },
-  avatarInitial: { fontSize: 16, fontWeight: 'bold', color: GREEN },
+  avatarInitial: { fontSize: 16, fontWeight: 'bold' },
   ticketInfo: { flex: 1 },
-  ticketName: { fontSize: 14, fontWeight: '700', color: '#1C1C1C' },
-  ticketType: { fontSize: 12, color: '#9E9E9E', marginTop: 2 },
+  ticketName: { fontSize: 14, fontWeight: '700' },
+  ticketType: { fontSize: 12, marginTop: 2 },
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   checkedInBadge: { backgroundColor: '#E8F5E9' },
-  activeBadge: { backgroundColor: '#F5F5F5' },
+  activeBadge: { },
   statusText: { fontSize: 11, fontWeight: '700' },
   checkedInText: { color: '#2E7D32' },
-  activeText: { color: '#616161' },
+  activeText: { },
 
   emptyBox: { alignItems: 'center', paddingTop: 40, gap: 10 },
-  emptyText: { fontSize: 15, color: '#9E9E9E' },
+  emptyText: { fontSize: 15 },
 
   cancelBtn: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',

@@ -9,7 +9,6 @@ import { User, Business } from '../types';
 import { useAppTheme } from '../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
-const GREEN = '#388E3C';
 
 export default function MapScreen() {
   const { colors } = useAppTheme();
@@ -72,9 +71,9 @@ export default function MapScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={GREEN} />
-        <Text style={styles.loadingText}>Locating you...</Text>
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Locating you...</Text>
       </View>
     );
   }
@@ -90,11 +89,11 @@ export default function MapScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Yrdly Map</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Yrdly Map</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -125,8 +124,8 @@ export default function MapScreen() {
             >
               <Callout onPress={() => router.push(`/profile/${user.id}`)}>
                 <View style={styles.calloutContainer}>
-                  <Text style={styles.calloutTitle}>{user.name}</Text>
-                  <Text style={styles.calloutSub}>Tap to view profile</Text>
+                  <Text style={[styles.calloutTitle, { color: colors.text }]}>{user.name}</Text>
+                  <Text style={[styles.calloutSub, { color: colors.textMuted }]}>Tap to view profile</Text>
                 </View>
               </Callout>
             </Marker>
@@ -143,12 +142,12 @@ export default function MapScreen() {
                 latitude: biz.location.geopoint.latitude,
                 longitude: biz.location.geopoint.longitude
               }}
-              pinColor={GREEN} // Green for businesses
+              pinColor={colors.tint} // Green for businesses
             >
               <Callout>
                 <View style={styles.calloutContainer}>
-                  <Text style={styles.calloutTitle}>{biz.name}</Text>
-                  <Text style={styles.calloutSub}>{biz.category}</Text>
+                  <Text style={[styles.calloutTitle, { color: colors.text }]}>{biz.name}</Text>
+                  <Text style={[styles.calloutSub, { color: colors.textMuted }]}>{biz.category}</Text>
                 </View>
               </Callout>
             </Marker>
@@ -157,14 +156,14 @@ export default function MapScreen() {
       </MapView>
 
       {/* Floating Legend */}
-      <View style={styles.legendContainer}>
+      <View style={[styles.legendContainer, { backgroundColor: colors.card }]}>
         <View style={styles.legendRow}>
           <View style={[styles.legendDot, { backgroundColor: '#0ea5e9' }]} />
-          <Text style={styles.legendText}>Users</Text>
+          <Text style={[styles.legendText, { color: colors.text }]}>Users</Text>
         </View>
         <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: GREEN }]} />
-          <Text style={styles.legendText}>Businesses</Text>
+          <View style={[styles.legendDot, { backgroundColor: colors.tint }]} />
+          <Text style={[styles.legendText, { color: colors.text }]}>Businesses</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -174,18 +173,15 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#616161',
   },
   header: {
     flexDirection: 'row',
@@ -194,10 +190,8 @@ const styles = StyleSheet.create({
     paddingTop: 50, // basic safe area for map
     paddingBottom: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
     zIndex: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
   },
   backButton: {
     width: 40,
@@ -207,7 +201,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1C1C1C',
   },
   errorContainer: {
     position: 'absolute',
@@ -246,13 +239,11 @@ const styles = StyleSheet.create({
   },
   calloutSub: {
     fontSize: 12,
-    color: '#616161',
   },
   legendContainer: {
     position: 'absolute',
     bottom: 40,
     left: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 12,
     borderRadius: 12,
     shadowColor: '#000',
@@ -275,6 +266,5 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1C1C1C',
   },
 });

@@ -11,7 +11,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
+
 
 type EscrowStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled';
 
@@ -93,7 +93,7 @@ export default function TransactionsScreen() {
 
     return (
       <TouchableOpacity
-        style={styles.txCard}
+        style={[styles.txCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
         onPress={() => router.push(`/transactions/${tx.id}` as any)}
         activeOpacity={0.85}
       >
@@ -101,17 +101,17 @@ export default function TransactionsScreen() {
         {thumb ? (
           <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" />
         ) : (
-          <View style={[styles.thumb, styles.thumbPlaceholder]}>
-            <Ionicons name="cube-outline" size={22} color="#9E9E9E" />
+          <View style={[styles.thumb, styles.thumbPlaceholder, { backgroundColor: colors.inputBackground }]}>
+            <Ionicons name="cube-outline" size={22} color={colors.textMuted} />
           </View>
         )}
 
         {/* Info */}
         <View style={styles.txInfo}>
-          <Text style={styles.txTitle} numberOfLines={1}>
+          <Text style={[styles.txTitle, { color: colors.text }]} numberOfLines={1}>
             {tx.item?.title ?? 'Marketplace Item'}
           </Text>
-          <Text style={styles.txCounterparty}>
+          <Text style={[styles.txCounterparty, { color: colors.textMuted }]}>
             {tab === 'purchases' ? 'From' : 'To'} {counterparty?.name ?? 'User'}
           </Text>
           <View style={[styles.statusBadge, { backgroundColor: meta.bg }]}>
@@ -122,8 +122,8 @@ export default function TransactionsScreen() {
 
         {/* Amount + chevron */}
         <View style={styles.txRight}>
-          <Text style={styles.txAmount}>{formatPrice(tx.amount)}</Text>
-          <Ionicons name="chevron-forward" size={16} color="#BDBDBD" style={{ marginTop: 4 }} />
+          <Text style={[styles.txAmount, { color: colors.text }]}>{formatPrice(tx.amount)}</Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.textMuted} style={{ marginTop: 4 }} />
         </View>
       </TouchableOpacity>
     );
@@ -132,23 +132,23 @@ export default function TransactionsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Transactions</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Transactions</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabs}>
+      <View style={[styles.tabs, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         {(['purchases', 'sales'] as Tab[]).map((t) => (
           <TouchableOpacity
             key={t}
-            style={[styles.tab, tab === t && styles.tabActive]}
+            style={[styles.tab, tab === t && [styles.tabActive, { borderBottomColor: colors.tint }]]}
             onPress={() => setTab(t)}
           >
-            <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>
+            <Text style={[styles.tabText, tab === t && styles.tabTextActive, { color: tab === t ? colors.tint : colors.textMuted }]}>
               {t === 'purchases' ? 'Purchases' : 'Sales'}
             </Text>
           </TouchableOpacity>
@@ -157,7 +157,7 @@ export default function TransactionsScreen() {
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={GREEN} />
+          <ActivityIndicator size="large" color={colors.tint} />
         </View>
       ) : (
         <FlatList
@@ -169,14 +169,14 @@ export default function TransactionsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchTransactions(true)}
-              tintColor={GREEN}
+              tintColor={colors.tint}
             />
           }
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="receipt-outline" size={48} color="#E0E0E0" />
-              <Text style={styles.emptyTitle}>No {tab} yet</Text>
-              <Text style={styles.emptyBody}>
+              <Ionicons name="receipt-outline" size={48} color={colors.borderLight} />
+              <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No {tab} yet</Text>
+              <Text style={[styles.emptyBody, { color: colors.textMuted }]}>
                 {tab === 'purchases'
                   ? 'Items you buy on the marketplace will appear here.'
                   : 'Items you sell will appear here.'}
@@ -191,45 +191,45 @@ export default function TransactionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFAFA' },
+  container: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
-    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F2F2F2', backgroundColor: '#FFF',
+    paddingVertical: 14, borderBottomWidth: 1,
   },
   backBtn: { width: 40 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
 
   tabs: {
-    flexDirection: 'row', backgroundColor: '#FFF',
-    borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
+    flexDirection: 'row',
+    borderBottomWidth: 1,
   },
   tab: { flex: 1, paddingVertical: 14, alignItems: 'center' },
-  tabActive: { borderBottomWidth: 2, borderBottomColor: GREEN },
-  tabText: { fontSize: 14, fontWeight: '600', color: '#9E9E9E' },
-  tabTextActive: { color: GREEN },
+  tabActive: { borderBottomWidth: 2 },
+  tabText: { fontSize: 14, fontWeight: '600' },
+  tabTextActive: {},
 
   listContent: { padding: 16, paddingBottom: 40 },
 
   txCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF',
+    flexDirection: 'row', alignItems: 'center',
     borderRadius: 14, padding: 14,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
+    borderWidth: 1, shadowOpacity: 0, elevation: 0,
   },
   thumb: { width: 56, height: 56, borderRadius: 10, marginRight: 12 },
-  thumbPlaceholder: { backgroundColor: '#F2F2F2', justifyContent: 'center', alignItems: 'center' },
+  thumbPlaceholder: { justifyContent: 'center', alignItems: 'center' },
   txInfo: { flex: 1 },
-  txTitle: { fontSize: 15, fontWeight: '700', color: '#1C1C1C', marginBottom: 2 },
-  txCounterparty: { fontSize: 12, color: '#9E9E9E', marginBottom: 6 },
+  txTitle: { fontSize: 15, fontWeight: '700', marginBottom: 2 },
+  txCounterparty: { fontSize: 12, marginBottom: 6 },
   statusBadge: {
     flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start',
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20,
   },
   statusText: { fontSize: 11, fontWeight: '700' },
   txRight: { alignItems: 'flex-end', marginLeft: 8 },
-  txAmount: { fontSize: 15, fontWeight: '800', color: '#1C1C1C' },
+  txAmount: { fontSize: 15, fontWeight: '800' },
 
   empty: { flex: 1, alignItems: 'center', paddingTop: 80, paddingHorizontal: 32 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#424242', marginTop: 16, marginBottom: 8 },
-  emptyBody: { fontSize: 14, color: '#9E9E9E', textAlign: 'center', lineHeight: 20 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', marginTop: 16, marginBottom: 8 },
+  emptyBody: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
 });

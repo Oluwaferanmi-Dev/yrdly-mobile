@@ -8,16 +8,6 @@ import { useAppTheme } from '../../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
-const colors = {
-  background: '#F2F2F2',
-  blob: '#A154F2',
-  primary: '#388E3C',
-  text: '#1C1C1C',
-  textFaded: '#616161',
-  border: '#E0E0E0',
-  inputBorder: '#388E3C',
-  link: '#1976D2',
-};
 
 export default function Login() {
   const { colors } = useAppTheme();
@@ -61,15 +51,15 @@ export default function Login() {
 
   return (
     <KeyboardAvoidingView 
-      style={styles.container} 
+      style={[styles.container, { backgroundColor: colors.background }]} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       {/* Background Blobs */}
       <View style={StyleSheet.absoluteFillObject}>
-        <View style={[styles.blob, { top: height * 0.1, left: width * 0.05, transform: [{ rotate: '36deg' }] }]} />
-        <View style={[styles.blob, { top: height * 0.2, left: width * 0.8 }]} />
-        <View style={[styles.blob, { top: height * 0.7, left: width * 0.2 }]} />
-        <View style={[styles.blob, { top: height * 0.85, left: width * 0.85 }]} />
+        <View style={[styles.blob, { top: height * 0.1, left: width * 0.05, transform: [{ rotate: '36deg' }], backgroundColor: colors.tint }]} />
+        <View style={[styles.blob, { top: height * 0.2, left: width * 0.8, backgroundColor: colors.tint }]} />
+        <View style={[styles.blob, { top: height * 0.7, left: width * 0.2, backgroundColor: colors.tint }]} />
+        <View style={[styles.blob, { top: height * 0.85, left: width * 0.85, backgroundColor: colors.tint }]} />
       </View>
 
       {/* Glass Overlay */}
@@ -82,8 +72,8 @@ export default function Login() {
       <View style={styles.formContainer}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>See what's happening</Text>
-          <Text style={styles.subtitle}>Sign in to your Yrdly account</Text>
+          <Text style={[styles.title, { color: colors.text }]}>See what's happening</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Sign in to your Yrdly account</Text>
         </View>
 
         {/* Logo */}
@@ -92,18 +82,18 @@ export default function Login() {
         </View>
 
         {/* Segmented Control */}
-        <View style={styles.segmentedControl}>
+        <View style={[styles.segmentedControl, { borderColor: colors.tint }]}>
           <TouchableOpacity 
-            style={[styles.segmentButton, !isSignUp && styles.segmentButtonActive]} 
+            style={[styles.segmentButton, !isSignUp && [styles.segmentButtonActive, { backgroundColor: colors.tint }]]} 
             onPress={() => setIsSignUp(false)}
           >
-            <Text style={[styles.segmentText, !isSignUp && styles.segmentTextActive]}>Sign in</Text>
+            <Text style={[styles.segmentText, { color: colors.textMuted }, !isSignUp && [styles.segmentTextActive, { color: colors.card }]]}>Sign in</Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.segmentButton, isSignUp && styles.segmentButtonActive]} 
+            style={[styles.segmentButton, isSignUp && [styles.segmentButtonActive, { backgroundColor: colors.tint }]]} 
             onPress={() => setIsSignUp(true)}
           >
-            <Text style={[styles.segmentText, isSignUp && styles.segmentTextActive]}>Sign up</Text>
+            <Text style={[styles.segmentText, { color: colors.textMuted }, isSignUp && [styles.segmentTextActive, { color: colors.card }]]}>Sign up</Text>
           </TouchableOpacity>
         </View>
 
@@ -118,46 +108,46 @@ export default function Login() {
         {isSignUp && (
           <View style={styles.inputContainer}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
               placeholder="Enter your full name"
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
               editable={!loading}
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={colors.textMuted}
             />
           </View>
         )}
 
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
             placeholder="Enter your email"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
             editable={!loading}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={colors.textMuted}
           />
-          <Ionicons name="mail-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+          <Ionicons name="mail-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
         </View>
         
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
             placeholder="Enter your password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
             editable={!loading}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={colors.textMuted}
           />
           <TouchableOpacity 
             style={styles.inputIcon}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color="#9ca3af" />
+            <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
 
@@ -166,46 +156,46 @@ export default function Login() {
             style={styles.forgotPassword}
             onPress={() => router.push('/(auth)/forgot-password' as any)}
           >
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            <Text style={[styles.forgotPasswordText, { color: colors.tint }]}>Forgot Password?</Text>
           </TouchableOpacity>
         )}
 
         <TouchableOpacity 
-          style={styles.button} 
+          style={[styles.button, { backgroundColor: colors.tint }]} 
           onPress={handleAuth}
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.card} />
           ) : (
-            <Text style={styles.buttonText}>{isSignUp ? 'Create Account' : 'Sign in'}</Text>
+            <Text style={[styles.buttonText, { color: colors.card }]}>{isSignUp ? 'Create Account' : 'Sign in'}</Text>
           )}
         </TouchableOpacity>
 
         {/* Divider */}
         <View style={styles.dividerContainer}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>OR CONTINUE WITH</Text>
-          <View style={styles.dividerLine} />
+          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+          <Text style={[styles.dividerText, { color: colors.textMuted }]}>OR CONTINUE WITH</Text>
+          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
         </View>
 
         {/* Google Auth Button */}
         <TouchableOpacity 
-          style={styles.googleButton} 
+          style={[styles.googleButton, { borderColor: colors.tint }]} 
           onPress={handleGoogleSignIn}
           disabled={loading}
         >
           <Ionicons name="logo-google" size={18} color="#EA4335" style={{ marginRight: 8 }} />
-          <Text style={styles.googleButtonText}>Continue with Google</Text>
+          <Text style={[styles.googleButtonText, { color: colors.text }]}>Continue with Google</Text>
         </TouchableOpacity>
 
         {/* Toggle Footer Text */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
+          <Text style={[styles.footerText, { color: colors.textMuted }]}>
             {isSignUp ? "Already have an account? " : "Don't have an account? "}
           </Text>
           <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
-            <Text style={styles.footerLink}>{isSignUp ? "Sign in" : "Sign up"}</Text>
+            <Text style={[styles.footerLink, { color: colors.tint }]}>{isSignUp ? "Sign in" : "Sign up"}</Text>
           </TouchableOpacity>
         </View>
 
@@ -217,14 +207,12 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   blob: {
     position: 'absolute',
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.blob,
     opacity: 0.55,
   },
   formContainer: {
@@ -241,12 +229,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    color: colors.text,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 14,
-    color: colors.textFaded,
     textAlign: 'center',
     fontStyle: 'italic',
     marginTop: 4,
@@ -265,7 +251,6 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 26,
     borderWidth: 1,
-    borderColor: colors.primary,
     padding: 4,
     marginBottom: 24,
   },
@@ -276,14 +261,11 @@ const styles = StyleSheet.create({
     borderRadius: 22,
   },
   segmentButtonActive: {
-    backgroundColor: colors.primary,
   },
   segmentText: {
     fontSize: 14,
-    color: colors.textFaded,
   },
   segmentTextActive: {
-    color: '#fff',
     fontWeight: '600',
   },
   errorBox: {
@@ -309,12 +291,10 @@ const styles = StyleSheet.create({
   input: {
     height: 54,
     borderWidth: 1,
-    borderColor: colors.primary,
     borderRadius: 27,
     paddingHorizontal: 20,
     fontSize: 14,
     backgroundColor: 'transparent',
-    color: colors.text,
   },
   inputIcon: {
     position: 'absolute',
@@ -326,20 +306,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   forgotPasswordText: {
-    color: colors.link,
     fontSize: 12,
     fontWeight: '500',
   },
   button: {
     height: 54,
-    backgroundColor: colors.primary,
     borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
   },
   buttonText: {
-    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -351,18 +328,15 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border,
   },
   dividerText: {
     marginHorizontal: 12,
     fontSize: 12,
-    color: colors.textFaded,
     letterSpacing: 1,
   },
   googleButton: {
     height: 54,
     borderWidth: 1,
-    borderColor: colors.primary,
     borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
@@ -370,7 +344,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   googleButtonText: {
-    color: colors.text,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -380,11 +353,9 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
-    color: colors.textFaded,
     fontSize: 13,
   },
   footerLink: {
-    color: colors.link,
     fontSize: 13,
     fontWeight: '600',
   },

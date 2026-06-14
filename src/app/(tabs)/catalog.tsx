@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MarketplaceGrid } from '../../components/MarketplaceGrid';
 import { EventList } from '../../components/EventList';
@@ -21,8 +21,8 @@ export default function CatalogTab() {
       case 'Businesses':
         return (
           <View style={styles.placeholderContainer}>
-            <Ionicons name="business-outline" size={48} color="#BDBDBD" />
-            <Text style={styles.placeholderText}>Businesses List goes here</Text>
+            <Ionicons name="business-outline" size={48} color={colors.textMuted} />
+            <Text style={[styles.placeholderText, { color: colors.textMuted }]}>Businesses List goes here</Text>
           </View>
         );
     }
@@ -31,34 +31,41 @@ export default function CatalogTab() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Search Header */}
-      <View style={styles.header}>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#616161" style={styles.searchIcon} />
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground }]}>
+          <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search Yrdly..."
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={colors.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
             returnKeyType="search"
           />
         </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Ionicons name="options-outline" size={24} color="#1C1C1C" />
+        <TouchableOpacity style={[styles.filterButton, { backgroundColor: colors.inputBackground }]}>
+          <Ionicons name="options-outline" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       {/* Segmented Control */}
-      <View style={styles.segmentedControl}>
+      <View style={[styles.segmentedControl, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         {(['Marketplace', 'Events', 'Businesses'] as TabType[]).map((tab) => {
           const isActive = activeTab === tab;
           return (
             <TouchableOpacity
               key={tab}
-              style={[styles.tabButton, isActive && styles.activeTabButton]}
+              style={[
+                styles.tabButton, 
+                isActive && { backgroundColor: colors.tint + '1A' } // 10% opacity tint
+              ]}
               onPress={() => setActiveTab(tab)}
             >
-              <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+              <Text style={[
+                styles.tabText, 
+                { color: colors.textSecondary },
+                isActive && { color: colors.tint }
+              ]}>
                 {tab}
               </Text>
             </TouchableOpacity>
@@ -77,22 +84,18 @@ export default function CatalogTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F2',
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F2F2F2',
     borderRadius: 8,
     paddingHorizontal: 12,
     height: 40,
@@ -104,7 +107,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: '#1C1C1C',
     height: '100%',
   },
   filterButton: {
@@ -112,16 +114,13 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F2F2F2',
     borderRadius: 8,
   },
   segmentedControl: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   tabButton: {
     flex: 1,
@@ -130,16 +129,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 4,
   },
-  activeTabButton: {
-    backgroundColor: '#E8F5E9', // Light green bg for active tab
-  },
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#616161',
-  },
-  activeTabText: {
-    color: '#388E3C', // Yrdly Green
   },
   contentArea: {
     flex: 1,
@@ -152,7 +144,6 @@ const styles = StyleSheet.create({
   placeholderText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#9E9E9E',
     fontWeight: '500',
   },
 });

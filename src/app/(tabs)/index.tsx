@@ -45,8 +45,8 @@ export default function HomeTab() {
 
   if (loading && !refreshing) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#388E3C" />
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
       </View>
     );
   }
@@ -66,14 +66,14 @@ export default function HomeTab() {
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={onRefresh} 
-            tintColor="#388E3C" 
-            colors={['#388E3C']} 
+            tintColor={colors.tint} 
+            colors={[colors.tint]} 
           />
         }
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No posts yet. Be the first to post!</Text>
+            <Text style={[styles.emptyText, { color: colors.textMuted }]}>No posts yet. Be the first to post!</Text>
           </View>
         }
       />
@@ -84,23 +84,20 @@ export default function HomeTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F2',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F2F2F2',
   },
   listContent: {
-    paddingVertical: 16,
+    // paddingVertical removed for flat feed
   },
   emptyContainer: {
     padding: 40,
     alignItems: 'center',
   },
   emptyText: {
-    color: '#616161',
     fontSize: 16,
   },
 });

@@ -9,8 +9,6 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { LocationPicker, LocationValue } from '../../components/LocationPicker';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
-
 export default function LocationSettingsScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
@@ -60,38 +58,38 @@ export default function LocationSettingsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Location</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Location</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Current location */}
         {location.state ? (
-          <View style={styles.currentCard}>
-            <View style={styles.currentIcon}>
-              <Ionicons name="location" size={22} color={GREEN} />
+          <View style={[styles.currentCard, { backgroundColor: colors.card }]}>
+            <View style={[styles.currentIcon, { backgroundColor: colors.tint + '22' }]}>
+              <Ionicons name="location" size={22} color={colors.tint} />
             </View>
             <View>
-              <Text style={styles.currentLabel}>Current Location</Text>
-              <Text style={styles.currentValue}>
+              <Text style={[styles.currentLabel, { color: colors.textMuted }]}>Current Location</Text>
+              <Text style={[styles.currentValue, { color: colors.text }]}>
                 {location.lga ? `${location.lga}, ` : ''}{location.state}
               </Text>
             </View>
           </View>
         ) : null}
 
-        <Text style={styles.info}>
+        <Text style={[styles.info, { color: colors.textMuted }]}>
           Your location determines which posts, events, marketplace items, and neighbours you see.
         </Text>
 
         <LocationPicker value={location} onChange={(l) => { setLocation(l); setSaved(false); }} />
 
         <TouchableOpacity
-          style={[styles.saveBtn, (!hasChanges || saving) && styles.saveBtnDisabled]}
+          style={[styles.saveBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }, (!hasChanges || saving) && styles.saveBtnDisabled]}
           onPress={handleSave}
           disabled={!hasChanges || saving}
         >
@@ -112,17 +110,17 @@ export default function LocationSettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFAFA' },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F2F2F2', backgroundColor: '#FFF' },
+  container: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 14, borderBottomWidth: 1 },
   backBtn: { width: 40 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
   scroll: { padding: 20, paddingBottom: 40 },
-  currentCard: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: '#FFF', borderRadius: 14, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
-  currentIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#E8F5E9', justifyContent: 'center', alignItems: 'center' },
-  currentLabel: { fontSize: 11, color: '#9E9E9E', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
-  currentValue: { fontSize: 15, fontWeight: '700', color: '#1C1C1C' },
-  info: { fontSize: 13, color: '#9E9E9E', lineHeight: 20, marginBottom: 20 },
-  saveBtn: { height: 56, borderRadius: 28, backgroundColor: GREEN, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 16, shadowColor: GREEN, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  currentCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 14, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
+  currentIcon: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  currentLabel: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
+  currentValue: { fontSize: 15, fontWeight: '700' },
+  info: { fontSize: 13, lineHeight: 20, marginBottom: 20 },
+  saveBtn: { height: 56, borderRadius: 28, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 16, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
   saveBtnDisabled: { opacity: 0.4, shadowOpacity: 0 },
   saveBtnText: { fontSize: 16, fontWeight: '800', color: '#FFF' },
 });

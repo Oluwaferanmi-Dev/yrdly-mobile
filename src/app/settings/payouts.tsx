@@ -11,8 +11,6 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
-
 type PayoutStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 interface PayoutRequest {
@@ -114,7 +112,7 @@ export default function PayoutsScreen() {
   const renderItem = ({ item }: { item: PayoutRequest }) => {
     const meta = STATUS_META[item.status] ?? STATUS_META.pending;
     return (
-      <View style={styles.payoutCard}>
+      <View style={[styles.payoutCard, { backgroundColor: colors.card }]}>
         <View style={styles.payoutLeft}>
           <View style={[styles.payoutIconWrap, { backgroundColor: meta.bg }]}>
             <Ionicons name={meta.icon as any} size={20} color={meta.color} />
@@ -133,25 +131,25 @@ export default function PayoutsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Payouts</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Payouts</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color={GREEN} /></View>
+        <View style={styles.center}><ActivityIndicator size="large" color={colors.tint} /></View>
       ) : (
         <FlatList
           data={payouts}
           keyExtractor={p => p.id}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={GREEN} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={colors.tint} />}
           ListHeaderComponent={
             <View style={styles.listHeader}>
               {/* Balance card */}
-              <View style={styles.balanceCard}>
+              <View style={[styles.balanceCard, { backgroundColor: colors.tint, shadowColor: colors.tint }]}>
                 <Text style={styles.balanceLabel}>Available Balance</Text>
                 <Text style={styles.balanceAmount}>{formatPrice(balance)}</Text>
                 <TouchableOpacity
@@ -161,14 +159,14 @@ export default function PayoutsScreen() {
                 >
                   {requesting
                     ? <ActivityIndicator color="#FFF" size="small" />
-                    : <Text style={styles.withdrawBtnText}>Withdraw Funds</Text>}
+                    : <Text style={[styles.withdrawBtnText, { color: colors.tint }]}>Withdraw Funds</Text>}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)} style={styles.bankLink}>
-                  <Ionicons name="business-outline" size={14} color={GREEN} />
+                  <Ionicons name="business-outline" size={14} color={colors.tint} />
                   <Text style={styles.bankLinkText}>Manage bank account</Text>
                 </TouchableOpacity>
               </View>
-              <Text style={styles.historyTitle}>Payout History</Text>
+              <Text style={[styles.historyTitle, { color: colors.text }]}>Payout History</Text>
             </View>
           }
           renderItem={renderItem}
@@ -176,9 +174,9 @@ export default function PayoutsScreen() {
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="wallet-outline" size={48} color="#E0E0E0" />
-              <Text style={styles.emptyTitle}>No payouts yet</Text>
-              <Text style={styles.emptyBody}>Funds from completed sales will appear here.</Text>
+              <Ionicons name="wallet-outline" size={48} color={colors.border} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>No payouts yet</Text>
+              <Text style={[styles.emptyBody, { color: colors.textMuted }]}>Funds from completed sales will appear here.</Text>
             </View>
           }
         />
@@ -188,17 +186,17 @@ export default function PayoutsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFAFA' },
+  container: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F2F2F2', backgroundColor: '#FFF' },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 14, borderBottomWidth: 1 },
   backBtn: { width: 40 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
   listHeader: { padding: 16 },
   listContent: { paddingHorizontal: 16, paddingBottom: 40 },
 
   balanceCard: {
-    backgroundColor: GREEN, borderRadius: 20, padding: 24, marginBottom: 24, alignItems: 'center',
-    shadowColor: GREEN, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 14, elevation: 6,
+    borderRadius: 20, padding: 24, marginBottom: 24, alignItems: 'center',
+    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 14, elevation: 6,
   },
   balanceLabel: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.75)', marginBottom: 8 },
   balanceAmount: { fontSize: 40, fontWeight: '900', color: '#FFF', marginBottom: 20 },
@@ -207,25 +205,25 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2,
   },
   withdrawBtnDisabled: { opacity: 0.5 },
-  withdrawBtnText: { fontSize: 15, fontWeight: '800', color: GREEN },
+  withdrawBtnText: { fontSize: 15, fontWeight: '800' },
   bankLink: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   bankLinkText: { fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: '600', textDecorationLine: 'underline' },
 
-  historyTitle: { fontSize: 16, fontWeight: '800', color: '#424242', marginBottom: 12 },
+  historyTitle: { fontSize: 16, fontWeight: '800', marginBottom: 12 },
 
   payoutCard: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#FFF', borderRadius: 14, padding: 16,
+    borderRadius: 14, padding: 16,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
   },
   payoutLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   payoutIconWrap: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  payoutAmount: { fontSize: 16, fontWeight: '800', color: '#1C1C1C' },
-  payoutDate: { fontSize: 12, color: '#9E9E9E', marginTop: 2 },
+  payoutAmount: { fontSize: 16, fontWeight: '800' },
+  payoutDate: { fontSize: 12, marginTop: 2 },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   statusText: { fontSize: 12, fontWeight: '700' },
 
   empty: { alignItems: 'center', paddingTop: 40 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#424242', marginTop: 16, marginBottom: 8 },
-  emptyBody: { fontSize: 14, color: '#9E9E9E', textAlign: 'center' },
+  emptyTitle: { fontSize: 18, fontWeight: '700', marginTop: 16, marginBottom: 8 },
+  emptyBody: { fontSize: 14, textAlign: 'center' },
 });

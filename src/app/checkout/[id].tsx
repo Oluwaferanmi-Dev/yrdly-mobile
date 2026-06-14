@@ -13,7 +13,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
+
 const COMMISSION_RATE = 0.05; // 5% — kept in sync with backend
 
 interface ItemDetails {
@@ -146,8 +146,8 @@ export default function CheckoutScreen() {
   // ── Loading ──────────────────────────────────────────────────
   if (stage === 'loading') {
     return (
-      <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color={GREEN} />
+      <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
   }
@@ -155,18 +155,18 @@ export default function CheckoutScreen() {
   // ── Payment WebView ──────────────────────────────────────────
   if (stage === 'paying' || stage === 'verifying') {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF' }}>
-        <View style={styles.webHeader}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={[styles.webHeader, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
           <TouchableOpacity onPress={() => setStage('summary')} style={styles.backBtn}>
-            <Ionicons name="close" size={24} color="#1C1C1C" />
+            <Ionicons name="close" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.webHeaderTitle}>Secure Payment</Text>
+          <Text style={[styles.webHeaderTitle, { color: colors.text }]}>Secure Payment</Text>
           <View style={{ width: 40 }} />
         </View>
         {stage === 'verifying' ? (
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color={GREEN} />
-            <Text style={styles.verifyingText}>Verifying your payment…</Text>
+          <View style={[styles.center, { backgroundColor: colors.background }]}>
+            <ActivityIndicator size="large" color={colors.tint} />
+            <Text style={[styles.verifyingText, { color: colors.textSecondary }]}>Verifying your payment…</Text>
           </View>
         ) : paymentLink ? (
           <WebView
@@ -175,15 +175,15 @@ export default function CheckoutScreen() {
             onNavigationStateChange={handleNavigationChange}
             startInLoadingState
             renderLoading={() => (
-              <View style={styles.center}>
-                <ActivityIndicator size="large" color={GREEN} />
+              <View style={[styles.center, { backgroundColor: colors.background }]}>
+                <ActivityIndicator size="large" color={colors.tint} />
               </View>
             )}
           />
         ) : (
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color={GREEN} />
-            <Text style={{ marginTop: 12, color: '#9E9E9E' }}>Preparing payment…</Text>
+          <View style={[styles.center, { backgroundColor: colors.background }]}>
+            <ActivityIndicator size="large" color={colors.tint} />
+            <Text style={{ marginTop: 12, color: colors.textMuted }}>Preparing payment…</Text>
           </View>
         )}
       </SafeAreaView>
@@ -193,10 +193,10 @@ export default function CheckoutScreen() {
   // ── Error ────────────────────────────────────────────────────
   if (stage === 'error') {
     return (
-      <SafeAreaView style={styles.center}>
+      <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
         <Ionicons name="warning-outline" size={48} color="#E53935" />
-        <Text style={styles.errorTitle}>Payment failed</Text>
-        <Text style={styles.errorMsg}>{errorMsg}</Text>
+        <Text style={[styles.errorTitle, { color: colors.text }]}>Payment failed</Text>
+        <Text style={[styles.errorMsg, { color: colors.textSecondary }]}>{errorMsg}</Text>
         <TouchableOpacity style={styles.retryBtn} onPress={() => setStage('summary')}>
           <Text style={styles.retryBtnText}>Go Back</Text>
         </TouchableOpacity>
@@ -207,56 +207,56 @@ export default function CheckoutScreen() {
   // ── Order Summary ────────────────────────────────────────────
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Checkout</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Checkout</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Item card */}
-        <View style={styles.itemCard}>
+        <View style={[styles.itemCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
           {thumbnail ? (
             <Image source={{ uri: thumbnail }} style={styles.itemThumb} contentFit="cover" />
           ) : (
-            <View style={[styles.itemThumb, styles.itemThumbPlaceholder]}>
-              <Ionicons name="image-outline" size={32} color="#9E9E9E" />
+            <View style={[styles.itemThumb, styles.itemThumbPlaceholder, { backgroundColor: colors.inputBackground }]}>
+              <Ionicons name="image-outline" size={32} color={colors.textMuted} />
             </View>
           )}
           <View style={styles.itemInfo}>
-            <Text style={styles.itemTitle} numberOfLines={2}>{item?.title}</Text>
-            <Text style={styles.sellerName}>by {item?.seller?.name ?? 'Seller'}</Text>
+            <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={2}>{item?.title}</Text>
+            <Text style={[styles.sellerName, { color: colors.textMuted }]}>by {item?.seller?.name ?? 'Seller'}</Text>
           </View>
         </View>
 
         {/* Price breakdown */}
-        <View style={styles.summaryCard}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
-          <View style={styles.divider} />
+        <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Order Summary</Text>
+          <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
 
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>Item price</Text>
-            <Text style={styles.rowValue}>{formatPrice(item?.price ?? 0)}</Text>
+            <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>Item price</Text>
+            <Text style={[styles.rowValue, { color: colors.text }]}>{formatPrice(item?.price ?? 0)}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>Platform fee</Text>
-            <Text style={[styles.rowValue, { color: GREEN }]}>FREE</Text>
+            <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>Platform fee</Text>
+[styles.rowValue, { color: colors.tint }]
           </View>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
           <View style={styles.row}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>{formatPrice(item?.price ?? 0)}</Text>
+            <Text style={[styles.totalLabel, { color: colors.text }]}>Total</Text>
+[styles.totalValue, { color: colors.tint }]
           </View>
         </View>
 
         {/* Escrow explanation */}
-        <View style={styles.escrowBanner}>
-          <Ionicons name="shield-checkmark" size={22} color={GREEN} />
+        <View style={[styles.escrowBanner, { backgroundColor: colors.inputBackground }]}>
+          <Ionicons name="shield-checkmark" size={22} color={colors.tint} />
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.escrowTitle}>Protected by Yrdly Escrow</Text>
-            <Text style={styles.escrowBody}>
+            <Text style={[styles.escrowTitle, { color: colors.tint }]}>Secure Escrow Protection</Text>
+            <Text style={[styles.escrowBody, { color: colors.textSecondary }]}>
               Your money is held securely until you confirm you've received the item. If anything goes wrong, we'll help resolve it.
             </Text>
           </View>
@@ -264,81 +264,81 @@ export default function CheckoutScreen() {
       </ScrollView>
 
       {/* CTA */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.payBtn} onPress={handleInitializePayment} activeOpacity={0.85}>
-          <Ionicons name="lock-closed" size={18} color="#FFF" style={{ marginRight: 8 }} />
-          <Text style={styles.payBtnText}>Pay {formatPrice(item?.price ?? 0)} securely</Text>
+      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.borderLight }]}>
+        <TouchableOpacity style={[styles.payBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }]} onPress={handleInitializePayment} activeOpacity={0.85}>
+          <Ionicons name="lock-closed" size={18} color={colors.card} style={{ marginRight: 8 }} />
+          <Text style={[styles.payBtnText, { color: colors.card }]}>Pay {formatPrice(item?.price ?? 0)} securely</Text>
         </TouchableOpacity>
-        <Text style={styles.poweredBy}>🔒 Powered by Flutterwave Escrow</Text>
+        <Text style={[styles.poweredBy, { color: colors.textMuted }]}>🔒 Powered by Flutterwave Escrow</Text>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFAFA' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFF', padding: 24 },
+  container: { flex: 1 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   scroll: { padding: 20, paddingBottom: 120 },
 
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
-    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F2F2F2', backgroundColor: '#FFF',
+    paddingVertical: 14, borderBottomWidth: 1,
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
 
   webHeader: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
-    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F0F0F0', backgroundColor: '#FFF',
+    paddingVertical: 14, borderBottomWidth: 1,
   },
-  webHeaderTitle: { fontSize: 16, fontWeight: '700', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+  webHeaderTitle: { fontSize: 16, fontWeight: '700', flex: 1, textAlign: 'center' },
 
   itemCard: {
-    flexDirection: 'row', backgroundColor: '#FFF', borderRadius: 16,
+    flexDirection: 'row', borderRadius: 16,
     padding: 16, marginBottom: 16, alignItems: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
+    borderWidth: 1, elevation: 0, shadowOpacity: 0,
   },
   itemThumb: { width: 72, height: 72, borderRadius: 12, marginRight: 14 },
-  itemThumbPlaceholder: { backgroundColor: '#F2F2F2', justifyContent: 'center', alignItems: 'center' },
+  itemThumbPlaceholder: { justifyContent: 'center', alignItems: 'center' },
   itemInfo: { flex: 1 },
-  itemTitle: { fontSize: 16, fontWeight: '700', color: '#1C1C1C', marginBottom: 4 },
-  sellerName: { fontSize: 13, color: '#9E9E9E' },
+  itemTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  sellerName: { fontSize: 13 },
 
   summaryCard: {
-    backgroundColor: '#FFF', borderRadius: 16, padding: 20, marginBottom: 16,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2,
+    borderRadius: 16, padding: 20, marginBottom: 16,
+    borderWidth: 1, elevation: 0, shadowOpacity: 0,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1C1C1C', marginBottom: 16 },
-  divider: { height: 1, backgroundColor: '#F2F2F2', marginVertical: 14 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 16 },
+  divider: { height: 1, marginVertical: 14 },
   row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  rowLabel: { fontSize: 15, color: '#616161' },
-  rowValue: { fontSize: 15, fontWeight: '600', color: '#1C1C1C' },
-  totalLabel: { fontSize: 17, fontWeight: '800', color: '#1C1C1C' },
-  totalValue: { fontSize: 22, fontWeight: '800', color: GREEN },
+  rowLabel: { fontSize: 15 },
+  rowValue: { fontSize: 15, fontWeight: '600' },
+  totalLabel: { fontSize: 17, fontWeight: '800' },
+  totalValue: { fontSize: 22, fontWeight: '800' },
 
   escrowBanner: {
-    flexDirection: 'row', backgroundColor: '#E8F5E9', borderRadius: 16,
+    flexDirection: 'row', borderRadius: 16,
     padding: 16, alignItems: 'flex-start',
   },
-  escrowTitle: { fontSize: 14, fontWeight: '700', color: '#2E7D32', marginBottom: 4 },
-  escrowBody: { fontSize: 12, color: '#388E3C', lineHeight: 18 },
+  escrowTitle: { fontSize: 14, fontWeight: '700', marginBottom: 4 },
+  escrowBody: { fontSize: 12, lineHeight: 18 },
 
   footer: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    padding: 20, backgroundColor: '#FAFAFA',
-    borderTopWidth: 1, borderTopColor: '#F2F2F2',
+    padding: 20,
+    borderTopWidth: 1,
   },
   payBtn: {
-    flexDirection: 'row', height: 56, borderRadius: 28, backgroundColor: GREEN,
+    flexDirection: 'row', height: 56, borderRadius: 28,
     justifyContent: 'center', alignItems: 'center',
-    shadowColor: GREEN, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 10, elevation: 4,
+    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 10, elevation: 4,
   },
-  payBtnText: { fontSize: 17, fontWeight: '800', color: '#FFF' },
-  poweredBy: { textAlign: 'center', marginTop: 10, color: '#9E9E9E', fontSize: 12 },
+  payBtnText: { fontSize: 17, fontWeight: '800' },
+  poweredBy: { textAlign: 'center', marginTop: 10, fontSize: 12 },
 
-  verifyingText: { marginTop: 16, color: '#616161', fontSize: 15 },
-  errorTitle: { fontSize: 22, fontWeight: '800', color: '#1C1C1C', marginTop: 16, marginBottom: 8 },
-  errorMsg: { fontSize: 14, color: '#616161', textAlign: 'center', lineHeight: 20, marginBottom: 24, maxWidth: 280 },
-  retryBtn: { paddingHorizontal: 32, paddingVertical: 14, backgroundColor: GREEN, borderRadius: 24 },
-  retryBtnText: { color: '#FFF', fontWeight: '700', fontSize: 15 },
+  verifyingText: { marginTop: 16, fontSize: 15 },
+  errorTitle: { fontSize: 22, fontWeight: '800', marginTop: 16, marginBottom: 8 },
+  errorMsg: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24, maxWidth: 280 },
+  retryBtn: { paddingHorizontal: 32, paddingVertical: 14, borderRadius: 24 },
+  retryBtnText: { fontWeight: '700', fontSize: 15 },
 });

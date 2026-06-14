@@ -4,12 +4,14 @@ import { EventCard } from './EventCard';
 import { supabase } from '../lib/supabase';
 import { Post } from '../types';
 import { useRouter } from 'expo-router';
+import { useAppTheme } from '../context/ThemeContext';
 
 interface EventListProps {
   searchQuery?: string;
 }
 
 export function EventList({ searchQuery = '' }: EventListProps) {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const [events, setEvents] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ export function EventList({ searchQuery = '' }: EventListProps) {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#388E3C" />
+        <ActivityIndicator size="large" color={colors.tint} />
       </View>
     );
   }
@@ -55,7 +57,7 @@ export function EventList({ searchQuery = '' }: EventListProps) {
   if (events.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>
+        <Text style={[styles.emptyText, { color: colors.textMuted }]}>
           {searchQuery ? `No events found for "${searchQuery}"` : "No upcoming events"}
         </Text>
       </View>
@@ -91,7 +93,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#616161',
     textAlign: 'center',
   },
 });

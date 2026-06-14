@@ -5,12 +5,14 @@ import { supabase } from '../lib/supabase';
 import { Post } from '../types';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { useAppTheme } from '../context/ThemeContext';
 
 interface MarketplaceGridProps {
   searchQuery?: string;
 }
 
 export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
   const [items, setItems] = useState<Post[]>([]);
@@ -105,7 +107,7 @@ export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#388E3C" />
+        <ActivityIndicator size="large" color={colors.tint} />
       </View>
     );
   }
@@ -113,7 +115,7 @@ export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
   if (items.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>
+        <Text style={[styles.emptyText, { color: colors.textMuted }]}>
           {searchQuery ? `No results for "${searchQuery}"` : "Marketplace is empty"}
         </Text>
       </View>
@@ -155,7 +157,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#616161',
     textAlign: 'center',
   },
 });

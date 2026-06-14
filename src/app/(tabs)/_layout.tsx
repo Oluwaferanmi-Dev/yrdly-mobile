@@ -33,7 +33,7 @@ export default function TabLayout() {
           borderBottomWidth: 0.5,
           borderBottomColor: colors.border,
           elevation: 0,
-          shadowColor: '#000',
+          shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 0.5 },
           shadowOpacity: 0.1,
           shadowRadius: 0,
@@ -63,7 +63,7 @@ export default function TabLayout() {
             : (isDarkMode ? colors.card : 'rgba(255,255,255,0.96)'),
           elevation: 8,
         },
-        tabBarActiveTintColor: '#388E3C',
+        tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarShowLabel: false,
       }}
@@ -94,7 +94,11 @@ export default function TabLayout() {
           title: 'Create',
           headerTitle: 'Create Post',
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.createButton, focused && styles.createButtonActive]}>
+            <View style={[
+              styles.createButton,
+              { backgroundColor: colors.tint, shadowColor: colors.tint },
+              focused && styles.createButtonActive,
+            ]}>
               <Ionicons name="add" size={28} color="#FFF" />
             </View>
           ),
@@ -129,10 +133,8 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#388E3C',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#388E3C',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,

@@ -1,13 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { GlassCard } from './GlassCard';
-
-const GREEN = '#388E3C';
+import { useAppTheme } from '../context/ThemeContext';
 
 interface EventCardProps {
   event: Post;
@@ -16,6 +14,7 @@ interface EventCardProps {
 
 export function EventCard({ event, onPress }: EventCardProps) {
   const { user } = useAuth();
+  const { colors } = useAppTheme();
   const isOwner = user?.id === event.user_id;
 
   const imageUrl = event.image_urls?.[0] || event.image_url;
@@ -43,18 +42,21 @@ export function EventCard({ event, onPress }: EventCardProps) {
   };
 
   return (
-    <GlassCard style={styles.card} borderRadius={16} intensity={Platform.OS === 'ios' ? 50 : undefined} tint="systemChromeMaterial">
-      <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
+    <TouchableOpacity 
+      activeOpacity={0.9} 
+      onPress={onPress}
+      style={[styles.container, { borderBottomColor: colors.borderLight }]}
+    >
       {/* Header Image */}
       {imageUrl ? (
-        <View style={styles.imageContainer}>
+        <View style={[styles.imageContainer, { backgroundColor: colors.borderLight }]}>
           <Image source={{ uri: imageUrl }} style={styles.image} contentFit="cover" />
         </View>
       ) : null}
 
       <View style={styles.content}>
         {/* Title */}
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
           {event.title || event.text || 'Untitled Event'}
         </Text>
 
@@ -62,14 +64,14 @@ export function EventCard({ event, onPress }: EventCardProps) {
         <View style={styles.metaContainer}>
           {!!event.event_date && (
             <View style={styles.metaRow}>
-              <Ionicons name="calendar-outline" size={16} color="#616161" />
-              <Text style={styles.metaText}>{getEventDate()}</Text>
+              <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
+              <Text style={[styles.metaText, { color: colors.textSecondary }]}>{getEventDate()}</Text>
             </View>
           )}
           {!!event.event_location && (
             <View style={styles.metaRow}>
-              <Ionicons name="location-outline" size={16} color="#616161" />
-              <Text style={styles.metaText} numberOfLines={1}>
+              <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
+              <Text style={[styles.metaText, { color: colors.textSecondary }]} numberOfLines={1}>
                 {getLocation(event.event_location)}
               </Text>
             </View>
@@ -77,46 +79,53 @@ export function EventCard({ event, onPress }: EventCardProps) {
         </View>
 
         {/* Price & Action Row */}
-        <View style={styles.footer}>
-          <Text style={styles.price}>
+        <View style={[styles.footer, { borderTopColor: colors.borderLight }]}>
+          <Text style={[styles.price, { color: colors.tint }]}>
             {event.price === 0 || !event.price ? 'FREE' : formatPrice(event.price)}
           </Text>
           
-          <TouchableOpacity style={[styles.actionButton, isOwner && styles.editButton]}>
-            <Text style={[styles.actionText, isOwner && styles.editButtonText]}>
+          <TouchableOpacity 
+            style={[
+              styles.actionButton, 
+              isOwner ? [styles.editButton, { borderColor: colors.tint }] : { backgroundColor: colors.tint }
+            ]}
+          >
+            <Text style={[
+              styles.actionText, 
+              isOwner ? { color: colors.tint } : { color: '#FFFFFF' }
+            ]}>
               {isOwner ? 'Edit Event' : 'View Tickets'}
             </Text>
           </TouchableOpacity>
         </View>
       </View>
-      </TouchableOpacity>
-    </GlassCard>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    overflow: 'hidden',
+  container: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   imageContainer: {
     width: '100%',
     height: 180,
-    backgroundColor: '#F2F2F2',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginBottom: 12,
   },
   image: {
     width: '100%',
     height: '100%',
   },
   content: {
-    padding: 16,
+    // padding removed as container handles horizontal padding, image has bottom margin
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1C1C1C',
     marginBottom: 12,
   },
   metaContainer: {
@@ -129,7 +138,6 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: 14,
-    color: '#616161',
     marginLeft: 8,
     flex: 1,
   },
@@ -137,32 +145,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: '#F2F2F2',
+    borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: 12,
   },
   price: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: GREEN,
   },
   actionButton: {
-    backgroundColor: GREEN,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   actionText: {
-    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
   },
   editButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: GREEN,
-  },
-  editButtonText: {
-    color: GREEN,
   },
 });

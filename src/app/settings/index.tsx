@@ -10,7 +10,6 @@ import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
 import { StorageService } from '../../lib/storage-service';
 
-const GREEN = '#388E3C';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -113,7 +112,7 @@ export default function SettingsScreen() {
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Edit Profile</Text>
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving || uploadingImage}>
-          {saving ? <ActivityIndicator size="small" color={GREEN} /> : <Text style={styles.saveBtnText}>Save</Text>}
+          {saving ? <ActivityIndicator size="small" color={colors.tint} /> : <Text style={[styles.saveBtnText, { color: colors.tint }]}>Save</Text>}
         </TouchableOpacity>
       </View>
 
@@ -124,7 +123,7 @@ export default function SettingsScreen() {
               <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={40} color={GREEN} />
+                <Ionicons name="person" size={40} color={colors.tint} />
               </View>
             )}
             {uploadingImage && (
@@ -141,29 +140,29 @@ export default function SettingsScreen() {
         <View style={styles.formGroup}>
           <Text style={styles.label}>Name</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
             value={name}
             onChangeText={setName}
             placeholder="Your name"
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={colors.textMuted}
           />
         </View>
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Bio</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
             value={bio}
             onChangeText={setBio}
             placeholder="Tell your neighbors about yourself..."
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={colors.textMuted}
             multiline
             numberOfLines={4}
           />
         </View>
 
         {/* Commerce & Account */}
-        <Text style={styles.sectionHeader}>Commerce & Account</Text>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>Commerce & Account</Text>
         {[
           { icon: 'receipt-outline',   label: 'Transactions',       route: '/transactions' },
           { icon: 'wallet-outline',    label: 'Payouts',            route: '/settings/payouts' },
@@ -172,45 +171,45 @@ export default function SettingsScreen() {
         ].map((item) => (
           <TouchableOpacity
             key={item.route}
-            style={styles.navRow}
+            style={[styles.navRow, { backgroundColor: colors.card }]}
             onPress={() => router.push(item.route as any)}
             activeOpacity={0.7}
           >
-            <View style={styles.navIconWrap}>
-              <Ionicons name={item.icon as any} size={20} color={GREEN} />
+            <View style={[styles.navIconWrap, { backgroundColor: colors.tint + '22' }]}>
+              <Ionicons name={item.icon as any} size={20} color={colors.tint} />
             </View>
-            <Text style={styles.navLabel}>{item.label}</Text>
-            <Ionicons name="chevron-forward" size={18} color="#BDBDBD" />
+            <Text style={[styles.navLabel, { color: colors.text }]}>{item.label}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
         ))}
 
         {/* Preferences */}
-        <Text style={styles.sectionHeader}>Preferences</Text>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>Preferences</Text>
         <TouchableOpacity
-          style={styles.navRow}
+          style={[styles.navRow, { backgroundColor: colors.card }]}
           onPress={() => router.push('/settings/notifications' as any)}
           activeOpacity={0.7}
         >
-          <View style={styles.navIconWrap}>
-            <Ionicons name="notifications-outline" size={20} color={GREEN} />
+          <View style={[styles.navIconWrap, { backgroundColor: colors.tint + '22' }]}>
+            <Ionicons name="notifications-outline" size={20} color={colors.tint} />
           </View>
-          <Text style={styles.navLabel}>Notifications</Text>
-          <Ionicons name="chevron-forward" size={18} color="#BDBDBD" />
+          <Text style={[styles.navLabel, { color: colors.text }]}>Notifications</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
         </TouchableOpacity>
 
         {/* Dark Mode Toggle */}
-        <View style={styles.themeSection}>
+        <View style={[styles.themeSection, { backgroundColor: colors.card }]}>
           <View style={styles.themeRow}>
-            <View style={styles.navIconWrap}>
-              <Ionicons name={isDarkMode ? 'moon' : 'sunny'} size={20} color={GREEN} />
+            <View style={[styles.navIconWrap, { backgroundColor: colors.tint + '22' }]}>
+              <Ionicons name={isDarkMode ? 'moon' : 'sunny'} size={20} color={colors.tint} />
             </View>
-            <Text style={styles.navLabel}>Dark Mode</Text>
+            <Text style={[styles.navLabel, { color: colors.text }]}>Dark Mode</Text>
             <Switch
               value={isDarkMode}
               onValueChange={toggleTheme}
-              trackColor={{ false: '#E0E0E0', true: '#A5D6A7' }}
-              thumbColor={isDarkMode ? GREEN : '#FFFFFF'}
-              ios_backgroundColor="#E0E0E0"
+              trackColor={{ false: colors.border, true: colors.tint + '66' }}
+              thumbColor={isDarkMode ? colors.tint : '#FFFFFF'}
+              ios_backgroundColor={colors.border}
             />
           </View>
         </View>
@@ -227,9 +226,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   backBtn: { width: 60, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
   saveBtn: { width: 60, justifyContent: 'center', alignItems: 'flex-end' },
-  saveBtnText: { color: GREEN, fontSize: 16, fontWeight: 'bold' },
+  saveBtnText: { fontSize: 16, fontWeight: 'bold' },
   content: { padding: 24 },
   avatarSection: { alignItems: 'center', marginBottom: 32 },
   avatarWrapper: {
@@ -243,34 +242,30 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center', alignItems: 'center'
   },
-  changePhotoBtn: { paddingVertical: 8, paddingHorizontal: 16, backgroundColor: '#F2F2F2', borderRadius: 20 },
-  changePhotoText: { color: '#1C1C1C', fontSize: 14, fontWeight: 'bold' },
+  changePhotoBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20 },
+  changePhotoText: { fontSize: 14, fontWeight: 'bold' },
   formGroup: { marginBottom: 24 },
-  label: { fontSize: 14, fontWeight: 'bold', color: '#616161', marginBottom: 8, textTransform: 'uppercase' },
-  input: {
-    backgroundColor: '#F9F9F9', borderWidth: 1, borderColor: '#E0E0E0',
-    borderRadius: 8, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: '#1C1C1C'
-  },
+  label: { fontSize: 14, fontWeight: 'bold', marginBottom: 8, textTransform: 'uppercase' },
+  input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16 },
   textArea: { height: 100, textAlignVertical: 'top' },
   sectionHeader: {
-    fontSize: 12, fontWeight: '800', color: '#9E9E9E',
+    fontSize: 12, fontWeight: '800',
     textTransform: 'uppercase', letterSpacing: 0.8,
     marginBottom: 12, marginTop: 8,
   },
   navRow: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF',
+    flexDirection: 'row', alignItems: 'center',
     borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 10,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
   },
   navIconWrap: {
-    width: 36, height: 36, borderRadius: 10, backgroundColor: '#E8F5E9',
+    width: 36, height: 36, borderRadius: 10,
     justifyContent: 'center', alignItems: 'center', marginRight: 14,
   },
-  navLabel: { flex: 1, fontSize: 15, fontWeight: '600', color: '#1C1C1C' },
+  navLabel: { flex: 1, fontSize: 15, fontWeight: '600' },
 
-  // Dark mode toggle (reuses navRow pattern)
   themeSection: {
-    backgroundColor: '#FFF', borderRadius: 12, marginBottom: 10,
+    borderRadius: 12, marginBottom: 10,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
   },
   themeRow: {

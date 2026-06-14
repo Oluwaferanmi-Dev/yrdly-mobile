@@ -8,7 +8,6 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
 type PostCategory = 'General' | 'For Sale' | 'Event';
 
 export default function CreateTab() {
@@ -144,15 +143,15 @@ export default function CreateTab() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Category Selector */}
-          <Text style={styles.sectionLabel}>What are you creating?</Text>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>What are you creating?</Text>
           <View style={styles.categoryRow}>
             {(['General', 'For Sale', 'Event'] as PostCategory[]).map((cat) => (
               <TouchableOpacity
                 key={cat}
-                style={[styles.categoryButton, category === cat && styles.categoryActive]}
+                style={[styles.categoryButton, { backgroundColor: colors.inputBackground }, category === cat && [styles.categoryActive, { borderColor: colors.tint }]]}
                 onPress={() => setCategory(cat)}
               >
-                <Text style={[styles.categoryText, category === cat && styles.categoryTextActive]}>
+                <Text style={[styles.categoryText, { color: colors.textSecondary }, category === cat && [styles.categoryTextActive, { color: colors.tint }]]}>
                   {cat}
                 </Text>
               </TouchableOpacity>
@@ -160,19 +159,19 @@ export default function CreateTab() {
           </View>
 
           {/* Form Fields */}
-          <View style={styles.formGroup}>
+          <View style={[styles.formGroup, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]}>
             <TextInput
-              style={styles.inputTitle}
+              style={[styles.inputTitle, { color: colors.text, borderBottomColor: colors.border }]}
               placeholder="Give it a title (optional)"
-              placeholderTextColor="#9E9E9E"
+              placeholderTextColor={colors.textMuted}
               value={title}
               onChangeText={setTitle}
             />
 
             <TextInput
-              style={styles.inputBody}
+              style={[styles.inputBody, { color: colors.text }]}
               placeholder={category === 'General' ? "What's going on?" : "Describe it..."}
-              placeholderTextColor="#9E9E9E"
+              placeholderTextColor={colors.textMuted}
               value={text}
               onChangeText={setText}
               multiline
@@ -181,9 +180,9 @@ export default function CreateTab() {
 
             {category === 'For Sale' && (
               <TextInput
-                style={styles.inputPrice}
+                style={[styles.inputPrice, { color: colors.tint, borderTopColor: colors.border }]}
                 placeholder="Price (₦)"
-                placeholderTextColor="#9E9E9E"
+                placeholderTextColor={colors.textMuted}
                 value={price}
                 onChangeText={setPrice}
                 keyboardType="numeric"
@@ -192,14 +191,14 @@ export default function CreateTab() {
           </View>
 
           {/* Media Picker */}
-          <Text style={styles.sectionLabel}>Add Media</Text>
-          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Add Media</Text>
+          <TouchableOpacity style={[styles.imagePicker, { backgroundColor: colors.inputBackground, borderColor: colors.border }]} onPress={pickImage}>
             {imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.previewImage} contentFit="cover" />
             ) : (
               <View style={styles.imagePlaceholder}>
-                <Ionicons name="camera-outline" size={32} color="#9E9E9E" />
-                <Text style={styles.imagePlaceholderText}>Tap to add a photo</Text>
+                <Ionicons name="camera-outline" size={32} color={colors.textMuted} />
+                <Text style={[styles.imagePlaceholderText, { color: colors.textMuted }]}>Tap to add a photo</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -211,7 +210,7 @@ export default function CreateTab() {
 
           {/* Submit Button */}
           <TouchableOpacity 
-            style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]} 
+            style={[styles.submitButton, { backgroundColor: colors.tint, shadowColor: colors.tint }, isSubmitting && styles.submitButtonDisabled]} 
             onPress={handleSubmit}
             disabled={isSubmitting}
           >
@@ -231,7 +230,6 @@ export default function CreateTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   scrollContent: {
     padding: 16,
@@ -240,7 +238,6 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#616161',
     marginBottom: 8,
     marginTop: 16,
   },
@@ -251,7 +248,6 @@ const styles = StyleSheet.create({
   categoryButton: {
     flex: 1,
     paddingVertical: 10,
-    backgroundColor: '#F2F2F2',
     marginHorizontal: 4,
     borderRadius: 8,
     alignItems: 'center',
@@ -260,46 +256,36 @@ const styles = StyleSheet.create({
   },
   categoryActive: {
     backgroundColor: '#E8F5E9',
-    borderColor: GREEN,
   },
   categoryText: {
     fontSize: 14,
-    color: '#616161',
     fontWeight: '600',
   },
   categoryTextActive: {
-    color: GREEN,
   },
   formGroup: {
-    backgroundColor: '#F9F9F9',
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#F2F2F2',
     marginBottom: 16,
   },
   inputTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1C1C1C',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
     marginBottom: 8,
   },
   inputBody: {
     fontSize: 16,
-    color: '#1C1C1C',
     minHeight: 100,
     paddingVertical: 8,
   },
   inputPrice: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: GREEN,
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
     marginTop: 8,
   },
   imagePicker: {
@@ -307,9 +293,7 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#F2F2F2',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
     borderStyle: 'dashed',
   },
   imagePlaceholder: {
@@ -319,7 +303,6 @@ const styles = StyleSheet.create({
   },
   imagePlaceholderText: {
     marginTop: 8,
-    color: '#9E9E9E',
     fontSize: 14,
   },
   previewImage: {
@@ -336,12 +319,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   submitButton: {
-    backgroundColor: GREEN,
     paddingVertical: 16,
     borderRadius: 30,
     alignItems: 'center',
     marginTop: 24,
-    shadowColor: GREEN,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

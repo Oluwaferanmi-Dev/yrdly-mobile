@@ -1,16 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { GlassCard } from './GlassCard';
+import { useAppTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 // Calculate card width for 2 columns with padding
 const cardWidth = (width - 48) / 2;
-const GREEN = '#388E3C';
 
 interface MarketplaceItemCardProps {
   item: Post;
@@ -20,56 +19,66 @@ interface MarketplaceItemCardProps {
 
 export function MarketplaceItemCard({ item, onPress, onMessageSeller }: MarketplaceItemCardProps) {
   const { user } = useAuth();
+  const { colors } = useAppTheme();
   const isOwner = user?.id === item.user_id;
 
   const getInitials = (name?: string) => name ? name.charAt(0).toUpperCase() : 'U';
   const imageUrl = item.image_urls?.[0] || item.image_url;
 
   return (
-    <GlassCard style={styles.card} borderRadius={12} intensity={Platform.OS === 'ios' ? 50 : undefined} tint="systemChromeMaterial">
-      <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
+    <TouchableOpacity 
+      activeOpacity={0.9} 
+      onPress={onPress}
+      style={[
+        styles.card, 
+        { backgroundColor: colors.card, borderColor: colors.borderLight }
+      ]}
+    >
       {/* Image Container */}
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, { backgroundColor: colors.borderLight }]}>
         {imageUrl ? (
           <Image source={{ uri: imageUrl }} style={styles.image} contentFit="cover" />
         ) : (
-          <View style={styles.placeholderImage}>
-            <Ionicons name="cart-outline" size={32} color="rgba(56, 142, 60, 0.5)" />
+          <View style={[styles.placeholderImage, { backgroundColor: colors.inputBackground }]}>
+            <Ionicons name="cart-outline" size={32} color={colors.tint} style={{ opacity: 0.5 }} />
           </View>
         )}
       </View>
 
       <View style={styles.infoContainer}>
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
           {item.title || item.text || 'Untitled'}
         </Text>
         
-        <Text style={styles.price}>
+        <Text style={[styles.price, { color: colors.tint }]}>
           {item.price === 0 ? 'FREE' : formatPrice(item.price || 0)}
         </Text>
 
         <View style={styles.actionsRow}>
           {isOwner ? (
-            <TouchableOpacity style={[styles.actionButton, styles.editButton]}>
-              <Ionicons name="pencil" size={14} color={GREEN} />
-              <Text style={styles.editButtonText}>Edit</Text>
+            <TouchableOpacity style={[styles.actionButton, styles.editButton, { borderColor: colors.tint }]}>
+              <Ionicons name="pencil" size={14} color={colors.tint} />
+              <Text style={[styles.editButtonText, { color: colors.tint }]}>Edit</Text>
             </TouchableOpacity>
           ) : (
             <>
-              <TouchableOpacity style={[styles.actionButton, styles.buyButton]}>
+              <TouchableOpacity style={[styles.actionButton, styles.buyButton, { backgroundColor: colors.tint }]}>
                 <Text style={styles.buyButtonText}>
                   {item.price === 0 ? 'Claim Free' : 'Buy Now'}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.messageButton} onPress={() => onMessageSeller?.(item)}>
-                <Ionicons name="chatbubble-outline" size={16} color={GREEN} />
+              <TouchableOpacity 
+                style={[styles.messageButton, { borderColor: colors.tint }]} 
+                onPress={() => onMessageSeller?.(item)}
+              >
+                <Ionicons name="chatbubble-outline" size={16} color={colors.tint} />
               </TouchableOpacity>
             </>
           )}
         </View>
 
-        <View style={styles.sellerRow}>
-          <View style={styles.avatar}>
+        <View style={[styles.sellerRow, { borderTopColor: colors.borderLight }]}>
+          <View style={[styles.avatar, { backgroundColor: colors.tint }]}>
             {item.user?.avatar_url || item.author_image ? (
               <Image 
                 source={{ uri: item.user?.avatar_url || item.author_image }} 
@@ -81,27 +90,25 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
               </Text>
             )}
           </View>
-          <Text style={styles.sellerName} numberOfLines={1}>
+          <Text style={[styles.sellerName, { color: colors.textSecondary }]} numberOfLines={1}>
             {item.user?.name || item.author_name || 'Unknown Seller'}
           </Text>
         </View>
       </View>
-      </TouchableOpacity>
-    </GlassCard>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     width: cardWidth,
-    borderRadius: 12,
     marginBottom: 16,
     overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
   },
   imageContainer: {
     width: '100%',
     height: 140,
-    backgroundColor: '#F2F2F2',
   },
   image: {
     width: '100%',
@@ -111,7 +118,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
   },
   infoContainer: {
     padding: 10,
@@ -119,7 +125,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#1C1C1C',
     lineHeight: 18,
     marginBottom: 4,
     height: 36, // Force two lines height
@@ -127,7 +132,6 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: GREEN,
     marginBottom: 8,
   },
   actionsRow: {
@@ -145,7 +149,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buyButton: {
-    backgroundColor: GREEN,
     marginRight: 6,
   },
   buyButtonText: {
@@ -158,18 +161,15 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: GREEN,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(56, 142, 60, 0.05)',
+    backgroundColor: 'transparent',
   },
   editButton: {
     borderWidth: 1,
-    borderColor: GREEN,
     backgroundColor: 'transparent',
   },
   editButtonText: {
-    color: GREEN,
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
@@ -177,15 +177,13 @@ const styles = StyleSheet.create({
   sellerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#F2F2F2',
+    borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: 8,
   },
   avatar: {
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: GREEN,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -203,6 +201,5 @@ const styles = StyleSheet.create({
   sellerName: {
     flex: 1,
     fontSize: 10,
-    color: '#616161',
   },
 });

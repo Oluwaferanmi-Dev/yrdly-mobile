@@ -9,7 +9,6 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { supabase } from '../../../lib/supabase';
 import { useAppTheme } from '../../../context/ThemeContext';
 
-const GREEN = '#388E3C';
 const RED = '#B71C1C';
 
 type ScanResult = { success: true; attendee: string } | { success: false; message: string } | null;
@@ -82,17 +81,17 @@ export default function ScanTicketScreen() {
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={styles.center}>
-        <Ionicons name="camera-off-outline" size={60} color="#9E9E9E" />
-        <Text style={styles.permText}>Camera access is required to scan tickets.</Text>
-        <TouchableOpacity style={styles.permBtn} onPress={requestPermission}>
-          <Text style={styles.permBtnText}>Grant Permission</Text>
+      <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
+        <Ionicons name="camera-off-outline" size={60} color={colors.textMuted} />
+        <Text style={[styles.permText, { color: colors.textSecondary }]}>Camera access is required to scan tickets.</Text>
+        <TouchableOpacity style={[styles.permBtn, { backgroundColor: colors.tint }]} onPress={requestPermission}>
+          <Text style={[styles.permBtnText, { color: colors.card }]}>Grant Permission</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
-  const flashBg = result?.success ? GREEN : RED;
+  const flashBg = result?.success ? colors.tint : RED;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -133,17 +132,17 @@ export default function ScanTicketScreen() {
 
       {/* Result overlay */}
       {result && (
-        <View style={[styles.resultBanner, { backgroundColor: result.success ? '#E8F5E9' : '#FFEBEE' }]}>
+        <View style={[styles.resultBanner, { backgroundColor: result.success ? colors.inputBackground : '#FFEBEE', shadowColor: colors.text }]}>
           <Ionicons
             name={result.success ? 'checkmark-circle' : 'close-circle'}
             size={36}
-            color={result.success ? GREEN : RED}
+            color={result.success ? colors.tint : RED}
           />
           <View style={{ flex: 1 }}>
-            <Text style={[styles.resultTitle, { color: result.success ? GREEN : RED }]}>
+            <Text style={[styles.resultTitle, { color: result.success ? colors.tint : RED }]}>
               {result.success ? '✓ Valid Ticket' : '✗ Invalid Ticket'}
             </Text>
-            <Text style={styles.resultSub}>
+            <Text style={[styles.resultSub, { color: colors.textSecondary }]}>
               {result.success ? result.attendee : result.message}
             </Text>
           </View>
@@ -157,11 +156,11 @@ const CORNER_SIZE = 28;
 const CORNER_THICKNESS = 4;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F4F6F4', gap: 16, padding: 32 },
-  permText: { fontSize: 15, color: '#616161', textAlign: 'center' },
-  permBtn: { backgroundColor: GREEN, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 24 },
-  permBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
+  container: { flex: 1 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16, padding: 32 },
+  permText: { fontSize: 15, textAlign: 'center' },
+  permBtn: { paddingHorizontal: 24, paddingVertical: 14, borderRadius: 24 },
+  permBtnText: { fontSize: 16, fontWeight: 'bold' },
   flashOverlay: { ...StyleSheet.absoluteFillObject },
   headerOverlay: { position: 'absolute', top: 0, left: 0, right: 0 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12 },
@@ -183,8 +182,8 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 60, left: 20, right: 20,
     flexDirection: 'row', alignItems: 'center', gap: 14,
     borderRadius: 16, padding: 18,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 6,
+    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 6,
   },
   resultTitle: { fontSize: 17, fontWeight: 'bold', marginBottom: 2 },
-  resultSub: { fontSize: 14, color: '#424242' },
+  resultSub: { fontSize: 14 },
 });

@@ -13,7 +13,6 @@ import { formatPrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
-const GREEN = '#388E3C';
 
 export default function EventDetailScreen() {
   const { colors } = useAppTheme();
@@ -44,18 +43,18 @@ export default function EventDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={GREEN} />
+      <SafeAreaView style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
   }
 
   if (!event) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
-        <Text style={styles.errorText}>Event not found</Text>
-        <TouchableOpacity style={styles.backBtnWrapper} onPress={() => router.back()}>
-          <Text style={styles.backBtnText}>Go Back</Text>
+      <SafeAreaView style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.text }]}>Event not found</Text>
+        <TouchableOpacity style={[styles.backBtnWrapper, { backgroundColor: colors.inputBackground }]} onPress={() => router.back()}>
+          <Text style={[styles.backBtnText, { color: colors.text }]}>Go Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -75,11 +74,11 @@ export default function EventDetailScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Event Details</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Event Details</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -98,40 +97,40 @@ export default function EventDetailScreen() {
         )}
 
         <View style={styles.infoSection}>
-          <Text style={styles.title}>{event.title || event.text || 'Untitled Event'}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{event.title || event.text || 'Untitled Event'}</Text>
           
           <View style={styles.dateTimeContainer}>
             <View style={styles.dateTimeRow}>
-              <Ionicons name="calendar" size={20} color={GREEN} />
-              <Text style={styles.dateTimeText}>{formattedDate}</Text>
+              <Ionicons name="calendar" size={20} color={colors.tint} />
+              <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>{formattedDate}</Text>
             </View>
             <View style={styles.dateTimeRow}>
-              <Ionicons name="time" size={20} color={GREEN} />
-              <Text style={styles.dateTimeText}>{formattedTime}</Text>
+              <Ionicons name="time" size={20} color={colors.tint} />
+              <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>{formattedTime}</Text>
             </View>
             {!!((event as any)?.location) && (
             <View style={styles.dateTimeRow}>
-              <Ionicons name="location" size={20} color={GREEN} />
-              <Text style={styles.dateTimeText}>{(event as any).location}</Text>
+              <Ionicons name="location" size={20} color={colors.tint} />
+              <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>{(event as any).location}</Text>
             </View>
           )}
           </View>
 
-          <View style={styles.ticketBox}>
-            <Text style={styles.ticketLabel}>Ticket Price</Text>
-            <Text style={styles.price}>{event.price === 0 || !event.price ? 'FREE' : formatPrice(event.price)}</Text>
+          <View style={[styles.ticketBox, { backgroundColor: colors.inputBackground }]}>
+            <Text style={[styles.ticketLabel, { color: colors.textSecondary }]}>Ticket Price</Text>
+            <Text style={[styles.price, { color: colors.tint }]}>{event.price === 0 || !event.price ? 'FREE' : formatPrice(event.price)}</Text>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
 
-          <Text style={styles.sectionTitle}>About this event</Text>
-          <Text style={styles.description}>{event.text}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>About this event</Text>
+          <Text style={[styles.description, { color: colors.textSecondary }]}>{event.text}</Text>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
 
-          <Text style={styles.sectionTitle}>Organizer</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Organizer</Text>
           <View style={styles.sellerRow}>
-            <View style={styles.avatar}>
+            <View style={[styles.avatar, { backgroundColor: colors.tint }]}>
               {event.user?.avatar_url || event.author_image ? (
                 <Image source={{ uri: event.user?.avatar_url || event.author_image }} style={styles.avatarImage} />
               ) : (
@@ -141,17 +140,17 @@ export default function EventDetailScreen() {
               )}
             </View>
             <View>
-              <Text style={styles.sellerName}>{event.user?.name || event.author_name || 'Unknown Organizer'}</Text>
+              <Text style={[styles.sellerName, { color: colors.text }]}>{event.user?.name || event.author_name || 'Unknown Organizer'}</Text>
             </View>
           </View>
         </View>
       </ScrollView>
 
       {/* Footer Actions */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.borderLight }]}>
         {isOwner ? (
           <TouchableOpacity
-            style={[styles.actionButton, styles.manageButton]}
+            style={[styles.actionButton, styles.manageButton, { backgroundColor: colors.tint }]}
             onPress={() => router.push(`/events/${event.id}/manage` as any)}
           >
             <Ionicons name="settings-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
@@ -159,7 +158,7 @@ export default function EventDetailScreen() {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={styles.buyButton}
+            style={[styles.buyButton, { backgroundColor: colors.tint }]}
             onPress={() => {
               if (event.price === 0 || !event.price) {
                 Alert.alert('RSVP', 'You have successfully RSVPd to this free event!');
@@ -179,46 +178,46 @@ export default function EventDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' },
-  errorText: { fontSize: 18, color: '#1C1C1C', marginBottom: 20 },
-  backBtnWrapper: { paddingVertical: 10, paddingHorizontal: 20, backgroundColor: '#F2F2F2', borderRadius: 8 },
-  backBtnText: { color: '#1C1C1C', fontWeight: 'bold' },
+  container: { flex: 1 },
+  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  errorText: { fontSize: 18, marginBottom: 20 },
+  backBtnWrapper: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+  backBtnText: { fontWeight: 'bold' },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
+    borderBottomWidth: 1,
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
   scrollContent: { flex: 1 },
   imageScroll: { height: width * 0.75 },
   mainImage: { width: width, height: width * 0.75 },
   placeholderImage: { width: width, height: width * 0.75, backgroundColor: '#E8F5E9', justifyContent: 'center', alignItems: 'center' },
   infoSection: { padding: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#1C1C1C', marginBottom: 16 },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
   dateTimeContainer: { marginBottom: 20 },
   dateTimeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  dateTimeText: { fontSize: 16, color: '#424242', marginLeft: 8 },
-  ticketBox: { backgroundColor: '#F9FBF9', padding: 16, borderRadius: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  ticketLabel: { fontSize: 16, color: '#616161', fontWeight: '600' },
-  price: { fontSize: 24, fontWeight: 'bold', color: GREEN },
-  divider: { height: 1, backgroundColor: '#F2F2F2', marginVertical: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', marginBottom: 12 },
-  description: { fontSize: 16, color: '#424242', lineHeight: 24 },
+  dateTimeText: { fontSize: 16, marginLeft: 8 },
+  ticketBox: { padding: 16, borderRadius: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  ticketLabel: { fontSize: 16, fontWeight: '600' },
+  price: { fontSize: 24, fontWeight: 'bold' },
+  divider: { height: 1, marginVertical: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
+  description: { fontSize: 16, lineHeight: 24 },
   sellerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center', marginRight: 16, overflow: 'hidden' },
+  avatar: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginRight: 16, overflow: 'hidden' },
   avatarImage: { width: '100%', height: '100%' },
   avatarText: { color: '#FFFFFF', fontSize: 20, fontWeight: 'bold' },
-  sellerName: { fontSize: 16, fontWeight: 'bold', color: '#1C1C1C' },
+  sellerName: { fontSize: 16, fontWeight: 'bold' },
   footer: {
-    flexDirection: 'row', padding: 16, borderTopWidth: 1, borderTopColor: '#F2F2F2',
-    backgroundColor: '#FFFFFF', paddingBottom: 30,
+    flexDirection: 'row', padding: 16, borderTopWidth: 1,
+    paddingBottom: 30,
   },
   actionButton: { flex: 1, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' },
-  manageButton: { backgroundColor: GREEN },
+  manageButton: { },
   manageButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
-  editButton: { backgroundColor: '#F2F2F2' },
-  editButtonText: { color: '#1C1C1C', fontSize: 16, fontWeight: 'bold' },
-  buyButton: { flex: 1, height: 50, borderRadius: 25, backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center' },
+  editButton: { },
+  editButtonText: { fontSize: 16, fontWeight: 'bold' },
+  buyButton: { flex: 1, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
   buyButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
 });

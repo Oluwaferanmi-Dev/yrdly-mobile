@@ -10,9 +10,6 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 
-const GREEN = '#388E3C';
-const GREEN_LIGHT = '#82DB7E';
-
 interface Notification {
   id: string;
   type: string;
@@ -175,7 +172,7 @@ export default function NotificationsScreen() {
       case 'event_invite':
         return <Ionicons name="calendar" size={16} color="#FB923C" />;
       default:
-        return <Ionicons name="notifications" size={16} color="#9E9E9E" />;
+        return <Ionicons name="notifications" size={16} color={colors.textMuted} />;
     }
   };
 
@@ -184,7 +181,7 @@ export default function NotificationsScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.card, isUnread && styles.cardUnread]}
+        style={[styles.card, { borderBottomColor: colors.borderLight }, isUnread && [styles.cardUnread, { backgroundColor: colors.inputBackground }]]}
         onPress={() => handleNotificationPress(item)}
         activeOpacity={0.8}
       >
@@ -192,29 +189,29 @@ export default function NotificationsScreen() {
           {item.from_user_avatar ? (
             <Image source={{ uri: item.from_user_avatar }} style={styles.avatar} contentFit="cover" />
           ) : (
-            <View style={[styles.avatar, styles.avatarFallback]}>
+            <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint }]}>
               <Text style={styles.avatarFallbackText}>
                 {item.from_user_name ? item.from_user_name.charAt(0).toUpperCase() : '?'}
               </Text>
             </View>
           )}
-          <View style={styles.typeIconBadge}>
+          <View style={[styles.typeIconBadge, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
             {renderIcon(item.type)}
           </View>
         </View>
 
         <View style={styles.contentContainer}>
-          <Text style={[styles.messageText, isUnread && styles.messageTextUnread]}>
-            <Text style={styles.boldText}>{item.from_user_name || item.title} </Text>
+          <Text style={[styles.messageText, { color: colors.textSecondary }, isUnread && [styles.messageTextUnread, { color: colors.text }]]}>
+            <Text style={[styles.boldText, { color: colors.text }]}>{item.from_user_name || item.title} </Text>
             {item.from_user_name ? item.message : ''}
           </Text>
           {!item.from_user_name && (
-            <Text style={styles.subMessageText}>{item.message}</Text>
+            <Text style={[styles.subMessageText, { color: colors.textSecondary }]}>{item.message}</Text>
           )}
-          <Text style={styles.timeText}>{timeAgo(item.created_at)}</Text>
+          <Text style={[styles.timeText, { color: colors.textMuted }]}>{timeAgo(item.created_at)}</Text>
         </View>
 
-        {isUnread && <View style={styles.unreadDot} />}
+        {isUnread && <View style={[styles.unreadDot, { backgroundColor: colors.tint }]} />}
       </TouchableOpacity>
     );
   };
@@ -222,22 +219,22 @@ export default function NotificationsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <View style={{ flex: 1 }}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
-            <Text style={styles.headerTitle}>Notifications</Text>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
           </TouchableOpacity>
         </View>
         {unreadCount > 0 && (
           <TouchableOpacity style={styles.markAllBtn} onPress={handleMarkAllRead}>
-            <Ionicons name="checkmark-done" size={16} color={GREEN} />
+            <Ionicons name="checkmark-done" size={16} color={colors.tint} />
           </TouchableOpacity>
         )}
       </View>
 
       {/* Filters */}
-      <View style={styles.filterContainer}>
+      <View style={[styles.filterContainer, { borderBottomColor: colors.borderLight }]}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -247,15 +244,15 @@ export default function NotificationsScreen() {
             const isActive = activeFilter === item;
             return (
               <TouchableOpacity
-                style={[styles.filterTab, isActive && styles.filterTabActive]}
+                style={[styles.filterTab, { backgroundColor: colors.inputBackground }, isActive && [styles.filterTabActive, { backgroundColor: colors.tint }]]}
                 onPress={() => setActiveFilter(item)}
               >
-                <Text style={[styles.filterTabText, isActive && styles.filterTabTextActive]}>
+                <Text style={[styles.filterTabText, { color: colors.textSecondary }, isActive && styles.filterTabTextActive]}>
                   {item}
                 </Text>
                 {item === 'Unread' && unreadCount > 0 && (
-                  <View style={styles.filterBadge}>
-                    <Text style={styles.filterBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                  <View style={[styles.filterBadge, { backgroundColor: colors.card }]}>
+                    <Text style={[styles.filterBadgeText, { color: colors.tint }]}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -267,13 +264,13 @@ export default function NotificationsScreen() {
       {/* List */}
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={GREEN} />
+          <ActivityIndicator size="large" color={colors.tint} />
         </View>
       ) : filteredNotifications.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="notifications-off-outline" size={48} color="#E0E0E0" />
-          <Text style={styles.emptyTitle}>No notifications yet</Text>
-          <Text style={styles.emptySubtitle}>You're all caught up!</Text>
+          <Ionicons name="notifications-off-outline" size={48} color={colors.border} />
+          <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No notifications yet</Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>You're all caught up!</Text>
         </View>
       ) : (
         <FlatList
@@ -289,50 +286,50 @@ export default function NotificationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
+    paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1,
   },
   backBtn: { flexDirection: 'row', alignItems: 'center' },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#1C1C1C', marginLeft: 8 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', marginLeft: 8 },
   markAllBtn: { padding: 8, backgroundColor: '#E8F5E9', borderRadius: 20 },
-  filterContainer: { paddingVertical: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#F2F2F2' },
+  filterContainer: { paddingVertical: 12, paddingHorizontal: 16, borderBottomWidth: 1 },
   filterTab: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 20, backgroundColor: '#F2F2F2', marginRight: 8,
+    borderRadius: 20, marginRight: 8,
   },
-  filterTabActive: { backgroundColor: GREEN },
-  filterTabText: { fontSize: 13, fontWeight: 'bold', color: '#616161', textTransform: 'uppercase' },
+  filterTabActive: { },
+  filterTabText: { fontSize: 13, fontWeight: 'bold', textTransform: 'uppercase' },
   filterTabTextActive: { color: '#FFFFFF' },
   filterBadge: {
-    backgroundColor: '#FFFFFF', borderRadius: 10, minWidth: 18, height: 18,
+    borderRadius: 10, minWidth: 18, height: 18,
     justifyContent: 'center', alignItems: 'center', marginLeft: 6, paddingHorizontal: 4,
   },
-  filterBadgeText: { fontSize: 10, fontWeight: 'bold', color: GREEN },
+  filterBadgeText: { fontSize: 10, fontWeight: 'bold' },
   listContent: { paddingHorizontal: 16, paddingBottom: 20 },
   card: {
     flexDirection: 'row', alignItems: 'center', paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
+    borderBottomWidth: 1,
   },
-  cardUnread: { backgroundColor: '#F9FBF9' },
+  cardUnread: { },
   avatarContainer: { position: 'relative', marginRight: 12 },
   avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#E8F5E9' },
-  avatarFallback: { justifyContent: 'center', alignItems: 'center', backgroundColor: GREEN },
+  avatarFallback: { justifyContent: 'center', alignItems: 'center' },
   avatarFallbackText: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' },
   typeIconBadge: {
     position: 'absolute', bottom: -4, right: -4,
-    backgroundColor: '#FFFFFF', borderRadius: 12, padding: 2,
-    borderWidth: 1, borderColor: '#F2F2F2',
+    borderRadius: 12, padding: 2,
+    borderWidth: 1,
   },
   contentContainer: { flex: 1 },
-  messageText: { fontSize: 14, color: '#424242', lineHeight: 20 },
-  messageTextUnread: { color: '#1C1C1C', fontWeight: '500' },
-  boldText: { fontWeight: 'bold', color: '#1C1C1C' },
-  subMessageText: { fontSize: 13, color: '#757575', marginTop: 2 },
-  timeText: { fontSize: 12, color: '#9E9E9E', marginTop: 4 },
-  unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: GREEN, marginLeft: 8 },
+  messageText: { fontSize: 14, lineHeight: 20 },
+  messageTextUnread: { fontWeight: '500' },
+  boldText: { fontWeight: 'bold' },
+  subMessageText: { fontSize: 13, marginTop: 2 },
+  timeText: { fontSize: 12, marginTop: 4 },
+  unreadDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 8 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  emptyTitle: { fontSize: 18, fontWeight: 'bold', color: '#424242', marginTop: 16 },
-  emptySubtitle: { fontSize: 14, color: '#9E9E9E', marginTop: 8 },
+  emptyTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 16 },
+  emptySubtitle: { fontSize: 14, marginTop: 8 },
 });

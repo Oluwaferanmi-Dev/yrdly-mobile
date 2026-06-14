@@ -9,8 +9,6 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
-const GREEN = '#388E3C';
-
 const SLIDES = [
   {
     id: 'feed',
@@ -94,17 +92,17 @@ export default function OnboardingTourScreen() {
   const isLast = activeIndex === SLIDES.length - 1;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       {/* Progress */}
       <View style={styles.progress}>
         <View style={styles.dot} />
         <View style={styles.dot} />
-        <View style={[styles.dot, styles.dotActive]} />
+        <View style={[styles.dot, styles.dotActive, { backgroundColor: colors.tint }]} />
       </View>
 
       {/* Skip */}
       <TouchableOpacity style={styles.skipTop} onPress={handleFinish} disabled={finishing}>
-        <Text style={styles.skipTopText}>Skip</Text>
+        <Text style={[styles.skipTopText, { color: colors.textMuted }]}>Skip</Text>
       </TouchableOpacity>
 
       {/* Slides */}
@@ -125,10 +123,10 @@ export default function OnboardingTourScreen() {
             </View>
 
             {/* Slide number */}
-            <Text style={styles.slideNumber}>{i + 1} / {SLIDES.length}</Text>
+            <Text style={[styles.slideNumber, { color: colors.textMuted }]}>{i + 1} / {SLIDES.length}</Text>
 
             <Text style={[styles.slideTitle, { color: slide.color }]}>{slide.title}</Text>
-            <Text style={styles.slideDesc}>{slide.description}</Text>
+            <Text style={[styles.slideDesc, { color: colors.textMuted }]}>{slide.description}</Text>
           </View>
         ))}
       </ScrollView>
@@ -146,7 +144,7 @@ export default function OnboardingTourScreen() {
             <Animated.View
               style={[
                 styles.indicator,
-                i === activeIndex && styles.indicatorActive,
+                i === activeIndex && [styles.indicatorActive, { backgroundColor: colors.tint }],
               ]}
             />
           </TouchableOpacity>
@@ -156,7 +154,7 @@ export default function OnboardingTourScreen() {
       {/* CTA */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.nextBtn, isLast && styles.finishBtn]}
+          style={[styles.nextBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }, isLast && styles.finishBtn]}
           onPress={handleNext}
           disabled={finishing}
           activeOpacity={0.85}
@@ -180,109 +178,36 @@ export default function OnboardingTourScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAFA' },
+  safe: { flex: 1 },
   flex: { flex: 1 },
 
-  progress: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 24,
-    marginBottom: 8,
-  },
+  progress: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 24, marginBottom: 8 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E0E0E0' },
-  dotActive: { backgroundColor: GREEN, width: 24 },
+  dotActive: { width: 24 },
 
-  skipTop: {
-    position: 'absolute',
-    top: 56,
-    right: 24,
-    zIndex: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  skipTopText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#9E9E9E',
-  },
+  skipTop: { position: 'absolute', top: 56, right: 24, zIndex: 10, paddingVertical: 6, paddingHorizontal: 12 },
+  skipTopText: { fontSize: 14, fontWeight: '600' },
 
-  slide: {
-    width,
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 36,
-  },
+  slide: { width, flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 36 },
   iconBubble: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
+    width: 140, height: 140, borderRadius: 70,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 32,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4,
   },
-  slideNumber: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#BDBDBD',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: 12,
-  },
-  slideTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 36,
-  },
-  slideDesc: {
-    fontSize: 16,
-    color: '#616161',
-    textAlign: 'center',
-    lineHeight: 25,
-    maxWidth: 300,
-  },
+  slideNumber: { fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 },
+  slideTitle: { fontSize: 28, fontWeight: '800', textAlign: 'center', marginBottom: 16, lineHeight: 36 },
+  slideDesc: { fontSize: 16, textAlign: 'center', lineHeight: 25, maxWidth: 300 },
 
-  indicators: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    marginBottom: 24,
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#E0E0E0',
-  },
-  indicatorActive: {
-    backgroundColor: GREEN,
-    width: 24,
-  },
+  indicators: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 24 },
+  indicator: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E0E0E0' },
+  indicatorActive: { width: 24 },
 
   footer: { paddingHorizontal: 24, paddingBottom: 20 },
   nextBtn: {
-    backgroundColor: GREEN,
-    borderRadius: 14,
-    height: 56,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: GREEN,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 4,
+    borderRadius: 14, height: 56, flexDirection: 'row',
+    justifyContent: 'center', alignItems: 'center',
+    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 4,
   },
-  finishBtn: {
-    shadowOpacity: 0.45,
-  },
+  finishBtn: { shadowOpacity: 0.45 },
   nextBtnText: { fontSize: 17, fontWeight: '700', color: '#FFF' },
 });

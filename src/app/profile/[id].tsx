@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, SafeAreaView } from 'react-native';
+import {
+  View, Text, StyleSheet, ScrollView,
+  TouchableOpacity, SafeAreaView, ActivityIndicator, Alert,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -9,56 +12,53 @@ import { PostCard } from '../../components/PostCard';
 import { Post } from '../../types';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
+interface UserProfile {
+  id: string;
+  name: string;
+  bio: string | null;
+  avatar_url: string | null;
+  cover_url: string | null;
+  followers_count: number;
+  following_count: number;
+}
 
-export default function UserProfileScreen() {
+export default function OtherUserProfileScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user: currentUser } = useAuth();
 
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [friendStatus, setFriendStatus] = useState<'none' | 'pending' | 'friends'>('none');
-  const [loadingAction, setLoadingAction] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const fetchProfileAndPosts = useCallback(async () => {
     if (!id) return;
     try {
-      // Fetch User
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', id)
-        .single();
-      if (!userError && userData) setProfile(userData);
+      const { data: pData } = await supabase.from('users').select('*').eq('id', id).single();
+      if (pData) setProfile(pData);
 
-      // Fetch Posts
-      const { data: postsData } = await supabase
+      if (currentUser) {
+        const { data: fData } = await supabase
+          .from('followers')
+          .select('id')
+          .eq('follower_id', currentUser.id)
+          .eq('following_id', id)
+          .maybeSingle();
+        setIsFollowing(!!fData);
+      }
+
+      const { data: postData } = await supabase
         .from('posts')
         .select('*')
         .eq('user_id', id)
-        .order('timestamp', { ascending: false });
-      if (postsData) setPosts(postsData as Post[]);
-
-      // Check Friend Status
-      if (currentUser && currentUser.id !== id) {
-        // Query friend_requests table
-        const { data: reqData } = await supabase
-          .from('friend_requests')
-          .select('*')
-          .or(`and(from_user_id.eq.${currentUser.id},to_user_id.eq.${id}),and(from_user_id.eq.${id},to_user_id.eq.${currentUser.id})`)
-          .single();
-        
-        if (reqData) {
-          if (reqData.status === 'accepted') setFriendStatus('friends');
-          else setFriendStatus('pending');
-        }
-      }
-
-    } catch (error) {
-      console.error('Error fetching profile:', error);
+        .order('created_at', { ascending: false });
+      
+      if (postData) setPosts(postData as Post[]);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -68,192 +68,210 @@ export default function UserProfileScreen() {
     fetchProfileAndPosts();
   }, [fetchProfileAndPosts]);
 
-  const handleFriendAction = async () => {
-    if (!currentUser || !id || loadingAction) return;
-    setLoadingAction(true);
+  const handleToggleFollow = async () => {
+    if (!currentUser || !profile) return;
+    setFollowLoading(true);
+
     try {
-      if (friendStatus === 'none') {
-        await supabase.from('friend_requests').insert({
-          from_user_id: currentUser.id,
-          to_user_id: id,
-          status: 'pending'
+      if (isFollowing) {
+        await supabase.from('followers').delete()
+          .eq('follower_id', currentUser.id)
+          .eq('following_id', profile.id);
+        setProfile(p => p ? { ...p, followers_count: Math.max(0, p.followers_count - 1) } : p);
+      } else {
+        await supabase.from('followers').insert({
+          follower_id: currentUser.id,
+          following_id: profile.id,
         });
-        setFriendStatus('pending');
-      } else if (friendStatus === 'pending' || friendStatus === 'friends') {
-        // Cancel/Remove
-        await supabase.from('friend_requests').delete()
-          .or(`and(from_user_id.eq.${currentUser.id},to_user_id.eq.${id}),and(from_user_id.eq.${id},to_user_id.eq.${currentUser.id})`);
-        setFriendStatus('none');
+        setProfile(p => p ? { ...p, followers_count: p.followers_count + 1 } : p);
+        
+        // Notification logic would go here
       }
-    } catch (e) {
-      console.error(e);
+      setIsFollowing(!isFollowing);
+    } catch (e: any) {
+      Alert.alert('Error', e.message);
     } finally {
-      setLoadingAction(false);
+      setFollowLoading(false);
     }
   };
 
   const handleMessage = async () => {
-    if (!currentUser || !id) return;
-    try {
-      const { data: existing } = await supabase
-        .from('conversations')
-        .select('*')
-        .or(`and(user1_id.eq.${currentUser.id},user2_id.eq.${id}),and(user1_id.eq.${id},user2_id.eq.${currentUser.id})`)
-        .is('post_id', null)
-        .limit(1);
-
-      if (existing && existing.length > 0) {
-        router.push({ pathname: '/chat/[id]', params: { id: existing[0].id, type: 'social' } });
-      } else {
-        const { data: newConv } = await supabase
-          .from('conversations')
-          .insert({
-            user1_id: currentUser.id,
-            user2_id: id,
-            updated_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
-        if (newConv) {
-          router.push({ pathname: '/chat/[id]', params: { id: newConv.id, type: 'social' } });
-        }
+    if (!currentUser || !profile) return;
+    // Find existing friend chat or create one
+    const { data: existing } = await supabase.from('conversations')
+      .select('id')
+      .eq('type', 'friend')
+      .contains('participant_ids', [currentUser.id, profile.id])
+      .limit(1)
+      .maybeSingle();
+      
+    if (existing) {
+      router.push(`/chat/${existing.id}`);
+    } else {
+      const { data: newConv, error } = await supabase.from('conversations').insert({
+        type: 'friend',
+        participant_ids: [currentUser.id, profile.id],
+      }).select().single();
+      
+      if (newConv && !error) {
+        router.push(`/chat/${newConv.id}`);
       }
-    } catch (e) {
-      console.error(e);
     }
   };
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={GREEN} />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
   }
 
   if (!profile) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
-        <Text style={styles.errorText}>User not found</Text>
-        <TouchableOpacity style={styles.backBtnWrapper} onPress={() => router.back()}>
-          <Text style={styles.backBtnText}>Go Back</Text>
-        </TouchableOpacity>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Profile Not Found</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
-  const isSelf = currentUser?.id === id;
-
-  const ListHeader = () => (
-    <View style={styles.headerContainer}>
-      <View style={styles.header}>
-        <View style={styles.avatarPlaceholder}>
-          {profile.avatar_url ? (
-            <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} />
-          ) : (
-            <Text style={styles.avatarText}>
-              {profile.name ? profile.name.charAt(0).toUpperCase() : 'U'}
-            </Text>
-          )}
-        </View>
-        <Text style={styles.name}>{profile.name || 'Anonymous'}</Text>
-        {!!profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
-
-        {!isSelf && (
-          <View style={styles.actionRow}>
-            <TouchableOpacity 
-              style={[styles.friendButton, friendStatus !== 'none' && styles.friendButtonActive]} 
-              onPress={handleFriendAction}
-              disabled={loadingAction}
-            >
-              <Text style={[styles.friendButtonText, friendStatus !== 'none' && styles.friendButtonTextActive]}>
-                {friendStatus === 'none' ? 'Add Friend' : friendStatus === 'pending' ? 'Requested' : 'Friends'}
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
-              <Ionicons name="chatbubble-outline" size={20} color={GREEN} />
-              <Text style={styles.messageButtonText}>Message</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.divider} />
-      <Text style={styles.sectionTitle}>Posts</Text>
-    </View>
-  );
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.navHeader}>
+      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.navHeaderTitle}>{profile.name}</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{profile.name}</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <PostCard post={item} onPress={() => router.push(`/posts/${item.id}`)} />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {profile.cover_url ? (
+          <Image source={{ uri: profile.cover_url }} style={styles.cover} contentFit="cover" />
+        ) : (
+          <View style={[styles.cover, { backgroundColor: colors.inputBackground }]} />
         )}
-        ListHeaderComponent={ListHeader}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>This user hasn't posted anything yet.</Text>
+
+        <View style={[styles.profileHeader, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
+          <View style={styles.avatarRow}>
+            {profile.avatar_url ? (
+              <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
+            ) : (
+              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint }]}>
+                <Text style={styles.avatarFallbackText}>
+                  {profile.name ? profile.name.charAt(0).toUpperCase() : '?'}
+                </Text>
+              </View>
+            )}
+            
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{posts.length}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Posts</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{profile.followers_count || 0}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Followers</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{profile.following_count || 0}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Following</Text>
+              </View>
+            </View>
           </View>
-        }
-      />
+
+          <Text style={[styles.name, { color: colors.text }]}>{profile.name}</Text>
+          {profile.bio && <Text style={[styles.bio, { color: colors.textSecondary }]}>{profile.bio}</Text>}
+
+          {currentUser?.id !== profile.id && (
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={[styles.btnFollow, isFollowing && [styles.btnFollowing, { backgroundColor: colors.inputBackground }], { backgroundColor: isFollowing ? colors.inputBackground : colors.tint }]}
+                onPress={handleToggleFollow}
+                disabled={followLoading}
+              >
+                {followLoading ? (
+                  <ActivityIndicator size="small" color={isFollowing ? colors.text : '#FFF'} />
+                ) : (
+                  <Text style={[styles.btnFollowText, isFollowing && [styles.btnFollowingText, { color: colors.text }]]}>
+                    {isFollowing ? 'Following' : 'Follow'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity style={[styles.btnMessage, { backgroundColor: '#E8F5E9' }]} onPress={handleMessage}>
+                <Ionicons name="chatbubble-outline" size={18} color={colors.tint} />
+                <Text style={[styles.btnMessageText, { color: colors.tint }]}>Message</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.feedSection}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Posts</Text>
+          {posts.length > 0 ? (
+            posts.map(post => (
+              <PostCard key={post.id} post={post} />
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="images-outline" size={40} color={colors.border} />
+              <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No posts yet</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>{profile.name} hasn't posted anything.</Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F2F2' },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F2F2F2' },
-  errorText: { fontSize: 18, color: '#1C1C1C', marginBottom: 20 },
-  backBtnWrapper: { paddingVertical: 10, paddingHorizontal: 20, backgroundColor: '#E0E0E0', borderRadius: 8 },
-  backBtnText: { color: '#1C1C1C', fontWeight: 'bold' },
-  navHeader: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#F2F2F2', backgroundColor: '#FFFFFF'
+  container: { flex: 1 },
+  header: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 12, paddingVertical: 12,
+    borderBottomWidth: 1,
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  navHeaderTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', flex: 1, textAlign: 'center' },
-  listContent: { paddingBottom: 40 },
-  headerContainer: { backgroundColor: '#FFFFFF', paddingBottom: 16 },
-  header: { alignItems: 'center', paddingTop: 20, paddingHorizontal: 20 },
-  avatarPlaceholder: {
-    width: 100, height: 100, borderRadius: 50, backgroundColor: '#E8F5E9',
-    justifyContent: 'center', alignItems: 'center', marginBottom: 16, overflow: 'hidden'
+  headerTitle: { fontSize: 16, fontWeight: 'bold', flex: 1, textAlign: 'center' },
+  cover: { height: 120, width: '100%' },
+  profileHeader: { padding: 16, borderBottomWidth: 1 },
+  avatarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  avatar: {
+    width: 80, height: 80, borderRadius: 40,
+    marginTop: -40, borderWidth: 4, borderColor: '#FFFFFF',
+    backgroundColor: '#E8F5E9',
   },
-  avatarImage: { width: '100%', height: '100%' },
-  avatarText: { fontSize: 36, fontWeight: 'bold', color: GREEN },
-  name: { fontSize: 24, fontWeight: 'bold', color: '#1C1C1C', marginBottom: 8 },
-  bio: { fontSize: 14, color: '#424242', textAlign: 'center', marginBottom: 20, paddingHorizontal: 20 },
-  actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 12, marginTop: 10 },
-  friendButton: {
-    flex: 1, height: 44, backgroundColor: GREEN, borderRadius: 22,
-    justifyContent: 'center', alignItems: 'center', maxWidth: 150,
+  avatarFallback: { justifyContent: 'center', alignItems: 'center' },
+  avatarFallbackText: { color: '#FFFFFF', fontSize: 32, fontWeight: 'bold' },
+  statsRow: { flex: 1, flexDirection: 'row', justifyContent: 'space-around', marginLeft: 10 },
+  statItem: { alignItems: 'center' },
+  statValue: { fontSize: 18, fontWeight: 'bold' },
+  statLabel: { fontSize: 13, marginTop: 2 },
+  name: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
+  bio: { fontSize: 14, lineHeight: 20, marginBottom: 16 },
+  actionRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
+  btnFollow: {
+    flex: 1, paddingVertical: 10, borderRadius: 20,
+    justifyContent: 'center', alignItems: 'center',
   },
-  friendButtonActive: {
-    backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: GREEN
+  btnFollowText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 15 },
+  btnFollowing: { },
+  btnFollowingText: { },
+  btnMessage: {
+    flex: 1, flexDirection: 'row', paddingVertical: 10, borderRadius: 20,
+    justifyContent: 'center', alignItems: 'center', gap: 6,
   },
-  friendButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: 'bold' },
-  friendButtonTextActive: { color: GREEN },
-  messageButton: {
-    flex: 1, flexDirection: 'row', height: 44, backgroundColor: 'rgba(56, 142, 60, 0.05)', 
-    borderWidth: 1, borderColor: GREEN, borderRadius: 22,
-    justifyContent: 'center', alignItems: 'center', maxWidth: 150,
-  },
-  messageButtonText: { color: GREEN, fontSize: 14, fontWeight: 'bold', marginLeft: 6 },
-  divider: { height: 8, backgroundColor: '#F2F2F2', alignSelf: 'stretch', marginTop: 24 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', paddingHorizontal: 16, paddingTop: 16 },
-  emptyContainer: { padding: 40, alignItems: 'center' },
-  emptyText: { color: '#616161', fontSize: 16 },
+  btnMessageText: { fontWeight: 'bold', fontSize: 15 },
+  feedSection: { paddingVertical: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', paddingHorizontal: 16, marginBottom: 12 },
+  emptyState: { alignItems: 'center', padding: 40 },
+  emptyTitle: { fontSize: 16, fontWeight: 'bold', marginTop: 12 },
+  emptySubtitle: { fontSize: 14, marginTop: 6 },
 });

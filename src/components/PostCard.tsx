@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Post } from '../types';
 import { timeAgo, formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { GlassCard } from './GlassCard';
+import { useAppTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
-const GREEN = '#388E3C';
 
 interface PostCardProps {
   post: Post;
@@ -20,17 +19,14 @@ interface PostCardProps {
 
 export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCardProps) {
   const { user: currentUser } = useAuth();
-  
-  // Local state for optimistic UI updates
+  const { colors } = useAppTheme();
+
   const [likesCount, setLikesCount] = useState(post.liked_by?.length || 0);
   const [isLiked, setIsLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
 
   const handleLike = () => {
-    // Optimistic toggle
     setIsLiked(!isLiked);
     setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
-    
-    // Call parent handler to update DB
     if (onLike) onLike();
   };
 
@@ -41,43 +37,55 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
   const urls = post.image_urls?.length ? post.image_urls : post.image_url ? [post.image_url] : [];
 
   return (
-    <GlassCard
-      style={styles.card}
-      borderRadius={16}
-      intensity={Platform.OS === 'ios' ? 50 : undefined}
-      tint="systemChromeMaterial"
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={[styles.container, { borderBottomColor: colors.borderLight }]}
     >
-      <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.inner}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.authorRow}>
-          <View style={styles.avatar}>
+          <View style={[styles.avatar, { backgroundColor: colors.inputBackground }]}>
             {post.author_image ? (
               <Image source={{ uri: post.author_image }} style={styles.avatarImage} />
             ) : (
-              <Text style={styles.avatarText}>{getInitials(post.author_name)}</Text>
+              <Text style={[styles.avatarText, { color: colors.tint }]}>
+                {getInitials(post.author_name)}
+              </Text>
             )}
           </View>
           <View style={styles.authorText}>
-            <Text style={styles.authorName}>{post.author_name || 'Anonymous'}</Text>
-            <Text style={styles.timeAgo}>{timeAgo(post.timestamp || post.created_at)}</Text>
+            <Text style={[styles.authorName, { color: colors.text }]}>
+              {post.author_name || 'Anonymous'}
+            </Text>
+            <Text style={[styles.timeAgo, { color: colors.textMuted }]}>
+              {timeAgo(post.timestamp || post.created_at)}
+            </Text>
           </View>
         </View>
 
-        <View style={styles.categoryBadge}>
-          <Text style={styles.categoryText}>{post.category || 'General'}</Text>
+        <View style={[styles.categoryBadge, { backgroundColor: colors.borderLight }]}>
+          <Text style={[styles.categoryText, { color: colors.textSecondary }]}>
+            {post.category || 'General'}
+          </Text>
         </View>
       </View>
 
       {/* Content */}
       <View style={styles.content}>
-        {!!post.title && <Text style={styles.title}>{post.title}</Text>}
-        {!!post.text && <Text style={styles.bodyText} numberOfLines={3}>{post.text}</Text>}
+        {!!post.title && (
+          <Text style={[styles.title, { color: colors.text }]}>{post.title}</Text>
+        )}
+        {!!post.text && (
+          <Text style={[styles.bodyText, { color: colors.textSecondary }]} numberOfLines={3}>
+            {post.text}
+          </Text>
+        )}
       </View>
 
       {/* Images */}
       {urls.length > 0 && (
-        <View style={styles.imageContainer}>
+        <View style={[styles.imageContainer, { backgroundColor: colors.borderLight }]}>
           <Image source={{ uri: urls[0] }} style={styles.postImage} contentFit="cover" />
           {urls.length > 1 && (
             <View style={styles.imageOverlay}>
@@ -89,65 +97,63 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
 
       {/* For Sale Price */}
       {post.category === 'For Sale' && post.price !== undefined && (
-        <Text style={styles.price}>{formatPrice(post.price)}</Text>
+        <Text style={[styles.price, { color: colors.tint }]}>{formatPrice(post.price)}</Text>
       )}
 
       {/* Engagement Row */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { borderTopColor: colors.borderLight }]}>
         <View style={styles.actionRow}>
           <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
-            <Ionicons 
-              name={isLiked ? "heart" : "heart-outline"} 
-              size={22} 
-              color={isLiked ? "#ED1111" : "#616161"} 
+            <Ionicons
+              name={isLiked ? 'heart' : 'heart-outline'}
+              size={22}
+              color={isLiked ? '#ED1111' : colors.textSecondary}
             />
-            <Text style={styles.actionText}>{likesCount > 0 ? likesCount : ''}</Text>
+            <Text style={[styles.actionText, { color: colors.textSecondary }]}>
+              {likesCount > 0 ? likesCount : ''}
+            </Text>
           </TouchableOpacity>
 
-          <View style={styles.dot} />
+          <View style={[styles.dot, { backgroundColor: colors.textMuted }]} />
 
           <TouchableOpacity style={styles.actionButton} onPress={onComment}>
-            <Ionicons name="chatbubble-outline" size={20} color="#616161" />
-            <Text style={styles.actionText}>{post.comment_count || 0}</Text>
+            <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
+            <Text style={[styles.actionText, { color: colors.textSecondary }]}>
+              {post.comment_count || 0}
+            </Text>
           </TouchableOpacity>
 
-          <View style={styles.dot} />
+          <View style={[styles.dot, { backgroundColor: colors.textMuted }]} />
 
           <TouchableOpacity style={styles.actionButton} onPress={onShare}>
-            <Ionicons name="share-social-outline" size={20} color="#616161" />
+            <Ionicons name="share-social-outline" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
-      </TouchableOpacity>
-    </GlassCard>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  inner: {
-    padding: 16,
+  container: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   authorRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#E8F5E9',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -157,55 +163,47 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   avatarText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: GREEN,
   },
   authorText: {
     marginLeft: 10,
   },
   authorName: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1C1C1C',
+    fontSize: 14,
+    fontWeight: '600',
   },
   timeAgo: {
     fontSize: 12,
-    color: '#616161',
-    marginTop: 2,
+    marginTop: 1,
   },
   categoryBadge: {
-    backgroundColor: '#F2F2F2',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
   categoryText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
-    color: '#1C1C1C',
   },
   content: {
-    marginBottom: 12,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1C1C1C',
+    fontSize: 15,
+    fontWeight: '700',
     marginBottom: 4,
   },
   bodyText: {
     fontSize: 14,
-    color: '#424242',
     lineHeight: 20,
   },
   imageContainer: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
+    borderRadius: 8,
     overflow: 'hidden',
-    marginBottom: 12,
-    backgroundColor: '#F2F2F2',
+    marginBottom: 10,
   },
   postImage: {
     width: '100%',
@@ -223,17 +221,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   price: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: GREEN,
-    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 10,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#F2F2F2',
-    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 10,
+    marginTop: 4,
   },
   actionRow: {
     flexDirection: 'row',
@@ -247,7 +244,6 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 13,
-    color: '#616161',
     marginLeft: 4,
     fontWeight: '500',
   },
@@ -255,7 +251,6 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: '#BDBDBD',
-    marginHorizontal: 12,
+    marginHorizontal: 10,
   },
 });

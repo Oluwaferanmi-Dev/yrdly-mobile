@@ -10,8 +10,6 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
-
 // ── Types ─────────────────────────────────────────────────────────
 type ConvType = 'friend' | 'marketplace' | 'business';
 type FilterTab = 'all' | 'friends' | 'marketplace' | 'businesses';
@@ -48,6 +46,7 @@ function timeLabel(ts: string) {
 export default function MessagesTab() {
   const router = useRouter();
   const { user } = useAuth();
+  const { colors } = useAppTheme();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -193,7 +192,7 @@ export default function MessagesTab() {
 
     return (
       <TouchableOpacity
-        style={[styles.convRow, unread && styles.convRowUnread]}
+        style={[styles.convRow, { borderBottomColor: colors.borderLight }, unread && [styles.convRowUnread, { borderLeftColor: colors.tint }]]}
         onPress={() => router.push({ pathname: '/chat/[id]', params: { id: item.id } })}
         activeOpacity={0.8}
       >
@@ -204,7 +203,7 @@ export default function MessagesTab() {
           ) : item.participantAvatar ? (
             <Image source={{ uri: item.participantAvatar }} style={styles.avatar} contentFit="cover" />
           ) : (
-            <View style={[styles.avatar, styles.avatarFallback]}>
+            <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint }]}>
               <Text style={styles.avatarFallbackText}>
                 {(item.participantName || 'Unknown').charAt(0).toUpperCase()}
               </Text>
@@ -212,12 +211,12 @@ export default function MessagesTab() {
           )}
           {/* Type badge */}
           {item.type === 'marketplace' && (
-            <View style={styles.typeBadge}>
+            <View style={[styles.typeBadge, { backgroundColor: colors.tint, borderColor: colors.card }]}>
               <Ionicons name="cart" size={9} color="#FFF" />
             </View>
           )}
           {item.type === 'business' && (
-            <View style={[styles.typeBadge, { backgroundColor: '#1565C0' }]}>
+            <View style={[styles.typeBadge, { backgroundColor: '#1565C0', borderColor: colors.card }]}>
               <Ionicons name="business" size={9} color="#FFF" />
             </View>
           )}
@@ -226,26 +225,26 @@ export default function MessagesTab() {
         {/* Content */}
         <View style={styles.convContent}>
           <View style={styles.convTopRow}>
-            <Text style={[styles.convName, unread && styles.convNameBold]} numberOfLines={1}>
+            <Text style={[styles.convName, { color: colors.text }, unread && styles.convNameBold]} numberOfLines={1}>
               {item.participantName}
             </Text>
-            <Text style={[styles.convTime, unread && { color: GREEN }]}>
+            <Text style={[styles.convTime, { color: colors.textMuted }, unread && { color: colors.tint }]}>
               {timeLabel(item.timestamp)}
             </Text>
           </View>
           {item.context?.itemTitle && (
-            <Text style={styles.convItemTitle} numberOfLines={1}>
+            <Text style={[styles.convItemTitle, { color: colors.tint }]} numberOfLines={1}>
               Re: {item.context.itemTitle}
             </Text>
           )}
-          <Text style={[styles.convLastMsg, unread && styles.convLastMsgBold]} numberOfLines={1}>
+          <Text style={[styles.convLastMsg, { color: colors.textMuted }, unread && [styles.convLastMsgBold, { color: colors.textSecondary }]]} numberOfLines={1}>
             {item.lastMessage}
           </Text>
         </View>
 
         {/* Unread badge */}
         {unread && (
-          <View style={styles.unreadBadge}>
+          <View style={[styles.unreadBadge, { backgroundColor: colors.tint }]}>
             <Text style={styles.unreadBadgeText}>{item.unreadCount}</Text>
           </View>
         )}
@@ -253,32 +252,29 @@ export default function MessagesTab() {
     );
   };
 
-  const { colors } = useAppTheme();
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.card }]}>
       {/* Search */}
       <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
-        <Ionicons name="search-outline" size={18} color="#9E9E9E" style={styles.searchIcon} />
+        <Ionicons name="search-outline" size={18} color={colors.textMuted} style={styles.searchIcon} />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: colors.text }]}
           placeholder="Search conversations..."
-          placeholderTextColor="#9E9E9E"
+          placeholderTextColor={colors.textMuted}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
       </View>
 
       {/* Filter tabs */}
-      <View style={[styles.filterRow, { backgroundColor: colors.borderLight }]}
-      >
+      <View style={[styles.filterRow, { backgroundColor: colors.borderLight }]}>
         {FILTERS.map(({ key, label }) => (
           <TouchableOpacity
             key={key}
             style={[styles.filterTab, activeFilter === key && [styles.filterTabActive, { backgroundColor: colors.card }]]}
             onPress={() => setActiveFilter(key)}
           >
-            <Text style={[styles.filterTabText, activeFilter === key && styles.filterTabTextActive]}>
+            <Text style={[styles.filterTabText, { color: colors.textMuted }, activeFilter === key && [styles.filterTabTextActive, { color: colors.tint }]]}>
               {label}
             </Text>
           </TouchableOpacity>
@@ -288,12 +284,12 @@ export default function MessagesTab() {
       {/* List */}
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={GREEN} />
+          <ActivityIndicator size="large" color={colors.tint} />
         </View>
       ) : filtered.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="chatbubbles-outline" size={48} color="#BDBDBD" />
-          <Text style={styles.emptyText}>
+          <Ionicons name="chatbubbles-outline" size={48} color={colors.textMuted} />
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
             {searchQuery ? 'No results found' : 'No conversations yet'}
           </Text>
         </View>
@@ -322,12 +318,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, height: 44, fontSize: 15, color: '#1C1C1C' },
+  searchInput: { flex: 1, height: 44, fontSize: 15 },
   filterRow: {
     flexDirection: 'row',
     marginHorizontal: 16,
     marginBottom: 8,
-    backgroundColor: '#F2F2F2',
     borderRadius: 10,
     padding: 3,
   },
@@ -337,42 +332,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
   },
-  filterTabActive: { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 2, elevation: 2 },
-  filterTabText: { fontSize: 12, fontWeight: '600', color: '#9E9E9E' },
-  filterTabTextActive: { color: GREEN },
+  filterTabActive: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 2, elevation: 2 },
+  filterTabText: { fontSize: 12, fontWeight: '600' },
+  filterTabTextActive: { },
   listContent: { paddingHorizontal: 16, paddingBottom: 80 },
   convRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F2',
   },
-  convRowUnread: { borderLeftWidth: 3, borderLeftColor: GREEN, paddingLeft: 12 },
+  convRowUnread: { borderLeftWidth: 3, paddingLeft: 12 },
   avatarContainer: { position: 'relative', marginRight: 12 },
-  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#E8F5E9' },
-  avatarFallback: { justifyContent: 'center', alignItems: 'center', backgroundColor: GREEN },
-  avatarFallbackText: { color: '#FFFFFF', fontSize: 20, fontWeight: 'bold' },
+  avatar: { width: 52, height: 52, borderRadius: 26 },
+  avatarFallback: { justifyContent: 'center', alignItems: 'center' },
+  avatarFallbackText: { fontSize: 20, fontWeight: 'bold', color: '#FFF' },
   typeBadge: {
     position: 'absolute', bottom: -2, right: -2,
     width: 18, height: 18, borderRadius: 9,
-    backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center',
-    borderWidth: 2, borderColor: '#FFFFFF',
+    justifyContent: 'center', alignItems: 'center',
+    borderWidth: 2,
   },
   convContent: { flex: 1, minWidth: 0 },
   convTopRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
-  convName: { fontSize: 15, color: '#1C1C1C', flex: 1 },
+  convName: { fontSize: 15, flex: 1 },
   convNameBold: { fontWeight: 'bold' },
-  convTime: { fontSize: 12, color: '#9E9E9E', marginLeft: 8 },
-  convItemTitle: { fontSize: 11, color: GREEN, marginBottom: 2, fontStyle: 'italic' },
-  convLastMsg: { fontSize: 13, color: '#9E9E9E' },
-  convLastMsgBold: { color: '#424242', fontWeight: '500' },
+  convTime: { fontSize: 12, marginLeft: 8 },
+  convItemTitle: { fontSize: 11, marginBottom: 2, fontStyle: 'italic' },
+  convLastMsg: { fontSize: 13 },
+  convLastMsgBold: { fontWeight: '500' },
   unreadBadge: {
-    backgroundColor: GREEN, borderRadius: 10,
+    borderRadius: 10,
     minWidth: 20, height: 20, justifyContent: 'center', alignItems: 'center',
     paddingHorizontal: 5, marginLeft: 8,
   },
-  unreadBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: 'bold' },
+  unreadBadgeText: { fontSize: 11, fontWeight: 'bold', color: '#FFF' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 16, color: '#9E9E9E', marginTop: 12 },
+  emptyText: { fontSize: 16, marginTop: 12 },
 });

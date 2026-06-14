@@ -11,8 +11,6 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
-
 interface Message {
   id: string;
   sender_id: string;
@@ -147,11 +145,11 @@ export default function ChatScreen() {
 
     return (
       <View style={[styles.msgRow, isMine ? styles.msgRowRight : styles.msgRowLeft]}>
-        <View style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleTheirs]}>
-          <Text style={[styles.bubbleText, isMine && styles.bubbleTextMine]}>
+        <View style={[styles.bubble, isMine ? [styles.bubbleMine, { backgroundColor: colors.tint }] : [styles.bubbleTheirs, { backgroundColor: colors.inputBackground }]]}>
+          <Text style={[styles.bubbleText, { color: colors.text }, isMine && { color: colors.card }]}>
             {msgText}
           </Text>
-          <Text style={[styles.bubbleTime, isMine && { color: 'rgba(255,255,255,0.6)' }]}>
+          <Text style={[styles.bubbleTime, { color: colors.textMuted }, isMine && { color: 'rgba(255,255,255,0.6)' }]}>
             {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </Text>
         </View>
@@ -166,20 +164,20 @@ export default function ChatScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
           {otherUser?.avatar_url ? (
             <Image source={{ uri: otherUser.avatar_url }} style={styles.headerAvatar} contentFit="cover" />
           ) : (
-            <View style={[styles.headerAvatar, styles.headerAvatarFallback]}>
-              <Text style={styles.headerAvatarText}>{title.charAt(0).toUpperCase()}</Text>
+            <View style={[styles.headerAvatar, styles.headerAvatarFallback, { backgroundColor: colors.tint }]}>
+              <Text style={[styles.headerAvatarText, { color: colors.card }]}>{title.charAt(0).toUpperCase()}</Text>
             </View>
           )}
-          <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>{title}</Text>
         </View>
 
         <View style={{ width: 40 }} />
@@ -187,14 +185,14 @@ export default function ChatScreen() {
 
       {/* Item context banner (for marketplace chats) */}
       {meta?.item_title && (
-        <View style={styles.contextBanner}>
+        <View style={[styles.contextBanner, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]}>
           {meta.item_image && (
-            <Image source={{ uri: meta.item_image }} style={styles.contextImage} contentFit="cover" />
+            <Image source={{ uri: meta.item_image }} style={[styles.contextImage, { backgroundColor: colors.inputBackground }]} contentFit="cover" />
           )}
           <View style={{ flex: 1 }}>
-            <Text style={styles.contextTitle} numberOfLines={1}>{meta.item_title}</Text>
+            <Text style={[styles.contextTitle, { color: colors.text }]} numberOfLines={1}>{meta.item_title}</Text>
             {typeof meta.item_price === 'number' && (
-              <Text style={styles.contextPrice}>
+              <Text style={[styles.contextPrice, { color: colors.tint }]}>
                 {meta.item_price === 0 ? 'FREE' : `₦${meta.item_price.toLocaleString()}`}
               </Text>
             )}
@@ -205,7 +203,7 @@ export default function ChatScreen() {
       {/* Messages */}
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={GREEN} />
+          <ActivityIndicator size="large" color={colors.tint} />
         </View>
       ) : (
         <FlatList
@@ -218,7 +216,7 @@ export default function ChatScreen() {
           onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
           ListEmptyComponent={
             <View style={styles.center}>
-              <Text style={styles.emptyText}>No messages yet. Say hi! 👋</Text>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>No messages yet. Say hi! 👋</Text>
             </View>
           }
         />
@@ -226,24 +224,24 @@ export default function ChatScreen() {
 
       {/* Input */}
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.inputRow}>
+        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: colors.card }]}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
             placeholder="Type a message..."
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={colors.textMuted}
             value={inputText}
             onChangeText={setInputText}
             multiline
             onSubmitEditing={sendMessage}
           />
           <TouchableOpacity
-            style={[styles.sendBtn, !inputText.trim() && styles.sendBtnDisabled]}
+            style={[styles.sendBtn, { backgroundColor: colors.tint }, !inputText.trim() && [styles.sendBtnDisabled, { backgroundColor: colors.textMuted }]]}
             onPress={sendMessage}
             disabled={!inputText.trim() || sending}
           >
             {sending
-              ? <ActivityIndicator size="small" color="#FFF" />
-              : <Ionicons name="send" size={20} color="#FFFFFF" />
+              ? <ActivityIndicator size="small" color={colors.card} />
+              : <Ionicons name="send" size={20} color={colors.card} />
             }
           </TouchableOpacity>
         </View>
@@ -253,26 +251,26 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
+    borderBottomWidth: 1,
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
   headerCenter: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-  headerAvatar: { width: 36, height: 36, borderRadius: 18, marginRight: 10, backgroundColor: '#E8F5E9' },
-  headerAvatarFallback: { backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center' },
-  headerAvatarText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
-  headerTitle: { fontSize: 16, fontWeight: 'bold', color: '#1C1C1C', flex: 1 },
+  headerAvatar: { width: 36, height: 36, borderRadius: 18, marginRight: 10 },
+  headerAvatarFallback: { justifyContent: 'center', alignItems: 'center' },
+  headerAvatarText: { fontWeight: 'bold', fontSize: 16 },
+  headerTitle: { fontSize: 16, fontWeight: 'bold', flex: 1 },
   contextBanner: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#F9FBF9', padding: 10, marginHorizontal: 16, marginTop: 8,
-    borderRadius: 10, borderWidth: 1, borderColor: '#E8F5E9',
+    padding: 10, marginHorizontal: 16, marginTop: 8,
+    borderRadius: 10, borderWidth: 1,
   },
-  contextImage: { width: 44, height: 44, borderRadius: 8, marginRight: 10, backgroundColor: '#E8F5E9' },
-  contextTitle: { fontSize: 13, fontWeight: '600', color: '#1C1C1C' },
-  contextPrice: { fontSize: 14, fontWeight: 'bold', color: GREEN, marginTop: 2 },
+  contextImage: { width: 44, height: 44, borderRadius: 8, marginRight: 10 },
+  contextTitle: { fontSize: 13, fontWeight: '600' },
+  contextPrice: { fontSize: 14, fontWeight: 'bold', marginTop: 2 },
   msgListContent: { padding: 16, paddingBottom: 8, flexGrow: 1 },
   msgRow: { marginVertical: 4 },
   msgRowLeft: { alignItems: 'flex-start' },
@@ -281,26 +279,26 @@ const styles = StyleSheet.create({
     maxWidth: '78%', paddingHorizontal: 14, paddingVertical: 9,
     borderRadius: 18,
   },
-  bubbleMine: { backgroundColor: GREEN, borderBottomRightRadius: 4 },
-  bubbleTheirs: { backgroundColor: '#F2F2F2', borderBottomLeftRadius: 4 },
-  bubbleText: { fontSize: 15, color: '#1C1C1C', lineHeight: 21 },
-  bubbleTextMine: { color: '#FFFFFF' },
-  bubbleTime: { fontSize: 10, color: '#9E9E9E', marginTop: 3, alignSelf: 'flex-end' },
+  bubbleMine: { borderBottomRightRadius: 4 },
+  bubbleTheirs: { borderBottomLeftRadius: 4 },
+  bubbleText: { fontSize: 15, lineHeight: 21 },
+  bubbleTextMine: {},
+  bubbleTime: { fontSize: 10, marginTop: 3, alignSelf: 'flex-end' },
   inputRow: {
     flexDirection: 'row', alignItems: 'flex-end',
     paddingHorizontal: 12, paddingVertical: 10,
-    borderTopWidth: 1, borderTopColor: '#F2F2F2', backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
   },
   input: {
-    flex: 1, backgroundColor: '#F2F2F2',
+    flex: 1,
     borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10,
-    fontSize: 15, color: '#1C1C1C', maxHeight: 120, marginRight: 10,
+    fontSize: 15, maxHeight: 120, marginRight: 10,
   },
   sendBtn: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center',
+    justifyContent: 'center', alignItems: 'center',
   },
-  sendBtnDisabled: { backgroundColor: '#BDBDBD' },
+  sendBtnDisabled: { },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  emptyText: { fontSize: 15, color: '#9E9E9E', textAlign: 'center' },
+  emptyText: { fontSize: 15, textAlign: 'center' },
 });

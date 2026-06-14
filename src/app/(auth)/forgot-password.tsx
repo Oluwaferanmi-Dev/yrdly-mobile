@@ -8,15 +8,6 @@ import { useAppTheme } from '../../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
-const colors = {
-  background: '#F2F2F2',
-  blob: '#A154F2',
-  primary: '#388E3C',
-  text: '#1C1C1C',
-  textFaded: '#616161',
-  border: '#E0E0E0',
-  inputBorder: '#388E3C',
-};
 
 export default function ForgotPassword() {
   const { colors } = useAppTheme();
@@ -55,15 +46,15 @@ export default function ForgotPassword() {
 
   return (
     <KeyboardAvoidingView 
-      style={styles.container} 
+      style={[styles.container, { backgroundColor: colors.background }]} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       {/* Background Blobs */}
       <View style={StyleSheet.absoluteFillObject}>
-        <View style={[styles.blob, { top: height * 0.1, left: width * 0.05, transform: [{ rotate: '36deg' }] }]} />
-        <View style={[styles.blob, { top: height * 0.2, left: width * 0.8 }]} />
-        <View style={[styles.blob, { top: height * 0.7, left: width * 0.2 }]} />
-        <View style={[styles.blob, { top: height * 0.85, left: width * 0.85 }]} />
+        <View style={[styles.blob, { top: height * 0.1, left: width * 0.05, transform: [{ rotate: '36deg' }], backgroundColor: colors.tint }]} />
+        <View style={[styles.blob, { top: height * 0.2, left: width * 0.8, backgroundColor: colors.tint }]} />
+        <View style={[styles.blob, { top: height * 0.7, left: width * 0.2, backgroundColor: colors.tint }]} />
+        <View style={[styles.blob, { top: height * 0.85, left: width * 0.85, backgroundColor: colors.tint }]} />
       </View>
 
       {/* Glass Overlay */}
@@ -81,8 +72,8 @@ export default function ForgotPassword() {
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Reset Password</Text>
-          <Text style={styles.subtitle}>Enter your email to receive a reset link</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Reset Password</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Enter your email to receive a reset link</Text>
         </View>
 
         {error ? (
@@ -102,27 +93,27 @@ export default function ForgotPassword() {
         {/* Input */}
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
             placeholder="Enter your email"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
             editable={!loading}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={colors.textMuted}
           />
-          <Ionicons name="mail-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+          <Ionicons name="mail-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
         </View>
 
         <TouchableOpacity 
-          style={styles.button} 
+          style={[styles.button, { backgroundColor: colors.tint }]} 
           onPress={handleResetPassword}
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.card} />
           ) : (
-            <Text style={styles.buttonText}>Send Reset Link</Text>
+            <Text style={[styles.buttonText, { color: colors.card }]}>Send Reset Link</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -133,14 +124,12 @@ export default function ForgotPassword() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   blob: {
     position: 'absolute',
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.blob,
     opacity: 0.55,
   },
   formContainer: {
@@ -164,13 +153,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    color: colors.text,
     textAlign: 'center',
     fontWeight: '600',
   },
   subtitle: {
     fontSize: 14,
-    color: colors.textFaded,
     textAlign: 'center',
     marginTop: 8,
   },
@@ -213,12 +200,10 @@ const styles = StyleSheet.create({
   input: {
     height: 54,
     borderWidth: 1,
-    borderColor: colors.primary,
     borderRadius: 27,
     paddingHorizontal: 20,
     fontSize: 14,
     backgroundColor: 'transparent',
-    color: colors.text,
   },
   inputIcon: {
     position: 'absolute',
@@ -227,13 +212,11 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 54,
-    backgroundColor: colors.primary,
     borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
   },
   buttonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

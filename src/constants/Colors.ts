@@ -13,6 +13,7 @@ export default {
     tabIconDefault: '#9E9E9E',
     tabIconSelected: GREEN,
     inputBackground: '#F9F9F9',
+    shadow: '#000000',
     statusBar: 'dark-content',
   },
   dark: {
@@ -27,6 +28,7 @@ export default {
     tabIconDefault: '#757575',
     tabIconSelected: GREEN,
     inputBackground: '#2A2A2A',
+    shadow: '#000000',
     statusBar: 'light-content',
   },
 };

@@ -11,7 +11,7 @@ import { useAuth } from '../../../hooks/use-supabase-auth';
 import { formatPrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
 
-const GREEN = '#388E3C';
+
 
 type EscrowStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled';
 
@@ -180,7 +180,7 @@ export default function TransactionDetailScreen() {
   if (loading || !tx) {
     return (
       <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color={GREEN} />
+        <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
   }
@@ -197,11 +197,11 @@ export default function TransactionDetailScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Transaction</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Transaction</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -213,63 +213,63 @@ export default function TransactionDetailScreen() {
         </View>
 
         {/* Item card */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
           <View style={styles.itemRow}>
             {thumb ? (
               <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" />
             ) : (
-              <View style={[styles.thumb, styles.thumbPlaceholder]}>
-                <Ionicons name="cube-outline" size={24} color="#9E9E9E" />
+              <View style={[styles.thumb, styles.thumbPlaceholder, { backgroundColor: colors.inputBackground }]}>
+                <Ionicons name="cube-outline" size={24} color={colors.textMuted} />
               </View>
             )}
             <View style={styles.itemInfo}>
-              <Text style={styles.itemTitle} numberOfLines={2}>{tx.item?.title ?? 'Item'}</Text>
-              <Text style={styles.txId} numberOfLines={1}>ID: {tx.id.slice(0, 8)}…</Text>
+              <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={2}>{tx.item?.title ?? 'Item'}</Text>
+              <Text style={[styles.txId, { color: colors.textMuted }]} numberOfLines={1}>ID: {tx.id.slice(0, 8)}…</Text>
             </View>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
 
           <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>Item price</Text>
-            <Text style={styles.priceValue}>{formatPrice(tx.amount)}</Text>
+            <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>Item price</Text>
+            <Text style={[styles.priceValue, { color: colors.text }]}>{formatPrice(tx.amount)}</Text>
           </View>
           {isSeller && (
             <View style={styles.priceRow}>
-              <Text style={styles.priceLabel}>You'll receive</Text>
-              <Text style={[styles.priceValue, { color: GREEN }]}>{formatPrice(tx.seller_amount)}</Text>
+              <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>You'll receive</Text>
+              <Text style={[styles.priceValue, { color: colors.tint }]}>{formatPrice(tx.seller_amount)}</Text>
             </View>
           )}
         </View>
 
         {/* Counterparty */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>{isBuyer ? 'Seller' : 'Buyer'}</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{isBuyer ? 'Seller' : 'Buyer'}</Text>
           <View style={styles.personRow}>
             {counterparty?.avatar_url ? (
               <Image source={{ uri: counterparty.avatar_url }} style={styles.avatar} contentFit="cover" />
             ) : (
-              <View style={[styles.avatar, styles.avatarFallback]}>
-                <Text style={styles.avatarInitial}>{counterparty?.name?.[0]?.toUpperCase() ?? '?'}</Text>
+              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.inputBackground }]}>
+                <Text style={[styles.avatarInitial, { color: colors.tint }]}>{counterparty?.name?.[0]?.toUpperCase() ?? '?'}</Text>
               </View>
             )}
-            <Text style={styles.personName}>{counterparty?.name ?? 'User'}</Text>
+            <Text style={[styles.personName, { color: colors.text }]}>{counterparty?.name ?? 'User'}</Text>
             <TouchableOpacity
-              style={styles.messageBtn}
+              style={[styles.messageBtn, { borderColor: colors.tint }]}
               onPress={() => {
                 /* Find or create a conversation then navigate */
                 router.push(`/profile/${counterparty?.id}` as any);
               }}
             >
-              <Ionicons name="chatbubble-outline" size={16} color={GREEN} />
-              <Text style={styles.messageBtnText}>Message</Text>
+              <Ionicons name="chatbubble-outline" size={16} color={colors.tint} />
+              <Text style={[styles.messageBtnText, { color: colors.tint }]}>Message</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Timeline */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Timeline</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Timeline</Text>
           {TIMELINE_STEPS.map((step, i) => {
             const done = STATUS_ORDER.indexOf(step.status) <= currentStepIndex
               && tx.status !== 'cancelled';
@@ -277,21 +277,21 @@ export default function TransactionDetailScreen() {
             return (
               <View key={step.status} style={styles.timelineRow}>
                 <View style={styles.timelineLeft}>
-                  <View style={[styles.timelineDot, done && styles.timelineDotDone]}>
+                  <View style={[styles.timelineDot, { borderColor: colors.borderLight, backgroundColor: colors.card }, done && [styles.timelineDotDone, { backgroundColor: colors.tint, borderColor: colors.tint }]]}>
                     {done && <Ionicons name="checkmark" size={12} color="#FFF" />}
                   </View>
                   {i < TIMELINE_STEPS.length - 1 && (
-                    <View style={[styles.timelineLine, done && styles.timelineLineDone]} />
+                    <View style={[styles.timelineLine, { backgroundColor: colors.borderLight }, done && [styles.timelineLineDone, { backgroundColor: colors.tint }]]} />
                   )}
                 </View>
                 <View style={styles.timelineContent}>
-                  <Text style={[styles.timelineLabel, done && styles.timelineLabelDone]}>
+                  <Text style={[styles.timelineLabel, { color: colors.textMuted }, done && [styles.timelineLabelDone, { color: colors.text }]]}>
                     {step.label}
                   </Text>
                   {ts ? (
-                    <Text style={styles.timelineTs}>{fmt(ts)}</Text>
+                    <Text style={[styles.timelineTs, { color: colors.textMuted }]}>{fmt(ts)}</Text>
                   ) : (
-                    <Text style={styles.timelinePending}>Pending</Text>
+                    <Text style={[styles.timelinePending, { color: colors.textMuted }]}>Pending</Text>
                   )}
                 </View>
               </View>
@@ -312,17 +312,17 @@ export default function TransactionDetailScreen() {
         {/* Action buttons */}
         {canMarkSent && (
           <TouchableOpacity
-            style={styles.primaryAction}
+            style={[styles.primaryAction, { backgroundColor: colors.tint, shadowColor: colors.tint }]}
             onPress={handleMarkSent}
             disabled={actionLoading}
             activeOpacity={0.85}
           >
             {actionLoading ? (
-              <ActivityIndicator color="#FFF" />
+              <ActivityIndicator color={colors.card} />
             ) : (
               <>
-                <Ionicons name="cube" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                <Text style={styles.primaryActionText}>Mark Item as Sent</Text>
+                <Ionicons name="cube" size={20} color={colors.card} style={{ marginRight: 8 }} />
+                <Text style={[styles.primaryActionText, { color: colors.card }]}>Mark Item as Sent</Text>
               </>
             )}
           </TouchableOpacity>
@@ -330,17 +330,17 @@ export default function TransactionDetailScreen() {
 
         {canConfirmReceipt && (
           <TouchableOpacity
-            style={styles.primaryAction}
+            style={[styles.primaryAction, { backgroundColor: colors.tint, shadowColor: colors.tint }]}
             onPress={handleConfirmReceipt}
             disabled={actionLoading}
             activeOpacity={0.85}
           >
             {actionLoading ? (
-              <ActivityIndicator color="#FFF" />
+              <ActivityIndicator color={colors.card} />
             ) : (
               <>
-                <Ionicons name="checkmark-circle" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                <Text style={styles.primaryActionText}>Confirm I Received the Item</Text>
+                <Ionicons name="checkmark-circle" size={20} color={colors.card} style={{ marginRight: 8 }} />
+                <Text style={[styles.primaryActionText, { color: colors.card }]}>Confirm I Received the Item</Text>
               </>
             )}
           </TouchableOpacity>
@@ -358,11 +358,11 @@ export default function TransactionDetailScreen() {
 
         {canReview && (
           <TouchableOpacity
-            style={styles.reviewAction}
+            style={[styles.reviewAction, { borderColor: colors.tint, backgroundColor: colors.inputBackground }]}
             onPress={() => router.push(`/transactions/${tx.id}/review` as any)}
           >
-            <Ionicons name="star-outline" size={18} color={GREEN} style={{ marginRight: 8 }} />
-            <Text style={styles.reviewActionText}>Leave a Review</Text>
+            <Ionicons name="star-outline" size={18} color={colors.tint} style={{ marginRight: 8 }} />
+            <Text style={[styles.reviewActionText, { color: colors.tint }]}>Leave a Review</Text>
           </TouchableOpacity>
         )}
 
@@ -373,14 +373,14 @@ export default function TransactionDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFAFA' },
+  container: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
-    paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F2F2F2', backgroundColor: '#FFF',
+    paddingVertical: 14, borderBottomWidth: 1,
   },
   backBtn: { width: 40 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
   scroll: { padding: 16, paddingBottom: 40 },
 
   statusBanner: {
@@ -390,62 +390,61 @@ const styles = StyleSheet.create({
   statusLabel: { fontSize: 15, fontWeight: '700', flex: 1 },
 
   card: {
-    backgroundColor: '#FFF', borderRadius: 16, padding: 16, marginBottom: 14,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
+    borderRadius: 16, padding: 16, marginBottom: 14,
+    borderWidth: 1, elevation: 0, shadowOpacity: 0,
   },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#424242', marginBottom: 14 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', marginBottom: 14 },
 
   itemRow: { flexDirection: 'row', alignItems: 'center' },
   thumb: { width: 64, height: 64, borderRadius: 12, marginRight: 14 },
-  thumbPlaceholder: { backgroundColor: '#F2F2F2', justifyContent: 'center', alignItems: 'center' },
+  thumbPlaceholder: { justifyContent: 'center', alignItems: 'center' },
   itemInfo: { flex: 1 },
-  itemTitle: { fontSize: 16, fontWeight: '700', color: '#1C1C1C', marginBottom: 4 },
-  txId: { fontSize: 11, color: '#BDBDBD' },
-  divider: { height: 1, backgroundColor: '#F2F2F2', marginVertical: 14 },
+  itemTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  txId: { fontSize: 11 },
+  divider: { height: 1, marginVertical: 14 },
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  priceLabel: { fontSize: 14, color: '#9E9E9E' },
-  priceValue: { fontSize: 15, fontWeight: '700', color: '#1C1C1C' },
+  priceLabel: { fontSize: 14 },
+  priceValue: { fontSize: 15, fontWeight: '700' },
 
   personRow: { flexDirection: 'row', alignItems: 'center' },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
-  avatarFallback: { backgroundColor: '#E8F5E9', justifyContent: 'center', alignItems: 'center' },
-  avatarInitial: { fontSize: 16, fontWeight: '700', color: GREEN },
-  personName: { fontSize: 15, fontWeight: '600', color: '#1C1C1C', flex: 1 },
+  avatarFallback: { justifyContent: 'center', alignItems: 'center' },
+  avatarInitial: { fontSize: 16, fontWeight: '700' },
+  personName: { fontSize: 15, fontWeight: '600', flex: 1 },
   messageBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1.5, borderColor: GREEN,
+    borderWidth: 1.5,
   },
-  messageBtnText: { fontSize: 13, fontWeight: '700', color: GREEN },
+  messageBtnText: { fontSize: 13, fontWeight: '700' },
 
   // Timeline
   timelineRow: { flexDirection: 'row', marginBottom: 0 },
   timelineLeft: { alignItems: 'center', width: 28, marginRight: 12 },
   timelineDot: {
     width: 22, height: 22, borderRadius: 11, borderWidth: 2,
-    borderColor: '#E0E0E0', justifyContent: 'center', alignItems: 'center',
-    backgroundColor: '#FFF',
+    justifyContent: 'center', alignItems: 'center',
   },
-  timelineDotDone: { backgroundColor: GREEN, borderColor: GREEN },
-  timelineLine: { width: 2, flex: 1, backgroundColor: '#E0E0E0', marginVertical: 2, minHeight: 24 },
-  timelineLineDone: { backgroundColor: GREEN },
+  timelineDotDone: {},
+  timelineLine: { width: 2, flex: 1, marginVertical: 2, minHeight: 24 },
+  timelineLineDone: {},
   timelineContent: { flex: 1, paddingBottom: 20 },
-  timelineLabel: { fontSize: 14, color: '#9E9E9E', fontWeight: '500' },
-  timelineLabelDone: { color: '#1C1C1C', fontWeight: '700' },
-  timelineTs: { fontSize: 12, color: '#9E9E9E', marginTop: 2 },
-  timelinePending: { fontSize: 12, color: '#BDBDBD', marginTop: 2 },
+  timelineLabel: { fontSize: 14, fontWeight: '500' },
+  timelineLabelDone: { fontWeight: '700' },
+  timelineTs: { fontSize: 12, marginTop: 2 },
+  timelinePending: { fontSize: 12, marginTop: 2 },
 
   // Disputed
-  disputeCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: '#FFEBEE' },
+  disputeCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: '#FFEBEE', borderWidth: 0 },
   disputeText: { flex: 1, fontSize: 13, color: '#B71C1C', lineHeight: 20 },
 
   // Actions
   primaryAction: {
-    flexDirection: 'row', height: 56, borderRadius: 28, backgroundColor: GREEN,
+    flexDirection: 'row', height: 56, borderRadius: 28,
     justifyContent: 'center', alignItems: 'center', marginBottom: 12,
-    shadowColor: GREEN, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
   },
-  primaryActionText: { fontSize: 16, fontWeight: '800', color: '#FFF' },
+  primaryActionText: { fontSize: 16, fontWeight: '800' },
   disputeAction: {
     flexDirection: 'row', height: 48, borderRadius: 24,
     justifyContent: 'center', alignItems: 'center',
@@ -455,7 +454,7 @@ const styles = StyleSheet.create({
   reviewAction: {
     flexDirection: 'row', height: 48, borderRadius: 24,
     justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1.5, borderColor: '#C8E6C9', backgroundColor: '#E8F5E9', marginBottom: 12,
+    borderWidth: 1.5, marginBottom: 12,
   },
-  reviewActionText: { fontSize: 15, fontWeight: '700', color: GREEN },
+  reviewActionText: { fontSize: 15, fontWeight: '700' },
 });

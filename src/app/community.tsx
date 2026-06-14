@@ -7,8 +7,6 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 
-const GREEN = '#388E3C';
-
 export default function CommunityScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
@@ -77,22 +75,28 @@ export default function CommunityScreen() {
     if (!sender) return null;
 
     return (
-      <View style={styles.requestCard}>
+      <View style={[styles.requestCard, { borderColor: colors.borderLight }]}>
         <TouchableOpacity style={styles.userInfo} onPress={() => router.push(`/profile/${sender.id}`)}>
-          <View style={styles.avatar}>
+          <View style={[styles.avatar, { backgroundColor: colors.tint }]}>
             {sender.avatar_url ? (
               <Image source={{ uri: sender.avatar_url }} style={styles.avatarImage} />
             ) : (
               <Text style={styles.avatarText}>{sender.name ? sender.name.charAt(0).toUpperCase() : '?'}</Text>
             )}
           </View>
-          <Text style={styles.userName}>{sender.name || 'Anonymous'}</Text>
+          <Text style={[styles.userName, { color: colors.text }]}>{sender.name || 'Anonymous'}</Text>
         </TouchableOpacity>
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={[styles.btn, styles.acceptBtn]} onPress={() => handleRequestAction(item.id, 'accepted')}>
+          <TouchableOpacity 
+            style={[styles.btn, styles.acceptBtn, { backgroundColor: colors.tint }]} 
+            onPress={() => handleRequestAction(item.id, 'accepted')}
+          >
             <Text style={styles.acceptBtnText}>Accept</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.btn, styles.declineBtn]} onPress={() => handleRequestAction(item.id, 'declined')}>
+          <TouchableOpacity 
+            style={[styles.btn, styles.declineBtn, { borderColor: '#E53935' }]} 
+            onPress={() => handleRequestAction(item.id, 'declined')}
+          >
             <Text style={styles.declineBtnText}>Decline</Text>
           </TouchableOpacity>
         </View>
@@ -102,16 +106,19 @@ export default function CommunityScreen() {
 
   const renderUser = ({ item }: { item: any }) => {
     return (
-      <TouchableOpacity style={styles.userCard} onPress={() => router.push(`/profile/${item.id}`)}>
-        <View style={styles.avatarSmall}>
+      <TouchableOpacity 
+        style={[styles.userCard, { borderBottomColor: colors.borderLight }]} 
+        onPress={() => router.push(`/profile/${item.id}`)}
+      >
+        <View style={[styles.avatarSmall, { backgroundColor: colors.tint }]}>
           {item.avatar_url ? (
             <Image source={{ uri: item.avatar_url }} style={styles.avatarImage} />
           ) : (
             <Text style={styles.avatarTextSmall}>{item.name ? item.name.charAt(0).toUpperCase() : '?'}</Text>
           )}
         </View>
-        <Text style={styles.userNameSmall}>{item.name || 'Anonymous'}</Text>
-        <Ionicons name="chevron-forward" size={20} color="#BDBDBD" />
+        <Text style={[styles.userNameSmall, { color: colors.text }]}>{item.name || 'Anonymous'}</Text>
+        <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
       </TouchableOpacity>
     );
   };
@@ -120,7 +127,7 @@ export default function CommunityScreen() {
     <View style={styles.listHeader}>
       {requests.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Friend Requests</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Friend Requests</Text>
           <FlatList
             data={requests}
             keyExtractor={item => item.id}
@@ -133,12 +140,13 @@ export default function CommunityScreen() {
       )}
 
       <View style={[styles.section, { paddingHorizontal: 16 }]}>
-        <Text style={styles.sectionTitle}>Discover Neighbors</Text>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#9E9E9E" />
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Discover Neighbors</Text>
+        <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground }]}>
+          <Ionicons name="search" size={20} color={colors.textSecondary} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search by name..."
+            placeholderTextColor={colors.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
             returnKeyType="search"
@@ -150,17 +158,17 @@ export default function CommunityScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Community</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Community</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {loading && !searchQuery ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={GREEN} />
+          <ActivityIndicator size="large" color={colors.tint} />
         </View>
       ) : (
         <FlatList
@@ -177,51 +185,50 @@ export default function CommunityScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9F9F9' },
+  container: { flex: 1 },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#F2F2F2', backgroundColor: '#FFFFFF'
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
   listContent: { paddingBottom: 40 },
   listHeader: { paddingBottom: 10 },
   section: { marginTop: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#1C1C1C', marginBottom: 12, paddingHorizontal: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12, paddingHorizontal: 16 },
   
   // Requests
   requestCard: {
-    backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, marginRight: 12,
-    width: 220, borderWidth: 1, borderColor: '#F2F2F2',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    padding: 16, marginRight: 12, width: 220, 
+    borderWidth: StyleSheet.hairlineWidth, borderRadius: 12,
   },
   userInfo: { alignItems: 'center', marginBottom: 12 },
-  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center', marginBottom: 8, overflow: 'hidden' },
+  avatar: { width: 64, height: 64, borderRadius: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 8, overflow: 'hidden' },
   avatarImage: { width: '100%', height: '100%' },
   avatarText: { color: '#FFF', fontSize: 24, fontWeight: 'bold' },
-  userName: { fontSize: 16, fontWeight: 'bold', color: '#1C1C1C' },
+  userName: { fontSize: 16, fontWeight: 'bold' },
   actionButtons: { flexDirection: 'row', gap: 8 },
   btn: { flex: 1, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  acceptBtn: { backgroundColor: GREEN },
+  acceptBtn: {},
   acceptBtnText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
-  declineBtn: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E53935' },
+  declineBtn: { backgroundColor: 'transparent', borderWidth: 1 },
   declineBtnText: { color: '#E53935', fontSize: 12, fontWeight: 'bold' },
 
   // Search
   searchContainer: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#E0E0E0', borderRadius: 8,
+    flexDirection: 'row', alignItems: 'center', borderRadius: 8,
     paddingHorizontal: 12, height: 44, marginBottom: 16
   },
-  searchInput: { flex: 1, marginLeft: 8, fontSize: 16, color: '#1C1C1C' },
+  searchInput: { flex: 1, marginLeft: 8, fontSize: 16 },
 
   // User List
   userCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF',
-    padding: 12, marginHorizontal: 16, marginBottom: 8, borderRadius: 8,
-    borderWidth: 1, borderColor: '#F2F2F2'
+    flexDirection: 'row', alignItems: 'center', 
+    paddingVertical: 12, paddingHorizontal: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  avatarSmall: { width: 40, height: 40, borderRadius: 20, backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' },
+  avatarSmall: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' },
   avatarTextSmall: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
-  userNameSmall: { flex: 1, fontSize: 16, fontWeight: 'bold', color: '#1C1C1C' },
+  userNameSmall: { flex: 1, fontSize: 16, fontWeight: 'bold' },
 });

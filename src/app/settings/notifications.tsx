@@ -9,8 +9,6 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
-
 interface NotificationSettings {
   messages: boolean;
   friendRequests: boolean;
@@ -107,49 +105,49 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#1C1C1C" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={GREEN} />
+          <ActivityIndicator size="large" color={colors.tint} />
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={styles.intro}>
+          <Text style={[styles.intro, { color: colors.textMuted }]}>
             Choose which notifications you receive. These apply to both push and in-app notifications.
           </Text>
 
           {NOTIFICATION_GROUPS.map((group) => (
             <View key={group.title} style={styles.group}>
-              <Text style={styles.groupTitle}>{group.title.toUpperCase()}</Text>
-              <View style={styles.groupCard}>
+              <Text style={[styles.groupTitle, { color: colors.textMuted }]}>{group.title.toUpperCase()}</Text>
+              <View style={[styles.groupCard, { backgroundColor: colors.card }]}>
                 {group.items.map((item, index) => (
                   <View
                     key={item.key}
-                    style={[styles.row, index < group.items.length - 1 && styles.rowDivider]}
+                    style={[styles.row, index < group.items.length - 1 && [styles.rowDivider, { borderBottomColor: colors.borderLight }]]}
                   >
-                    <View style={styles.iconWrap}>
-                      <Ionicons name={item.icon as any} size={20} color={GREEN} />
+                    <View style={[styles.iconWrap, { backgroundColor: colors.tint + '22' }]}>
+                      <Ionicons name={item.icon as any} size={20} color={colors.tint} />
                     </View>
                     <View style={styles.rowInfo}>
-                      <Text style={styles.rowLabel}>{item.label}</Text>
-                      <Text style={styles.rowDesc}>{item.desc}</Text>
+                      <Text style={[styles.rowLabel, { color: colors.text }]}>{item.label}</Text>
+                      <Text style={[styles.rowDesc, { color: colors.textMuted }]}>{item.desc}</Text>
                     </View>
                     {saving === item.key ? (
-                      <ActivityIndicator size="small" color={GREEN} />
+                      <ActivityIndicator size="small" color={colors.tint} />
                     ) : (
                       <Switch
                         value={settings[item.key]}
                         onValueChange={(v) => handleToggle(item.key, v)}
-                        trackColor={{ false: '#E0E0E0', true: `${GREEN}66` }}
-                        thumbColor={settings[item.key] ? GREEN : '#FFFFFF'}
-                        ios_backgroundColor="#E0E0E0"
+                        trackColor={{ false: colors.border, true: colors.tint + '66' }}
+                        thumbColor={settings[item.key] ? colors.tint : '#FFFFFF'}
+                        ios_backgroundColor={colors.border}
                       />
                     )}
                   </View>
@@ -166,33 +164,33 @@ export default function NotificationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F6F4' },
+  container: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 12, paddingVertical: 12,
-    backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F2F2F2',
+    borderBottomWidth: 1,
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold', color: '#1C1C1C' },
+  headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold' },
   scroll: { padding: 16 },
-  intro: { fontSize: 13, color: '#9E9E9E', marginBottom: 20, lineHeight: 18 },
+  intro: { fontSize: 13, marginBottom: 20, lineHeight: 18 },
   group: { marginBottom: 24 },
   groupTitle: {
-    fontSize: 11, fontWeight: '800', color: '#9E9E9E',
+    fontSize: 11, fontWeight: '800',
     textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10,
   },
   groupCard: {
-    backgroundColor: '#FFFFFF', borderRadius: 14,
+    borderRadius: 14,
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
   },
   row: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
-  rowDivider: { borderBottomWidth: 1, borderBottomColor: '#F5F5F5' },
+  rowDivider: { borderBottomWidth: 1 },
   iconWrap: {
-    width: 36, height: 36, borderRadius: 10, backgroundColor: '#E8F5E9',
+    width: 36, height: 36, borderRadius: 10,
     justifyContent: 'center', alignItems: 'center',
   },
   rowInfo: { flex: 1 },
-  rowLabel: { fontSize: 14, fontWeight: '700', color: '#1C1C1C', marginBottom: 2 },
-  rowDesc: { fontSize: 12, color: '#9E9E9E' },
+  rowLabel: { fontSize: 14, fontWeight: '700', marginBottom: 2 },
+  rowDesc: { fontSize: 12 },
 });

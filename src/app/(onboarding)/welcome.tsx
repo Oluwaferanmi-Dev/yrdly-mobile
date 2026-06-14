@@ -9,8 +9,6 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
-
 interface CommunityStats {
   totalUsers: number;
   totalPosts: number;
@@ -105,7 +103,7 @@ export default function OnboardingWelcomeScreen() {
   const CONFETTI_COLORS = ['#388E3C', '#FFC107', '#E91E63', '#2196F3', '#FF5722', '#9C27B0'];
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       {/* Confetti */}
       <View style={styles.confettiContainer} pointerEvents="none">
         {confettiAnims.map((p, i) => (
@@ -142,37 +140,25 @@ export default function OnboardingWelcomeScreen() {
 
         {/* Hero */}
         <View style={styles.hero}>
-          <View style={styles.checkRing}>
-            <Ionicons name="checkmark-circle" size={48} color={GREEN} />
+          <View style={[styles.checkRing, { backgroundColor: colors.tint + '22' }]}>
+            <Ionicons name="checkmark-circle" size={48} color={colors.tint} />
           </View>
-          <Text style={styles.badge}>PROFILE VERIFIED ✓</Text>
-          <Text style={styles.title}>Welcome home,{'\n'}{firstName}!</Text>
-          <Text style={styles.subtitle}>
-            Your journey in <Text style={styles.highlight}>{location}</Text> starts now.
+          <Text style={[styles.badge, { color: colors.tint, backgroundColor: colors.tint + '22' }]}>PROFILE VERIFIED ✓</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Welcome home,{'\n'}{firstName}!</Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+            Your journey in <Text style={[styles.highlight, { color: colors.text }]}>{location}</Text> starts now.
           </Text>
         </View>
 
         {/* Community stats */}
-        <View style={styles.statsCard}>
-          <Text style={styles.statsTitle}>Your community is growing</Text>
+        <View style={[styles.statsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.statsTitle, { color: colors.textMuted }]}>Your community is growing</Text>
           <View style={styles.statsRow}>
-            <Stat
-              icon="people-outline"
-              value={stats?.totalUsers ?? null}
-              label="Neighbours"
-            />
-            <View style={styles.statDivider} />
-            <Stat
-              icon="newspaper-outline"
-              value={stats?.totalPosts ?? null}
-              label="Posts shared"
-            />
-            <View style={styles.statDivider} />
-            <Stat
-              icon="flash-outline"
-              value={stats?.activeToday ?? null}
-              label="Active today"
-            />
+            <Stat icon="people-outline" value={stats?.totalUsers ?? null} label="Neighbours" colors={colors} />
+            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+            <Stat icon="newspaper-outline" value={stats?.totalPosts ?? null} label="Posts shared" colors={colors} />
+            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+            <Stat icon="flash-outline" value={stats?.activeToday ?? null} label="Active today" colors={colors} />
           </View>
         </View>
 
@@ -183,9 +169,9 @@ export default function OnboardingWelcomeScreen() {
             { icon: 'calendar-outline', text: 'Join local events' },
             { icon: 'chatbubbles-outline', text: 'Chat with neighbours' },
           ].map((f) => (
-            <View key={f.text} style={styles.featurePill}>
-              <Ionicons name={f.icon as any} size={16} color={GREEN} />
-              <Text style={styles.featurePillText}>{f.text}</Text>
+            <View key={f.text} style={[styles.featurePill, { backgroundColor: colors.tint + '22' }]}>
+              <Ionicons name={f.icon as any} size={16} color={colors.tint} />
+              <Text style={[styles.featurePillText, { color: colors.tint }]}>{f.text}</Text>
             </View>
           ))}
         </View>
@@ -194,7 +180,7 @@ export default function OnboardingWelcomeScreen() {
       {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={styles.tourBtn}
+          style={[styles.tourBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }]}
           onPress={() => handleContinue(false)}
           disabled={advancing}
           activeOpacity={0.85}
@@ -210,34 +196,34 @@ export default function OnboardingWelcomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.skipBtn}
+          style={[styles.skipBtn, { borderColor: colors.border }]}
           onPress={() => handleContinue(true)}
           disabled={advancing}
           activeOpacity={0.7}
         >
-          <Text style={styles.skipBtnText}>Jump Right In</Text>
+          <Text style={[styles.skipBtnText, { color: colors.textMuted }]}>Jump Right In</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
-function Stat({ icon, value, label }: { icon: string; value: number | null; label: string }) {
+function Stat({ icon, value, label, colors }: { icon: string; value: number | null; label: string; colors: any }) {
   return (
     <View style={styles.statItem}>
-      <Ionicons name={icon as any} size={18} color={GREEN} style={{ marginBottom: 4 }} />
+      <Ionicons name={icon as any} size={18} color={colors.tint} style={{ marginBottom: 4 }} />
       {value === null ? (
-        <ActivityIndicator size="small" color={GREEN} />
+        <ActivityIndicator size="small" color={colors.tint} />
       ) : (
-        <Text style={styles.statValue}>{value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value}</Text>
+        <Text style={[styles.statValue, { color: colors.text }]}>{value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value}</Text>
       )}
-      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={[styles.statLabel, { color: colors.textMuted }]}>{label}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAFAFA' },
+  safe: { flex: 1 },
   confettiContainer: { ...StyleSheet.absoluteFillObject, zIndex: 10 },
   confettiPiece: {
     position: 'absolute',
@@ -257,102 +243,44 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E0E0E0' },
-  dotActive: { backgroundColor: GREEN, width: 24 },
+  dotActive: { width: 24 },
 
   hero: { alignItems: 'center', marginBottom: 32 },
   checkRing: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#E8F5E9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
+    width: 80, height: 80, borderRadius: 40,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 16,
   },
   badge: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-    color: GREEN,
-    backgroundColor: '#E8F5E9',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    marginBottom: 16,
+    fontSize: 11, fontWeight: '800', letterSpacing: 1.5,
+    paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, marginBottom: 16,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#1C1C1C',
-    textAlign: 'center',
-    lineHeight: 40,
-    marginBottom: 10,
-  },
-  subtitle: { fontSize: 16, color: '#616161', textAlign: 'center', lineHeight: 23 },
-  highlight: { color: '#1C1C1C', fontWeight: '700' },
+  title: { fontSize: 32, fontWeight: '800', textAlign: 'center', lineHeight: 40, marginBottom: 10 },
+  subtitle: { fontSize: 16, textAlign: 'center', lineHeight: 23 },
+  highlight: { fontWeight: '700' },
 
   statsCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
+    borderRadius: 20, padding: 20, marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
   },
-  statsTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#9E9E9E',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 16,
-  },
+  statsTitle: { fontSize: 13, fontWeight: '700', textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 16 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
-  statDivider: { width: 1, height: 40, backgroundColor: '#F0F0F0' },
+  statDivider: { width: 1, height: 40 },
   statItem: { alignItems: 'center', flex: 1 },
-  statValue: { fontSize: 22, fontWeight: '800', color: '#1C1C1C', marginBottom: 2 },
-  statLabel: { fontSize: 11, color: '#9E9E9E', fontWeight: '600' },
+  statValue: { fontSize: 22, fontWeight: '800', marginBottom: 2 },
+  statLabel: { fontSize: 11, fontWeight: '600' },
 
   features: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
-  featurePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8F5E9',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
-  },
-  featurePillText: { fontSize: 13, fontWeight: '600', color: '#2E7D32' },
+  featurePill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, gap: 6 },
+  featurePillText: { fontSize: 13, fontWeight: '600' },
 
   footer: { paddingHorizontal: 24, paddingBottom: 20, gap: 12 },
   tourBtn: {
-    backgroundColor: GREEN,
-    borderRadius: 14,
-    height: 56,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: GREEN,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 4,
+    borderRadius: 14, height: 56, flexDirection: 'row',
+    justifyContent: 'center', alignItems: 'center',
+    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 4,
   },
   tourBtnText: { fontSize: 17, fontWeight: '700', color: '#FFF' },
-  skipBtn: {
-    height: 48,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#E0E0E0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  skipBtnText: { fontSize: 14, fontWeight: '700', color: '#9E9E9E', textTransform: 'uppercase', letterSpacing: 1 },
+  skipBtn: { height: 48, borderRadius: 14, borderWidth: 1.5, justifyContent: 'center', alignItems: 'center' },
+  skipBtnText: { fontSize: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
 });

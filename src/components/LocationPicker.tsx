@@ -13,8 +13,7 @@ import {
   PERMISSION_DENIED,
   ResolvedLocation,
 } from '../lib/geocoding-service';
-
-const GREEN = '#388E3C';
+import { useAppTheme } from '../context/ThemeContext';
 
 export interface LocationValue {
   state: string;
@@ -32,6 +31,7 @@ interface LocationPickerProps {
 type PickerMode = 'state' | 'lga';
 
 export function LocationPicker({ value, onChange }: LocationPickerProps) {
+  const { colors } = useAppTheme();
   const [detecting, setDetecting] = useState(false);
   const [detectionResult, setDetectionResult] = useState<
     'success' | 'outside' | 'denied' | null
@@ -95,20 +95,20 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
     <View>
       {/* GPS Auto-detect button */}
       <TouchableOpacity
-        style={[styles.gpsBtn, detecting && styles.gpsBtnLoading]}
+        style={[styles.gpsBtn, { borderColor: colors.tint }, detecting && styles.gpsBtnLoading]}
         onPress={handleAutoDetect}
         disabled={detecting}
         activeOpacity={0.8}
       >
         {detecting ? (
           <>
-            <ActivityIndicator size="small" color={GREEN} style={{ marginRight: 8 }} />
-            <Text style={styles.gpsBtnText}>Detecting your location…</Text>
+            <ActivityIndicator size="small" color={colors.tint} style={{ marginRight: 8 }} />
+            <Text style={[styles.gpsBtnText, { color: colors.tint }]}>Detecting your location…</Text>
           </>
         ) : (
           <>
-            <Ionicons name="location" size={18} color={GREEN} style={{ marginRight: 8 }} />
-            <Text style={styles.gpsBtnText}>Auto-detect my location</Text>
+            <Ionicons name="location" size={18} color={colors.tint} style={{ marginRight: 8 }} />
+            <Text style={[styles.gpsBtnText, { color: colors.tint }]}>Auto-detect my location</Text>
           </>
         )}
       </TouchableOpacity>
@@ -139,66 +139,67 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
 
       {/* Divider */}
       <View style={styles.divider}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>or select manually</Text>
-        <View style={styles.dividerLine} />
+        <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+        <Text style={[styles.dividerText, { color: colors.textMuted }]}>or select manually</Text>
+        <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
       </View>
 
       {/* State selector */}
       <View style={styles.fieldGroup}>
-        <Text style={styles.label}>State *</Text>
+        <Text style={[styles.label, { color: colors.text }]}>State *</Text>
         <TouchableOpacity
-          style={[styles.selector, value.state ? styles.selectorFilled : null]}
+          style={[styles.selector, { backgroundColor: colors.card, borderColor: colors.border }, value.state ? { borderColor: colors.tint } : null]}
           onPress={() => openPicker('state')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.selectorText, !value.state && styles.selectorPlaceholder]}>
+          <Text style={[styles.selectorText, { color: colors.text }, !value.state && { color: colors.textMuted }]}>
             {value.state || 'Select your state'}
           </Text>
-          <Ionicons name="chevron-down" size={18} color={value.state ? GREEN : '#9E9E9E'} />
+          <Ionicons name="chevron-down" size={18} color={value.state ? colors.tint : colors.textMuted} />
         </TouchableOpacity>
       </View>
 
       {/* LGA selector */}
       <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Local Government Area *</Text>
+        <Text style={[styles.label, { color: colors.text }]}>Local Government Area *</Text>
         <TouchableOpacity
           style={[
             styles.selector,
-            value.lga ? styles.selectorFilled : null,
+            { backgroundColor: colors.card, borderColor: colors.border },
+            value.lga ? { borderColor: colors.tint } : null,
             !value.state && styles.selectorDisabled,
           ]}
           onPress={() => value.state && openPicker('lga')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.selectorText, !value.lga && styles.selectorPlaceholder]}>
+          <Text style={[styles.selectorText, { color: colors.text }, !value.lga && { color: colors.textMuted }]}>
             {value.lga || (!value.state ? 'Select state first' : 'Select your LGA')}
           </Text>
-          <Ionicons name="chevron-down" size={18} color={value.lga ? GREEN : '#9E9E9E'} />
+          <Ionicons name="chevron-down" size={18} color={value.lga ? colors.tint : colors.textMuted} />
         </TouchableOpacity>
       </View>
 
       {/* Picker Modal */}
       <Modal visible={pickerVisible} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={styles.modal}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>
+        <SafeAreaView style={[styles.modal, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.borderLight }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
               {pickerMode === 'state' ? 'Select State' : 'Select LGA'}
             </Text>
             <TouchableOpacity onPress={() => setPickerVisible(false)} style={styles.modalClose}>
-              <Ionicons name="close" size={24} color="#1C1C1C" />
+              <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
           {/* Search */}
-          <View style={styles.searchBox}>
-            <Ionicons name="search" size={18} color="#9E9E9E" style={{ marginRight: 8 }} />
+          <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.text }]}
               value={search}
               onChangeText={setSearch}
               placeholder={pickerMode === 'state' ? 'Search states…' : 'Search LGAs…'}
-              placeholderTextColor="#BDBDBD"
+              placeholderTextColor={colors.textMuted}
               autoFocus
             />
           </View>
@@ -216,14 +217,14 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
                     pickerMode === 'state' ? handleSelectState(item) : handleSelectLga(item)
                   }
                 >
-                  <Text style={[styles.listItemText, isSelected && styles.listItemTextSelected]}>
+                  <Text style={[styles.listItemText, { color: colors.text }, isSelected && { color: colors.tint, fontWeight: '700' }]}>
                     {item}
                   </Text>
-                  {isSelected && <Ionicons name="checkmark" size={18} color={GREEN} />}
+                  {isSelected && <Ionicons name="checkmark" size={18} color={colors.tint} />}
                 </TouchableOpacity>
               );
             }}
-            ItemSeparatorComponent={() => <View style={styles.itemSep} />}
+            ItemSeparatorComponent={() => <View style={[styles.itemSep, { backgroundColor: colors.borderLight }]} />}
             keyboardShouldPersistTaps="handled"
           />
         </SafeAreaView>
@@ -239,13 +240,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: GREEN,
     paddingVertical: 14,
     marginBottom: 12,
     backgroundColor: '#E8F5E9',
   },
   gpsBtnLoading: { opacity: 0.7 },
-  gpsBtnText: { fontSize: 15, fontWeight: '700', color: GREEN },
+  gpsBtnText: { fontSize: 15, fontWeight: '700' },
 
   feedback: {
     flexDirection: 'row',
@@ -261,14 +261,13 @@ const styles = StyleSheet.create({
   feedbackTextWarn: { fontSize: 13, color: '#E65100', flex: 1, lineHeight: 18 },
 
   divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 16 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: '#E0E0E0' },
-  dividerText: { fontSize: 12, color: '#9E9E9E', marginHorizontal: 12, fontWeight: '600' },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { fontSize: 12, marginHorizontal: 12, fontWeight: '600' },
 
   fieldGroup: { marginBottom: 16 },
   label: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#424242',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 8,
@@ -277,19 +276,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFF',
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#E0E0E0',
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
-  selectorFilled: { borderColor: GREEN },
   selectorDisabled: { opacity: 0.5 },
-  selectorText: { fontSize: 16, color: '#1C1C1C', flex: 1 },
-  selectorPlaceholder: { color: '#BDBDBD' },
+  selectorText: { fontSize: 16, flex: 1 },
 
-  modal: { flex: 1, backgroundColor: '#FAFAFA' },
+  modal: { flex: 1 },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -297,9 +292,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
-  modalTitle: { fontSize: 18, fontWeight: '800', color: '#1C1C1C' },
+  modalTitle: { fontSize: 18, fontWeight: '800' },
   modalClose: { padding: 4 },
 
   searchBox: {
@@ -308,12 +302,10 @@ const styles = StyleSheet.create({
     margin: 16,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: '#FFF',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
-  searchInput: { flex: 1, fontSize: 15, color: '#1C1C1C' },
+  searchInput: { flex: 1, fontSize: 15 },
 
   listItem: {
     flexDirection: 'row',
@@ -323,7 +315,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   listItemSelected: { backgroundColor: '#E8F5E9' },
-  listItemText: { fontSize: 15, color: '#1C1C1C' },
-  listItemTextSelected: { color: GREEN, fontWeight: '700' },
-  itemSep: { height: 1, backgroundColor: '#F5F5F5', marginLeft: 20 },
+  listItemText: { fontSize: 15 },
+  itemSep: { height: 1, marginLeft: 20 },
 });
+

@@ -9,8 +9,6 @@ import { Post } from '../../types';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
-
 export default function ProfileTab() {
   const { user, profile, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -58,7 +56,7 @@ export default function ProfileTab() {
               style={styles.avatarImage} 
             />
           ) : (
-            <Text style={styles.avatarText}>
+            <Text style={[styles.avatarText, { color: colors.tint }]}>
               {profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}
             </Text>
           )}
@@ -68,7 +66,7 @@ export default function ProfileTab() {
 
         <View style={styles.actionRow}>
           <TouchableOpacity 
-            style={styles.communityButton} 
+            style={[styles.communityButton, { backgroundColor: colors.tint }]} 
             onPress={() => router.push('/community')}
           >
             <Ionicons name="people" size={20} color="#FFFFFF" />
@@ -86,7 +84,7 @@ export default function ProfileTab() {
             style={styles.ticketsButton} 
             onPress={() => router.push('/tickets')}
           >
-            <Ionicons name="ticket-outline" size={20} color={GREEN} />
+            <Ionicons name="ticket-outline" size={20} color={colors.tint} />
           </TouchableOpacity>
         </View>
       </View>
@@ -108,7 +106,7 @@ export default function ProfileTab() {
           />
         )}
         ListHeaderComponent={ListHeader}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={GREEN} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
@@ -117,7 +115,7 @@ export default function ProfileTab() {
               <Text style={[styles.emptyText, { color: colors.textSecondary }]}>You haven't posted anything yet.</Text>
             </View>
           ) : (
-            <ActivityIndicator size="large" color={GREEN} style={{ marginTop: 40 }} />
+            <ActivityIndicator size="large" color={colors.tint} style={{ marginTop: 40 }} />
           )
         }
         ListFooterComponent={
@@ -150,12 +148,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center', marginBottom: 16, overflow: 'hidden'
   },
   avatarImage: { width: '100%', height: '100%' },
-  avatarText: { fontSize: 36, fontWeight: 'bold', color: GREEN },
+  avatarText: { fontSize: 36, fontWeight: 'bold' },
   name: { fontSize: 24, fontWeight: 'bold', marginBottom: 4 },
   email: { fontSize: 16, marginBottom: 20 },
   actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 12 },
   communityButton: {
-    flex: 1, flexDirection: 'row', height: 44, backgroundColor: GREEN, borderRadius: 22,
+    flex: 1, flexDirection: 'row', height: 44, borderRadius: 22,
     justifyContent: 'center', alignItems: 'center', maxWidth: 200,
   },
   communityButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold', marginLeft: 8 },
@@ -178,4 +176,3 @@ const styles = StyleSheet.create({
   },
   logoutText: { color: '#E53935', fontSize: 16, fontWeight: 'bold' },
 });
-

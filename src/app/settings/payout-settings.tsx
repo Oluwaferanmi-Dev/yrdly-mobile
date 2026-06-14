@@ -11,7 +11,6 @@ import { api } from '../../lib/api';
 import banksData from '../../data/nigerian-banks.json';
 import { useAppTheme } from '../../context/ThemeContext';
 
-const GREEN = '#388E3C';
 interface Bank { code: string; name: string }
 const BANKS: Bank[] = banksData as Bank[];
 
@@ -75,22 +74,22 @@ export default function PayoutSettingsScreen() {
   const canSave = selectedBank && accountNumber.length === 10 && !!resolvedName && !resolving;
 
   return (
-    <SafeAreaView style={s.container}>
-      <View style={s.header}>
-        <TouchableOpacity onPress={() => router.back()} style={s.back}><Ionicons name="arrow-back" size={24} color="#1C1C1C" /></TouchableOpacity>
-        <Text style={s.title}>Bank Account</Text>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+      <View style={[s.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => router.back()} style={s.back}><Ionicons name="arrow-back" size={24} color={colors.text} /></TouchableOpacity>
+        <Text style={[s.title, { color: colors.text }]}>Bank Account</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
-        {loading ? <ActivityIndicator color={GREEN} style={{ marginTop: 32 }} /> : existing ? (
-          <View style={s.existingCard}>
+        {loading ? <ActivityIndicator color={colors.tint} style={{ marginTop: 32 }} /> : existing ? (
+          <View style={[s.existingCard, { backgroundColor: colors.card }]}>
             <View style={s.existingRow}>
-              <View style={s.iconWrap}><Ionicons name="business" size={22} color={GREEN} /></View>
+              <View style={[s.iconWrap, { backgroundColor: colors.tint + '22' }]}><Ionicons name="business" size={22} color={colors.tint} /></View>
               <View style={{ flex: 1 }}>
-                <Text style={s.existingName}>{existing.account_name}</Text>
-                <Text style={s.existingDetail}>{existing.bank_name} · ****{existing.account_number.slice(-4)}</Text>
+                <Text style={[s.existingName, { color: colors.text }]}>{existing.account_name}</Text>
+                <Text style={[s.existingDetail, { color: colors.textMuted }]}>{existing.bank_name} · ****{existing.account_number.slice(-4)}</Text>
                 <View style={[s.badge, existing.verification_status === 'verified' ? s.badgeOk : s.badgePending]}>
-                  <Text style={[s.badgeText, { color: existing.verification_status === 'verified' ? GREEN : '#E65100' }]}>
+                  <Text style={[s.badgeText, { color: existing.verification_status === 'verified' ? colors.tint : '#E65100' }]}>
                     {existing.verification_status === 'verified' ? '✓ Verified' : '⏳ Pending verification'}
                   </Text>
                 </View>
@@ -99,7 +98,7 @@ export default function PayoutSettingsScreen() {
           </View>
         ) : null}
 
-        <Text style={s.sectionTitle}>{existing ? 'Replace Bank Account' : 'Add Bank Account'}</Text>
+        <Text style={[s.sectionTitle, { color: colors.text }]}>{existing ? 'Replace Bank Account' : 'Add Bank Account'}</Text>
         {existing && (
           <View style={s.warnBox}>
             <Ionicons name="warning-outline" size={15} color="#E65100" />
@@ -107,45 +106,45 @@ export default function PayoutSettingsScreen() {
           </View>
         )}
 
-        <Text style={s.label}>Bank *</Text>
-        <TouchableOpacity style={[s.selector, selectedBank && s.selectorFilled]} onPress={() => { setBankSearch(''); setBankModal(true); }}>
-          <Text style={[s.selectorText, !selectedBank && s.placeholder]}>{selectedBank?.name ?? 'Select your bank'}</Text>
-          <Ionicons name="chevron-down" size={18} color={selectedBank ? GREEN : '#9E9E9E'} />
+        <Text style={[s.label, { color: colors.text }]}>Bank *</Text>
+        <TouchableOpacity style={[s.selector, { backgroundColor: colors.card, borderColor: colors.border }, selectedBank && { borderColor: colors.tint }]} onPress={() => { setBankSearch(''); setBankModal(true); }}>
+          <Text style={[s.selectorText, { color: colors.text }, !selectedBank && { color: colors.textMuted }]}>{selectedBank?.name ?? 'Select your bank'}</Text>
+          <Ionicons name="chevron-down" size={18} color={selectedBank ? colors.tint : colors.textMuted} />
         </TouchableOpacity>
 
-        <Text style={[s.label, { marginTop: 16 }]}>Account Number *</Text>
+        <Text style={[s.label, { color: colors.text, marginTop: 16 }]}>Account Number *</Text>
         <TextInput
-          style={[s.input, accountNumber.length === 10 && s.inputFilled]}
+          style={[s.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }, accountNumber.length === 10 && { borderColor: colors.tint }]}
           value={accountNumber}
           onChangeText={v => { setAccountNumber(v.replace(/\D/g, '').slice(0, 10)); setResolvedName(''); }}
           placeholder="10-digit account number"
-          placeholderTextColor="#BDBDBD"
+          placeholderTextColor={colors.textMuted}
           keyboardType="number-pad"
           maxLength={10}
         />
 
-        {resolving && <View style={s.resolveRow}><ActivityIndicator size="small" color={GREEN} /><Text style={s.resolveText}>Verifying…</Text></View>}
+        {resolving && <View style={s.resolveRow}><ActivityIndicator size="small" color={colors.tint} /><Text style={[s.resolveText, { color: colors.textMuted }]}>Verifying…</Text></View>}
         {!resolving && resolvedName ? (
-          <View style={s.resolveRow}><Ionicons name="checkmark-circle" size={18} color={GREEN} /><Text style={s.resolvedName}>{resolvedName}</Text></View>
+          <View style={s.resolveRow}><Ionicons name="checkmark-circle" size={18} color={colors.tint} /><Text style={[s.resolvedName, { color: colors.tint }]}>{resolvedName}</Text></View>
         ) : null}
         {!resolving && accountNumber.length === 10 && !resolvedName && (
           <View style={s.resolveRow}><Ionicons name="close-circle" size={18} color="#E53935" /><Text style={{ color: '#E53935', fontSize: 13 }}>Account not found.</Text></View>
         )}
 
-        <TouchableOpacity style={[s.saveBtn, !canSave && s.saveBtnOff]} onPress={handleSave} disabled={!canSave || saving}>
+        <TouchableOpacity style={[s.saveBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }, !canSave && s.saveBtnOff]} onPress={handleSave} disabled={!canSave || saving}>
           {saving ? <ActivityIndicator color="#FFF" /> : <Text style={s.saveBtnText}>Save Bank Account</Text>}
         </TouchableOpacity>
       </ScrollView>
 
       <Modal visible={bankModal} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={s.modal}>
-          <View style={s.modalHeader}>
-            <Text style={s.modalTitle}>Select Bank</Text>
-            <TouchableOpacity onPress={() => setBankModal(false)}><Ionicons name="close" size={24} color="#1C1C1C" /></TouchableOpacity>
+        <SafeAreaView style={[s.modal, { backgroundColor: colors.background }]}>
+          <View style={[s.modalHeader, { borderBottomColor: colors.border }]}>
+            <Text style={[s.modalTitle, { color: colors.text }]}>Select Bank</Text>
+            <TouchableOpacity onPress={() => setBankModal(false)}><Ionicons name="close" size={24} color={colors.text} /></TouchableOpacity>
           </View>
-          <View style={s.searchBox}>
-            <Ionicons name="search" size={18} color="#9E9E9E" style={{ marginRight: 8 }} />
-            <TextInput style={s.searchInput} value={bankSearch} onChangeText={setBankSearch} placeholder="Search banks…" placeholderTextColor="#BDBDBD" autoFocus />
+          <View style={[s.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
+            <TextInput style={[s.searchInput, { color: colors.text }]} value={bankSearch} onChangeText={setBankSearch} placeholder="Search banks…" placeholderTextColor={colors.textMuted} autoFocus />
           </View>
           <FlatList
             data={filteredBanks}
@@ -155,11 +154,11 @@ export default function PayoutSettingsScreen() {
                 style={[s.bankItem, selectedBank?.code === item.code && s.bankItemSel]}
                 onPress={() => { setSelectedBank(item); setResolvedName(''); setBankModal(false); }}
               >
-                <Text style={[s.bankName, selectedBank?.code === item.code && { color: GREEN, fontWeight: '700' }]}>{item.name}</Text>
-                {selectedBank?.code === item.code && <Ionicons name="checkmark" size={18} color={GREEN} />}
+                <Text style={[s.bankName, { color: colors.text }, selectedBank?.code === item.code && { color: colors.tint, fontWeight: '700' }]}>{item.name}</Text>
+                {selectedBank?.code === item.code && <Ionicons name="checkmark" size={18} color={colors.tint} />}
               </TouchableOpacity>
             )}
-            ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: '#F5F5F5', marginLeft: 20 }} />}
+            ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: colors.borderLight, marginLeft: 20 }} />}
             keyboardShouldPersistTaps="handled"
           />
         </SafeAreaView>
@@ -169,40 +168,38 @@ export default function PayoutSettingsScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFAFA' },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F2F2F2', backgroundColor: '#FFF' },
+  container: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 14, borderBottomWidth: 1 },
   back: { width: 40 },
-  title: { fontSize: 18, fontWeight: '800', color: '#1C1C1C', flex: 1, textAlign: 'center' },
+  title: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
   scroll: { padding: 20, paddingBottom: 40 },
-  existingCard: { backgroundColor: '#FFF', borderRadius: 16, padding: 16, marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 1 },
+  existingCard: { borderRadius: 16, padding: 16, marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 1 },
   existingRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  iconWrap: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#E8F5E9', justifyContent: 'center', alignItems: 'center' },
-  existingName: { fontSize: 16, fontWeight: '700', color: '#1C1C1C', marginBottom: 2 },
-  existingDetail: { fontSize: 13, color: '#9E9E9E', marginBottom: 8 },
+  iconWrap: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  existingName: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
+  existingDetail: { fontSize: 13, marginBottom: 8 },
   badge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 },
   badgeOk: { backgroundColor: '#E8F5E9' }, badgePending: { backgroundColor: '#FFF3E0' },
   badgeText: { fontSize: 12, fontWeight: '700' },
-  sectionTitle: { fontSize: 18, fontWeight: '800', color: '#1C1C1C', marginBottom: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', marginBottom: 16 },
   warnBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: '#FFF3E0', borderRadius: 10, padding: 12, marginBottom: 20 },
   warnText: { flex: 1, fontSize: 13, color: '#E65100', lineHeight: 18 },
-  label: { fontSize: 12, fontWeight: '700', color: '#424242', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
-  selector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFF', borderRadius: 12, borderWidth: 1.5, borderColor: '#E0E0E0', paddingHorizontal: 16, paddingVertical: 14 },
-  selectorFilled: { borderColor: GREEN },
-  selectorText: { fontSize: 16, color: '#1C1C1C' }, placeholder: { color: '#BDBDBD' },
-  input: { backgroundColor: '#FFF', borderRadius: 12, borderWidth: 1.5, borderColor: '#E0E0E0', paddingHorizontal: 16, paddingVertical: 14, fontSize: 18, color: '#1C1C1C', letterSpacing: 2 },
-  inputFilled: { borderColor: GREEN },
+  label: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  selector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 12, borderWidth: 1.5, paddingHorizontal: 16, paddingVertical: 14 },
+  selectorText: { fontSize: 16 }, placeholder: { },
+  input: { borderRadius: 12, borderWidth: 1.5, paddingHorizontal: 16, paddingVertical: 14, fontSize: 18, letterSpacing: 2 },
   resolveRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
-  resolveText: { fontSize: 13, color: '#9E9E9E' },
-  resolvedName: { fontSize: 14, fontWeight: '700', color: GREEN },
-  saveBtn: { height: 56, borderRadius: 28, backgroundColor: GREEN, justifyContent: 'center', alignItems: 'center', marginTop: 28, shadowColor: GREEN, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  resolveText: { fontSize: 13 },
+  resolvedName: { fontSize: 14, fontWeight: '700' },
+  saveBtn: { height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginTop: 28, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
   saveBtnOff: { opacity: 0.4, shadowOpacity: 0 },
   saveBtnText: { fontSize: 16, fontWeight: '800', color: '#FFF' },
-  modal: { flex: 1, backgroundColor: '#FAFAFA' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F2F2F2' },
-  modalTitle: { fontSize: 18, fontWeight: '800', color: '#1C1C1C' },
-  searchBox: { flexDirection: 'row', alignItems: 'center', margin: 16, paddingHorizontal: 14, paddingVertical: 12, backgroundColor: '#FFF', borderRadius: 12, borderWidth: 1, borderColor: '#E0E0E0' },
-  searchInput: { flex: 1, fontSize: 15, color: '#1C1C1C' },
+  modal: { flex: 1 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1 },
+  modalTitle: { fontSize: 18, fontWeight: '800' },
+  searchBox: { flexDirection: 'row', alignItems: 'center', margin: 16, paddingHorizontal: 14, paddingVertical: 12, borderRadius: 12, borderWidth: 1 },
+  searchInput: { flex: 1, fontSize: 15 },
   bankItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15 },
   bankItemSel: { backgroundColor: '#E8F5E9' },
-  bankName: { fontSize: 15, color: '#1C1C1C' },
+  bankName: { fontSize: 15 },
 });
