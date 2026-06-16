@@ -1,14 +1,14 @@
 /**
- * Mobile Flutterwave Service
+ * Mobile Paystack Service
  *
- * On mobile we NEVER embed the Flutterwave secret key in the app bundle.
+ * On mobile we NEVER embed the Paystack secret key in the app bundle.
  * All payment initialisation is delegated to the secure backend API at app.yrdly.ng.
  * The returned payment link is opened in a react-native-webview.
  *
  * Payment flow:
  *  1. App calls initializePayment() → backend creates link → returns URL
  *  2. App opens URL in WebView
- *  3. WebView redirect to success/cancel URL is a UX-only signal; close the modal
+ *  3. WebView redirect to /payment/verify is a UX signal; close and verify
  *  4. Subscribe to Supabase Realtime on the escrow_transactions row for true state
  */
 
@@ -37,10 +37,10 @@ export interface PaymentVerifyResult {
   error?: string;
 }
 
-export class FlutterwaveService {
+export class PaystackService {
   /**
    * Initialize an escrow payment by calling the backend API.
-   * Returns the Flutterwave hosted payment URL to open in a WebView.
+   * Returns the Paystack hosted payment URL to open in a WebView.
    */
   static async initializePayment(data: PaymentInitRequest): Promise<PaymentInitResult> {
     try {
@@ -73,7 +73,7 @@ export class FlutterwaveService {
 
       return { success: true, paymentLink: result.paymentLink };
     } catch (error) {
-      console.error('[FlutterwaveService] initializePayment error:', error);
+      console.error('[PaystackService] initializePayment error:', error);
       return { success: false, error: 'Network error. Please try again.' };
     }
   }
@@ -82,7 +82,7 @@ export class FlutterwaveService {
    * Verify a payment transaction via the backend API.
    * Call this after the WebView redirects to the success URL.
    * Note: treat this as a UX helper only — the canonical state update
-   * comes from the Flutterwave webhook hitting the backend.
+   * comes from the Paystack webhook hitting the backend.
    */
   static async verifyPayment(txRef: string): Promise<PaymentVerifyResult> {
     try {
@@ -94,7 +94,7 @@ export class FlutterwaveService {
           'Content-Type': 'application/json',
           ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
         },
-        body: JSON.stringify({ tx_ref: txRef }),
+        body: JSON.stringify({ txRef }),
       });
 
       const result = await response.json();
@@ -109,7 +109,7 @@ export class FlutterwaveService {
         amount: result.amount,
       };
     } catch (error) {
-      console.error('[FlutterwaveService] verifyPayment error:', error);
+      console.error('[PaystackService] verifyPayment error:', error);
       return { success: false, error: 'Network error during verification' };
     }
   }
@@ -121,7 +121,7 @@ export class FlutterwaveService {
   static parseRedirectUrl(url: string): { txRef?: string; status?: string } | null {
     try {
       const parsed = new URL(url);
-      const txRef = parsed.searchParams.get('tx_ref') || parsed.searchParams.get('transaction_id');
+      const txRef = parsed.searchParams.get('tx_ref') || parsed.searchParams.get('reference');
       const status = parsed.searchParams.get('status');
 
       if (!txRef) return null;
@@ -133,10 +133,10 @@ export class FlutterwaveService {
   }
 
   /**
-   * Returns true if the given URL is the Flutterwave checkout success/cancel redirect.
+   * Returns true if the given URL is the Paystack checkout success/cancel redirect.
    * Used by the WebView to know when to close.
    */
   static isPaymentRedirect(url: string): boolean {
-    return url.includes('/payment/verify') || url.includes('tx_ref=');
+    return url.includes('/payment/verify') || url.includes('tx_ref=') || url.includes('reference=');
   }
 }

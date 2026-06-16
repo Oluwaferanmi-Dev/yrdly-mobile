@@ -46,7 +46,7 @@ export interface EscrowTransaction {
   disputeResolvedAt?: Date;
   paymentReference?: string;
   paymentProvider?: string;
-  flutterwaveTxRef?: string;
+  paymentTxRef?: string; // Provider-agnostic payment reference
 }
 
 export interface EscrowStats {

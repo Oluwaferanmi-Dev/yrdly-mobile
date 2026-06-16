@@ -95,7 +95,7 @@ export default function CheckoutScreen() {
     }
   };
 
-  // 3. Intercept Flutterwave's redirect back to /payment/verify
+  // 3. Intercept Paystack's redirect back to /payment/verify
   const handleNavigationChange = useCallback(async (navState: any) => {
     const url: string = navState.url ?? '';
     if (!url.includes('/payment/verify') && !url.includes('payment/verify')) return;
@@ -105,10 +105,9 @@ export default function CheckoutScreen() {
     setStage('verifying');
 
     try {
-      // Extract Flutterwave numeric transaction_id from redirect URL
+      // Extract tx_ref from the Paystack redirect URL
       const urlObj = new URL(url.startsWith('http') ? url : `https://placeholder.com${url}`);
-      const flwTxId = urlObj.searchParams.get('transaction_id');
-      const txRef = urlObj.searchParams.get('tx_ref') ?? transactionId;
+      const txRef = urlObj.searchParams.get('tx_ref') ?? urlObj.searchParams.get('reference') ?? transactionId;
       const status = urlObj.searchParams.get('status');
 
       if (status === 'cancelled') {
@@ -117,10 +116,7 @@ export default function CheckoutScreen() {
         return;
       }
 
-      const result = await api.post('/api/payment/verify', {
-        transactionReference: flwTxId ? parseInt(flwTxId) : null,
-        txRef,
-      });
+      const result = await api.post('/api/payment/verify', { txRef });
 
       if (result.success) {
         router.replace({
@@ -269,7 +265,7 @@ export default function CheckoutScreen() {
           <Ionicons name="lock-closed" size={18} color={colors.card} style={{ marginRight: 8 }} />
           <Text style={[styles.payBtnText, { color: colors.card }]}>Pay {formatPrice(item?.price ?? 0)} securely</Text>
         </TouchableOpacity>
-        <Text style={[styles.poweredBy, { color: colors.textMuted }]}>🔒 Powered by Flutterwave Escrow</Text>
+        <Text style={[styles.poweredBy, { color: colors.textMuted }]}>🔒 Powered by Paystack Secure Payments</Text>
       </View>
     </SafeAreaView>
   );
