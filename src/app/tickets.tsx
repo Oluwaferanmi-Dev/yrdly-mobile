@@ -104,8 +104,10 @@ export default function TicketsScreen() {
               </Text>
             </View>
           )}
-          <View style={[styles.statusBadge, item.status === 'active' ? styles.activeBadge : [styles.usedBadge, { backgroundColor: colors.inputBackground }]]}>
-            <Text style={[styles.statusBadgeText, { color: colors.tint }]}>{item.status.toUpperCase()}</Text>
+          <View style={[styles.statusBadge, (item.status === 'active' && (!event?.event_date || new Date(event.event_date) >= new Date())) ? styles.activeBadge : [styles.usedBadge, { backgroundColor: colors.inputBackground }]]}>
+            <Text style={[styles.statusBadgeText, { color: (item.status === 'active' && event?.event_date && new Date(event.event_date) < new Date()) ? '#FFA000' : colors.tint }]}>
+              {(item.status === 'active' && event?.event_date && new Date(event.event_date) < new Date()) ? 'EXPIRED' : item.status.toUpperCase()}
+            </Text>
           </View>
         </View>
 
@@ -213,13 +215,12 @@ export default function TicketsScreen() {
               <Text style={[styles.tokenLabel, { color: colors.textMuted }]}>TICKET ID</Text>
               <Text style={[styles.tokenValue, { color: colors.text }]}>{(selectedTicket.token || selectedTicket.id).slice(0, 16).toUpperCase()}</Text>
 
-              {/* Status */}
               <View style={[
                 styles.modalStatusBadge,
-                selectedTicket.status === 'active' ? styles.activeBadge : [styles.usedBadge, { backgroundColor: colors.inputBackground }]
+                (selectedTicket.status === 'active' && (!selectedTicket.event?.event_date || new Date(selectedTicket.event.event_date) >= new Date())) ? styles.activeBadge : [styles.usedBadge, { backgroundColor: colors.inputBackground }]
               ]}>
-                <Text style={[styles.modalStatusText, { color: colors.tint }]}>
-                  {selectedTicket.status === 'active' ? '✓ Valid Ticket' : selectedTicket.status.toUpperCase()}
+                <Text style={[styles.modalStatusText, { color: (selectedTicket.status === 'active' && selectedTicket.event?.event_date && new Date(selectedTicket.event.event_date) < new Date()) ? '#FFA000' : colors.tint }]}>
+                  {(selectedTicket.status === 'active' && selectedTicket.event?.event_date && new Date(selectedTicket.event.event_date) < new Date()) ? 'EXPIRED' : (selectedTicket.status === 'active' ? '✓ Valid Ticket' : selectedTicket.status.toUpperCase())}
                 </Text>
               </View>
 

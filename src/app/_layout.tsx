@@ -42,7 +42,7 @@ function RootNavigationGuard() {
       if (!inOnboarding) router.replace('/(onboarding)/tour');
     } else {
       // Onboarding complete — redirect out of auth/onboarding/root to tabs
-      const isRoot = segments.length === 0 || segments[0] === 'index' || segments[0] === '';
+      const isRoot = (segments as any).length === 0 || (segments[0] as string) === 'index' || (segments[0] as string) === '';
       if (inAuth || inOnboarding || isRoot) {
         router.replace('/(tabs)');
       }

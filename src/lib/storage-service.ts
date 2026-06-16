@@ -7,7 +7,8 @@
  */
 
 import { supabase } from './supabase';
-
+import * as FileSystem from 'expo-file-system';
+import { decode } from 'base64-arraybuffer';
 export interface MobileFile {
   uri: string;
   name: string;
@@ -64,13 +65,15 @@ export class StorageService {
 
       const mimeType = options?.contentType || this.getMimeType(file.name, file.type);
 
-      // Fetch the local file as a blob
-      const response = await fetch(file.uri);
-      const blob = await response.blob();
+      // Read local file as base64 string
+      const base64 = await FileSystem.readAsStringAsync(file.uri, { encoding: 'base64' });
+      
+      // Decode base64 to ArrayBuffer (bulletproof for Supabase RN upload)
+      const arrayBuffer = decode(base64);
 
       const { data, error } = await supabase.storage
         .from(bucket)
-        .upload(path, blob, {
+        .upload(path, arrayBuffer, {
           cacheControl: options?.cacheControl || '3600',
           upsert: false,
           contentType: mimeType,
@@ -169,11 +172,12 @@ export class StorageService {
 
     if (error) {
       // Retry with upsert
-      const response2 = await fetch(file.uri);
-      const blob2 = await response2.blob();
+      const base64Retry = await FileSystem.readAsStringAsync(file.uri, { encoding: 'base64' });
+      const arrayBufferRetry = decode(base64Retry);
+      
       const { data: d2, error: e2 } = await supabase.storage
         .from('user-avatars')
-        .upload(path, blob2, { cacheControl: '3600', upsert: true, contentType: mimeType });
+        .upload(path, arrayBufferRetry, { cacheControl: '3600', upsert: true, contentType: mimeType });
 
       if (e2) return { url: null, error: e2 };
       return { url: this.getPublicUrl('user-avatars', d2?.path ?? path), error: null };

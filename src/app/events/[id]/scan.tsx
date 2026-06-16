@@ -82,7 +82,7 @@ export default function ScanTicketScreen() {
   if (!permission.granted) {
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
-        <Ionicons name="camera-off-outline" size={60} color={colors.textMuted} />
+        <Ionicons name="camera-outline" size={60} color={colors.textMuted} />
         <Text style={[styles.permText, { color: colors.textSecondary }]}>Camera access is required to scan tickets.</Text>
         <TouchableOpacity style={[styles.permBtn, { backgroundColor: colors.tint }]} onPress={requestPermission}>
           <Text style={[styles.permBtnText, { color: colors.card }]}>Grant Permission</Text>

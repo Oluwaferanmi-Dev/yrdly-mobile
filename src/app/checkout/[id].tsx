@@ -238,12 +238,12 @@ export default function CheckoutScreen() {
           </View>
           <View style={styles.row}>
             <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>Platform fee</Text>
-[styles.rowValue, { color: colors.tint }]
+            <Text style={[styles.rowValue, { color: colors.tint }]}>{formatPrice(commission)}</Text>
           </View>
           <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
           <View style={styles.row}>
             <Text style={[styles.totalLabel, { color: colors.text }]}>Total</Text>
-[styles.totalValue, { color: colors.tint }]
+            <Text style={[styles.totalValue, { color: colors.tint }]}>{formatPrice((item?.price ?? 0) + commission)}</Text>
           </View>
         </View>
 

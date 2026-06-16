@@ -25,7 +25,7 @@ export default {
     border: '#2C2C2C',
     borderLight: '#2C2C2C',
     tint: GREEN,
-    tabIconDefault: '#757575',
+    tabIconDefault: '#BDBDBD',
     tabIconSelected: GREEN,
     inputBackground: '#2A2A2A',
     shadow: '#000000',
