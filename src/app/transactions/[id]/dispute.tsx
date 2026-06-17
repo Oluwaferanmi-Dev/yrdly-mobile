@@ -4,7 +4,7 @@ import {
   SafeAreaView, Alert, TextInput, ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { supabase } from '../../../lib/supabase';
@@ -65,10 +65,10 @@ export default function DisputeScreen() {
         const response = await fetch(uri);
         const blob = await response.blob();
         const { error } = await supabase.storage
-          .from('images')
+          .from('image')
           .upload(filePath, blob, { contentType: `image/${ext}`, upsert: true });
         if (!error) {
-          const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+          const { data } = supabase.storage.from('image').getPublicUrl(filePath);
           if (data.publicUrl) uploaded.push(data.publicUrl);
         }
       }
@@ -130,7 +130,7 @@ export default function DisputeScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Open Dispute</Text>
         <View style={{ width: 40 }} />
@@ -139,7 +139,7 @@ export default function DisputeScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Info Banner */}
         <View style={[styles.infoBanner, { backgroundColor: colors.card }]}>
-          <Ionicons name="shield-checkmark" size={20} color="#1565C0" />
+          <Feather name="shield" size={20} color="#1565C0" />
           <Text style={[styles.infoText, { color: colors.textSecondary }]}>
             Disputes are reviewed by our team within 24 hours. The transaction will be paused until resolved.
           </Text>
@@ -191,7 +191,7 @@ export default function DisputeScreen() {
               <View key={i} style={styles.photoWrapper}>
                 <Image source={{ uri }} style={styles.photoThumb} contentFit="cover" />
                 <TouchableOpacity style={styles.removePhoto} onPress={() => removePhoto(i)}>
-                  <Ionicons name="close-circle" size={20} color="#B71C1C" />
+                  <Feather name="x-circle" size={20} color="#B71C1C" />
                 </TouchableOpacity>
               </View>
             ))}
@@ -199,7 +199,7 @@ export default function DisputeScreen() {
               <TouchableOpacity style={[styles.addPhotoBtn, { backgroundColor: colors.card, borderColor: colors.borderLight }]} onPress={pickPhotos} disabled={uploading}>
                 {uploading
                   ? <ActivityIndicator size="small" color={colors.tint} />
-                  : <Ionicons name="add" size={28} color={colors.tint} />
+                  : <Feather name="plus" size={28} color={colors.tint} />
                 }
               </TouchableOpacity>
             )}

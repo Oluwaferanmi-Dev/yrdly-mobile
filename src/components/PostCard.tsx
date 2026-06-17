@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Post } from '../types';
 import { timeAgo, formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
@@ -46,17 +46,17 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
       <View style={styles.header}>
         <View style={styles.authorRow}>
           <View style={[styles.avatar, { backgroundColor: colors.inputBackground }]}>
-            {post.author_image ? (
-              <Image source={{ uri: post.author_image }} style={styles.avatarImage} />
+            {post.user?.avatar_url || post.author_image ? (
+              <Image source={{ uri: post.user?.avatar_url || post.author_image }} style={styles.avatarImage} />
             ) : (
               <Text style={[styles.avatarText, { color: colors.tint }]}>
-                {getInitials(post.author_name)}
+                {getInitials(post.user?.name || post.author_name)}
               </Text>
             )}
           </View>
           <View style={styles.authorText}>
             <Text style={[styles.authorName, { color: colors.text }]}>
-              {post.author_name || 'Anonymous'}
+              {post.user?.name || post.author_name || 'Anonymous'}
             </Text>
             <Text style={[styles.timeAgo, { color: colors.textMuted }]}>
               {timeAgo(post.timestamp || post.created_at)}
@@ -104,8 +104,8 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
       <View style={[styles.footer, { borderTopColor: colors.borderLight }]}>
         <View style={styles.actionRow}>
           <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
-            <Ionicons
-              name={isLiked ? 'heart' : 'heart-outline'}
+            <Feather
+              name={isLiked ? 'heart' : 'heart'}
               size={22}
               color={isLiked ? '#ED1111' : colors.textSecondary}
             />
@@ -117,7 +117,7 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
           <View style={[styles.dot, { backgroundColor: colors.textMuted }]} />
 
           <TouchableOpacity style={styles.actionButton} onPress={onComment}>
-            <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
+            <Feather name="message-circle" size={20} color={colors.textSecondary} />
             <Text style={[styles.actionText, { color: colors.textSecondary }]}>
               {post.comment_count || 0}
             </Text>
@@ -126,7 +126,7 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
           <View style={[styles.dot, { backgroundColor: colors.textMuted }]} />
 
           <TouchableOpacity style={styles.actionButton} onPress={onShare}>
-            <Ionicons name="share-social-outline" size={20} color={colors.textSecondary} />
+            <Feather name="share" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>

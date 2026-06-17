@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text, Dimensions, ActivityIndicator
 import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { User, Business } from '../types';
 import { useAppTheme } from '../context/ThemeContext';
@@ -55,7 +55,7 @@ export default function MapScreen() {
       const { data: bizData, error: bizError } = await supabase
         .from('businesses')
         .select('*')
-        .not('location', 'is', null)
+        .not('map-pin', 'is', null)
         .limit(50);
 
       if (!bizError && bizData) {
@@ -91,7 +91,7 @@ export default function MapScreen() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Yrdly Map</Text>
         <View style={{ width: 40 }} />

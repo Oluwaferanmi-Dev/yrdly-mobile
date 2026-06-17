@@ -4,7 +4,7 @@ import {
   SafeAreaView, ScrollView, ActivityIndicator, Alert, Modal, FlatList,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { api } from '../../lib/api';
@@ -76,7 +76,7 @@ export default function PayoutSettingsScreen() {
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={s.back}><Ionicons name="arrow-back" size={24} color={colors.text} /></TouchableOpacity>
+        <TouchableOpacity onPress={() => router.back()} style={s.back}><Feather name="arrow-left" size={24} color={colors.text} /></TouchableOpacity>
         <Text style={[s.title, { color: colors.text }]}>Bank Account</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -84,7 +84,7 @@ export default function PayoutSettingsScreen() {
         {loading ? <ActivityIndicator color={colors.tint} style={{ marginTop: 32 }} /> : existing ? (
           <View style={[s.existingCard, { backgroundColor: colors.card }]}>
             <View style={s.existingRow}>
-              <View style={[s.iconWrap, { backgroundColor: colors.tint + '22' }]}><Ionicons name="business" size={22} color={colors.tint} /></View>
+              <View style={[s.iconWrap, { backgroundColor: colors.tint + '22' }]}><Feather name="briefcase" size={22} color={colors.tint} /></View>
               <View style={{ flex: 1 }}>
                 <Text style={[s.existingName, { color: colors.text }]}>{existing.account_name}</Text>
                 <Text style={[s.existingDetail, { color: colors.textMuted }]}>{existing.bank_name} · ****{existing.account_number.slice(-4)}</Text>
@@ -101,7 +101,7 @@ export default function PayoutSettingsScreen() {
         <Text style={[s.sectionTitle, { color: colors.text }]}>{existing ? 'Replace Bank Account' : 'Add Bank Account'}</Text>
         {existing && (
           <View style={s.warnBox}>
-            <Ionicons name="warning-outline" size={15} color="#E65100" />
+            <Feather name="alert-circle" size={15} color="#E65100" />
             <Text style={s.warnText}>Changing your bank account triggers a 24-hour hold on new payouts.</Text>
           </View>
         )}
@@ -109,7 +109,7 @@ export default function PayoutSettingsScreen() {
         <Text style={[s.label, { color: colors.text }]}>Bank *</Text>
         <TouchableOpacity style={[s.selector, { backgroundColor: colors.card, borderColor: colors.border }, selectedBank && { borderColor: colors.tint }]} onPress={() => { setBankSearch(''); setBankModal(true); }}>
           <Text style={[s.selectorText, { color: colors.text }, !selectedBank && { color: colors.textMuted }]}>{selectedBank?.name ?? 'Select your bank'}</Text>
-          <Ionicons name="chevron-down" size={18} color={selectedBank ? colors.tint : colors.textMuted} />
+          <Feather name="chevron-down" size={18} color={selectedBank ? colors.tint : colors.textMuted} />
         </TouchableOpacity>
 
         <Text style={[s.label, { color: colors.text, marginTop: 16 }]}>Account Number *</Text>
@@ -125,10 +125,10 @@ export default function PayoutSettingsScreen() {
 
         {resolving && <View style={s.resolveRow}><ActivityIndicator size="small" color={colors.tint} /><Text style={[s.resolveText, { color: colors.textMuted }]}>Verifying…</Text></View>}
         {!resolving && resolvedName ? (
-          <View style={s.resolveRow}><Ionicons name="checkmark-circle" size={18} color={colors.tint} /><Text style={[s.resolvedName, { color: colors.tint }]}>{resolvedName}</Text></View>
+          <View style={s.resolveRow}><Feather name="check-circle" size={18} color={colors.tint} /><Text style={[s.resolvedName, { color: colors.tint }]}>{resolvedName}</Text></View>
         ) : null}
         {!resolving && accountNumber.length === 10 && !resolvedName && (
-          <View style={s.resolveRow}><Ionicons name="close-circle" size={18} color="#E53935" /><Text style={{ color: '#E53935', fontSize: 13 }}>Account not found.</Text></View>
+          <View style={s.resolveRow}><Feather name="x-circle" size={18} color="#E53935" /><Text style={{ color: '#E53935', fontSize: 13 }}>Account not found.</Text></View>
         )}
 
         <TouchableOpacity style={[s.saveBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }, !canSave && s.saveBtnOff]} onPress={handleSave} disabled={!canSave || saving}>
@@ -140,10 +140,10 @@ export default function PayoutSettingsScreen() {
         <SafeAreaView style={[s.modal, { backgroundColor: colors.background }]}>
           <View style={[s.modalHeader, { borderBottomColor: colors.border }]}>
             <Text style={[s.modalTitle, { color: colors.text }]}>Select Bank</Text>
-            <TouchableOpacity onPress={() => setBankModal(false)}><Ionicons name="close" size={24} color={colors.text} /></TouchableOpacity>
+            <TouchableOpacity onPress={() => setBankModal(false)}><Feather name="x" size={24} color={colors.text} /></TouchableOpacity>
           </View>
           <View style={[s.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
+            <Feather name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
             <TextInput style={[s.searchInput, { color: colors.text }]} value={bankSearch} onChangeText={setBankSearch} placeholder="Search banks…" placeholderTextColor={colors.textMuted} autoFocus />
           </View>
           <FlatList
@@ -155,7 +155,7 @@ export default function PayoutSettingsScreen() {
                 onPress={() => { setSelectedBank(item); setResolvedName(''); setBankModal(false); }}
               >
                 <Text style={[s.bankName, { color: colors.text }, selectedBank?.code === item.code && { color: colors.tint, fontWeight: '700' }]}>{item.name}</Text>
-                {selectedBank?.code === item.code && <Ionicons name="checkmark" size={18} color={colors.tint} />}
+                {selectedBank?.code === item.code && <Feather name="check" size={18} color={colors.tint} />}
               </TouchableOpacity>
             )}
             ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: colors.borderLight, marginLeft: 20 }} />}

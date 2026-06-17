@@ -4,7 +4,7 @@ import {
   Animated, SafeAreaView, ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -141,7 +141,7 @@ export default function OnboardingWelcomeScreen() {
         {/* Hero */}
         <View style={styles.hero}>
           <View style={[styles.checkRing, { backgroundColor: colors.tint + '22' }]}>
-            <Ionicons name="checkmark-circle" size={48} color={colors.tint} />
+            <Feather name="check-circle" size={48} color={colors.tint} />
           </View>
           <Text style={[styles.badge, { color: colors.tint, backgroundColor: colors.tint + '22' }]}>PROFILE VERIFIED ✓</Text>
           <Text style={[styles.title, { color: colors.text }]}>Welcome home,{'\n'}{firstName}!</Text>
@@ -154,9 +154,9 @@ export default function OnboardingWelcomeScreen() {
         <View style={[styles.statsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.statsTitle, { color: colors.textMuted }]}>Your community is growing</Text>
           <View style={styles.statsRow}>
-            <Stat icon="people-outline" value={stats?.totalUsers ?? null} label="Neighbours" colors={colors} />
+            <Stat icon="users" value={stats?.totalUsers ?? null} label="Neighbours" colors={colors} />
             <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-            <Stat icon="newspaper-outline" value={stats?.totalPosts ?? null} label="Posts shared" colors={colors} />
+            <Stat icon="list" value={stats?.totalPosts ?? null} label="Posts shared" colors={colors} />
             <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
             <Stat icon="flash-outline" value={stats?.activeToday ?? null} label="Active today" colors={colors} />
           </View>
@@ -165,12 +165,12 @@ export default function OnboardingWelcomeScreen() {
         {/* Feature pills */}
         <View style={styles.features}>
           {[
-            { icon: 'cart-outline', text: 'Buy & sell locally' },
-            { icon: 'calendar-outline', text: 'Join local events' },
-            { icon: 'chatbubbles-outline', text: 'Chat with neighbours' },
+            { icon: 'shopping-cart', text: 'Buy & sell locally' },
+            { icon: 'calendar', text: 'Join local events' },
+            { icon: 'message-square', text: 'Chat with neighbours' },
           ].map((f) => (
             <View key={f.text} style={[styles.featurePill, { backgroundColor: colors.tint + '22' }]}>
-              <Ionicons name={f.icon as any} size={16} color={colors.tint} />
+              <Feather name={f.icon as any} size={16} color={colors.tint} />
               <Text style={[styles.featurePillText, { color: colors.tint }]}>{f.text}</Text>
             </View>
           ))}
@@ -190,7 +190,7 @@ export default function OnboardingWelcomeScreen() {
           ) : (
             <>
               <Text style={styles.tourBtnText}>Take a Quick Tour</Text>
-              <Ionicons name="arrow-forward" size={18} color="#FFF" style={{ marginLeft: 8 }} />
+              <Feather name="arrow-right" size={18} color="#FFF" style={{ marginLeft: 8 }} />
             </>
           )}
         </TouchableOpacity>
@@ -211,7 +211,7 @@ export default function OnboardingWelcomeScreen() {
 function Stat({ icon, value, label, colors }: { icon: string; value: number | null; label: string; colors: any }) {
   return (
     <View style={styles.statItem}>
-      <Ionicons name={icon as any} size={18} color={colors.tint} style={{ marginBottom: 4 }} />
+      <Feather name={icon as any} size={18} color={colors.tint} style={{ marginBottom: 4 }} />
       {value === null ? (
         <ActivityIndicator size="small" color={colors.tint} />
       ) : (

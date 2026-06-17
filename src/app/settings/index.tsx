@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, SafeAreaView, Alert, ScrollView, Switch, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
@@ -108,7 +108,7 @@ export default function SettingsScreen() {
     <ScrollView showsVerticalScrollIndicator={false}>
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Edit Profile</Text>
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving || uploadingImage}>
@@ -123,7 +123,7 @@ export default function SettingsScreen() {
               <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={40} color={colors.tint} />
+                <Feather name="user" size={40} color={colors.tint} />
               </View>
             )}
             {uploadingImage && (
@@ -164,10 +164,10 @@ export default function SettingsScreen() {
         {/* Commerce & Account */}
         <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>Commerce & Account</Text>
         {[
-          { icon: 'receipt-outline',   label: 'Transactions',       route: '/transactions' },
-          { icon: 'wallet-outline',    label: 'Payouts',            route: '/settings/payouts' },
-          { icon: 'business-outline',  label: 'Bank Account',       route: '/settings/payout-settings' },
-          { icon: 'location-outline',  label: 'Location',           route: '/settings/location' },
+          { icon: 'file-text',   label: 'Transactions',       route: '/transactions' },
+          { icon: 'credit-card',    label: 'Payouts',            route: '/settings/payouts' },
+          { icon: 'briefcase',  label: 'Bank Account',       route: '/settings/payout-settings' },
+          { icon: 'map-pin',  label: 'Location',           route: '/settings/location' },
         ].map((item) => (
           <TouchableOpacity
             key={item.route}
@@ -176,10 +176,10 @@ export default function SettingsScreen() {
             activeOpacity={0.7}
           >
             <View style={[styles.navIconWrap, { backgroundColor: colors.tint + '22' }]}>
-              <Ionicons name={item.icon as any} size={20} color={colors.tint} />
+              <Feather name={item.icon as any} size={20} color={colors.tint} />
             </View>
             <Text style={[styles.navLabel, { color: colors.text }]}>{item.label}</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            <Feather name="chevron-right" size={18} color={colors.textMuted} />
           </TouchableOpacity>
         ))}
 
@@ -191,17 +191,17 @@ export default function SettingsScreen() {
           activeOpacity={0.7}
         >
           <View style={[styles.navIconWrap, { backgroundColor: colors.tint + '22' }]}>
-            <Ionicons name="notifications-outline" size={20} color={colors.tint} />
+            <Feather name="bell" size={20} color={colors.tint} />
           </View>
           <Text style={[styles.navLabel, { color: colors.text }]}>Notifications</Text>
-          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          <Feather name="chevron-right" size={18} color={colors.textMuted} />
         </TouchableOpacity>
 
         {/* Dark Mode Toggle */}
         <View style={[styles.themeSection, { backgroundColor: colors.card }]}>
           <View style={styles.themeRow}>
             <View style={[styles.navIconWrap, { backgroundColor: colors.tint + '22' }]}>
-              <Ionicons name={isDarkMode ? 'moon' : 'sunny'} size={20} color={colors.tint} />
+              <Feather name={isDarkMode ? 'moon' : 'sun'} size={20} color={colors.tint} />
             </View>
             <Text style={[styles.navLabel, { color: colors.text }]}>Dark Mode</Text>
             <Switch

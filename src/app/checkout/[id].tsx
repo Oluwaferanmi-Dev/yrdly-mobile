@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { supabase } from '../../lib/supabase';
 import { api, WEB_APP_URL } from '../../lib/api';
@@ -154,7 +154,7 @@ export default function CheckoutScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={[styles.webHeader, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
           <TouchableOpacity onPress={() => setStage('summary')} style={styles.backBtn}>
-            <Ionicons name="close" size={24} color={colors.text} />
+            <Feather name="x" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={[styles.webHeaderTitle, { color: colors.text }]}>Secure Payment</Text>
           <View style={{ width: 40 }} />
@@ -190,7 +190,7 @@ export default function CheckoutScreen() {
   if (stage === 'error') {
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
-        <Ionicons name="warning-outline" size={48} color="#E53935" />
+        <Feather name="alert-circle" size={48} color="#E53935" />
         <Text style={[styles.errorTitle, { color: colors.text }]}>Payment failed</Text>
         <Text style={[styles.errorMsg, { color: colors.textSecondary }]}>{errorMsg}</Text>
         <TouchableOpacity style={styles.retryBtn} onPress={() => setStage('summary')}>
@@ -205,7 +205,7 @@ export default function CheckoutScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Checkout</Text>
         <View style={{ width: 40 }} />
@@ -218,7 +218,7 @@ export default function CheckoutScreen() {
             <Image source={{ uri: thumbnail }} style={styles.itemThumb} contentFit="cover" />
           ) : (
             <View style={[styles.itemThumb, styles.itemThumbPlaceholder, { backgroundColor: colors.inputBackground }]}>
-              <Ionicons name="image-outline" size={32} color={colors.textMuted} />
+              <Feather name="image" size={32} color={colors.textMuted} />
             </View>
           )}
           <View style={styles.itemInfo}>
@@ -249,7 +249,7 @@ export default function CheckoutScreen() {
 
         {/* Escrow explanation */}
         <View style={[styles.escrowBanner, { backgroundColor: colors.inputBackground }]}>
-          <Ionicons name="shield-checkmark" size={22} color={colors.tint} />
+          <Feather name="shield" size={22} color={colors.tint} />
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={[styles.escrowTitle, { color: colors.tint }]}>Secure Escrow Protection</Text>
             <Text style={[styles.escrowBody, { color: colors.textSecondary }]}>
@@ -262,7 +262,7 @@ export default function CheckoutScreen() {
       {/* CTA */}
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.borderLight }]}>
         <TouchableOpacity style={[styles.payBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }]} onPress={handleInitializePayment} activeOpacity={0.85}>
-          <Ionicons name="lock-closed" size={18} color={colors.card} style={{ marginRight: 8 }} />
+          <Feather name="lock" size={18} color={colors.card} style={{ marginRight: 8 }} />
           <Text style={[styles.payBtnText, { color: colors.card }]}>Pay {formatPrice(item?.price ?? 0)} securely</Text>
         </TouchableOpacity>
         <Text style={[styles.poweredBy, { color: colors.textMuted }]}>🔒 Powered by Paystack Secure Payments</Text>

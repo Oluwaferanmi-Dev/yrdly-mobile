@@ -5,7 +5,7 @@ import {
   Dimensions, Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -145,12 +145,12 @@ export default function VerifyOtpScreen() {
       <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.text }]}>
         {/* Back */}
         <TouchableOpacity style={styles.back} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color={colors.text} />
+          <Feather name="arrow-left" size={22} color={colors.text} />
         </TouchableOpacity>
 
         {/* Icon */}
         <View style={[styles.iconRing, { backgroundColor: colors.inputBackground }]}>
-          <Ionicons name="mail-open-outline" size={36} color={colors.tint} />
+          <Feather name="mail" size={36} color={colors.tint} />
         </View>
 
         <Text style={[styles.title, { color: colors.text }]}>Check your email</Text>
@@ -181,7 +181,7 @@ export default function VerifyOtpScreen() {
         {/* Error */}
         {!!error && (
           <View style={[styles.errorBox, { backgroundColor: '#FEE2E2' }]}>
-            <Ionicons name="warning-outline" size={15} color="#E53935" />
+            <Feather name="alert-circle" size={15} color="#E53935" />
             <Text style={[styles.errorText, { color: '#E53935' }]}>{error}</Text>
           </View>
         )}

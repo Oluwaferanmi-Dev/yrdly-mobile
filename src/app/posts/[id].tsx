@@ -5,7 +5,7 @@ import {
   SafeAreaView, ActivityIndicator, Keyboard,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -22,6 +22,10 @@ interface Comment {
   text: string;
   timestamp: string;
   like_count: number;
+  user?: {
+    name: string;
+    avatar_url: string;
+  };
 }
 
 export default function PostDetailScreen() {
@@ -42,7 +46,7 @@ export default function PostDetailScreen() {
     if (!id) return;
     const { data, error } = await supabase
       .from('posts')
-      .select('*')
+      .select('*, user:users!posts_user_id_fkey(name, avatar_url)')
       .eq('id', id)
       .single();
 
@@ -55,7 +59,7 @@ export default function PostDetailScreen() {
     if (!id) return;
     const { data, error } = await supabase
       .from('comments')
-      .select('*')
+      .select('*, user:users(name, avatar_url)')
       .eq('post_id', id)
       .order('timestamp', { ascending: true });
 
@@ -127,19 +131,19 @@ export default function PostDetailScreen() {
     return (
       <View style={styles.commentRow}>
         <View style={styles.avatar}>
-          {item.author_image ? (
-            <Image source={{ uri: item.author_image }} style={styles.avatarImg} contentFit="cover" />
+          {item.user?.avatar_url || item.author_image ? (
+            <Image source={{ uri: item.user?.avatar_url || item.author_image }} style={styles.avatarImg} contentFit="cover" />
           ) : (
             <View style={[styles.avatarImg, styles.avatarFallback, { backgroundColor: colors.tint }]}>
               <Text style={styles.avatarFallbackText}>
-                {item.author_name ? item.author_name.charAt(0).toUpperCase() : '?'}
+                {(item.user?.name || item.author_name || '?').charAt(0).toUpperCase()}
               </Text>
             </View>
           )}
         </View>
         <View style={[styles.commentContent, { backgroundColor: colors.inputBackground }]}>
           <View style={styles.commentHeader}>
-            <Text style={[styles.authorName, { color: colors.text }]}>{item.author_name}</Text>
+            <Text style={[styles.authorName, { color: colors.text }]}>{item.user?.name || item.author_name}</Text>
             <Text style={[styles.timestamp, { color: colors.textMuted }]}>{timeAgo(item.timestamp)}</Text>
           </View>
           <Text style={[styles.commentText, { color: colors.textSecondary }]}>{item.text}</Text>
@@ -164,7 +168,7 @@ export default function PostDetailScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Post</Text>
         <View style={{ width: 40 }} />
@@ -185,7 +189,7 @@ export default function PostDetailScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="chatbubbles-outline" size={40} color={colors.border} />
+              <Feather name="message-square" size={40} color={colors.border} />
               <Text style={[styles.emptyText, { color: colors.textMuted }]}>No comments yet. Be the first!</Text>
             </View>
           }
@@ -210,7 +214,7 @@ export default function PostDetailScreen() {
           >
             {sending
               ? <ActivityIndicator size="small" color="#FFF" />
-              : <Ionicons name="send" size={18} color="#FFFFFF" />
+              : <Feather name="send" size={18} color="#FFFFFF" />
             }
           </TouchableOpacity>
         </View>

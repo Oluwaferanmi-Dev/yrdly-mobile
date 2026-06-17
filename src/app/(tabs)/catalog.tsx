@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { MarketplaceGrid } from '../../components/MarketplaceGrid';
 import { EventList } from '../../components/EventList';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -21,7 +21,7 @@ export default function CatalogTab() {
       case 'Businesses':
         return (
           <View style={styles.placeholderContainer}>
-            <Ionicons name="business-outline" size={48} color={colors.textMuted} />
+            <Feather name="briefcase" size={48} color={colors.textMuted} />
             <Text style={[styles.placeholderText, { color: colors.textMuted }]}>Businesses List goes here</Text>
           </View>
         );
@@ -33,7 +33,7 @@ export default function CatalogTab() {
       {/* Search Header */}
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground }]}>
-          <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+          <Feather name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search Yrdly..."
@@ -44,7 +44,7 @@ export default function CatalogTab() {
           />
         </View>
         <TouchableOpacity style={[styles.filterButton, { backgroundColor: colors.inputBackground }]}>
-          <Ionicons name="options-outline" size={24} color={colors.text} />
+          <Feather name="sliders" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 

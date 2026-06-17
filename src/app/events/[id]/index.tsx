@@ -4,7 +4,7 @@ import {
   TouchableOpacity, SafeAreaView, ActivityIndicator, Dimensions, Alert
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
@@ -76,7 +76,7 @@ export default function EventDetailScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Event Details</Text>
         <View style={{ width: 40 }} />
@@ -92,7 +92,7 @@ export default function EventDetailScreen() {
           </ScrollView>
         ) : (
           <View style={styles.placeholderImage}>
-            <Ionicons name="calendar-outline" size={64} color="rgba(56, 142, 60, 0.5)" />
+            <Feather name="calendar" size={64} color="rgba(56, 142, 60, 0.5)" />
           </View>
         )}
 
@@ -101,16 +101,16 @@ export default function EventDetailScreen() {
           
           <View style={styles.dateTimeContainer}>
             <View style={styles.dateTimeRow}>
-              <Ionicons name="calendar" size={20} color={colors.tint} />
+              <Feather name="calendar" size={20} color={colors.tint} />
               <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>{formattedDate}</Text>
             </View>
             <View style={styles.dateTimeRow}>
-              <Ionicons name="time" size={20} color={colors.tint} />
+              <Feather name="clock" size={20} color={colors.tint} />
               <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>{formattedTime}</Text>
             </View>
             {!!((event as any)?.location) && (
             <View style={styles.dateTimeRow}>
-              <Ionicons name="location" size={20} color={colors.tint} />
+              <Feather name="map-pin" size={20} color={colors.tint} />
               <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>{(event as any).location}</Text>
             </View>
           )}
@@ -153,7 +153,7 @@ export default function EventDetailScreen() {
             style={[styles.actionButton, styles.manageButton, { backgroundColor: colors.tint }]}
             onPress={() => router.push(`/events/${event.id}/manage` as any)}
           >
-            <Ionicons name="settings-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Feather name="settings" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
             <Text style={styles.manageButtonText}>Manage Event</Text>
           </TouchableOpacity>
         ) : (

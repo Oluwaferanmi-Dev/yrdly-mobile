@@ -4,7 +4,7 @@ import {
   SafeAreaView, ActivityIndicator, Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
@@ -34,13 +34,13 @@ interface TxDetail {
 }
 
 const STATUS_META: Record<EscrowStatus, { label: string; color: string; bg: string; icon: string }> = {
-  pending:   { label: 'Awaiting Payment', color: '#E65100', bg: '#FFF3E0', icon: 'time-outline' },
-  paid:      { label: 'Paid — Awaiting Handover', color: '#1565C0', bg: '#E3F2FD', icon: 'cube-outline' },
-  shipped:   { label: 'Item Sent / Handed Over', color: '#6A1B9A', bg: '#F3E5F5', icon: 'car-outline' },
-  delivered: { label: 'Delivered', color: '#2E7D32', bg: '#E8F5E9', icon: 'checkmark-circle-outline' },
-  completed: { label: 'Completed', color: '#2E7D32', bg: '#E8F5E9', icon: 'checkmark-done-circle-outline' },
-  disputed:  { label: 'Disputed', color: '#B71C1C', bg: '#FFEBEE', icon: 'warning-outline' },
-  cancelled: { label: 'Cancelled', color: '#757575', bg: '#F5F5F5', icon: 'close-circle-outline' },
+  pending:   { label: 'Awaiting Payment', color: '#E65100', bg: '#FFF3E0', icon: 'clock' },
+  paid:      { label: 'Paid — Awaiting Handover', color: '#1565C0', bg: '#E3F2FD', icon: 'box' },
+  shipped:   { label: 'Item Sent / Handed Over', color: '#6A1B9A', bg: '#F3E5F5', icon: 'truck' },
+  delivered: { label: 'Delivered', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
+  completed: { label: 'Completed', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
+  disputed:  { label: 'Disputed', color: '#B71C1C', bg: '#FFEBEE', icon: 'alert-circle' },
+  cancelled: { label: 'Cancelled', color: '#757575', bg: '#F5F5F5', icon: 'x-circle' },
 };
 
 const TIMELINE_STEPS: { status: EscrowStatus; label: string; tsKey: keyof TxDetail }[] = [
@@ -199,7 +199,7 @@ export default function TransactionDetailScreen() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Transaction</Text>
         <View style={{ width: 40 }} />
@@ -208,7 +208,7 @@ export default function TransactionDetailScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Status badge */}
         <View style={[styles.statusBanner, { backgroundColor: meta.bg }]}>
-          <Ionicons name={meta.icon as any} size={22} color={meta.color} />
+          <Feather name={meta.icon as any} size={22} color={meta.color} />
           <Text style={[styles.statusLabel, { color: meta.color }]}>{meta.label}</Text>
         </View>
 
@@ -219,7 +219,7 @@ export default function TransactionDetailScreen() {
               <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" />
             ) : (
               <View style={[styles.thumb, styles.thumbPlaceholder, { backgroundColor: colors.inputBackground }]}>
-                <Ionicons name="cube-outline" size={24} color={colors.textMuted} />
+                <Feather name="box" size={24} color={colors.textMuted} />
               </View>
             )}
             <View style={styles.itemInfo}>
@@ -261,7 +261,7 @@ export default function TransactionDetailScreen() {
                 router.push(`/profile/${counterparty?.id}` as any);
               }}
             >
-              <Ionicons name="chatbubble-outline" size={16} color={colors.tint} />
+              <Feather name="message-circle" size={16} color={colors.tint} />
               <Text style={[styles.messageBtnText, { color: colors.tint }]}>Message</Text>
             </TouchableOpacity>
           </View>
@@ -278,7 +278,7 @@ export default function TransactionDetailScreen() {
               <View key={step.status} style={styles.timelineRow}>
                 <View style={styles.timelineLeft}>
                   <View style={[styles.timelineDot, { borderColor: colors.borderLight, backgroundColor: colors.card }, done && [styles.timelineDotDone, { backgroundColor: colors.tint, borderColor: colors.tint }]]}>
-                    {done && <Ionicons name="checkmark" size={12} color="#FFF" />}
+                    {done && <Feather name="check" size={12} color="#FFF" />}
                   </View>
                   {i < TIMELINE_STEPS.length - 1 && (
                     <View style={[styles.timelineLine, { backgroundColor: colors.borderLight }, done && [styles.timelineLineDone, { backgroundColor: colors.tint }]]} />
@@ -302,7 +302,7 @@ export default function TransactionDetailScreen() {
         {/* Disputed state */}
         {tx.status === 'disputed' && (
           <View style={[styles.card, styles.disputeCard]}>
-            <Ionicons name="warning" size={20} color="#B71C1C" />
+            <Feather name="alert-triangle" size={20} color="#B71C1C" />
             <Text style={styles.disputeText}>
               A dispute has been raised on this transaction. Our team will review and contact both parties within 24 hours.
             </Text>
@@ -321,7 +321,7 @@ export default function TransactionDetailScreen() {
               <ActivityIndicator color={colors.card} />
             ) : (
               <>
-                <Ionicons name="cube" size={20} color={colors.card} style={{ marginRight: 8 }} />
+                <Feather name="box" size={20} color={colors.card} style={{ marginRight: 8 }} />
                 <Text style={[styles.primaryActionText, { color: colors.card }]}>Mark Item as Sent</Text>
               </>
             )}
@@ -339,7 +339,7 @@ export default function TransactionDetailScreen() {
               <ActivityIndicator color={colors.card} />
             ) : (
               <>
-                <Ionicons name="checkmark-circle" size={20} color={colors.card} style={{ marginRight: 8 }} />
+                <Feather name="check-circle" size={20} color={colors.card} style={{ marginRight: 8 }} />
                 <Text style={[styles.primaryActionText, { color: colors.card }]}>Confirm I Received the Item</Text>
               </>
             )}
@@ -351,7 +351,7 @@ export default function TransactionDetailScreen() {
             style={styles.disputeAction}
             onPress={() => router.push(`/transactions/${tx.id}/dispute` as any)}
           >
-            <Ionicons name="warning-outline" size={18} color="#B71C1C" style={{ marginRight: 8 }} />
+            <Feather name="alert-circle" size={18} color="#B71C1C" style={{ marginRight: 8 }} />
             <Text style={styles.disputeActionText}>Open a Dispute</Text>
           </TouchableOpacity>
         )}
@@ -361,7 +361,7 @@ export default function TransactionDetailScreen() {
             style={[styles.reviewAction, { borderColor: colors.tint, backgroundColor: colors.inputBackground }]}
             onPress={() => router.push(`/transactions/${tx.id}/review` as any)}
           >
-            <Ionicons name="star-outline" size={18} color={colors.tint} style={{ marginRight: 8 }} />
+            <Feather name="star" size={18} color={colors.tint} style={{ marginRight: 8 }} />
             <Text style={[styles.reviewActionText, { color: colors.tint }]}>Leave a Review</Text>
           </TouchableOpacity>
         )}

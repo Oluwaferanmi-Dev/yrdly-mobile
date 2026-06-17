@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl, ActivityIndicator, SafeAreaView, TouchableOpacity } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { PostCard } from '../../components/PostCard';
 import { supabase } from '../../lib/supabase';
 import { Post } from '../../types';
@@ -70,6 +71,19 @@ export default function HomeTab() {
             colors={[colors.tint]} 
           />
         }
+        ListHeaderComponent={
+          <View style={styles.feedHeader}>
+            <Text style={[styles.feedHeaderTitle, { color: colors.text }]}>Yrdly</Text>
+            <View style={styles.feedHeaderIcons}>
+              <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
+                <Feather name="map" size={24} color={colors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/notifications')}>
+                <Feather name="bell" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        }
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -99,5 +113,20 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+  },
+  feedHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  feedHeaderTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  feedHeaderIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

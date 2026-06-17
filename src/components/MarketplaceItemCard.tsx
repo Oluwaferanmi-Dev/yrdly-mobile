@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
@@ -40,7 +40,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
           <Image source={{ uri: imageUrl }} style={styles.image} contentFit="cover" />
         ) : (
           <View style={[styles.placeholderImage, { backgroundColor: colors.inputBackground }]}>
-            <Ionicons name="cart-outline" size={32} color={colors.tint} style={{ opacity: 0.5 }} />
+            <Feather name="shopping-cart" size={32} color={colors.tint} style={{ opacity: 0.5 }} />
           </View>
         )}
       </View>
@@ -57,7 +57,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
         <View style={styles.actionsRow}>
           {isOwner ? (
             <TouchableOpacity style={[styles.actionButton, styles.editButton, { borderColor: colors.tint }]}>
-              <Ionicons name="pencil" size={14} color={colors.tint} />
+              <Feather name="edit-2" size={14} color={colors.tint} />
               <Text style={[styles.editButtonText, { color: colors.tint }]}>Edit</Text>
             </TouchableOpacity>
           ) : (
@@ -71,7 +71,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller }: Marketpl
                 style={[styles.messageButton, { borderColor: colors.tint }]} 
                 onPress={() => onMessageSeller?.(item)}
               >
-                <Ionicons name="chatbubble-outline" size={16} color={colors.tint} />
+                <Feather name="message-circle" size={16} color={colors.tint} />
               </TouchableOpacity>
             </>
           )}

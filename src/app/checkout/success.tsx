@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { formatPrice } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 
@@ -29,7 +29,7 @@ export default function CheckoutSuccessScreen() {
       <View style={styles.content}>
         {/* Animated checkmark */}
         <Animated.View style={[styles.iconRing, { backgroundColor: colors.tint, shadowColor: colors.tint, transform: [{ scale: scaleAnim }] }]}>
-          <Ionicons name="checkmark" size={56} color={colors.card} />
+          <Feather name="check" size={56} color={colors.card} />
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeAnim, alignItems: 'center' }}>
@@ -45,12 +45,12 @@ export default function CheckoutSuccessScreen() {
           <View style={styles.steps}>
             {[
               { icon: 'cash', label: 'Payment held in escrow' },
-              { icon: 'cube-outline', label: 'Seller prepares & hands over item' },
-              { icon: 'checkmark-circle-outline', label: 'You confirm receipt → funds released' },
+              { icon: 'box', label: 'Seller prepares & hands over item' },
+              { icon: 'check-circle', label: 'You confirm receipt → funds released' },
             ].map((step, i) => (
               <View key={i} style={styles.step}>
                 <View style={[styles.stepIcon, { backgroundColor: colors.inputBackground }]}>
-                  <Ionicons name={step.icon as any} size={18} color={colors.tint} />
+                  <Feather name={step.icon as any} size={18} color={colors.tint} />
                 </View>
                 <Text style={[styles.stepLabel, { color: colors.textSecondary }]}>{step.label}</Text>
               </View>

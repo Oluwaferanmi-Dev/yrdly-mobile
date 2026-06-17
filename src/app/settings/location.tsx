@@ -4,7 +4,7 @@ import {
   TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { LocationPicker, LocationValue } from '../../components/LocationPicker';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -60,7 +60,7 @@ export default function LocationSettingsScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Location</Text>
         <View style={{ width: 40 }} />
@@ -71,7 +71,7 @@ export default function LocationSettingsScreen() {
         {location.state ? (
           <View style={[styles.currentCard, { backgroundColor: colors.card }]}>
             <View style={[styles.currentIcon, { backgroundColor: colors.tint + '22' }]}>
-              <Ionicons name="location" size={22} color={colors.tint} />
+              <Feather name="map-pin" size={22} color={colors.tint} />
             </View>
             <View>
               <Text style={[styles.currentLabel, { color: colors.textMuted }]}>Current Location</Text>
@@ -97,7 +97,7 @@ export default function LocationSettingsScreen() {
             <ActivityIndicator color="#FFF" />
           ) : saved ? (
             <>
-              <Ionicons name="checkmark-circle" size={20} color="#FFF" style={{ marginRight: 8 }} />
+              <Feather name="check-circle" size={20} color="#FFF" style={{ marginRight: 8 }} />
               <Text style={styles.saveBtnText}>Location Updated!</Text>
             </>
           ) : (

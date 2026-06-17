@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
 import { PostCard } from '../../components/PostCard';
@@ -69,7 +69,7 @@ export default function ProfileTab() {
             style={[styles.communityButton, { backgroundColor: colors.tint }]} 
             onPress={() => router.push('/community')}
           >
-            <Ionicons name="people" size={20} color="#FFFFFF" />
+            <Feather name="users" size={20} color="#FFFFFF" />
             <Text style={styles.communityButtonText}>Community</Text>
           </TouchableOpacity>
           
@@ -77,14 +77,14 @@ export default function ProfileTab() {
             style={[styles.settingsButton, { backgroundColor: colors.borderLight }]} 
             onPress={() => router.push('/settings')}
           >
-            <Ionicons name="settings-outline" size={20} color={colors.text} />
+            <Feather name="settings" size={20} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.ticketsButton} 
             onPress={() => router.push('/tickets')}
           >
-            <Ionicons name="ticket-outline" size={20} color={colors.tint} />
+            <Feather name="tag" size={20} color={colors.tint} />
           </TouchableOpacity>
         </View>
       </View>

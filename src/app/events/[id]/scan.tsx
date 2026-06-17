@@ -4,7 +4,7 @@ import {
   SafeAreaView, Alert, Vibration, Animated,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { supabase } from '../../../lib/supabase';
 import { useAppTheme } from '../../../context/ThemeContext';
@@ -82,7 +82,7 @@ export default function ScanTicketScreen() {
   if (!permission.granted) {
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
-        <Ionicons name="camera-outline" size={60} color={colors.textMuted} />
+        <Feather name="camera" size={60} color={colors.textMuted} />
         <Text style={[styles.permText, { color: colors.textSecondary }]}>Camera access is required to scan tickets.</Text>
         <TouchableOpacity style={[styles.permBtn, { backgroundColor: colors.tint }]} onPress={requestPermission}>
           <Text style={[styles.permBtnText, { color: colors.card }]}>Grant Permission</Text>
@@ -112,7 +112,7 @@ export default function ScanTicketScreen() {
       <SafeAreaView style={styles.headerOverlay}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="close" size={28} color="#FFFFFF" />
+            <Feather name="x" size={28} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Scan Ticket</Text>
           <View style={{ width: 48 }} />
@@ -133,8 +133,8 @@ export default function ScanTicketScreen() {
       {/* Result overlay */}
       {result && (
         <View style={[styles.resultBanner, { backgroundColor: result.success ? colors.inputBackground : '#FFEBEE', shadowColor: colors.text }]}>
-          <Ionicons
-            name={result.success ? 'checkmark-circle' : 'close-circle'}
+          <Feather
+            name={result.success ? 'check-circle' : 'x-circle'}
             size={36}
             color={result.success ? colors.tint : RED}
           />

@@ -4,7 +4,7 @@ import {
   ActivityIndicator, ScrollView, Modal, FlatList,
   TextInput, SafeAreaView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import {
   detectLocation,
   getAllStates,
@@ -107,7 +107,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
           </>
         ) : (
           <>
-            <Ionicons name="location" size={18} color={colors.tint} style={{ marginRight: 8 }} />
+            <Feather name="map-pin" size={18} color={colors.tint} style={{ marginRight: 8 }} />
             <Text style={[styles.gpsBtnText, { color: colors.tint }]}>Auto-detect my location</Text>
           </>
         )}
@@ -116,13 +116,13 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
       {/* Detection result feedback */}
       {detectionResult === 'success' && (
         <View style={[styles.feedback, styles.feedbackSuccess]}>
-          <Ionicons name="checkmark-circle" size={16} color="#2E7D32" />
+          <Feather name="check-circle" size={16} color="#2E7D32" />
           <Text style={styles.feedbackTextSuccess}>Location detected successfully!</Text>
         </View>
       )}
       {detectionResult === 'outside' && (
         <View style={[styles.feedback, styles.feedbackWarn]}>
-          <Ionicons name="warning-outline" size={16} color="#E65100" />
+          <Feather name="alert-circle" size={16} color="#E65100" />
           <Text style={styles.feedbackTextWarn}>
             Couldn't detect a Nigerian location. Please select manually below.
           </Text>
@@ -130,7 +130,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
       )}
       {detectionResult === 'denied' && (
         <View style={[styles.feedback, styles.feedbackWarn]}>
-          <Ionicons name="lock-closed-outline" size={16} color="#E65100" />
+          <Feather name="lock" size={16} color="#E65100" />
           <Text style={styles.feedbackTextWarn}>
             Location permission denied. Please select manually below.
           </Text>
@@ -155,7 +155,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
           <Text style={[styles.selectorText, { color: colors.text }, !value.state && { color: colors.textMuted }]}>
             {value.state || 'Select your state'}
           </Text>
-          <Ionicons name="chevron-down" size={18} color={value.state ? colors.tint : colors.textMuted} />
+          <Feather name="chevron-down" size={18} color={value.state ? colors.tint : colors.textMuted} />
         </TouchableOpacity>
       </View>
 
@@ -175,7 +175,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
           <Text style={[styles.selectorText, { color: colors.text }, !value.lga && { color: colors.textMuted }]}>
             {value.lga || (!value.state ? 'Select state first' : 'Select your LGA')}
           </Text>
-          <Ionicons name="chevron-down" size={18} color={value.lga ? colors.tint : colors.textMuted} />
+          <Feather name="chevron-down" size={18} color={value.lga ? colors.tint : colors.textMuted} />
         </TouchableOpacity>
       </View>
 
@@ -187,13 +187,13 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
               {pickerMode === 'state' ? 'Select State' : 'Select LGA'}
             </Text>
             <TouchableOpacity onPress={() => setPickerVisible(false)} style={styles.modalClose}>
-              <Ionicons name="close" size={24} color={colors.text} />
+              <Feather name="x" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
           {/* Search */}
           <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Ionicons name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
+            <Feather name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
             <TextInput
               style={[styles.searchInput, { color: colors.text }]}
               value={search}
@@ -220,7 +220,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
                   <Text style={[styles.listItemText, { color: colors.text }, isSelected && { color: colors.tint, fontWeight: '700' }]}>
                     {item}
                   </Text>
-                  {isSelected && <Ionicons name="checkmark" size={18} color={colors.tint} />}
+                  {isSelected && <Feather name="check" size={18} color={colors.tint} />}
                 </TouchableOpacity>
               );
             }}

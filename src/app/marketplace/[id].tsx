@@ -4,7 +4,7 @@ import {
   TouchableOpacity, SafeAreaView, ActivityIndicator, Dimensions
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -104,7 +104,7 @@ export default function MarketplaceDetailScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Item Details</Text>
         <View style={{ width: 40 }} />
@@ -120,7 +120,7 @@ export default function MarketplaceDetailScreen() {
           </ScrollView>
         ) : (
           <View style={styles.placeholderImage}>
-            <Ionicons name="cart-outline" size={64} color="rgba(56, 142, 60, 0.5)" />
+            <Feather name="shopping-cart" size={64} color="rgba(56, 142, 60, 0.5)" />
           </View>
         )}
 
@@ -166,7 +166,7 @@ export default function MarketplaceDetailScreen() {
         ) : (
           <>
             <TouchableOpacity style={[styles.messageButton, { borderColor: colors.tint, backgroundColor: colors.inputBackground }]} onPress={handleMessageSeller}>
-              <Ionicons name="chatbubble-outline" size={20} color={colors.tint} />
+              <Feather name="message-circle" size={20} color={colors.tint} />
               <Text style={[styles.messageButtonText, { color: colors.tint }]}>Message</Text>
             </TouchableOpacity>
             <TouchableOpacity 

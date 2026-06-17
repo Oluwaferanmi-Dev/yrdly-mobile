@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
@@ -64,13 +64,13 @@ export function EventCard({ event, onPress }: EventCardProps) {
         <View style={styles.metaContainer}>
           {!!event.event_date && (
             <View style={styles.metaRow}>
-              <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
+              <Feather name="calendar" size={16} color={colors.textSecondary} />
               <Text style={[styles.metaText, { color: colors.textSecondary }]}>{getEventDate()}</Text>
             </View>
           )}
           {!!event.event_location && (
             <View style={styles.metaRow}>
-              <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
+              <Feather name="map-pin" size={16} color={colors.textSecondary} />
               <Text style={[styles.metaText, { color: colors.textSecondary }]} numberOfLines={1}>
                 {getLocation(event.event_location)}
               </Text>

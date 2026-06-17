@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -197,7 +197,7 @@ export default function CreateTab() {
               <Image source={{ uri: imageUri }} style={styles.previewImage} contentFit="cover" />
             ) : (
               <View style={styles.imagePlaceholder}>
-                <Ionicons name="camera-outline" size={32} color={colors.textMuted} />
+                <Feather name="camera" size={32} color={colors.textMuted} />
                 <Text style={[styles.imagePlaceholderText, { color: colors.textMuted }]}>Tap to add a photo</Text>
               </View>
             )}
