@@ -10,7 +10,7 @@ const { width, height } = Dimensions.get('window');
 
 
 export default function Login() {
-  const { colors } = useAppTheme();
+  const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

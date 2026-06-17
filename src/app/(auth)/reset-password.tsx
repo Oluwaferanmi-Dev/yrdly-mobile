@@ -10,7 +10,7 @@ const { width, height } = Dimensions.get('window');
 
 
 export default function ResetPassword() {
-  const { colors } = useAppTheme();
+  const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const [password, setPassword] = useState('');

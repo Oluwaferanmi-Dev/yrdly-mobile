@@ -6,6 +6,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-native-community/netinfo": "11.4.1",
+    "@react-native-google-signin/google-signin": "^16.1.2",
     "@supabase/supabase-js": "^2.106.2",
     "base64-arraybuffer": "^1.0.2",
     "clsx": "^2.1.1",
