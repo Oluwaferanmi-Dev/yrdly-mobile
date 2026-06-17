@@ -98,9 +98,9 @@ export default function ResetPassword() {
 
       {/* Glass Overlay */}
       {Platform.OS === 'ios' ? (
-        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint="light" />
+        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={isDarkMode ? 'dark' : 'light'} />
       ) : (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255, 255, 255, 0.4)' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.4)' }]} />
       )}
 
       <View style={styles.formContainer}>
