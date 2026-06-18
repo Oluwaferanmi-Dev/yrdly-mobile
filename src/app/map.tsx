@@ -114,12 +114,16 @@ export default function MapScreen() {
         {/* Render Users */}
         {users.map(user => {
           if (!user.currentLocation) return null;
+          const lat = parseFloat(user.currentLocation.lat as any);
+          const lng = parseFloat(user.currentLocation.lng as any);
+          if (isNaN(lat) || isNaN(lng)) return null;
+
           return (
             <Marker
               key={`user-${user.id}`}
               coordinate={{
-                latitude: user.currentLocation.lat,
-                longitude: user.currentLocation.lng
+                latitude: lat,
+                longitude: lng
               }}
               pinColor="#0ea5e9" // Blue for users
             >
@@ -136,12 +140,16 @@ export default function MapScreen() {
         {/* Render Businesses */}
         {businesses.map(biz => {
           if (!biz.location?.geopoint) return null;
+          const lat = parseFloat(biz.location.geopoint.latitude as any);
+          const lng = parseFloat(biz.location.geopoint.longitude as any);
+          if (isNaN(lat) || isNaN(lng)) return null;
+
           return (
             <Marker
               key={`biz-${biz.id}`}
               coordinate={{
-                latitude: biz.location.geopoint.latitude,
-                longitude: biz.location.geopoint.longitude
+                latitude: lat,
+                longitude: lng
               }}
               pinColor={colors.tint} // Green for businesses
             >

@@ -90,10 +90,10 @@ export default function HomeTab() {
         <Animated.View style={headerAnimatedStyle}>
           <BlurView intensity={80} tint={isDarkMode ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
           <View style={[styles.headerContent, { paddingTop: insets.top, borderBottomColor: colors.borderLight }]}>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>YRDLY</Text>
+            <Text style={[styles.headerTitle, { color: colors.tint }]}>YRDLY</Text>
             <View style={styles.headerRight}>
               <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-                <Feather name="map" size={24} color={colors.text} />
+                <Feather name="map-pin" size={24} color={colors.text} />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => router.push('/notifications')}>
                 <Feather name="bell" size={24} color={colors.text} />
@@ -115,10 +115,10 @@ export default function HomeTab() {
       <Animated.View style={headerAnimatedStyle}>
         <BlurView intensity={80} tint={isDarkMode ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
         <View style={[styles.headerContent, { paddingTop: insets.top, borderBottomColor: colors.borderLight }]}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>YRDLY</Text>
+          <Text style={[styles.headerTitle, { color: colors.tint }]}>YRDLY</Text>
           <View style={styles.headerRight}>
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-              <Feather name="map" size={24} color={colors.text} />
+              <Feather name="map-pin" size={24} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications')}>
               <Feather name="bell" size={24} color={colors.text} />
