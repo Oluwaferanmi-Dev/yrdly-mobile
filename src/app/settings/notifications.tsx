@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, Switch, ScrollView,
   SafeAreaView, TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -37,25 +37,25 @@ const NOTIFICATION_GROUPS = [
   {
     title: 'Social',
     items: [
-      { key: 'messages' as const, label: 'Messages', desc: 'When someone sends you a message', icon: 'chatbubble-outline' },
-      { key: 'friendRequests' as const, label: 'Follow Requests', desc: 'When someone follows you', icon: 'person-add-outline' },
-      { key: 'comments' as const, label: 'Comments', desc: 'When someone comments on your post', icon: 'chatbox-outline' },
-      { key: 'postLikes' as const, label: 'Post Likes', desc: 'When someone likes your post', icon: 'heart-outline' },
+      { key: 'messages' as const, label: 'Messages', desc: 'When someone sends you a message', icon: 'message-circle' },
+      { key: 'friendRequests' as const, label: 'Follow Requests', desc: 'When someone follows you', icon: 'user-plus' },
+      { key: 'comments' as const, label: 'Comments', desc: 'When someone comments on your post', icon: 'message-square' },
+      { key: 'postLikes' as const, label: 'Post Likes', desc: 'When someone likes your post', icon: 'heart' },
     ],
   },
   {
     title: 'Commerce',
     items: [
-      { key: 'orderUpdates' as const, label: 'Order Updates', desc: 'Transaction and escrow status changes', icon: 'receipt-outline' },
-      { key: 'paymentReceived' as const, label: 'Payment Received', desc: 'When a buyer pays for your item', icon: 'cash-outline' },
-      { key: 'disputeUpdates' as const, label: 'Dispute Updates', desc: 'Changes to your dispute cases', icon: 'warning-outline' },
+      { key: 'orderUpdates' as const, label: 'Order Updates', desc: 'Transaction and escrow status changes', icon: 'file-text' },
+      { key: 'paymentReceived' as const, label: 'Payment Received', desc: 'When a buyer pays for your item', icon: 'dollar-sign' },
+      { key: 'disputeUpdates' as const, label: 'Dispute Updates', desc: 'Changes to your dispute cases', icon: 'alert-circle' },
     ],
   },
   {
     title: 'Events',
     items: [
-      { key: 'eventInvites' as const, label: 'Event Invites', desc: 'Invitations to local events', icon: 'calendar-outline' },
-      { key: 'postUpdates' as const, label: 'Post Activity', desc: 'Updates to posts you follow', icon: 'newspaper-outline' },
+      { key: 'eventInvites' as const, label: 'Event Invites', desc: 'Invitations to local events', icon: 'calendar' },
+      { key: 'postUpdates' as const, label: 'Post Activity', desc: 'Updates to posts you follow', icon: 'list' },
     ],
   },
 ];
@@ -107,7 +107,7 @@ export default function NotificationsScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
         <View style={{ width: 40 }} />
@@ -133,7 +133,7 @@ export default function NotificationsScreen() {
                     style={[styles.row, index < group.items.length - 1 && [styles.rowDivider, { borderBottomColor: colors.borderLight }]]}
                   >
                     <View style={[styles.iconWrap, { backgroundColor: colors.tint + '22' }]}>
-                      <Ionicons name={item.icon as any} size={20} color={colors.tint} />
+                      <Feather name={item.icon as any} size={20} color={colors.tint} />
                     </View>
                     <View style={styles.rowInfo}>
                       <Text style={[styles.rowLabel, { color: colors.text }]}>{item.label}</Text>

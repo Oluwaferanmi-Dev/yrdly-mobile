@@ -4,7 +4,7 @@ import {
   SafeAreaView, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -28,13 +28,13 @@ interface Transaction {
 }
 
 const STATUS_META: Record<EscrowStatus, { label: string; color: string; bg: string; icon: string }> = {
-  pending:   { label: 'Awaiting Payment', color: '#E65100', bg: '#FFF3E0', icon: 'time-outline' },
-  paid:      { label: 'Paid — Awaiting Delivery', color: '#1565C0', bg: '#E3F2FD', icon: 'cube-outline' },
-  shipped:   { label: 'Shipped', color: '#6A1B9A', bg: '#F3E5F5', icon: 'car-outline' },
-  delivered: { label: 'Delivered', color: '#2E7D32', bg: '#E8F5E9', icon: 'checkmark-circle-outline' },
-  completed: { label: 'Completed', color: '#2E7D32', bg: '#E8F5E9', icon: 'checkmark-done-circle-outline' },
-  disputed:  { label: 'Disputed', color: '#B71C1C', bg: '#FFEBEE', icon: 'warning-outline' },
-  cancelled: { label: 'Cancelled', color: '#757575', bg: '#F5F5F5', icon: 'close-circle-outline' },
+  pending:   { label: 'Awaiting Payment', color: '#E65100', bg: '#FFF3E0', icon: 'clock' },
+  paid:      { label: 'Paid — Awaiting Delivery', color: '#1565C0', bg: '#E3F2FD', icon: 'box' },
+  shipped:   { label: 'Shipped', color: '#6A1B9A', bg: '#F3E5F5', icon: 'truck' },
+  delivered: { label: 'Delivered', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
+  completed: { label: 'Completed', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
+  disputed:  { label: 'Disputed', color: '#B71C1C', bg: '#FFEBEE', icon: 'alert-circle' },
+  cancelled: { label: 'Cancelled', color: '#757575', bg: '#F5F5F5', icon: 'x-circle' },
 };
 
 type Tab = 'purchases' | 'sales';
@@ -102,7 +102,7 @@ export default function TransactionsScreen() {
           <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" />
         ) : (
           <View style={[styles.thumb, styles.thumbPlaceholder, { backgroundColor: colors.inputBackground }]}>
-            <Ionicons name="cube-outline" size={22} color={colors.textMuted} />
+            <Feather name="box" size={22} color={colors.textMuted} />
           </View>
         )}
 
@@ -115,7 +115,7 @@ export default function TransactionsScreen() {
             {tab === 'purchases' ? 'From' : 'To'} {counterparty?.name ?? 'User'}
           </Text>
           <View style={[styles.statusBadge, { backgroundColor: meta.bg }]}>
-            <Ionicons name={meta.icon as any} size={11} color={meta.color} style={{ marginRight: 4 }} />
+            <Feather name={meta.icon as any} size={11} color={meta.color} style={{ marginRight: 4 }} />
             <Text style={[styles.statusText, { color: meta.color }]}>{meta.label}</Text>
           </View>
         </View>
@@ -123,7 +123,7 @@ export default function TransactionsScreen() {
         {/* Amount + chevron */}
         <View style={styles.txRight}>
           <Text style={[styles.txAmount, { color: colors.text }]}>{formatPrice(tx.amount)}</Text>
-          <Ionicons name="chevron-forward" size={16} color={colors.textMuted} style={{ marginTop: 4 }} />
+          <Feather name="chevron-right" size={16} color={colors.textMuted} style={{ marginTop: 4 }} />
         </View>
       </TouchableOpacity>
     );
@@ -134,7 +134,7 @@ export default function TransactionsScreen() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Transactions</Text>
         <View style={{ width: 40 }} />
@@ -174,7 +174,7 @@ export default function TransactionsScreen() {
           }
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="receipt-outline" size={48} color={colors.borderLight} />
+              <Feather name="file-text" size={48} color={colors.borderLight} />
               <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No {tab} yet</Text>
               <Text style={[styles.emptyBody, { color: colors.textMuted }]}>
                 {tab === 'purchases'

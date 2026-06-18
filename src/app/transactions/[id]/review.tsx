@@ -4,7 +4,7 @@ import {
   Alert, TextInput, ActivityIndicator, ScrollView,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
@@ -93,7 +93,7 @@ export default function ReviewScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="close" size={24} color={colors.text} />
+          <Feather name="x" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Leave a Review</Text>
         <View style={{ width: 40 }} />
@@ -104,7 +104,7 @@ export default function ReviewScreen() {
 >
           {thumb
             ? <Image source={{ uri: thumb }} style={styles.itemImage} contentFit="cover" />
-            : <View style={[styles.itemImage, styles.imgPlaceholder, { backgroundColor: colors.borderLight }]}><Ionicons name="cube-outline" size={28} color={colors.textMuted} /></View>
+            : <View style={[styles.itemImage, styles.imgPlaceholder, { backgroundColor: colors.borderLight }]}><Feather name="box" size={28} color={colors.textMuted} /></View>
           }
           <View style={styles.cardInfo}>
             <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={2}>{tx?.item?.title || 'Item'}</Text>
@@ -120,7 +120,7 @@ export default function ReviewScreen() {
 
         {!canReview && !loading ? (
           <View style={styles.alreadyBox}>
-            <Ionicons name="checkmark-circle" size={52} color={colors.tint} />
+            <Feather name="check-circle" size={52} color={colors.tint} />
             <Text style={[styles.alreadyTitle, { color: colors.text }]}>Already Reviewed</Text>
             <Text style={[styles.alreadySub, { color: colors.textMuted }]}>You've already submitted a review for this transaction.</Text>
           </View>
@@ -131,7 +131,7 @@ export default function ReviewScreen() {
               <View style={styles.starsRow}>
                 {[1,2,3,4,5].map(s => (
                   <TouchableOpacity key={s} onPress={() => setRating(s)} activeOpacity={0.7}>
-                    <Ionicons name={s <= rating ? 'star' : 'star-outline'} size={44} color={s <= rating ? '#FFC107' : colors.border} />
+                    <Feather name={s <= rating ? 'star' : 'star'} size={44} color={s <= rating ? '#FFC107' : colors.border} />
                   </TouchableOpacity>
                 ))}
               </View>

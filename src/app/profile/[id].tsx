@@ -4,7 +4,7 @@ import {
   TouchableOpacity, SafeAreaView, ActivityIndicator, Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -132,7 +132,7 @@ export default function OtherUserProfileScreen() {
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+            <Feather name="arrow-left" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Profile Not Found</Text>
         </View>
@@ -144,7 +144,7 @@ export default function OtherUserProfileScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>{profile.name}</Text>
         <View style={{ width: 40 }} />
@@ -205,7 +205,7 @@ export default function OtherUserProfileScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity style={[styles.btnMessage, { backgroundColor: '#E8F5E9' }]} onPress={handleMessage}>
-                <Ionicons name="chatbubble-outline" size={18} color={colors.tint} />
+                <Feather name="message-circle" size={18} color={colors.tint} />
                 <Text style={[styles.btnMessageText, { color: colors.tint }]}>Message</Text>
               </TouchableOpacity>
             </View>
@@ -220,7 +220,7 @@ export default function OtherUserProfileScreen() {
             ))
           ) : (
             <View style={styles.emptyState}>
-              <Ionicons name="images-outline" size={40} color={colors.border} />
+              <Feather name="image" size={40} color={colors.border} />
               <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No posts yet</Text>
               <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>{profile.name} hasn't posted anything.</Text>
             </View>

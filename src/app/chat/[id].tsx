@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -30,7 +30,7 @@ interface Message {
 
 interface ConversationMeta {
   id: string;
-  type: 'friend' | 'marketplace' | 'business';
+  type: 'friend' | 'marketplace' | 'briefcase';
   participant_ids: string[];
   item_title?: string;
   item_image?: string;
@@ -254,7 +254,7 @@ export default function ChatScreen() {
     );
   };
 
-  const title = meta?.type === 'business'
+  const title = meta?.type === 'briefcase'
     ? (meta?.business_name || 'Business')
     : (otherUser?.name || 'Chat');
 
@@ -263,7 +263,7 @@ export default function ChatScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
@@ -345,7 +345,7 @@ export default function ChatScreen() {
           >
             {sending
               ? <ActivityIndicator size="small" color={colors.card} />
-              : <Ionicons name="send" size={20} color={colors.card} />
+              : <Feather name="send" size={20} color={colors.card} />
             }
           </TouchableOpacity>
         </View>

@@ -4,7 +4,7 @@ import {
   SafeAreaView, ActivityIndicator, Alert, RefreshControl, FlatList,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
@@ -142,7 +142,7 @@ export default function ManageEventScreen() {
           <Text style={[styles.ticketType, { color: colors.textMuted }]}>{item.ticket_type || 'General Admission'}</Text>
         </View>
         <View style={[styles.statusBadge, isCheckedIn ? styles.checkedInBadge : [styles.activeBadge, { backgroundColor: colors.borderLight }]]}>
-          <Ionicons name={isCheckedIn ? 'checkmark-circle' : 'ticket-outline'} size={12} color={isCheckedIn ? '#2E7D32' : colors.textMuted} />
+          <Feather name={isCheckedIn ? 'check-circle' : 'tag'} size={12} color={isCheckedIn ? '#2E7D32' : colors.textMuted} />
           <Text style={[styles.statusText, isCheckedIn ? styles.checkedInText : [styles.activeText, { color: colors.textMuted }]]}>
             {isCheckedIn ? 'Checked In' : 'Active'}
           </Text>
@@ -155,7 +155,7 @@ export default function ManageEventScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>Manage Event</Text>
         <View style={{ width: 40 }} />
@@ -215,7 +215,7 @@ export default function ManageEventScreen() {
               onPress={() => router.push(`/events/${id}/scan` as any)}
               activeOpacity={0.85}
             >
-              <Ionicons name="qr-code" size={22} color="#FFF" style={{ marginRight: 10 }} />
+              <Feather name="maximize" size={22} color="#FFF" style={{ marginRight: 10 }} />
               <Text style={styles.scanBtnText}>Start Scanning Tickets</Text>
             </TouchableOpacity>
 
@@ -224,13 +224,13 @@ export default function ManageEventScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyBox}>
-            <Ionicons name="ticket-outline" size={52} color={colors.tint} style={{ opacity: 0.25 }} />
+            <Feather name="tag" size={52} color={colors.tint} style={{ opacity: 0.25 }} />
             <Text style={[styles.emptyText, { color: colors.textMuted }]}>No tickets sold yet</Text>
           </View>
         }
         ListFooterComponent={
           <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelEvent}>
-            <Ionicons name="close-circle-outline" size={18} color="#B71C1C" style={{ marginRight: 8 }} />
+            <Feather name="x-circle" size={18} color="#B71C1C" style={{ marginRight: 8 }} />
             <Text style={styles.cancelBtnText}>Cancel This Event</Text>
           </TouchableOpacity>
         }

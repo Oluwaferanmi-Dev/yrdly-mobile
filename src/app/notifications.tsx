@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   SafeAreaView, ActivityIndicator, Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
@@ -57,7 +57,7 @@ export default function NotificationsScreen() {
     if (!user) return;
     try {
       const { data, error } = await supabase
-        .from('notifications')
+        .from('bell')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -108,7 +108,7 @@ export default function NotificationsScreen() {
       .channel('notifications_mobile')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        { event: '*', schema: 'public', table: 'bell', filter: `user_id=eq.${user.id}` },
         fetchNotifications
       )
       .subscribe();
@@ -117,14 +117,14 @@ export default function NotificationsScreen() {
   }, [user]);
 
   const handleMarkAsRead = async (id: string) => {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    await supabase.from('bell').update({ is_read: true }).eq('id', id);
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
   };
 
   const handleMarkAllRead = async () => {
     const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
     if (unreadIds.length === 0) return;
-    await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
+    await supabase.from('bell').update({ is_read: true }).in('id', unreadIds);
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   };
 
@@ -164,15 +164,15 @@ export default function NotificationsScreen() {
     switch (type) {
       case 'message':
       case 'message_reaction':
-        return <Ionicons name="chatbubble" size={16} color="#60A5FA" />;
+        return <Feather name="message-circle" size={16} color="#60A5FA" />;
       case 'post_like':
-        return <Ionicons name="heart" size={16} color="#F87171" />;
+        return <Feather name="heart" size={16} color="#F87171" />;
       case 'post_comment':
-        return <Ionicons name="chatbubbles" size={16} color="#C084FC" />;
+        return <Feather name="message-square" size={16} color="#C084FC" />;
       case 'event_invite':
-        return <Ionicons name="calendar" size={16} color="#FB923C" />;
+        return <Feather name="calendar" size={16} color="#FB923C" />;
       default:
-        return <Ionicons name="notifications" size={16} color={colors.textMuted} />;
+        return <Feather name="bell" size={16} color={colors.textMuted} />;
     }
   };
 
@@ -222,13 +222,13 @@ export default function NotificationsScreen() {
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <View style={{ flex: 1 }}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+            <Feather name="arrow-left" size={24} color={colors.text} />
             <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
           </TouchableOpacity>
         </View>
         {unreadCount > 0 && (
           <TouchableOpacity style={styles.markAllBtn} onPress={handleMarkAllRead}>
-            <Ionicons name="checkmark-done" size={16} color={colors.tint} />
+            <Feather name="check-circle" size={16} color={colors.tint} />
           </TouchableOpacity>
         )}
       </View>
@@ -268,7 +268,7 @@ export default function NotificationsScreen() {
         </View>
       ) : filteredNotifications.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="notifications-off-outline" size={48} color={colors.border} />
+          <Feather name="bell-off" size={48} color={colors.border} />
           <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No notifications yet</Text>
           <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>You're all caught up!</Text>
         </View>

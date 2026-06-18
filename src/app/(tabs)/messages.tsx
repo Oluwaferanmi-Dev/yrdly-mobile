@@ -5,14 +5,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 
 // ── Types ─────────────────────────────────────────────────────────
-type ConvType = 'friend' | 'marketplace' | 'business';
+type ConvType = 'friend' | 'marketplace' | 'briefcase';
 type FilterTab = 'all' | 'friends' | 'marketplace' | 'businesses';
 
 interface Conversation {
@@ -68,10 +68,10 @@ export default function MessagesTab() {
       const transformed: Conversation[] = data.map((conv: any) => {
         const otherId = conv.participant_ids?.find((id: string) => id !== user.id);
 
-        if (conv.type === 'business') {
+        if (conv.type === 'briefcase') {
           return {
             id: conv.id,
-            type: 'business',
+            type: 'briefcase',
             participantId: conv.business_id || conv.id,
             participantName: conv.business_name || 'Business',
             participantAvatar: conv.business_logo || null,
@@ -112,7 +112,7 @@ export default function MessagesTab() {
 
       // Resolve participant names/avatars for friend & marketplace convos
       const otherIds = transformed
-        .filter((c) => c.type !== 'business')
+        .filter((c) => c.type !== 'briefcase')
         .map((c) => c.participantId)
         .filter((id) => id && id !== user.id);
 
@@ -125,7 +125,7 @@ export default function MessagesTab() {
         if (usersData) {
           setConversations((prev) =>
             prev.map((c) => {
-              if (c.type === 'business') return c;
+              if (c.type === 'briefcase') return c;
               const u = usersData.find((u: any) => u.id === c.participantId);
               return u ? { ...c, participantName: u.name || 'Unknown', participantAvatar: u.avatar_url } : c;
             })
@@ -145,7 +145,7 @@ export default function MessagesTab() {
         activeFilter === 'all' ||
         (activeFilter === 'friends' && c.type === 'friend') ||
         (activeFilter === 'marketplace' && c.type === 'marketplace') ||
-        (activeFilter === 'businesses' && c.type === 'business');
+        (activeFilter === 'businesses' && c.type === 'briefcase');
       const q = searchQuery.toLowerCase();
       const searchOk = !q || 
         (c.participantName || '').toLowerCase().includes(q) || 
@@ -189,7 +189,7 @@ export default function MessagesTab() {
 
   const renderItem = ({ item }: { item: Conversation }) => {
     const unread = item.unreadCount > 0;
-    const showItemImage = (item.type === 'marketplace' || item.type === 'business') && item.context?.itemImage;
+    const showItemImage = (item.type === 'marketplace' || item.type === 'briefcase') && item.context?.itemImage;
 
     return (
       <TouchableOpacity
@@ -213,12 +213,12 @@ export default function MessagesTab() {
           {/* Type badge */}
           {item.type === 'marketplace' && (
             <View style={[styles.typeBadge, { backgroundColor: colors.tint, borderColor: colors.card }]}>
-              <Ionicons name="cart" size={9} color="#FFF" />
+              <Feather name="shopping-cart" size={9} color="#FFF" />
             </View>
           )}
-          {item.type === 'business' && (
+          {item.type === 'briefcase' && (
             <View style={[styles.typeBadge, { backgroundColor: '#1565C0', borderColor: colors.card }]}>
-              <Ionicons name="business" size={9} color="#FFF" />
+              <Feather name="briefcase" size={9} color="#FFF" />
             </View>
           )}
         </View>
@@ -257,7 +257,7 @@ export default function MessagesTab() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.card }]}>
       {/* Search */}
       <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
-        <Ionicons name="search-outline" size={18} color={colors.textMuted} style={styles.searchIcon} />
+        <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
         <TextInput
           style={[styles.searchInput, { color: colors.text }]}
           placeholder="Search conversations..."
@@ -289,7 +289,7 @@ export default function MessagesTab() {
         </View>
       ) : filtered.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="chatbubbles-outline" size={48} color={colors.textMuted} />
+          <Feather name="message-square" size={48} color={colors.textMuted} />
           <Text style={[styles.emptyText, { color: colors.textMuted }]}>
             {searchQuery ? 'No results found' : 'No conversations yet'}
           </Text>

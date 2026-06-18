@@ -77,7 +77,8 @@
           "photosPermission": "Yrdly needs photo library access to attach evidence to disputes and update your profile picture.",
           "cameraPermission": "Yrdly needs camera access to take photos for disputes."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true

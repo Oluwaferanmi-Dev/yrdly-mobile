@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay } from 'react-native-reanimated';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
 import { supabase } from '../lib/supabase';
@@ -94,7 +94,7 @@ export default function TicketsScreen() {
             <Image source={{ uri: imageUrl }} style={styles.ticketImage} contentFit="cover" />
           ) : (
             <View style={[styles.ticketImage, styles.ticketImagePlaceholder, { backgroundColor: colors.inputBackground }]}>
-              <Ionicons name="calendar" size={28} color={colors.tint} />
+              <Feather name="calendar" size={28} color={colors.tint} />
             </View>
           )}
         </View>
@@ -105,12 +105,12 @@ export default function TicketsScreen() {
             {event?.title || 'Event'}
           </Text>
           <View style={styles.ticketMeta}>
-            <Ionicons name="calendar-outline" size={13} color={colors.textMuted} />
+            <Feather name="calendar" size={13} color={colors.textMuted} />
             <Text style={[styles.ticketMetaText, { color: colors.textMuted }]}>{formattedDate}</Text>
           </View>
           {!!((event as any)?.location || (event as any)?.metadata?.location) && (
             <View style={styles.ticketMeta}>
-              <Ionicons name="location-outline" size={14} color={colors.textSecondary} style={{ marginTop: 2 }} />
+              <Feather name="map-pin" size={14} color={colors.textSecondary} style={{ marginTop: 2 }} />
               <Text style={[styles.eventLocation, { color: colors.textSecondary }]} numberOfLines={1}>
                 {(() => {
                   const loc = (event as any)?.metadata?.location || (event as any)?.location;
@@ -137,7 +137,7 @@ export default function TicketsScreen() {
 
         {/* QR hint */}
         <View style={styles.qrSection}>
-          <Ionicons name="qr-code" size={40} color={colors.tint} />
+          <Feather name="maximize" size={40} color={colors.tint} />
           <Text style={[styles.tapText, { color: colors.textMuted }]}>Tap to view</Text>
         </View>
       </TouchableOpacity>
@@ -164,7 +164,7 @@ export default function TicketsScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="ticket-outline" size={72} color={colors.border} />
+              <Feather name="tag" size={72} color={colors.border} />
               <Text style={[styles.emptyTitle, { color: colors.text }]}>No Tickets Yet</Text>
               <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>Buy tickets to events to see them here.</Text>
               <TouchableOpacity
@@ -188,7 +188,7 @@ export default function TicketsScreen() {
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.borderLight }]}>
             <TouchableOpacity onPress={() => setSelectedTicket(null)} style={styles.modalClose}>
-              <Ionicons name="close" size={26} color={colors.text} />
+              <Feather name="x" size={26} color={colors.text} />
             </TouchableOpacity>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Your Ticket</Text>
             <View style={{ width: 40 }} />

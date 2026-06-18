@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
@@ -119,7 +119,7 @@ export default function CommunityScreen() {
           )}
         </View>
         <Text style={[styles.userNameSmall, { color: colors.text }]}>{item.name || 'Anonymous'}</Text>
-        <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+        <Feather name="chevron-right" size={20} color={colors.textMuted} />
       </TouchableOpacity>
     );
   };
@@ -143,7 +143,7 @@ export default function CommunityScreen() {
       <View style={[styles.section, { paddingHorizontal: 16 }]}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Discover Neighbors</Text>
         <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground }]}>
-          <Ionicons name="search" size={20} color={colors.textSecondary} />
+          <Feather name="search" size={20} color={colors.textSecondary} />
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search by name..."
@@ -161,7 +161,7 @@ export default function CommunityScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Community</Text>
         <View style={{ width: 40 }} />

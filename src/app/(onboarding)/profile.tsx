@@ -5,7 +5,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { LocationPicker, LocationValue } from '../../components/LocationPicker';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -80,7 +80,7 @@ export default function OnboardingProfileScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View style={[styles.iconRing, { backgroundColor: colors.tint + '22' }]}>
-              <Ionicons name="person-add-outline" size={32} color={colors.tint} />
+              <Feather name="user-plus" size={32} color={colors.tint} />
             </View>
             <Text style={[styles.title, { color: colors.text }]}>Set up your profile</Text>
             <Text style={[styles.subtitle, { color: colors.textMuted }]}>
@@ -132,7 +132,7 @@ export default function OnboardingProfileScreen() {
           <LocationPicker value={location} onChange={setLocation} />
 
           <View style={styles.locationNote}>
-            <Ionicons name="shield-checkmark-outline" size={14} color={colors.textMuted} />
+            <Feather name="shield" size={14} color={colors.textMuted} />
             <Text style={[styles.locationNoteText, { color: colors.textMuted }]}>
               Your exact GPS coordinates are never shared. Only your State and LGA are visible to neighbours.
             </Text>
@@ -152,7 +152,7 @@ export default function OnboardingProfileScreen() {
             ) : (
               <>
                 <Text style={styles.continueBtnText}>Continue</Text>
-                <Ionicons name="arrow-forward" size={20} color="#FFF" style={{ marginLeft: 8 }} />
+                <Feather name="arrow-right" size={20} color="#FFF" style={{ marginLeft: 8 }} />
               </>
             )}
           </TouchableOpacity>

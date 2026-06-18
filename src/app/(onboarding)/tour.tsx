@@ -4,7 +4,7 @@ import {
   ScrollView, Dimensions, Animated, SafeAreaView, ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 
@@ -21,7 +21,7 @@ const SLIDES = [
   },
   {
     id: 'marketplace',
-    icon: 'cart' as const,
+    icon: 'shopping-cart' as const,
     color: '#1976D2',
     bg: '#E3F2FD',
     title: 'Buy & Sell Locally',
@@ -39,7 +39,7 @@ const SLIDES = [
   },
   {
     id: 'messages',
-    icon: 'chatbubbles' as const,
+    icon: 'message-square' as const,
     color: '#6A1B9A',
     bg: '#F3E5F5',
     title: 'Connect Directly',
@@ -119,7 +119,7 @@ export default function OnboardingTourScreen() {
           <View key={slide.id} style={styles.slide}>
             {/* Icon bubble */}
             <View style={[styles.iconBubble, { backgroundColor: slide.bg }]}>
-              <Ionicons name={slide.icon} size={56} color={slide.color} />
+              <Feather name={slide.icon} size={56} color={slide.color} />
             </View>
 
             {/* Slide number */}
@@ -167,7 +167,7 @@ export default function OnboardingTourScreen() {
                 {isLast ? "Let's Go! 🎉" : 'Next'}
               </Text>
               {!isLast && (
-                <Ionicons name="arrow-forward" size={18} color="#FFF" style={{ marginLeft: 8 }} />
+                <Feather name="arrow-right" size={18} color="#FFF" style={{ marginLeft: 8 }} />
               )}
             </>
           )}

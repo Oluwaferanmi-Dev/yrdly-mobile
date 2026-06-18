@@ -4,7 +4,7 @@ import {
   SafeAreaView, ActivityIndicator, Alert, RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -24,10 +24,10 @@ interface PayoutRequest {
 }
 
 const STATUS_META: Record<PayoutStatus, { label: string; color: string; bg: string; icon: string }> = {
-  pending:    { label: 'Pending',    color: '#E65100', bg: '#FFF3E0', icon: 'time-outline' },
-  processing: { label: 'Processing', color: '#1565C0', bg: '#E3F2FD', icon: 'refresh-outline' },
-  completed:  { label: 'Paid Out',   color: '#2E7D32', bg: '#E8F5E9', icon: 'checkmark-circle-outline' },
-  failed:     { label: 'Failed',     color: '#B71C1C', bg: '#FFEBEE', icon: 'close-circle-outline' },
+  pending:    { label: 'Pending',    color: '#E65100', bg: '#FFF3E0', icon: 'clock' },
+  processing: { label: 'Processing', color: '#1565C0', bg: '#E3F2FD', icon: 'refresh-cw' },
+  completed:  { label: 'Paid Out',   color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
+  failed:     { label: 'Failed',     color: '#B71C1C', bg: '#FFEBEE', icon: 'x-circle' },
 };
 
 function fmt(iso: string) {
@@ -115,7 +115,7 @@ export default function PayoutsScreen() {
       <View style={[styles.payoutCard, { backgroundColor: colors.card }]}>
         <View style={styles.payoutLeft}>
           <View style={[styles.payoutIconWrap, { backgroundColor: meta.bg }]}>
-            <Ionicons name={meta.icon as any} size={20} color={meta.color} />
+            <Feather name={meta.icon as any} size={20} color={meta.color} />
           </View>
           <View>
             <Text style={styles.payoutAmount}>{formatPrice(item.amount)}</Text>
@@ -133,7 +133,7 @@ export default function PayoutsScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Payouts</Text>
         <View style={{ width: 40 }} />
@@ -162,7 +162,7 @@ export default function PayoutsScreen() {
                     : <Text style={[styles.withdrawBtnText, { color: colors.tint }]}>Withdraw Funds</Text>}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)} style={styles.bankLink}>
-                  <Ionicons name="business-outline" size={14} color={colors.tint} />
+                  <Feather name="briefcase" size={14} color={colors.tint} />
                   <Text style={styles.bankLinkText}>Manage bank account</Text>
                 </TouchableOpacity>
               </View>
@@ -174,7 +174,7 @@ export default function PayoutsScreen() {
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="wallet-outline" size={48} color={colors.border} />
+              <Feather name="credit-card" size={48} color={colors.border} />
               <Text style={[styles.emptyTitle, { color: colors.text }]}>No payouts yet</Text>
               <Text style={[styles.emptyBody, { color: colors.textMuted }]}>Funds from completed sales will appear here.</Text>
             </View>
