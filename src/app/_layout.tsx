@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { usePushNotifications } from '../hooks/use-push-notifications';
 import { AuthProvider, useAuth } from '../hooks/use-supabase-auth';
 import { ThemeProvider } from '../context/ThemeContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 function NotificationsHandler() {
   usePushNotifications();
@@ -61,11 +62,13 @@ function RootNavigationGuard() {
 
 export default function Layout() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <NotificationsHandler />
-        <RootNavigationGuard />
-      </AuthProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <NotificationsHandler />
+          <RootNavigationGuard />
+        </AuthProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

@@ -1,8 +1,9 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   ActivityIndicator, ScrollView, Modal, FlatList,
-  TextInput, SafeAreaView,
+  TextInput,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import {
