@@ -265,7 +265,7 @@ export default function CreateTab() {
 
             {category === 'Event' && (
               <View style={{ zIndex: 10 }}>
-                <ScrollView horizontal scrollEnabled={false} style={{ width: '100%' }} contentContainerStyle={{ width: '100%' }}>
+                <ScrollView horizontal scrollEnabled={false} style={{ width: '100%' }} contentContainerStyle={{ width: '100%' }} keyboardShouldPersistTaps="handled">
                   <View style={{ width: '100%', minHeight: 40, borderBottomWidth: 1, borderBottomColor: colors.borderLight, paddingBottom: 8, marginBottom: 12 }}>
                     <GooglePlacesAutocomplete
                     placeholder="Location / Address"
