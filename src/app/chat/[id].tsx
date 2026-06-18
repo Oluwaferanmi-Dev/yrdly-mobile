@@ -16,6 +16,7 @@ import { Video, ResizeMode } from 'expo-av';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
+import { formatPrice } from '../../lib/utils';
 
 interface Message {
   id: string;
@@ -290,7 +291,7 @@ export default function ChatScreen() {
             <Text style={[styles.contextTitle, { color: colors.text }]} numberOfLines={1}>{meta.item_title}</Text>
             {typeof meta.item_price === 'number' && (
               <Text style={[styles.contextPrice, { color: colors.tint }]}>
-                {meta.item_price === 0 ? 'FREE' : `₦${meta.item_price.toLocaleString()}`}
+                {meta.item_price === 0 ? 'FREE' : formatPrice(meta.item_price)}
               </Text>
             )}
           </View>

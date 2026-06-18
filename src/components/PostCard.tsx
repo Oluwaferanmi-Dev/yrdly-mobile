@@ -179,7 +179,7 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
           style={styles.authorRow}
           onPress={(e) => {
             e.stopPropagation();
-            router.push(`/user/${post.user_id}`);
+            router.push(`/profile/${post.user_id}`);
           }}
         >
           <View style={[styles.avatar, { backgroundColor: colors.inputBackground }]}>

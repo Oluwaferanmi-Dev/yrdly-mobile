@@ -10,6 +10,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -61,7 +62,7 @@ export default function CreateTab() {
   const [eventDate, setEventDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [location, setLocation] = useState('');
+  const [locationData, setLocationData] = useState<{address: string, lat: number, lng: number} | null>(null);
 
   const pickImage = async () => {
     if (images.length >= 5) {
@@ -174,7 +175,7 @@ export default function CreateTab() {
         postData.price = price ? parseFloat(price) : 0;
       } else if (category === 'Event') {
         postData.event_date = eventDate.toISOString();
-        postData.event_location = location.trim() || null;
+        postData.event_location = locationData;
         postData.price = price ? parseFloat(price) : 0;
       }
 
@@ -191,7 +192,7 @@ export default function CreateTab() {
             setText('');
             setPrice('');
             setImages([]);
-            setLocation('');
+            setLocationData(null);
             setEventDate(new Date());
             router.push('/');
           },
@@ -211,7 +212,7 @@ export default function CreateTab() {
         style={{ flex: 1 }} 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           {/* Category Selector */}
           <View style={[styles.categoryRow, { backgroundColor: colors.inputBackground }]}>
             <Animated.View style={[styles.activePill, { backgroundColor: colors.background, shadowColor: colors.text }, pillAnimatedStyle]} />
@@ -261,14 +262,35 @@ export default function CreateTab() {
             )}
 
             {category === 'Event' && (
-              <>
-                <TextInput
-                  style={[styles.inputBody, { color: colors.text, minHeight: 40, borderBottomWidth: 1, borderBottomColor: colors.borderLight, paddingBottom: 8, marginBottom: 12 }]}
-                  placeholder="Location / Address"
-                  placeholderTextColor={colors.textMuted}
-                  value={location}
-                  onChangeText={setLocation}
-                />
+              <View style={{ zIndex: 10 }}>
+                <View style={{ minHeight: 40, borderBottomWidth: 1, borderBottomColor: colors.borderLight, paddingBottom: 8, marginBottom: 12 }}>
+                  <GooglePlacesAutocomplete
+                    placeholder="Location / Address"
+                    fetchDetails={true}
+                    onPress={(data, details = null) => {
+                      if (details?.geometry?.location) {
+                        setLocationData({
+                          address: data.description,
+                          lat: details.geometry.location.lat,
+                          lng: details.geometry.location.lng,
+                        });
+                      }
+                    }}
+                    query={{
+                      key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+                      language: 'en',
+                    }}
+                    styles={{
+                      textInput: [styles.inputBody, { color: colors.text, margin: 0, padding: 0 }],
+                      textInputContainer: { backgroundColor: 'transparent' },
+                      row: { backgroundColor: colors.background },
+                      description: { color: colors.text },
+                    }}
+                    textInputProps={{
+                      placeholderTextColor: colors.textMuted,
+                    }}
+                  />
+                </View>
                 <TextInput
                   style={[styles.inputPrice, { color: colors.tint, borderBottomColor: colors.borderLight }]}
                   placeholder="Ticket Price (₦) - Leave empty if free"
@@ -336,7 +358,7 @@ export default function CreateTab() {
                     }}
                   />
                 )}
-              </>
+              </View>
             )}
           </View>
 
