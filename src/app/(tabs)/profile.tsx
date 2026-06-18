@@ -110,6 +110,7 @@ export default function ProfileTab() {
           <PostCard 
             post={item} 
             onPress={() => router.push(`/posts/${item.id}`)}
+            onComment={() => router.push(`/posts/${item.id}`)}
           />
         )}
         ListHeaderComponent={ListHeader}

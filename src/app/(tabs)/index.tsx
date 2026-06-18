@@ -136,6 +136,7 @@ export default function HomeTab() {
           <PostCard 
             post={item} 
             onPress={() => router.push(`/posts/${item.id}`)}
+            onComment={() => router.push(`/posts/${item.id}`)}
           />
         )}
         refreshControl={

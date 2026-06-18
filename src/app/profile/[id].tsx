@@ -216,7 +216,12 @@ export default function OtherUserProfileScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Posts</Text>
           {posts.length > 0 ? (
             posts.map(post => (
-              <PostCard key={post.id} post={post} />
+              <PostCard 
+                key={post.id} 
+                post={post} 
+                onPress={() => router.push(`/posts/${post.id}`)}
+                onComment={() => router.push(`/posts/${post.id}`)}
+              />
             ))
           ) : (
             <View style={styles.emptyState}>
