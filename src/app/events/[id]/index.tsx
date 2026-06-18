@@ -27,6 +27,7 @@ export default function EventDetailScreen() {
   const [hasTicket, setHasTicket] = useState(false);
   const [isGalleryVisible, setIsGalleryVisible] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [rsvping, setRsvping] = useState(false);
 
   const fetchEvent = useCallback(async () => {
     if (!id) return;
@@ -54,6 +55,36 @@ export default function EventDetailScreen() {
   useEffect(() => {
     fetchEvent();
   }, [fetchEvent]);
+
+  const handleFreeRSVP = async () => {
+    if (!user || !event) return;
+    setRsvping(true);
+    try {
+      const { error } = await supabase.from('my_tickets').insert({
+        user_id: user.id,
+        event_id: event.id,
+        status: 'active',
+        price: 0,
+        ticket_type: 'General Admission (Free)',
+      });
+
+      if (error) {
+        if (error.code === '23505') { // Unique violation
+          setHasTicket(true);
+          Alert.alert('RSVP Confirmed', 'You are already registered for this event!');
+          return;
+        }
+        throw error;
+      }
+      
+      setHasTicket(true);
+      Alert.alert('RSVP Confirmed', 'You have successfully registered for this free event!');
+    } catch (e: any) {
+      Alert.alert('Error', e?.message || 'Could not RSVP. Please try again.');
+    } finally {
+      setRsvping(false);
+    }
+  };
 
   const scrollY = useSharedValue(0);
   const scrollHandler = useAnimatedScrollHandler((event) => {
@@ -223,18 +254,22 @@ export default function EventDetailScreen() {
               { backgroundColor: hasTicket ? colors.inputBackground : colors.tint },
               hasTicket && { opacity: 0.7 }
             ]}
-            disabled={hasTicket}
+            disabled={hasTicket || rsvping}
             onPress={() => {
               if (event.price === 0 || !event.price) {
-                Alert.alert('RSVP', 'You have successfully RSVPd to this free event!');
+                handleFreeRSVP();
               } else {
                 router.push({ pathname: '/checkout/[id]', params: { id: event.id, type: 'event' } });
               }
             }}
           >
-            <Text style={[styles.buyButtonText, hasTicket && { color: colors.textSecondary }]}>
-              {hasTicket ? 'Ticket Purchased ✓' : event.price === 0 || !event.price ? 'RSVP / Register' : 'Buy Tickets'}
-            </Text>
+            {rsvping ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={[styles.buyButtonText, hasTicket && { color: colors.textSecondary }]}>
+                {hasTicket ? 'Ticket Purchased ✓' : event.price === 0 || !event.price ? 'RSVP / Register' : 'Buy Tickets'}
+              </Text>
+            )}
           </TouchableOpacity>
         )}
       </View>
