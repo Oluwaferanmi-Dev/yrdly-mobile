@@ -17,7 +17,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 
 type PostCategory = 'General' | 'For Sale' | 'Event';
 
-LogBox.ignoreLogs(['VirtualizedLists should never be nested inside plain ScrollViews']);
+LogBox.ignoreLogs([/VirtualizedLists should never be nested/]);
 
 export default function CreateTab() {
   const { colors } = useAppTheme();
@@ -265,8 +265,9 @@ export default function CreateTab() {
 
             {category === 'Event' && (
               <View style={{ zIndex: 10 }}>
-                <View style={{ minHeight: 40, borderBottomWidth: 1, borderBottomColor: colors.borderLight, paddingBottom: 8, marginBottom: 12 }}>
-                  <GooglePlacesAutocomplete
+                <ScrollView horizontal scrollEnabled={false} style={{ width: '100%' }} contentContainerStyle={{ width: '100%' }}>
+                  <View style={{ width: '100%', minHeight: 40, borderBottomWidth: 1, borderBottomColor: colors.borderLight, paddingBottom: 8, marginBottom: 12 }}>
+                    <GooglePlacesAutocomplete
                     placeholder="Location / Address"
                     fetchDetails={true}
                     onPress={(data, details = null) => {
@@ -288,11 +289,12 @@ export default function CreateTab() {
                       row: { backgroundColor: colors.background },
                       description: { color: colors.text },
                     }}
-                    textInputProps={{
-                      placeholderTextColor: colors.textMuted,
-                    }}
-                  />
-                </View>
+                      textInputProps={{
+                        placeholderTextColor: colors.textMuted,
+                      }}
+                    />
+                  </View>
+                </ScrollView>
                 <TextInput
                   style={[styles.inputPrice, { color: colors.tint, borderBottomColor: colors.borderLight }]}
                   placeholder="Ticket Price (₦) - Leave empty if free"
