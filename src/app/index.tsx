@@ -1,5 +1,6 @@
 import { Redirect } from 'expo-router';
-import { View, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';
+import { View, ActivityIndicator, StyleSheet} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 
