@@ -23,8 +23,7 @@ interface Ticket {
 interface EventDetail {
   id: string;
   title: string;
-  event_date: string;
-  organizer_id: string;
+  user_id: string;
   image_url: string | null;
   image_urls: string[] | null;
   price: number | null;
@@ -47,12 +46,12 @@ export default function ManageEventScreen() {
       // Fetch event
       const { data: ev, error: evErr } = await supabase
         .from('posts')
-        .select('id, title, event_date, organizer_id, image_url, image_urls, price')
+        .select('id, title, event_date, user_id, image_url, image_urls, price')
         .eq('id', id)
         .single();
       if (evErr) throw evErr;
 
-      if (ev.organizer_id !== user.id) {
+      if (ev.user_id !== user.id) {
         Alert.alert('Access Denied', 'You are not the organizer of this event.');
         router.back();
         return;
