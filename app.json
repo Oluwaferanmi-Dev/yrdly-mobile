@@ -59,8 +59,7 @@
           "cameraPermission": "Yrdly needs camera access to take photos for disputes."
         }
       ],
-      "@react-native-community/datetimepicker",
-      "@react-native-google-signin/google-signin"
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true

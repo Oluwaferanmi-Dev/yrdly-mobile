@@ -3,13 +3,7 @@ import { User } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-  scopes: ['profile', 'email'],
-});
 WebBrowser.maybeCompleteAuthSession();
 
 export interface AuthUser {
@@ -96,33 +90,45 @@ export class AuthService {
     }
   }
 
-  // Sign in with Google (Native)
+  // Sign in with Google
   static async signInWithGoogle() {
     try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      
-      if (userInfo.data?.idToken) {
-        const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: 'google',
-          token: userInfo.data.idToken,
-        });
+      const redirectTo = this.getRedirectUrl();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true, // Prevents default web redirect, required for native
+        },
+      });
 
-        if (error) throw error;
-        return { data, error: null };
-      } else {
-        throw new Error('No ID token present!');
+      if (error) throw error;
+
+      if (data?.url) {
+        // Opens the secure native browser to complete OAuth
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        
+        if (result.type === 'success' && result.url) {
+          // If Supabase uses PKCE flow (default in v2), extract code:
+          const urlParams = new URLSearchParams(result.url.split('?')[1] || '');
+          const code = urlParams.get('code');
+          if (code) {
+             await supabase.auth.exchangeCodeForSession(code);
+          } else {
+             // If Implicit flow (hash), extract token:
+             const hashParams = new URLSearchParams(result.url.split('#')[1] || '');
+             const access_token = hashParams.get('access_token');
+             const refresh_token = hashParams.get('refresh_token');
+             if (access_token && refresh_token) {
+               await supabase.auth.setSession({ access_token, refresh_token });
+             }
+          }
+        }
       }
-    } catch (error: any) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log('User cancelled the login flow');
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        console.log('Sign in is in progress already');
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        console.log('Play services not available or outdated');
-      } else {
-        console.error('Google sign in error:', error);
-      }
+
+      return { data, error: null };
+    } catch (error) {
+      console.error('Google sign in error:', error);
       return { data: null, error };
     }
   }
