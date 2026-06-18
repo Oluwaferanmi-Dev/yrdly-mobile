@@ -133,12 +133,12 @@ export default function SettingsScreen() {
             )}
           </View>
           <TouchableOpacity style={styles.changePhotoBtn} onPress={handlePickImage} disabled={uploadingImage}>
-            <Text style={styles.changePhotoText}>Change Photo</Text>
+            <Text style={[styles.changePhotoText, { color: colors.tint }]}>Change Photo</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Name</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Name</Text>
           <TextInput
             style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
             value={name}
@@ -149,7 +149,7 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Bio</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Bio</Text>
           <TextInput
             style={[styles.input, styles.textArea, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
             value={bio}

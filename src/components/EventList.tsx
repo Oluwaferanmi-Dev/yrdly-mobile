@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, Text } from 'react-native';
 import { EventCard } from './EventCard';
+import { PostSkeleton } from './Skeleton';
 import { supabase } from '../lib/supabase';
 import { Post } from '../types';
 import { useRouter } from 'expo-router';
@@ -8,9 +9,10 @@ import { useAppTheme } from '../context/ThemeContext';
 
 interface EventListProps {
   searchQuery?: string;
+  sortOption?: 'newest' | 'price_asc' | 'price_desc';
 }
 
-export function EventList({ searchQuery = '' }: EventListProps) {
+export function EventList({ searchQuery = '', sortOption = 'newest' }: EventListProps) {
   const { colors } = useAppTheme();
   const router = useRouter();
   const [events, setEvents] = useState<Post[]>([]);
@@ -28,10 +30,17 @@ export function EventList({ searchQuery = '' }: EventListProps) {
         query = query.or(`title.ilike.%${searchQuery}%,text.ilike.%${searchQuery}%`);
       }
 
-      // Order by event date ascending to show upcoming events first
-      const { data, error } = await query
-        .order('event_date', { ascending: true })
-        .limit(30);
+      // Adjust sorting based on sortOption
+      if (sortOption === 'price_asc') {
+        query = query.order('price', { ascending: true });
+      } else if (sortOption === 'price_desc') {
+        query = query.order('price', { ascending: false });
+      } else {
+        // Default to newest event date
+        query = query.order('event_date', { ascending: true });
+      }
+
+      const { data, error } = await query.limit(30);
 
       if (error) throw error;
       setEvents(data as Post[]);
@@ -40,7 +49,7 @@ export function EventList({ searchQuery = '' }: EventListProps) {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, sortOption]);
 
   useEffect(() => {
     fetchEvents();
@@ -48,8 +57,10 @@ export function EventList({ searchQuery = '' }: EventListProps) {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={colors.tint} />
+      <View style={{ flex: 1 }}>
+        <PostSkeleton />
+        <PostSkeleton />
+        <PostSkeleton />
       </View>
     );
   }

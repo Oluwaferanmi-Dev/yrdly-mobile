@@ -1,0 +1,81 @@
+import React, { useEffect } from 'react';
+import { View, StyleSheet, ViewStyle } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence } from 'react-native-reanimated';
+import { useAppTheme } from '../context/ThemeContext';
+
+interface SkeletonProps {
+  width?: number | string;
+  height?: number | string;
+  borderRadius?: number;
+  style?: ViewStyle;
+}
+
+export function Skeleton({ width = '100%', height = 20, borderRadius = 4, style }: SkeletonProps) {
+  const { colors } = useAppTheme();
+  const opacity = useSharedValue(0.3);
+
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(0.7, { duration: 800 }),
+        withTiming(0.3, { duration: 800 })
+      ),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width,
+          height,
+          borderRadius,
+          backgroundColor: colors.borderLight,
+        },
+        animatedStyle,
+        style,
+      ]}
+    />
+  );
+}
+
+export function PostSkeleton() {
+  const { colors } = useAppTheme();
+  
+  return (
+    <View style={[styles.postContainer, { borderBottomColor: colors.borderLight }]}>
+      <View style={styles.header}>
+        <Skeleton width={38} height={38} borderRadius={19} />
+        <View style={styles.authorText}>
+          <Skeleton width={120} height={14} style={{ marginBottom: 6 }} />
+          <Skeleton width={80} height={10} />
+        </View>
+      </View>
+      <Skeleton width="100%" height={200} borderRadius={8} style={{ marginBottom: 10 }} />
+      <Skeleton width="90%" height={14} style={{ marginBottom: 6 }} />
+      <Skeleton width="60%" height={14} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  postContainer: {
+    padding: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  authorText: {
+    marginLeft: 10,
+    justifyContent: 'center',
+  },
+});

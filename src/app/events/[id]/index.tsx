@@ -3,7 +3,9 @@ import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, SafeAreaView, ActivityIndicator, Dimensions, Alert
 } from 'react-native';
+import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 import { Image } from 'expo-image';
+import ImageViewing from 'react-native-image-viewing';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
@@ -22,6 +24,9 @@ export default function EventDetailScreen() {
 
   const [event, setEvent] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasTicket, setHasTicket] = useState(false);
+  const [isGalleryVisible, setIsGalleryVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const fetchEvent = useCallback(async () => {
     if (!id) return;
@@ -33,13 +38,45 @@ export default function EventDetailScreen() {
 
     if (!error && data) {
       setEvent(data);
+      if (user) {
+        const { data: ticket } = await supabase
+          .from('my_tickets')
+          .select('id')
+          .eq('event_id', data.id)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        setHasTicket(!!ticket);
+      }
     }
     setLoading(false);
-  }, [id]);
+  }, [id, user]);
 
   useEffect(() => {
     fetchEvent();
   }, [fetchEvent]);
+
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [-200, 0, 300],
+      [-100, 0, 150],
+      Extrapolation.CLAMP
+    );
+    const scale = interpolate(
+      scrollY.value,
+      [-200, 0],
+      [1.5, 1],
+      Extrapolation.CLAMP
+    );
+    return {
+      transform: [{ translateY }, { scale }],
+    };
+  });
 
   if (loading) {
     return (
@@ -82,21 +119,37 @@ export default function EventDetailScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <Animated.ScrollView 
+        style={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+      >
         {/* Images */}
         {imageUrls.length > 0 ? (
-          <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.imageScroll}>
-            {imageUrls.map((url, i) => (
-              <Image key={i} source={{ uri: url }} style={styles.mainImage} contentFit="cover" />
-            ))}
-          </ScrollView>
+          <Animated.View style={[headerAnimatedStyle, { zIndex: -1 }]}>
+            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.imageScroll}>
+              {imageUrls.map((url, i) => (
+                <TouchableOpacity 
+                  key={i} 
+                  activeOpacity={0.9} 
+                  onPress={() => {
+                    setCurrentImageIndex(i);
+                    setIsGalleryVisible(true);
+                  }}
+                >
+                  <Image source={{ uri: url }} style={styles.mainImage} contentFit="cover" />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </Animated.View>
         ) : (
           <View style={styles.placeholderImage}>
             <Ionicons name="calendar-outline" size={64} color="rgba(56, 142, 60, 0.5)" />
           </View>
         )}
 
-        <View style={styles.infoSection}>
+        <View style={[styles.infoSection, { backgroundColor: colors.background }]}>
           <Text style={[styles.title, { color: colors.text }]}>{event.title || event.text || 'Untitled Event'}</Text>
           
           <View style={styles.dateTimeContainer}>
@@ -111,7 +164,14 @@ export default function EventDetailScreen() {
             {!!((event as any)?.location) && (
             <View style={styles.dateTimeRow}>
               <Ionicons name="location" size={20} color={colors.tint} />
-              <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>{(event as any).location}</Text>
+              <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>
+                {(() => {
+                  const loc = (event as any).location;
+                  return typeof loc === 'object' && loc !== null 
+                    ? (loc.address || [loc.ward, loc.lga, loc.state].filter(Boolean).join(', ') || 'TBA') 
+                    : (loc || 'TBA');
+                })()}
+              </Text>
             </View>
           )}
           </View>
@@ -144,7 +204,7 @@ export default function EventDetailScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Footer Actions */}
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.borderLight }]}>
@@ -158,7 +218,12 @@ export default function EventDetailScreen() {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={[styles.buyButton, { backgroundColor: colors.tint }]}
+            style={[
+              styles.buyButton, 
+              { backgroundColor: hasTicket ? colors.inputBackground : colors.tint },
+              hasTicket && { opacity: 0.7 }
+            ]}
+            disabled={hasTicket}
             onPress={() => {
               if (event.price === 0 || !event.price) {
                 Alert.alert('RSVP', 'You have successfully RSVPd to this free event!');
@@ -167,12 +232,21 @@ export default function EventDetailScreen() {
               }
             }}
           >
-            <Text style={styles.buyButtonText}>
-              {event.price === 0 || !event.price ? 'RSVP / Register' : 'Buy Tickets'}
+            <Text style={[styles.buyButtonText, hasTicket && { color: colors.textSecondary }]}>
+              {hasTicket ? 'Ticket Purchased ✓' : event.price === 0 || !event.price ? 'RSVP / Register' : 'Buy Tickets'}
             </Text>
           </TouchableOpacity>
         )}
       </View>
+
+      <ImageViewing
+        images={imageUrls.map(uri => ({ uri }))}
+        imageIndex={currentImageIndex}
+        visible={isGalleryVisible}
+        onRequestClose={() => setIsGalleryVisible(false)}
+        swipeToCloseEnabled={true}
+        doubleTapToZoomEnabled={true}
+      />
     </SafeAreaView>
   );
 }

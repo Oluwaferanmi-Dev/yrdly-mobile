@@ -155,7 +155,6 @@ export default function PostDetailScreen() {
       ) : (
         <ActivityIndicator size="small" color={colors.tint} style={{ padding: 20 }} />
       )}
-      <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
       <Text style={[styles.commentsTitle, { color: colors.text }]}>Comments ({post?.comment_count || 0})</Text>
     </View>
   );

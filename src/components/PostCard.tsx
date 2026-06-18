@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, useWindowDimensions, Image as RNImage, FlatList, Share } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import ImageViewing from 'react-native-image-viewing';
+import Animated, { useSharedValue, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Post } from '../types';
 import { timeAgo, formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
+import { supabase } from '../lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -18,23 +23,149 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCardProps) {
+  const router = useRouter();
   const { user: currentUser } = useAuth();
   const { colors } = useAppTheme();
+
+  const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
+  const { width } = useWindowDimensions();
+  const imageDisplayWidth = width - 32;
 
   const [likesCount, setLikesCount] = useState(post.liked_by?.length || 0);
   const [isLiked, setIsLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      setActiveImageIndex(viewableItems[0].index || 0);
+    }
+  }).current;
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+
+  const lastTapRef = useRef(0);
+  const singleTapTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const heartScale = useSharedValue(0);
+  const heartOpacity = useSharedValue(0);
+
+  const urls = post.image_urls?.length ? post.image_urls : post.image_url ? [post.image_url] : [];
+
+  useEffect(() => {
+    urls.forEach((url) => {
+      if (!url || imageHeights[url]) return;
+
+      if (post.image_width && post.image_height) {
+        const displayHeight = (post.image_height / post.image_width) * imageDisplayWidth;
+        setImageHeights((prev) => ({ ...prev, [url]: Math.min(displayHeight, imageDisplayWidth * 1.5) }));
+        return;
+      }
+
+      RNImage.getSize(url, (naturalWidth, naturalHeight) => {
+        if (naturalWidth && naturalHeight) {
+          const displayHeight = (naturalHeight / naturalWidth) * imageDisplayWidth;
+          setImageHeights((prev) => ({ ...prev, [url]: Math.min(displayHeight, imageDisplayWidth * 1.5) }));
+        }
+      }, () => {
+        // Silently handle get size errors
+      });
+    });
+  }, [urls, post.image_width, post.image_height, imageDisplayWidth]);
+
+  const triggerHeartAnimation = () => {
+    heartScale.value = withSequence(
+      withTiming(0, { duration: 0 }),
+      withSpring(1.2, { damping: 10, stiffness: 100 }),
+      withTiming(1, { duration: 100 }),
+      withTiming(0, { duration: 200 })
+    );
+    heartOpacity.value = withSequence(
+      withTiming(0, { duration: 0 }),
+      withTiming(1, { duration: 100 }),
+      withTiming(1, { duration: 400 }),
+      withTiming(0, { duration: 200 })
+    );
+  };
+
+  const handleImageTap = (index: number) => {
+    const now = Date.now();
+    const DOUBLE_PRESS_DELAY = 300;
+    
+    if (now - lastTapRef.current < DOUBLE_PRESS_DELAY) {
+      if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
+      lastTapRef.current = 0;
+      
+      if (!isLiked) {
+        handleLike();
+      }
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      triggerHeartAnimation();
+    } else {
+      lastTapRef.current = now;
+      singleTapTimerRef.current = setTimeout(() => {
+        setViewerIndex(index);
+        setIsViewerVisible(true);
+      }, DOUBLE_PRESS_DELAY);
+    }
+  };
+
+  const handleLike = async () => {
+    if (!currentUser) return;
+    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newIsLiked = !isLiked;
+    setIsLiked(newIsLiked);
+    setLikesCount(prev => newIsLiked ? prev + 1 : prev - 1);
     if (onLike) onLike();
+
+    try {
+      const currentLikedBy = post.liked_by || [];
+      let newLikedBy;
+      
+      if (newIsLiked) {
+        // Add to array only if not already present to avoid duplicates
+        newLikedBy = currentLikedBy.includes(currentUser.id) 
+          ? currentLikedBy 
+          : [...currentLikedBy, currentUser.id];
+      } else {
+        newLikedBy = currentLikedBy.filter(id => id !== currentUser.id);
+      }
+
+      const { error } = await supabase
+        .from('posts')
+        .update({ liked_by: newLikedBy })
+        .eq('id', post.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating like:', error);
+      // Revert optimistic update on failure
+      setIsLiked(!newIsLiked);
+      setLikesCount(prev => newIsLiked ? prev - 1 : prev + 1);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      const shareUrl = `https://app.yrdly.ng/posts/${post.id}`;
+      
+      const shareOptions = {
+        message: shareUrl,
+        url: shareUrl,
+      };
+      
+      await Share.share(shareOptions);
+      if (onShare) onShare();
+    } catch (error) {
+      console.error('Error sharing post:', error);
+    }
   };
 
   const getInitials = (name?: string) => {
     return name ? name.charAt(0).toUpperCase() : '?';
   };
-
-  const urls = post.image_urls?.length ? post.image_urls : post.image_url ? [post.image_url] : [];
 
   return (
     <TouchableOpacity
@@ -44,7 +175,13 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
     >
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.authorRow}>
+        <TouchableOpacity 
+          style={styles.authorRow}
+          onPress={(e) => {
+            e.stopPropagation();
+            router.push(`/user/${post.user_id}`);
+          }}
+        >
           <View style={[styles.avatar, { backgroundColor: colors.inputBackground }]}>
             {post.author_image ? (
               <Image source={{ uri: post.author_image }} style={styles.avatarImage} />
@@ -62,7 +199,7 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
               {timeAgo(post.timestamp || post.created_at)}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <View style={[styles.categoryBadge, { backgroundColor: colors.borderLight }]}>
           <Text style={[styles.categoryText, { color: colors.textSecondary }]}>
@@ -85,13 +222,43 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
 
       {/* Images */}
       {urls.length > 0 && (
-        <View style={[styles.imageContainer, { backgroundColor: colors.borderLight }]}>
-          <Image source={{ uri: urls[0] }} style={styles.postImage} contentFit="cover" />
+        <View style={{ position: 'relative' }}>
+          <FlatList
+            data={urls}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+            keyExtractor={(_, index) => index.toString()}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity 
+                activeOpacity={0.95}
+                onPress={() => handleImageTap(index)}
+                style={[styles.imageContainer, { backgroundColor: colors.borderLight, width: imageDisplayWidth, height: imageHeights[item] ?? 200 }]}
+              >
+                <Image source={{ uri: item }} style={[styles.postImage, { height: imageHeights[item] ?? 200 }]} contentFit="cover" />
+                
+                <Animated.View style={[styles.heartOverlay, { opacity: heartOpacity, transform: [{ scale: heartScale }] }]}>
+                  <Ionicons name="heart" size={100} color="#fff" style={styles.heartShadow} />
+                </Animated.View>
+              </TouchableOpacity>
+            )}
+          />
           {urls.length > 1 && (
-            <View style={styles.imageOverlay}>
-              <Text style={styles.overlayText}>+{urls.length - 1}</Text>
+            <View style={styles.paginationDots}>
+              {urls.map((_, i) => (
+                <View key={i} style={[styles.carouselDot, activeImageIndex === i ? [styles.activeDot, { backgroundColor: colors.tint }] : styles.inactiveDot]} />
+              ))}
             </View>
           )}
+          <ImageViewing
+            images={urls.map(url => ({ uri: url }))}
+            imageIndex={viewerIndex}
+            visible={isViewerVisible}
+            onRequestClose={() => setIsViewerVisible(false)}
+            swipeToCloseEnabled={true}
+          />
         </View>
       )}
 
@@ -125,7 +292,7 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
 
           <View style={[styles.dot, { backgroundColor: colors.textMuted }]} />
 
-          <TouchableOpacity style={styles.actionButton} onPress={onShare}>
+          <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
             <Ionicons name="share-social-outline" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
@@ -186,6 +353,40 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+  actionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 6,
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginHorizontal: 12,
+  },
+  paginationDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 12,
+    left: 0,
+    right: 0,
+  },
+  carouselDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  inactiveDot: {
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+  },
   content: {
     marginBottom: 10,
   },
@@ -200,14 +401,26 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: 200,
     borderRadius: 8,
     overflow: 'hidden',
     marginBottom: 10,
+    position: 'relative',
   },
   postImage: {
     width: '100%',
-    height: '100%',
+  },
+  heartOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  heartShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
   },
   imageOverlay: {
     ...StyleSheet.absoluteFillObject,

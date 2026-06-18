@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -106,7 +106,7 @@ export default function ResetPassword() {
       <View style={styles.formContainer}>
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/(auth)/login')}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
 
         {/* Header */}
@@ -117,14 +117,14 @@ export default function ResetPassword() {
 
         {error ? (
           <View style={styles.errorBox}>
-            <Ionicons name="warning" size={16} color="#E53935" />
+            <Feather name="alert-triangle" size={16} color="#E53935" />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         ) : null}
 
         {message ? (
           <View style={styles.successBox}>
-            <Ionicons name="checkmark-circle" size={16} color="#388E3C" />
+            <Feather name="check-circle" size={16} color="#388E3C" />
             <Text style={styles.successText}>{message}</Text>
           </View>
         ) : null}
@@ -141,7 +141,7 @@ export default function ResetPassword() {
             editable={!loading}
             placeholderTextColor={colors.textMuted}
           />
-          <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+          <Feather name="lock" size={20} color={colors.textMuted} style={styles.inputIcon} />
         </View>
 
         {/* Confirm Password Input */}
@@ -156,7 +156,7 @@ export default function ResetPassword() {
             editable={!loading}
             placeholderTextColor={colors.textMuted}
           />
-          <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+          <Feather name="lock" size={20} color={colors.textMuted} style={styles.inputIcon} />
         </View>
 
         <TouchableOpacity 

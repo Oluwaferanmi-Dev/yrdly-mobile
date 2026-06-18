@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import LottieView from 'lottie-react-native';
+import * as Haptics from 'expo-haptics';
 import { formatPrice } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 
@@ -18,6 +20,7 @@ export default function CheckoutSuccessScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     Animated.sequence([
       Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 60, friction: 6 }),
       Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
@@ -27,6 +30,19 @@ export default function CheckoutSuccessScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
+        <LottieView
+          autoPlay
+          loop={false}
+          style={{
+            width: Dimensions.get('window').width,
+            height: Dimensions.get('window').height,
+            position: 'absolute',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+          source={{ uri: 'https://lottie.host/ea97d544-2453-48db-8cdb-7a35e9821946/LwHylkZ0X9.json' }} // Public Confetti URL
+        />
+        
         {/* Animated checkmark */}
         <Animated.View style={[styles.iconRing, { backgroundColor: colors.tint, shadowColor: colors.tint, transform: [{ scale: scaleAnim }] }]}>
           <Ionicons name="checkmark" size={56} color={colors.card} />

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { Feather } from '@expo/vector-icons';
 import { MarketplaceGrid } from '../../components/MarketplaceGrid';
 import { EventList } from '../../components/EventList';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -11,17 +13,19 @@ export default function CatalogTab() {
   const { colors } = useAppTheme();
   const [activeTab, setActiveTab] = useState<TabType>('Marketplace');
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [sortOption, setSortOption] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
 
   const renderContent = () => {
     switch (activeTab) {
       case 'Marketplace':
-        return <MarketplaceGrid searchQuery={searchQuery} />;
+        return <MarketplaceGrid searchQuery={searchQuery} sortOption={sortOption} />;
       case 'Events':
-        return <EventList searchQuery={searchQuery} />;
+        return <EventList searchQuery={searchQuery} sortOption={sortOption} />;
       case 'Businesses':
         return (
           <View style={styles.placeholderContainer}>
-            <Ionicons name="business-outline" size={48} color={colors.textMuted} />
+            <Feather name="briefcase" size={48} color={colors.textMuted} />
             <Text style={[styles.placeholderText, { color: colors.textMuted }]}>Businesses List goes here</Text>
           </View>
         );
@@ -33,7 +37,7 @@ export default function CatalogTab() {
       {/* Search Header */}
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground }]}>
-          <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+          <Feather name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search Yrdly..."
@@ -43,8 +47,11 @@ export default function CatalogTab() {
             returnKeyType="search"
           />
         </View>
-        <TouchableOpacity style={[styles.filterButton, { backgroundColor: colors.inputBackground }]}>
-          <Ionicons name="options-outline" size={24} color={colors.text} />
+        <TouchableOpacity 
+          style={[styles.filterButton, { backgroundColor: colors.inputBackground }]}
+          onPress={() => setFilterVisible(true)}
+        >
+          <Feather name="sliders" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -77,6 +84,48 @@ export default function CatalogTab() {
       <View style={styles.contentArea}>
         {renderContent()}
       </View>
+
+      {/* Filter/Sort Modal */}
+      <Modal visible={filterVisible} transparent animationType="slide">
+        <TouchableWithoutFeedback onPress={() => setFilterVisible(false)}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+          <Text style={[styles.modalTitle, { color: colors.text }]}>Sort By</Text>
+          
+          <TouchableOpacity 
+            style={styles.modalOption}
+            onPress={() => { setSortOption('newest'); setFilterVisible(false); }}
+          >
+            <Text style={[styles.modalOptionText, { color: colors.text }]}>Newest</Text>
+            {sortOption === 'newest' && <Feather name="check" size={20} color={colors.tint} />}
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.modalOption}
+            onPress={() => { setSortOption('price_asc'); setFilterVisible(false); }}
+          >
+            <Text style={[styles.modalOptionText, { color: colors.text }]}>Price: Low to High</Text>
+            {sortOption === 'price_asc' && <Feather name="check" size={20} color={colors.tint} />}
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.modalOption}
+            onPress={() => { setSortOption('price_desc'); setFilterVisible(false); }}
+          >
+            <Text style={[styles.modalOptionText, { color: colors.text }]}>Price: High to Low</Text>
+            {sortOption === 'price_desc' && <Feather name="check" size={20} color={colors.tint} />}
+          </TouchableOpacity>
+          
+
+          <TouchableOpacity 
+            style={[styles.closeModalButton, { backgroundColor: colors.tint }]}
+            onPress={() => setFilterVisible(false)}
+          >
+            <Text style={styles.closeModalButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -145,5 +194,46 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    padding: 24,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingBottom: 40,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#33333333',
+  },
+  modalOptionText: {
+    fontSize: 16,
+  },
+  closeModalButton: {
+    marginTop: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  closeModalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

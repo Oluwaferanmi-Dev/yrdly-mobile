@@ -1,16 +1,16 @@
 import { Tabs, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { View, TouchableOpacity, Platform, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useAppTheme } from '../../context/ThemeContext';
 
 function GlassTabBarBackground() {
   const { isDarkMode } = useAppTheme();
-  if (Platform.OS === 'ios') {
+  if (Platform.OS === 'ios' && !isDarkMode) {
     return (
       <BlurView
         intensity={80}
-        tint={isDarkMode ? 'dark' : 'systemChromeMaterial'}
+        tint="light"
         style={StyleSheet.absoluteFill}
       />
     );
@@ -27,9 +27,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: true,
         headerStyle: {
-          backgroundColor: Platform.OS === 'ios'
-            ? (isDarkMode ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)')
-            : colors.card,
+          backgroundColor: colors.background,
           borderBottomWidth: 0.5,
           borderBottomColor: colors.border,
           elevation: 0,
@@ -47,10 +45,10 @@ export default function TabLayout() {
         headerRight: () => (
           <View style={{ flexDirection: 'row', marginRight: 16 }}>
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-              <Ionicons name="map-outline" size={24} color={colors.text} />
+              <Feather name="map" size={24} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications')}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+              <Feather name="bell" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
         ),
@@ -58,9 +56,9 @@ export default function TabLayout() {
         tabBarStyle: {
           borderTopWidth: 0.5,
           borderTopColor: colors.border,
-          backgroundColor: Platform.OS === 'ios'
-            ? 'transparent'
-            : (isDarkMode ? colors.card : 'rgba(255,255,255,0.96)'),
+          backgroundColor: isDarkMode 
+            ? colors.background 
+            : (Platform.OS === 'ios' ? 'transparent' : 'rgba(255,255,255,0.96)'),
           elevation: 8,
         },
         tabBarActiveTintColor: colors.tint,
@@ -72,9 +70,9 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          headerTitle: 'Yrdly',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Feather name="home" size={size} color={color} />
           ),
         }}
       />
@@ -82,9 +80,8 @@ export default function TabLayout() {
         name="catalog"
         options={{
           title: 'Explore',
-          headerTitle: 'Explore',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
+            <Feather name="search" size={size} color={color} />
           ),
         }}
       />
@@ -99,7 +96,7 @@ export default function TabLayout() {
               { backgroundColor: colors.tint, shadowColor: colors.tint },
               focused && styles.createButtonActive,
             ]}>
-              <Ionicons name="add" size={28} color="#FFF" />
+              <Feather name="plus" size={28} color="#FFF" />
             </View>
           ),
         }}
@@ -110,7 +107,7 @@ export default function TabLayout() {
           title: 'Messages',
           headerTitle: 'Messages',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubbles" size={size} color={color} />
+            <Feather name="message-square" size={size} color={color} />
           ),
         }}
       />
@@ -120,7 +117,7 @@ export default function TabLayout() {
           title: 'Profile',
           headerTitle: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <Feather name="user" size={size} color={color} />
           ),
         }}
       />

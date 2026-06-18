@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
 import { PostCard } from '../../components/PostCard';
+import { PostSkeleton } from '../../components/Skeleton';
 import { Post } from '../../types';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -42,6 +44,7 @@ export default function ProfileTab() {
   }, [fetchUserPosts]);
 
   const onRefresh = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setRefreshing(true);
     fetchUserPosts();
   }, [fetchUserPosts]);
@@ -63,13 +66,17 @@ export default function ProfileTab() {
         </View>
         <Text style={[styles.name, { color: colors.text }]}>{profile?.name || user?.user_metadata?.name || 'No Name'}</Text>
         <Text style={[styles.email, { color: colors.textSecondary }]}>{user?.email}</Text>
+        
+        {profile?.bio ? (
+          <Text style={[styles.bio, { color: colors.text }]}>{profile.bio}</Text>
+        ) : null}
 
         <View style={styles.actionRow}>
           <TouchableOpacity 
             style={[styles.communityButton, { backgroundColor: colors.tint }]} 
             onPress={() => router.push('/community')}
           >
-            <Ionicons name="people" size={20} color="#FFFFFF" />
+            <Feather name="users" size={20} color="#FFFFFF" />
             <Text style={styles.communityButtonText}>Community</Text>
           </TouchableOpacity>
           
@@ -77,14 +84,14 @@ export default function ProfileTab() {
             style={[styles.settingsButton, { backgroundColor: colors.borderLight }]} 
             onPress={() => router.push('/settings')}
           >
-            <Ionicons name="settings-outline" size={20} color={colors.text} />
+            <Feather name="settings" size={20} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.ticketsButton} 
             onPress={() => router.push('/tickets')}
           >
-            <Ionicons name="ticket-outline" size={20} color={colors.tint} />
+            <Feather name="tag" size={20} color={colors.tint} />
           </TouchableOpacity>
         </View>
       </View>
@@ -110,12 +117,16 @@ export default function ProfileTab() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          !loadingPosts ? (
+          loadingPosts && !refreshing ? (
+            <View>
+              <PostSkeleton />
+              <PostSkeleton />
+              <PostSkeleton />
+            </View>
+          ) : (
             <View style={styles.emptyContainer}>
               <Text style={[styles.emptyText, { color: colors.textSecondary }]}>You haven't posted anything yet.</Text>
             </View>
-          ) : (
-            <ActivityIndicator size="large" color={colors.tint} style={{ marginTop: 40 }} />
           )
         }
         ListFooterComponent={
@@ -150,13 +161,14 @@ const styles = StyleSheet.create({
   avatarImage: { width: '100%', height: '100%' },
   avatarText: { fontSize: 36, fontWeight: 'bold' },
   name: { fontSize: 24, fontWeight: 'bold', marginBottom: 4 },
-  email: { fontSize: 16, marginBottom: 20 },
+  email: { fontSize: 16, marginBottom: 12 },
+  bio: { fontSize: 14, textAlign: 'center', marginBottom: 20, paddingHorizontal: 20, lineHeight: 20 },
   actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 12 },
   communityButton: {
-    flex: 1, flexDirection: 'row', height: 44, borderRadius: 22,
-    justifyContent: 'center', alignItems: 'center', maxWidth: 200,
+    flex: 1, flexDirection: 'row', height: 36, borderRadius: 18,
+    justifyContent: 'center', alignItems: 'center', maxWidth: 160,
   },
-  communityButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold', marginLeft: 8 },
+  communityButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600', marginLeft: 8 },
   settingsButton: {
     width: 44, height: 44, borderRadius: 22,
     justifyContent: 'center', alignItems: 'center',

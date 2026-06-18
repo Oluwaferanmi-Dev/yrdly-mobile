@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Dimensions } from 'react-native';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -78,7 +78,7 @@ export default function Login() {
 
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/images/yrdly-logo.png')} style={styles.logo} resizeMode="contain" />
+          <Image source={require('../../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
         </View>
 
         {/* Segmented Control */}
@@ -99,7 +99,7 @@ export default function Login() {
 
         {error ? (
           <View style={styles.errorBox}>
-            <Ionicons name="warning" size={16} color="#E53935" />
+            <Feather name="alert-triangle" size={16} color="#E53935" />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         ) : null}
@@ -130,7 +130,7 @@ export default function Login() {
             editable={!loading}
             placeholderTextColor={colors.textMuted}
           />
-          <Ionicons name="mail-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+          <Feather name="mail" size={20} color={colors.textMuted} style={styles.inputIcon} />
         </View>
         
         <View style={styles.inputContainer}>
@@ -147,7 +147,7 @@ export default function Login() {
             style={styles.inputIcon}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={colors.textMuted} />
+            <Feather name={showPassword ? "eye-off" : "eye"} size={20} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
 
@@ -185,7 +185,7 @@ export default function Login() {
           onPress={handleGoogleSignIn}
           disabled={loading}
         >
-          <Ionicons name="logo-google" size={18} color="#EA4335" style={{ marginRight: 8 }} />
+          <Feather name="globe" size={18} color="#EA4335" style={{ marginRight: 8 }} />
           <Text style={[styles.googleButtonText, { color: colors.text }]}>Continue with Google</Text>
         </TouchableOpacity>
 

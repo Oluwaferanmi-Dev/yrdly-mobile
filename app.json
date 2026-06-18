@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "yrdlymobile",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -13,14 +13,33 @@
       "bundleIdentifier": "com.feranmi.dev.yrdlymobile",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "associatedDomains": [
+        "applinks:app.yrdly.ng"
+      ]
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#E6F4FE"
       },
-      "package": "com.feranmi.dev.yrdlymobile"
+      "package": "com.feranmi.dev.yrdlymobile",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "https",
+              "host": "app.yrdly.ng",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",

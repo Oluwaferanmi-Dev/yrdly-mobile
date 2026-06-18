@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, Text, Alert } from 'react-native';
 import { MarketplaceItemCard } from './MarketplaceItemCard';
+import { Skeleton } from './Skeleton';
 import { supabase } from '../lib/supabase';
 import { Post } from '../types';
 import { useRouter } from 'expo-router';
@@ -9,9 +10,10 @@ import { useAppTheme } from '../context/ThemeContext';
 
 interface MarketplaceGridProps {
   searchQuery?: string;
+  sortOption?: 'newest' | 'price_asc' | 'price_desc';
 }
 
-export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
+export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: MarketplaceGridProps) {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
@@ -38,10 +40,10 @@ export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
         .eq('type', 'marketplace')
         .contains('participant_ids', [user.id, item.user_id])
         .eq('item_id', item.id)
-        .maybeSingle();
+        .limit(1);
 
-      if (existing?.id) {
-        router.push({ pathname: '/chat/[id]', params: { id: existing.id } });
+      if (existing && existing.length > 0) {
+        router.push({ pathname: '/chat/[id]', params: { id: existing[0].id } });
         return;
       }
 
@@ -87,9 +89,15 @@ export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
         query = query.or(`title.ilike.%${searchQuery}%,text.ilike.%${searchQuery}%`);
       }
 
-      const { data, error } = await query
-        .order('timestamp', { ascending: false })
-        .limit(40);
+      if (sortOption === 'price_asc') {
+        query = query.order('price', { ascending: true });
+      } else if (sortOption === 'price_desc') {
+        query = query.order('price', { ascending: false });
+      } else {
+        query = query.order('timestamp', { ascending: false });
+      }
+
+      const { data, error } = await query.limit(40);
 
       if (error) throw error;
       setItems(data as Post[]);
@@ -98,7 +106,7 @@ export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, sortOption]);
 
   useEffect(() => {
     fetchItems();
@@ -106,8 +114,17 @@ export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={colors.tint} />
+      <View style={styles.skeletonGrid}>
+        {[1, 2, 3, 4, 5, 6].map(key => (
+          <View key={key} style={[styles.skeletonCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+            <Skeleton width="100%" height={160} />
+            <View style={{ padding: 12 }}>
+              <Skeleton width="80%" height={14} style={{ marginBottom: 6 }} />
+              <Skeleton width="60%" height={14} style={{ marginBottom: 12 }} />
+              <Skeleton width="40%" height={18} />
+            </View>
+          </View>
+        ))}
       </View>
     );
   }
@@ -132,6 +149,7 @@ export function MarketplaceGrid({ searchQuery = '' }: MarketplaceGridProps) {
           item={item} 
           onPress={() => router.push(`/marketplace/${item.id}`)}
           onMessageSeller={handleMessageSeller}
+          onBuyNow={(item) => router.push({ pathname: '/checkout/[id]', params: { id: item.id, type: 'marketplace' } })}
         />
       )}
       contentContainerStyle={styles.listContent}
@@ -158,5 +176,18 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     textAlign: 'center',
+  },
+  skeletonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 16,
+    justifyContent: 'space-between',
+  },
+  skeletonCard: {
+    width: '48%',
+    marginBottom: 16,
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
   },
 });

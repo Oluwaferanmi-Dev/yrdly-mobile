@@ -3,7 +3,9 @@ import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, SafeAreaView, ActivityIndicator, Dimensions
 } from 'react-native';
+import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 import { Image } from 'expo-image';
+import ImageViewing from 'react-native-image-viewing';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -22,6 +24,9 @@ export default function MarketplaceDetailScreen() {
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isGalleryVisible, setIsGalleryVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [activeScrollIndex, setActiveScrollIndex] = useState(0);
 
   const fetchPost = useCallback(async () => {
     if (!id) return;
@@ -45,37 +50,74 @@ export default function MarketplaceDetailScreen() {
     if (!post || !user || user.id === post.user_id) return;
 
     try {
-      // 1. Check if conversation exists
-      const { data: existing, error: existingError } = await supabase
+      // 1. Look for existing marketplace conversation for this item between these two users
+      const { data: convs, error: fetchError } = await supabase
         .from('conversations')
-        .select('*')
-        .eq('post_id', post.id)
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+        .select('id, type, participant_ids, item_id')
+        .eq('item_id', post.id)
+        .order('created_at', { ascending: true });
 
-      if (existing && existing.length > 0) {
-        router.push({ pathname: '/chat/[id]', params: { id: existing[0].id, type: 'marketplace' } });
+      if (fetchError) {
+        console.error('Error fetching conversations:', fetchError);
+      }
+
+      const existing = convs?.find(c => {
+        if (c.type === 'marketplace' && c.item_id === post.id && c.participant_ids?.includes(user.id) && c.participant_ids?.includes(post.user_id)) return true;
+        return false;
+      });
+
+      if (existing?.id) {
+        router.push({ pathname: '/chat/[id]', params: { id: existing.id } });
         return;
       }
 
-      // 2. Create new conversation
+      // 2. Create a new marketplace conversation
+      const imageUrl = post.image_urls?.[0] || post.image_url || null;
       const { data: newConv, error: newError } = await supabase
         .from('conversations')
         .insert({
-          user1_id: user.id,
-          user2_id: post.user_id,
-          post_id: post.id,
+          type: 'marketplace',
+          participant_ids: [user.id, post.user_id],
+          item_id: post.id,
+          item_title: post.title || post.text || 'Listing',
+          item_image: imageUrl,
+          item_price: post.price ?? null,
+          last_message_text: '',
           updated_at: new Date().toISOString(),
         })
-        .select()
+        .select('id')
         .single();
 
       if (newConv) {
-        router.push({ pathname: '/chat/[id]', params: { id: newConv.id, type: 'marketplace' } });
+        router.push({ pathname: '/chat/[id]', params: { id: newConv.id } });
       }
     } catch (e) {
       console.error('Error starting chat', e);
     }
   };
+
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [-200, 0, 300],
+      [-100, 0, 150],
+      Extrapolation.CLAMP
+    );
+    const scale = interpolate(
+      scrollY.value,
+      [-200, 0],
+      [1.5, 1],
+      Extrapolation.CLAMP
+    );
+    return {
+      transform: [{ translateY }, { scale }],
+    };
+  });
 
   if (loading) {
     return (
@@ -110,21 +152,54 @@ export default function MarketplaceDetailScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <Animated.ScrollView 
+        style={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+      >
         {/* Images */}
         {imageUrls.length > 0 ? (
-          <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.imageScroll}>
-            {imageUrls.map((url, i) => (
-              <Image key={i} source={{ uri: url }} style={styles.mainImage} contentFit="cover" />
-            ))}
-          </ScrollView>
+          <Animated.View style={[headerAnimatedStyle, { zIndex: -1, position: 'relative' }]}>
+            <ScrollView 
+              horizontal 
+              pagingEnabled 
+              showsHorizontalScrollIndicator={false} 
+              style={styles.imageScroll}
+              onScroll={(e) => {
+                const index = Math.round(e.nativeEvent.contentOffset.x / Dimensions.get('window').width);
+                setActiveScrollIndex(index);
+              }}
+              scrollEventThrottle={16}
+            >
+              {imageUrls.map((url, i) => (
+                <TouchableOpacity 
+                  key={i} 
+                  activeOpacity={0.9} 
+                  onPress={() => {
+                    setCurrentImageIndex(i);
+                    setIsGalleryVisible(true);
+                  }}
+                >
+                  <Image source={{ uri: url }} style={styles.mainImage} contentFit="cover" />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            {imageUrls.length > 1 && (
+              <View style={styles.paginationDots}>
+                {imageUrls.map((_, i) => (
+                  <View key={i} style={[styles.carouselDot, activeScrollIndex === i ? [styles.activeDot, { backgroundColor: colors.tint }] : styles.inactiveDot]} />
+                ))}
+              </View>
+            )}
+          </Animated.View>
         ) : (
           <View style={styles.placeholderImage}>
             <Ionicons name="cart-outline" size={64} color="rgba(56, 142, 60, 0.5)" />
           </View>
         )}
 
-        <View style={styles.infoSection}>
+        <View style={[styles.infoSection, { backgroundColor: colors.background }]}>
           <View style={styles.titleRow}>
             <Text style={[styles.title, { color: colors.text }]}>{post.title || post.text || 'Untitled'}</Text>
             <Text style={[styles.price, { color: colors.tint }]}>{post.price === 0 ? 'FREE' : formatPrice(post.price || 0)}</Text>
@@ -155,12 +230,15 @@ export default function MarketplaceDetailScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Footer Actions */}
       <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.borderLight }]}>
         {isOwner ? (
-          <TouchableOpacity style={[styles.actionButton, styles.editButton, { backgroundColor: colors.inputBackground }]}>
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.editButton, { backgroundColor: colors.inputBackground }]}
+            onPress={() => router.push(`/marketplace/edit/${post.id}`)}
+          >
             <Text style={[styles.editButtonText, { color: colors.text }]}>Edit Item</Text>
           </TouchableOpacity>
         ) : (
@@ -178,6 +256,15 @@ export default function MarketplaceDetailScreen() {
           </>
         )}
       </View>
+
+      <ImageViewing
+        images={imageUrls.map(uri => ({ uri }))}
+        imageIndex={currentImageIndex}
+        visible={isGalleryVisible}
+        onRequestClose={() => setIsGalleryVisible(false)}
+        swipeToCloseEnabled={true}
+        doubleTapToZoomEnabled={true}
+      />
     </SafeAreaView>
   );
 }
@@ -196,7 +283,33 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
   scrollContent: { flex: 1 },
   imageScroll: { height: width },
-  mainImage: { width: width, height: width },
+  mainImage: {
+    width: width,
+    height: width,
+  },
+  paginationDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 0,
+  },
+  carouselDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  inactiveDot: {
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+  },
   placeholderImage: { width: width, height: width, backgroundColor: '#E8F5E9', justifyContent: 'center', alignItems: 'center' },
   infoSection: { padding: 20 },
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },

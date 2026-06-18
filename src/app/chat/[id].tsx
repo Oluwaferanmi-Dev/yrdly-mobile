@@ -7,6 +7,11 @@ import {
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
+import { decode } from 'base64-arraybuffer';
+import ImageViewing from 'react-native-image-viewing';
+import { Video, ResizeMode } from 'expo-av';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -16,6 +21,8 @@ interface Message {
   sender_id: string;
   text?: string;
   content?: string;
+  media_url?: string;
+  media_type?: string;
   created_at: string;
   is_read?: boolean;
 }
@@ -42,15 +49,11 @@ export default function ChatScreen() {
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [viewerImages, setViewerImages] = useState<{uri: string}[]>([]);
+  const [viewerVisible, setViewerVisible] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
-  const isMarketplace = meta?.type === 'marketplace';
-
-  // ── Determine which messages table to use ────────────────────────
-  // Web app uses 'messages' for friend/business, 'chat_messages' for marketplace
-  const msgTable = isMarketplace ? 'chat_messages' : 'messages';
-  const contentField = isMarketplace ? 'content' : 'text';
-  const convIdField = isMarketplace ? 'chat_id' : 'conversation_id';
 
   const fetchMeta = useCallback(async () => {
     if (!id || !user) return;
@@ -76,36 +79,41 @@ export default function ChatScreen() {
 
   const fetchMessages = useCallback(async () => {
     if (!id) return;
+    
     const { data, error } = await supabase
-      .from(msgTable)
+      .from('messages')
       .select('*')
-      .eq(convIdField, id)
+      .eq('conversation_id', id)
       .order('created_at', { ascending: true });
 
     if (!error && data) setMessages(data as Message[]);
     setLoading(false);
-  }, [id, msgTable, convIdField]);
+  }, [id]);
 
   useEffect(() => {
     fetchMeta();
+  }, [fetchMeta]);
+
+  useEffect(() => {
+    if (!meta) return;
+
     fetchMessages();
 
-    // Realtime subscription for new messages
+    // Realtime subscriptions for messages table
     const ch = supabase
       .channel(`chat-${id}`)
       .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: msgTable,
-        filter: `${convIdField}=eq.${id}`,
+        event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${id}`,
       }, (payload) => {
         setMessages((prev) => [...prev, payload.new as Message]);
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(ch); };
-  }, [id, fetchMeta, fetchMessages, msgTable, convIdField]);
+    return () => { 
+      supabase.removeChannel(ch); 
+    };
+  }, [id, meta, fetchMessages]);
 
   const sendMessage = async () => {
     if (!inputText.trim() || !user || !id || sending) return;
@@ -117,11 +125,11 @@ export default function ChatScreen() {
       const payload: Record<string, unknown> = {
         sender_id: user.id,
         created_at: new Date().toISOString(),
-        [contentField]: body,
-        [convIdField]: id,
+        text: body,
+        conversation_id: id,
       };
 
-      const { error } = await supabase.from(msgTable).insert(payload);
+      const { error } = await supabase.from('messages').insert(payload);
       if (error) throw error;
 
       // Update conversation's last_message
@@ -139,17 +147,105 @@ export default function ChatScreen() {
     }
   };
 
+  const pickMedia = async () => {
+    if (sending || uploadingMedia) return;
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      uploadAndSendMedia(result.assets[0]);
+    }
+  };
+
+  const uploadAndSendMedia = async (asset: ImagePicker.ImagePickerAsset) => {
+    if (!user || !id) return;
+    setUploadingMedia(true);
+    try {
+      const ext = asset.uri.split('.').pop()?.toLowerCase() || 'jpg';
+      const isVideo = asset.type === 'video';
+      const filename = `${user.id}/${Date.now()}.${ext}`;
+      
+      const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: 'base64' });
+      const arrayBuffer = decode(base64);
+      
+      const bucketName = isVideo ? 'chat-videos' : 'chat-images';
+      const mimeExt = ext === 'jpg' ? 'jpeg' : ext;
+      
+      const { error: uploadError } = await supabase.storage
+        .from(bucketName)
+        .upload(filename, arrayBuffer, { contentType: isVideo ? `video/${mimeExt}` : `image/${mimeExt}` });
+        
+      if (uploadError) throw uploadError;
+      
+      const { data: { publicUrl } } = supabase.storage.from(bucketName).getPublicUrl(filename);
+      
+      const payload: Record<string, unknown> = {
+        sender_id: user.id,
+        created_at: new Date().toISOString(),
+        text: '',
+        conversation_id: id,
+        media_url: publicUrl,
+        media_type: isVideo ? 'video' : 'image',
+      };
+
+      const { error } = await supabase.from('messages').insert(payload);
+      if (error) throw error;
+      
+      await supabase.from('conversations').update({
+        last_message_text: isVideo ? 'Sent a video 📹' : 'Sent an image 📸',
+        updated_at: new Date().toISOString(),
+      }).eq('id', id);
+
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    } catch(e) {
+      console.error('Upload media error:', e);
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
+  const openViewer = (url: string) => {
+    setViewerImages([{ uri: url }]);
+    setViewerVisible(true);
+  };
+
   const renderMessage = ({ item }: { item: Message }) => {
     const isMine = item.sender_id === user?.id;
     const msgText = item.text || item.content || '';
+    const hasMedia = !!item.media_url;
 
     return (
       <View style={[styles.msgRow, isMine ? styles.msgRowRight : styles.msgRowLeft]}>
-        <View style={[styles.bubble, isMine ? [styles.bubbleMine, { backgroundColor: colors.tint }] : [styles.bubbleTheirs, { backgroundColor: colors.inputBackground }]]}>
-          <Text style={[styles.bubbleText, { color: colors.text }, isMine && { color: colors.card }]}>
-            {msgText}
-          </Text>
-          <Text style={[styles.bubbleTime, { color: colors.textMuted }, isMine && { color: 'rgba(255,255,255,0.6)' }]}>
+        <View style={[
+          styles.bubble, 
+          isMine ? [styles.bubbleMine, { backgroundColor: colors.tint }] : [styles.bubbleTheirs, { backgroundColor: colors.inputBackground }],
+          hasMedia && { paddingHorizontal: 4, paddingVertical: 4, paddingBottom: 6 }
+        ]}>
+          {item.media_url && item.media_type === 'image' && (
+            <TouchableOpacity onPress={() => openViewer(item.media_url!)}>
+              <Image 
+                source={{ uri: item.media_url }} 
+                style={[{ width: 220, height: 220, borderRadius: 14, marginBottom: msgText ? 6 : 0 }, !isMine && { backgroundColor: '#E0E0E0' }]} 
+                contentFit="cover" 
+              />
+            </TouchableOpacity>
+          )}
+          {item.media_url && item.media_type === 'video' && (
+            <Video
+              source={{ uri: item.media_url }}
+              style={{ width: 220, height: 220, borderRadius: 14, marginBottom: msgText ? 6 : 0 }}
+              resizeMode={ResizeMode.COVER}
+              useNativeControls
+            />
+          )}
+          {!!msgText && (
+            <Text style={[styles.bubbleText, { color: colors.text }, isMine && { color: colors.card }, hasMedia && { paddingHorizontal: 6 }]}>
+              {msgText}
+            </Text>
+          )}
+          <Text style={[styles.bubbleTime, { color: colors.textMuted }, isMine && { color: 'rgba(255,255,255,0.6)' }, hasMedia && { paddingHorizontal: 6 }]}>
             {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </Text>
         </View>
@@ -225,6 +321,13 @@ export default function ChatScreen() {
       {/* Input */}
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: colors.card }]}>
+          <TouchableOpacity style={styles.attachBtn} onPress={pickMedia} disabled={uploadingMedia}>
+            {uploadingMedia ? (
+              <ActivityIndicator size="small" color={colors.tint} />
+            ) : (
+              <Ionicons name="add-circle" size={28} color={colors.tint} />
+            )}
+          </TouchableOpacity>
           <TextInput
             style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
             placeholder="Type a message..."
@@ -246,6 +349,13 @@ export default function ChatScreen() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      <ImageViewing
+        images={viewerImages}
+        imageIndex={0}
+        visible={viewerVisible}
+        onRequestClose={() => setViewerVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -286,8 +396,12 @@ const styles = StyleSheet.create({
   bubbleTime: { fontSize: 10, marginTop: 3, alignSelf: 'flex-end' },
   inputRow: {
     flexDirection: 'row', alignItems: 'flex-end',
-    paddingHorizontal: 12, paddingVertical: 10,
+    paddingHorizontal: 8, paddingVertical: 10,
     borderTopWidth: 1,
+  },
+  attachBtn: {
+    justifyContent: 'center', alignItems: 'center',
+    padding: 8, paddingBottom: 10,
   },
   input: {
     flex: 1,

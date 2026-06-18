@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, FlatList, SafeAreaView, ActivityIndicator,
   TouchableOpacity, RefreshControl, Modal,
 } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -30,6 +31,20 @@ export default function TicketsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+
+  const ticketTranslateY = useSharedValue(200);
+
+  useEffect(() => {
+    if (selectedTicket) {
+      ticketTranslateY.value = withDelay(100, withSpring(0, { damping: 14, stiffness: 100 }));
+    } else {
+      ticketTranslateY.value = 200;
+    }
+  }, [selectedTicket]);
+
+  const animatedTicketStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: ticketTranslateY.value }]
+  }));
 
   const fetchTickets = useCallback(async () => {
     if (!user) return;
@@ -73,9 +88,6 @@ export default function TicketsScreen() {
         onPress={() => setSelectedTicket(item)}
         activeOpacity={0.8}
       >
-        {/* Left accent bar */}
-        <View style={[styles.ticketAccent, { backgroundColor: colors.tint }]} />
-
         {/* Image */}
         <View style={styles.ticketImageWrapper}>
           {imageUrl ? (
@@ -100,7 +112,12 @@ export default function TicketsScreen() {
             <View style={styles.ticketMeta}>
               <Ionicons name="location-outline" size={14} color={colors.textSecondary} style={{ marginTop: 2 }} />
               <Text style={[styles.eventLocation, { color: colors.textSecondary }]} numberOfLines={1}>
-                {(event as any)?.metadata?.location || (event as any)?.location || 'TBA'}
+                {(() => {
+                  const loc = (event as any)?.metadata?.location || (event as any)?.location;
+                  return typeof loc === 'object' && loc !== null 
+                    ? (loc.address || [loc.ward, loc.lga, loc.state].filter(Boolean).join(', ') || 'TBA') 
+                    : (loc || 'TBA');
+                })()}
               </Text>
             </View>
           )}
@@ -178,7 +195,7 @@ export default function TicketsScreen() {
           </View>
 
           {selectedTicket && (
-            <View style={styles.modalContent}>
+            <Animated.View style={[styles.modalContent, animatedTicketStyle]}>
               {/* Event card */}
               <View style={[styles.modalEventCard, { backgroundColor: colors.inputBackground }]}>
                 {(selectedTicket.event?.image_urls?.[0] || selectedTicket.event?.image_url) && (
@@ -227,7 +244,7 @@ export default function TicketsScreen() {
               <Text style={[styles.scanInstructions, { color: colors.textMuted }]}>
                 Present this QR code to the event organizer for check-in
               </Text>
-            </View>
+            </Animated.View>
           )}
         </SafeAreaView>
       </Modal>

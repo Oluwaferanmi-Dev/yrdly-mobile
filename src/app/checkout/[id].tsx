@@ -20,7 +20,8 @@ interface ItemDetails {
   id: string;
   title: string;
   price: number;
-  images?: string[];
+  image_urls?: string[];
+  image_url?: string;
   user_id: string;
   seller?: { id: string; name: string; email: string };
 }
@@ -47,12 +48,12 @@ export default function CheckoutScreen() {
     try {
       const { data, error } = await supabase
         .from('posts')
-        .select('id, title, price, images, user_id, users:user_id(id, name, email)')
+        .select('id, title, price, image_url, image_urls, user_id, user:users!posts_user_id_fkey(id, name, email)')
         .eq('id', id)
         .single();
       if (error || !data) throw error ?? new Error('Not found');
 
-      const seller = Array.isArray(data.users) ? data.users[0] : data.users;
+      const seller = Array.isArray(data.user) ? data.user[0] : data.user;
       setItem({ ...data, seller } as any);
       setStage('summary');
     } catch {
@@ -137,7 +138,7 @@ export default function CheckoutScreen() {
   }, [transactionId, item]);
 
   const commission = item ? Math.round(item.price * COMMISSION_RATE) : 0;
-  const thumbnail = item?.images?.[0];
+  const thumbnail = item?.image_urls?.[0] || item?.image_url;
 
   // ── Loading ──────────────────────────────────────────────────
   if (stage === 'loading') {
