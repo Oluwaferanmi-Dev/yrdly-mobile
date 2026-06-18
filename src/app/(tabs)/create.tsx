@@ -9,6 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
 import { useRouter } from 'expo-router';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -55,6 +56,12 @@ export default function CreateTab() {
   }
   const [images, setImages] = useState<PostImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Event specific state
+  const [eventDate, setEventDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [location, setLocation] = useState('');
 
   const pickImage = async () => {
     if (images.length >= 5) {
@@ -162,8 +169,12 @@ export default function CreateTab() {
         is_sold: false,
       };
 
-      // Add price for marketplace items
+      // Add specific fields for category
       if (category === 'For Sale') {
+        postData.price = price ? parseFloat(price) : 0;
+      } else if (category === 'Event') {
+        postData.event_date = eventDate.toISOString();
+        postData.event_location = location.trim() || null;
         postData.price = price ? parseFloat(price) : 0;
       }
 
@@ -180,6 +191,8 @@ export default function CreateTab() {
             setText('');
             setPrice('');
             setImages([]);
+            setLocation('');
+            setEventDate(new Date());
             router.push('/');
           },
         },
@@ -245,6 +258,85 @@ export default function CreateTab() {
                 onChangeText={setPrice}
                 keyboardType="numeric"
               />
+            )}
+
+            {category === 'Event' && (
+              <>
+                <TextInput
+                  style={[styles.inputBody, { color: colors.text, minHeight: 40, borderBottomWidth: 1, borderBottomColor: colors.borderLight, paddingBottom: 8, marginBottom: 12 }]}
+                  placeholder="Location / Address"
+                  placeholderTextColor={colors.textMuted}
+                  value={location}
+                  onChangeText={setLocation}
+                />
+                <TextInput
+                  style={[styles.inputPrice, { color: colors.tint, borderBottomColor: colors.borderLight }]}
+                  placeholder="Ticket Price (₦) - Leave empty if free"
+                  placeholderTextColor={colors.textMuted}
+                  value={price}
+                  onChangeText={setPrice}
+                  keyboardType="numeric"
+                />
+
+                {Platform.OS === 'ios' ? (
+                  <View style={{ flexDirection: 'row', gap: 12, marginTop: 12, alignItems: 'center' }}>
+                    <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Date & Time:</Text>
+                    <DateTimePicker
+                      value={eventDate}
+                      mode="datetime"
+                      display="compact"
+                      onChange={(e, d) => d && setEventDate(d)}
+                      themeVariant={colors.background === '#121212' ? 'dark' : 'light'}
+                    />
+                  </View>
+                ) : (
+                  <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
+                    <TouchableOpacity style={[styles.dateButton, { borderColor: colors.borderLight }]} onPress={() => setShowDatePicker(true)}>
+                      <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} />
+                      <Text style={{ color: colors.text, marginLeft: 8 }}>
+                        {eventDate.toLocaleDateString()}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.dateButton, { borderColor: colors.borderLight }]} onPress={() => setShowTimePicker(true)}>
+                      <Ionicons name="time-outline" size={20} color={colors.textSecondary} />
+                      <Text style={{ color: colors.text, marginLeft: 8 }}>
+                        {eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                {Platform.OS === 'android' && showDatePicker && (
+                  <DateTimePicker
+                    value={eventDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
+                      if (selectedDate) {
+                        const newDate = new Date(eventDate);
+                        newDate.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+                        setEventDate(newDate);
+                      }
+                    }}
+                  />
+                )}
+                {Platform.OS === 'android' && showTimePicker && (
+                  <DateTimePicker
+                    value={eventDate}
+                    mode="time"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowTimePicker(false);
+                      if (selectedDate) {
+                        const newDate = new Date(eventDate);
+                        newDate.setHours(selectedDate.getHours(), selectedDate.getMinutes());
+                        setEventDate(newDate);
+                      }
+                    }}
+                  />
+                )}
+              </>
             )}
           </View>
 
@@ -434,5 +526,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  dateButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 12,
   },
 });
