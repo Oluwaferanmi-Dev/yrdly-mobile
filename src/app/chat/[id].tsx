@@ -326,7 +326,7 @@ export default function ChatScreen() {
             {uploadingMedia ? (
               <ActivityIndicator size="small" color={colors.tint} />
             ) : (
-              <Ionicons name="add-circle" size={28} color={colors.tint} />
+              <Feather name="plus-circle" size={28} color={colors.tint} />
             )}
           </TouchableOpacity>
           <TextInput
