@@ -3,7 +3,6 @@ import {
   View, Text, StyleSheet, FlatList, TextInput,
   TouchableOpacity, ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -254,7 +253,7 @@ export default function MessagesTab() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.card }]}>
+    <View style={[styles.container, { backgroundColor: colors.card }]}>
       {/* Search */}
       <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
         <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
@@ -303,7 +302,7 @@ export default function MessagesTab() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 

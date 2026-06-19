@@ -19,6 +19,7 @@ export default function MapScreen() {
   
   const [users, setUsers] = useState<User[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [events, setEvents] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,6 +62,18 @@ export default function MapScreen() {
 
       if (!bizError && bizData) {
         setBusinesses(bizData as Business[]);
+      }
+
+      // Fetch Events
+      const { data: eventData, error: eventError } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('category', 'Event')
+        .not('event_location', 'is', null)
+        .limit(50);
+
+      if (!eventError && eventData) {
+        setEvents(eventData as Post[]);
       }
 
     } catch (e) {
@@ -162,6 +175,32 @@ export default function MapScreen() {
             </Marker>
           );
         })}
+
+        {/* Render Events */}
+        {events.map(event => {
+          if (!event.event_location?.geopoint) return null;
+          const lat = parseFloat(event.event_location.geopoint.latitude as any);
+          const lng = parseFloat(event.event_location.geopoint.longitude as any);
+          if (isNaN(lat) || isNaN(lng)) return null;
+
+          return (
+            <Marker
+              key={`evt-${event.id}`}
+              coordinate={{
+                latitude: lat,
+                longitude: lng
+              }}
+              pinColor="#F59E0B" // Orange for events
+            >
+              <Callout onPress={() => router.push(`/events/${event.id}`)}>
+                <View style={styles.calloutContainer}>
+                  <Text style={[styles.calloutTitle, { color: colors.text }]}>{event.title || 'Event'}</Text>
+                  <Text style={[styles.calloutSub, { color: colors.textMuted }]}>Tap to view event</Text>
+                </View>
+              </Callout>
+            </Marker>
+          );
+        })}
       </MapView>
 
       {/* Floating Legend */}
@@ -173,6 +212,10 @@ export default function MapScreen() {
         <View style={styles.legendRow}>
           <View style={[styles.legendDot, { backgroundColor: colors.tint }]} />
           <Text style={[styles.legendText, { color: colors.text }]}>Businesses</Text>
+        </View>
+        <View style={styles.legendRow}>
+          <View style={[styles.legendDot, { backgroundColor: '#F59E0B' }]} />
+          <Text style={[styles.legendText, { color: colors.text }]}>Events</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -196,7 +239,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 50, // basic safe area for map
+    paddingTop: 16,
     paddingBottom: 16,
     paddingHorizontal: 16,
     zIndex: 10,
