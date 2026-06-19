@@ -6,20 +6,23 @@ import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
-import { User, Business } from '../types';
+import { User, Business, Post } from '../types';
 import { useAppTheme } from '../context/ThemeContext';
+import { useAuth } from '../hooks/use-supabase-auth';
 
 const { width, height } = Dimensions.get('window');
 
 export default function MapScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
+  const { user } = useAuth();
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
   const [users, setUsers] = useState<User[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [events, setEvents] = useState<Post[]>([]);
+  const [friends, setFriends] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,7 +41,7 @@ export default function MapScreen() {
       // 2. Fetch Users & Businesses with Location Data
       await fetchMapData();
     })();
-  }, []);
+  }, [user]);
 
   const fetchMapData = async () => {
     try {
@@ -73,6 +76,22 @@ export default function MapScreen() {
 
       if (!eventError && eventData) {
         setEvents(eventData as Post[]);
+      }
+
+      // Fetch Friends
+      if (user) {
+        const { data: me } = await supabase.from('users').select('friends').eq('id', user.id).single();
+        const friendIds = me?.friends || [];
+        if (friendIds.length > 0) {
+          const { data: friendsData } = await supabase
+            .from('users')
+            .select('*')
+            .in('id', friendIds)
+            .not('currentLocation', 'is', null);
+          if (friendsData) {
+            setFriends(friendsData as User[]);
+          }
+        }
       }
 
     } catch (e) {
@@ -124,24 +143,52 @@ export default function MapScreen() {
         showsMyLocationButton={true}
       >
         {/* Render Users */}
-        {users.map(user => {
-          if (!user.currentLocation) return null;
-          const lat = parseFloat(user.currentLocation.lat as any);
-          const lng = parseFloat(user.currentLocation.lng as any);
+        {users.map(u => {
+          // Skip if user is in friends list (they will be rendered as friends)
+          if (friends.some(f => f.id === u.id)) return null;
+          if (!u.currentLocation) return null;
+          const lat = parseFloat(u.currentLocation.lat as any);
+          const lng = parseFloat(u.currentLocation.lng as any);
           if (isNaN(lat) || isNaN(lng)) return null;
 
           return (
             <Marker
-              key={`user-${user.id}`}
+              key={`user-${u.id}`}
               coordinate={{
                 latitude: lat,
                 longitude: lng
               }}
               pinColor="#0ea5e9" // Blue for users
             >
-              <Callout onPress={() => router.push(`/profile/${user.id}`)}>
+              <Callout onPress={() => router.push(`/profile/${u.id}`)}>
                 <View style={styles.calloutContainer}>
-                  <Text style={[styles.calloutTitle, { color: colors.text }]}>{user.name}</Text>
+                  <Text style={[styles.calloutTitle, { color: colors.text }]}>{u.name}</Text>
+                  <Text style={[styles.calloutSub, { color: colors.textMuted }]}>Tap to view profile</Text>
+                </View>
+              </Callout>
+            </Marker>
+          );
+        })}
+
+        {/* Render Friends */}
+        {friends.map(friend => {
+          if (!friend.currentLocation) return null;
+          const lat = parseFloat(friend.currentLocation.lat as any);
+          const lng = parseFloat(friend.currentLocation.lng as any);
+          if (isNaN(lat) || isNaN(lng)) return null;
+
+          return (
+            <Marker
+              key={`friend-${friend.id}`}
+              coordinate={{
+                latitude: lat,
+                longitude: lng
+              }}
+              pinColor="#8B5CF6" // Purple for friends
+            >
+              <Callout onPress={() => router.push(`/profile/${friend.id}`)}>
+                <View style={styles.calloutContainer}>
+                  <Text style={[styles.calloutTitle, { color: colors.text }]}>{friend.name} (Friend)</Text>
                   <Text style={[styles.calloutSub, { color: colors.textMuted }]}>Tap to view profile</Text>
                 </View>
               </Callout>
@@ -211,6 +258,10 @@ export default function MapScreen() {
         <View style={styles.legendRow}>
           <View style={[styles.legendDot, { backgroundColor: '#0ea5e9' }]} />
           <Text style={[styles.legendText, { color: colors.text }]}>Users</Text>
+        </View>
+        <View style={styles.legendRow}>
+          <View style={[styles.legendDot, { backgroundColor: '#8B5CF6' }]} />
+          <Text style={[styles.legendText, { color: colors.text }]}>Friends</Text>
         </View>
         <View style={styles.legendRow}>
           <View style={[styles.legendDot, { backgroundColor: colors.tint }]} />
