@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
 import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 
 export default function HomeTab() {
@@ -118,7 +118,7 @@ export default function HomeTab() {
           <Text style={[styles.headerTitle, { color: colors.tint }]}>YRDLY</Text>
           <View style={styles.headerRight}>
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-              <Feather name="map-pin" size={24} color={colors.text} />
+              <Ionicons name="map-outline" size={24} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications')}>
               <Feather name="bell" size={24} color={colors.text} />

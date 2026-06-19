@@ -4,7 +4,7 @@ import {
   ActivityIndicator, ScrollView, Modal, FlatList,
   TextInput, SafeAreaView,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import {
   detectLocation,
   getAllStates,
@@ -107,7 +107,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
           </>
         ) : (
           <>
-            <Feather name="map-pin" size={18} color={colors.tint} style={{ marginRight: 8 }} />
+            <Ionicons name="location-outline" size={18} color={colors.tint} style={{ marginRight: 8 }} />
             <Text style={[styles.gpsBtnText, { color: colors.tint }]}>Auto-detect my location</Text>
           </>
         )}

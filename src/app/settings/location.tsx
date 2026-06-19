@@ -4,7 +4,7 @@ import {
   TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { LocationPicker, LocationValue } from '../../components/LocationPicker';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -71,7 +71,7 @@ export default function LocationSettingsScreen() {
         {location.state ? (
           <View style={[styles.currentCard, { backgroundColor: colors.card }]}>
             <View style={[styles.currentIcon, { backgroundColor: colors.tint + '22' }]}>
-              <Feather name="map-pin" size={22} color={colors.tint} />
+              <Ionicons name="location-outline" size={22} color={colors.tint} />
             </View>
             <View>
               <Text style={[styles.currentLabel, { color: colors.textMuted }]}>Current Location</Text>

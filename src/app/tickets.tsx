@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay } from 'react-native-reanimated';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
 import { supabase } from '../lib/supabase';
@@ -128,7 +128,7 @@ export default function TicketsScreen() {
           </View>
           {!!((event as any)?.location || (event as any)?.metadata?.location) && (
             <View style={styles.ticketMeta}>
-              <Feather name="map-pin" size={14} color={colors.textSecondary} style={{ marginTop: 2 }} />
+              <Ionicons name="location-outline" size={14} color={colors.textSecondary} style={{ marginTop: 2 }} />
               <Text style={[styles.eventLocation, { color: colors.textSecondary }]} numberOfLines={1}>
                 {(() => {
                   const loc = (event as any)?.metadata?.location || (event as any)?.location;
