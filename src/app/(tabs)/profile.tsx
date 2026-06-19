@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
@@ -91,7 +91,7 @@ export default function ProfileTab() {
             style={styles.ticketsButton} 
             onPress={() => router.push('/tickets')}
           >
-            <Feather name="tag" size={20} color={colors.tint} />
+            <Ionicons name="ticket-outline" size={24} color={colors.tint} />
           </TouchableOpacity>
         </View>
       </View>
