@@ -69,7 +69,6 @@ export default function MapScreen() {
         .from('posts')
         .select('*')
         .eq('category', 'Event')
-        .not('event_location', 'is', null)
         .limit(50);
 
       if (!eventError && eventData) {
@@ -152,9 +151,11 @@ export default function MapScreen() {
 
         {/* Render Businesses */}
         {businesses.map(biz => {
-          if (!biz.location?.geopoint) return null;
-          const lat = parseFloat(biz.location.geopoint.latitude as any);
-          const lng = parseFloat(biz.location.geopoint.longitude as any);
+          const loc = biz.location as any;
+          if (!loc) return null;
+          
+          const lat = parseFloat(loc.lat || loc.geopoint?.latitude);
+          const lng = parseFloat(loc.lng || loc.geopoint?.longitude);
           if (isNaN(lat) || isNaN(lng)) return null;
 
           return (
@@ -178,9 +179,11 @@ export default function MapScreen() {
 
         {/* Render Events */}
         {events.map(event => {
-          if (!event.event_location?.geopoint) return null;
-          const lat = parseFloat(event.event_location.geopoint.latitude as any);
-          const lng = parseFloat(event.event_location.geopoint.longitude as any);
+          const loc = (event.event_location as any) || (event as any).location;
+          if (!loc) return null;
+          
+          const lat = parseFloat(loc.lat || loc.geopoint?.latitude);
+          const lng = parseFloat(loc.lng || loc.geopoint?.longitude);
           if (isNaN(lat) || isNaN(lng)) return null;
 
           return (
