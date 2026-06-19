@@ -22,6 +22,24 @@ interface Ticket {
   event?: Post;
 }
 
+const getTicketStatusInfo = (ticket: Ticket) => {
+  const isActiveOrConfirmed = ticket.status === 'active' || ticket.status === 'confirmed';
+  
+  if (!isActiveOrConfirmed) {
+    return { isExpired: false, isValid: false, text: ticket.status.toUpperCase() };
+  }
+
+  const eventDate = ticket.event?.event_date ? new Date(ticket.event.event_date) : null;
+  // Give a 24-hour buffer after the event date before expiring the ticket
+  const isExpired = eventDate ? (new Date().getTime() - eventDate.getTime() > 24 * 60 * 60 * 1000) : false;
+
+  if (isExpired) {
+    return { isExpired: true, isValid: false, text: 'EXPIRED' };
+  }
+
+  return { isExpired: false, isValid: true, text: ticket.status === 'confirmed' ? 'CONFIRMED' : 'ACTIVE' };
+};
+
 export default function TicketsScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
@@ -121,11 +139,17 @@ export default function TicketsScreen() {
               </Text>
             </View>
           )}
-          <View style={[styles.statusBadge, (item.status === 'active' && (!event?.event_date || new Date(event.event_date) >= new Date())) ? styles.activeBadge : [styles.usedBadge, { backgroundColor: colors.inputBackground }]]}>
-            <Text style={[styles.statusBadgeText, { color: (item.status === 'active' && event?.event_date && new Date(event.event_date) < new Date()) ? '#FFA000' : colors.tint }]}>
-              {(item.status === 'active' && event?.event_date && new Date(event.event_date) < new Date()) ? 'EXPIRED' : item.status.toUpperCase()}
-            </Text>
-          </View>
+          
+          {(() => {
+            const statusInfo = getTicketStatusInfo(item);
+            return (
+              <View style={[styles.statusBadge, statusInfo.isValid ? styles.activeBadge : [styles.usedBadge, { backgroundColor: colors.inputBackground }]]}>
+                <Text style={[styles.statusBadgeText, { color: statusInfo.isExpired ? '#FFA000' : colors.tint }]}>
+                  {statusInfo.text}
+                </Text>
+              </View>
+            );
+          })()}
         </View>
 
         {/* Tear line */}
@@ -234,10 +258,10 @@ export default function TicketsScreen() {
 
               <View style={[
                 styles.modalStatusBadge,
-                (selectedTicket.status === 'active' && (!selectedTicket.event?.event_date || new Date(selectedTicket.event.event_date) >= new Date())) ? styles.activeBadge : [styles.usedBadge, { backgroundColor: colors.inputBackground }]
+                getTicketStatusInfo(selectedTicket).isValid ? styles.activeBadge : [styles.usedBadge, { backgroundColor: colors.inputBackground }]
               ]}>
-                <Text style={[styles.modalStatusText, { color: (selectedTicket.status === 'active' && selectedTicket.event?.event_date && new Date(selectedTicket.event.event_date) < new Date()) ? '#FFA000' : colors.tint }]}>
-                  {(selectedTicket.status === 'active' && selectedTicket.event?.event_date && new Date(selectedTicket.event.event_date) < new Date()) ? 'EXPIRED' : (selectedTicket.status === 'active' ? '✓ Valid Ticket' : selectedTicket.status.toUpperCase())}
+                <Text style={[styles.modalStatusText, { color: getTicketStatusInfo(selectedTicket).isExpired ? '#FFA000' : colors.tint }]}>
+                  {getTicketStatusInfo(selectedTicket).isValid ? '✓ Valid Ticket' : getTicketStatusInfo(selectedTicket).text}
                 </Text>
               </View>
 
