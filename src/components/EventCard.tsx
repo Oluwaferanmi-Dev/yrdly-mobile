@@ -85,6 +85,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
           </Text>
           
           <TouchableOpacity 
+            onPress={onPress}
             style={[
               styles.actionButton, 
               isOwner ? [styles.editButton, { borderColor: colors.tint }] : { backgroundColor: colors.tint }

@@ -14,7 +14,6 @@ import { useAppTheme } from '../../../context/ThemeContext';
 interface Ticket {
   id: string;
   status: string;
-  checked_in_at: string | null;
   buyer: { id: string; name: string; avatar_url: string | null } | null;
   ticket_type: string | null;
 }
@@ -60,7 +59,7 @@ export default function ManageEventScreen() {
       // Fetch tickets
       const { data: tix, error: tixErr } = await supabase
         .from('my_tickets')
-        .select('id, status, checked_in_at, ticket_type, buyer:users!my_tickets_user_id_fkey(id, name, avatar_url)')
+        .select('id, status, ticket_type, buyer:users!my_tickets_user_id_fkey(id, name, avatar_url)')
         .eq('event_id', id)
         .order('created_at', { ascending: false });
       if (tixErr) throw tixErr;
@@ -82,7 +81,7 @@ export default function ManageEventScreen() {
   const onRefresh = () => { setRefreshing(true); fetchData(); };
 
   const totalSold = tickets.length;
-  const checkedIn = tickets.filter(t => t.status === 'checked_in' || !!t.checked_in_at).length;
+  const checkedIn = tickets.filter(t => t.status === 'checked_in').length;
   const revenue = tickets.length * (event?.price || 0);
 
   const handleCancelEvent = () => {
