@@ -15,7 +15,6 @@ interface Ticket {
   id: string;
   status: string;
   buyer: { id: string; name: string; avatar_url: string | null } | null;
-  ticket_type: string | null;
 }
 
 interface EventDetail {
@@ -59,7 +58,7 @@ export default function ManageEventScreen() {
       // Fetch tickets
       const { data: tix, error: tixErr } = await supabase
         .from('my_tickets')
-        .select('id, status, ticket_type, buyer:users!my_tickets_user_id_fkey(id, name, avatar_url)')
+        .select('id, status, buyer:users!my_tickets_user_id_fkey(id, name, avatar_url)')
         .eq('event_id', id)
         .order('created_at', { ascending: false });
       if (tixErr) throw tixErr;
@@ -125,7 +124,7 @@ export default function ManageEventScreen() {
     : 'Date TBD';
 
   const renderTicket = ({ item }: { item: Ticket }) => {
-    const isCheckedIn = item.status === 'checked_in' || !!item.checked_in_at;
+    const isCheckedIn = item.status === 'checked_in';
     return (
       <View style={[styles.ticketRow, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         {item.buyer?.avatar_url
@@ -136,7 +135,7 @@ export default function ManageEventScreen() {
         }
         <View style={styles.ticketInfo}>
           <Text style={[styles.ticketName, { color: colors.text }]}>{item.buyer?.name ?? 'Attendee'}</Text>
-          <Text style={[styles.ticketType, { color: colors.textMuted }]}>{item.ticket_type || 'General Admission'}</Text>
+          <Text style={[styles.ticketType, { color: colors.textMuted }]}>General Admission</Text>
         </View>
         <View style={[styles.statusBadge, isCheckedIn ? styles.checkedInBadge : [styles.activeBadge, { backgroundColor: colors.borderLight }]]}>
           <Feather name={isCheckedIn ? 'check-circle' : 'tag'} size={12} color={isCheckedIn ? '#2E7D32' : colors.textMuted} />

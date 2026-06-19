@@ -64,7 +64,6 @@ export default function EventDetailScreen() {
         user_id: user.id,
         event_id: event.id,
         status: 'active',
-        ticket_type: 'General Admission (Free)',
       });
 
       if (error) {
