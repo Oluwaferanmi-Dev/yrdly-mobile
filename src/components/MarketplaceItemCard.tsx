@@ -24,7 +24,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
   const isOwner = user?.id === item.user_id;
 
   const getInitials = (name?: string) => name ? name.charAt(0).toUpperCase() : 'U';
-  const imageUrl = item.image_urls?.[0] || item.image_url;
+  const imageUrl = item.image_urls?.[0] || item.image_url || item.video_thumbnail_url;
 
   return (
     <TouchableOpacity 

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ActivityIndicator,
+  View, Text, StyleSheet, ActivityIndicator,
   TouchableOpacity, Alert, ScrollView,
 } from 'react-native';
 import { WebView } from 'react-native-webview';

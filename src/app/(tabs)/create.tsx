@@ -55,20 +55,25 @@ export default function CreateTab() {
       return;
     }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      selectionLimit: 5 - images.length,
-      quality: 0.8,
-    });
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images', 'videos'],
+        allowsMultipleSelection: true,
+        selectionLimit: 5 - images.length,
+        quality: 0.8,
+      });
 
-    if (!result.canceled) {
-      const newImages = result.assets.map(asset => ({
-        uri: asset.uri,
-        width: asset.width,
-        height: asset.height,
-      }));
-      setImages(prev => [...prev, ...newImages].slice(0, 5));
+      if (!result.canceled) {
+        const newImages = result.assets.map(asset => ({
+          uri: asset.uri,
+          width: asset.width,
+          height: asset.height,
+        }));
+        setImages(prev => [...prev, ...newImages].slice(0, 5));
+      }
+    } catch (e) {
+      console.log("ImagePicker error:", e);
+      Alert.alert('Error', 'Could not access the selected photo/video. Please try another one.');
     }
   };
 
@@ -76,30 +81,35 @@ export default function CreateTab() {
     setImages(prev => prev.filter((_, i) => i !== indexToRemove));
   };
 
-  // ── Upload image to Supabase Storage ─────────────────────────────
-  const uploadImage = async (uri: string): Promise<string | null> => {
+  // ── Upload media to Supabase Storage ─────────────────────────────
+  const uploadMedia = async (uri: string): Promise<{ url: string | null; type: 'image' | 'video' }> => {
     try {
       // Read the file as base64 and decode to ArrayBuffer
       const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
       const arrayBuffer = decode(base64);
 
-      // Build a unique file path: posts/<user_id>/<timestamp>.jpg
       const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
+      const isVideo = ext === 'mp4' || ext === 'mov' || ext === 'quicktime';
+      const bucketName = isVideo ? 'post-videos' : 'post-images';
       const filePath = `posts/${user!.id}/${Date.now()}.${ext}`;
-      const mimeExt = ext === 'jpg' ? 'jpeg' : ext;
+
+      let contentType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+      if (isVideo) {
+        contentType = ext === 'quicktime' || ext === 'mov' ? 'video/quicktime' : 'video/mp4';
+      }
 
       const { error: uploadError } = await supabase.storage
-        .from('post-images')
-        .upload(filePath, arrayBuffer, { contentType: `image/${mimeExt}`, upsert: false });
+        .from(bucketName)
+        .upload(filePath, arrayBuffer, { contentType, upsert: false });
 
       if (uploadError) throw uploadError;
 
       // Get the public URL
-      const { data } = supabase.storage.from('post-images').getPublicUrl(filePath);
-      return data.publicUrl;
+      const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+      return { url: data.publicUrl, type: isVideo ? 'video' : 'image' };
     } catch (e) {
-      console.error('Image upload error:', e);
-      return null;
+      console.error('Media upload error:', e);
+      return { url: null, type: 'image' };
     }
   };
 
@@ -116,17 +126,20 @@ export default function CreateTab() {
 
     setIsSubmitting(true);
     try {
-      // 1. Upload images (if any) and collect public URLs
-      let uploadedUrls: string[] = [];
+      // 1. Upload media (if any) and collect public URLs
+      let uploadedImageUrls: string[] = [];
+      let videoUrl: string | null = null;
+
       if (images.length > 0) {
         for (const img of images) {
-          const url = await uploadImage(img.uri);
+          const { url, type } = await uploadMedia(img.uri);
           if (url) {
-            uploadedUrls.push(url);
+            if (type === 'video') videoUrl = url;
+            else uploadedImageUrls.push(url);
           }
         }
-        if (uploadedUrls.length === 0) {
-          Alert.alert('Upload Failed', 'Could not upload your images. Please try again.');
+        if (uploadedImageUrls.length === 0 && !videoUrl) {
+          Alert.alert('Upload Failed', 'Could not upload your media. Please try again.');
           setIsSubmitting(false);
           return;
         }
@@ -140,10 +153,14 @@ export default function CreateTab() {
         text: text.trim() || '',
         title: title.trim() || '',
         category,
-        image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : null,
-        image_urls: uploadedUrls,
+        image_url: uploadedImageUrls.length > 0 ? uploadedImageUrls[0] : null,
+        image_urls: uploadedImageUrls,
         image_width: images.length > 0 ? images[0].width : null,
         image_height: images.length > 0 ? images[0].height : null,
+        video_url: videoUrl,
+        state: profile?.location?.state || null,
+        lga: profile?.location?.lga || null,
+        ward: profile?.location?.ward || null,
         timestamp: new Date().toISOString(),
         liked_by: [],
         comment_count: 0,

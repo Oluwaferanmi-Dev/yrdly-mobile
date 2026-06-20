@@ -86,6 +86,8 @@ export interface Post {
   description?: string;
   image_url?: string;
   image_urls?: string[];
+  image_width?: number | null;
+  image_height?: number | null;
   video_url?: string | null;
   video_thumbnail_url?: string | null;
   timestamp: string;

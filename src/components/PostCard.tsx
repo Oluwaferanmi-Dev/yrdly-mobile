@@ -4,6 +4,7 @@ import * as Haptics from 'expo-haptics';
 import ImageViewing from 'react-native-image-viewing';
 import Animated, { useSharedValue, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Image } from 'expo-image';
+import { Video, ResizeMode } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Post } from '../types';
@@ -37,6 +38,7 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
@@ -46,7 +48,7 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
 
   const lastTapRef = useRef(0);
-  const singleTapTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const singleTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const heartScale = useSharedValue(0);
   const heartOpacity = useSharedValue(0);
@@ -189,17 +191,17 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
           }}
         >
           <View style={[styles.avatar, { backgroundColor: colors.inputBackground }]}>
-            {post.author_image ? (
-              <Image source={{ uri: post.author_image }} style={styles.avatarImage} />
+            {post.user?.avatar_url || post.author_image ? (
+              <Image source={{ uri: post.user?.avatar_url || post.author_image }} style={styles.avatarImage} />
             ) : (
               <Text style={[styles.avatarText, { color: colors.tint }]}>
-                {getInitials(post.author_name)}
+                {getInitials(post.user?.name || post.author_name)}
               </Text>
             )}
           </View>
           <View style={styles.authorText}>
             <Text style={[styles.authorName, { color: colors.text }]}>
-              {post.author_name || 'Anonymous'}
+              {post.user?.name || post.author_name || 'Anonymous'}
             </Text>
             {(post.ward || post.user?.location?.ward) || (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state) ? (
               <Text style={[styles.timeAgo, { color: colors.textMuted }]}>
@@ -231,6 +233,31 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
           </Text>
         )}
       </View>
+
+      {/* Video */}
+      {post.video_url && (
+        <View style={[styles.imageContainer, { width: imageDisplayWidth, height: imageDisplayWidth, backgroundColor: '#000' }]}>
+          <Video
+            source={{ uri: post.video_url }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode={ResizeMode.COVER}
+            useNativeControls
+            shouldPlay
+            isMuted={isVideoMuted}
+            isLooping
+            posterSource={post.video_thumbnail_url ? { uri: post.video_thumbnail_url } : undefined}
+            usePoster={!!post.video_thumbnail_url}
+            posterStyle={{ resizeMode: 'cover' }}
+            onPlaybackStatusUpdate={(status) => {
+              if (status.isLoaded && status.isMuted !== undefined) {
+                if (status.isMuted !== isVideoMuted) {
+                  setIsVideoMuted(status.isMuted);
+                }
+              }
+            }}
+          />
+        </View>
+      )}
 
       {/* Images */}
       {urls.length > 0 && (
@@ -471,15 +498,5 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingRight: 8,
   },
-  actionText: {
-    fontSize: 13,
-    marginLeft: 4,
-    fontWeight: '500',
-  },
-  dot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    marginHorizontal: 10,
-  },
+
 });

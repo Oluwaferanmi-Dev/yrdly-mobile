@@ -154,7 +154,7 @@ export class CatalogService {
           // Get item images to delete from storage
           const { data: item } = await supabase
             .from('catalog_items')
-            .select('image')
+            .select('images')
             .eq('id', itemId)
             .eq('business_id', businessId)
             .single();

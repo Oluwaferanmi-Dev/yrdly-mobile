@@ -158,7 +158,7 @@ export default function MapScreen() {
                 latitude: lat,
                 longitude: lng
               }}
-              pinColor="#0ea5e9" // Blue for users
+              pinColor="blue" // Blue for users
             >
               <Callout onPress={() => router.push(`/profile/${u.id}`)}>
                 <View style={styles.calloutContainer}>
@@ -184,7 +184,7 @@ export default function MapScreen() {
                 latitude: lat,
                 longitude: lng
               }}
-              pinColor="#8B5CF6" // Purple for friends
+              pinColor="violet" // Purple for friends
             >
               <Callout onPress={() => router.push(`/profile/${friend.id}`)}>
                 <View style={styles.calloutContainer}>
@@ -212,7 +212,7 @@ export default function MapScreen() {
                 latitude: lat,
                 longitude: lng
               }}
-              pinColor={colors.tint} // Green for businesses
+              pinColor="green" // Green for businesses
             >
               <Callout>
                 <View style={styles.calloutContainer}>
@@ -240,7 +240,7 @@ export default function MapScreen() {
                 latitude: lat,
                 longitude: lng
               }}
-              pinColor="#F59E0B" // Orange for events
+              pinColor="orange" // Orange for events
             >
               <Callout onPress={() => router.push(`/events/${event.id}`)}>
                 <View style={styles.calloutContainer}>

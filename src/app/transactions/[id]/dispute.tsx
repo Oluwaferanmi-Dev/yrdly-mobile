@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, Alert, TextInput, ActivityIndicator,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput, ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -41,15 +40,20 @@ export default function DisputeScreen() {
       Alert.alert('Permission Required', 'Please allow photo access to attach evidence.');
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.7,
-      selectionLimit: 5 - photos.length,
-    });
-    if (!result.canceled) {
-      const uris = result.assets.map(a => a.uri);
-      uploadPhotos(uris);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        quality: 0.7,
+        selectionLimit: 5 - photos.length,
+      });
+      if (!result.canceled) {
+        const uris = result.assets.map(a => a.uri);
+        uploadPhotos(uris);
+      }
+    } catch (e) {
+      console.log("ImagePicker error:", e);
+      Alert.alert('Error', 'Could not access the selected photo. Please try another one.');
     }
   };
 

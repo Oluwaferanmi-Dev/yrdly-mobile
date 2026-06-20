@@ -159,13 +159,18 @@ export default function ChatScreen() {
 
   const pickMedia = async () => {
     if (sending || uploadingMedia) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      uploadAndSendMedia(result.assets[0]);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images', 'videos'],
+        allowsEditing: true,
+        quality: 0.8,
+      });
+      if (!result.canceled) {
+        uploadAndSendMedia(result.assets[0]);
+      }
+    } catch (e) {
+      console.log("ImagePicker error:", e);
+      // Let the user know without crashing
     }
   };
 
@@ -321,7 +326,8 @@ export default function ChatScreen() {
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         {/* Messages */}
         {loading ? (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, SafeAreaView, ActivityIndicator,
+  View, Text, StyleSheet, FlatList, ActivityIndicator,
   TouchableOpacity, RefreshControl, Modal,
 } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay } from 'react-native-reanimated';

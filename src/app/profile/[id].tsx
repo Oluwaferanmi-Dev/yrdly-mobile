@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, SafeAreaView, ActivityIndicator, Alert,
+  TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { Post } from '../../types';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useWindowDimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 
 interface UserProfile {

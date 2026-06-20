@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, ActivityIndicator, Alert, RefreshControl, FlatList,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, RefreshControl, FlatList,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -24,6 +23,7 @@ interface EventDetail {
   image_url: string | null;
   image_urls: string[] | null;
   price: number | null;
+  event_date: string | null;
 }
 
 export default function ManageEventScreen() {

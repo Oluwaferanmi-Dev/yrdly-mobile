@@ -108,7 +108,7 @@ export class NotificationService {
       
       // Fallback to direct insert if RPC function doesn't exist
       const { data, error } = await supabase
-        .from('bell')
+        .from('notifications')
         .insert({
           user_id: params.userId,
           type: params.type,

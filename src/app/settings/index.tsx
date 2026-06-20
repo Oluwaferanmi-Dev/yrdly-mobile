@@ -38,15 +38,20 @@ export default function SettingsScreen() {
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.6,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.6,
+      });
 
-    if (!result.canceled && result.assets[0].uri) {
-      uploadAvatar(result.assets[0].uri);
+      if (!result.canceled && result.assets[0].uri) {
+        uploadAvatar(result.assets[0].uri);
+      }
+    } catch (e) {
+      console.log("ImagePicker error:", e);
+      Alert.alert('Error', 'Could not access the selected photo. Please try another one.');
     }
   };
 
