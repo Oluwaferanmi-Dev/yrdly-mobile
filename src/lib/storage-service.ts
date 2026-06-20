@@ -43,6 +43,8 @@ export class StorageService {
         return 'video/quicktime';
       case 'webm':
         return 'video/webm';
+      case 'avif':
+        return 'image/avif';
       default:
         return 'image/jpeg';
     }
