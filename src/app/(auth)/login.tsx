@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Dimensions } from 'react-native';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { Feather } from '@expo/vector-icons';
+import { Feather, AntDesign } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -171,7 +171,7 @@ export default function Login() {
           onPress={handleGoogleSignIn}
           disabled={loading}
         >
-          <Feather name="globe" size={18} color="#EA4335" style={{ marginRight: 8 }} />
+          <AntDesign name="google" size={18} color="#EA4335" style={{ marginRight: 8 }} />
           <Text style={[styles.googleButtonText, { color: colors.text }]}>Continue with Google</Text>
         </TouchableOpacity>
 
