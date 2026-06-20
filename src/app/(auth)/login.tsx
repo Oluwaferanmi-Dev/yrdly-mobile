@@ -81,21 +81,7 @@ export default function Login() {
           <Image source={require('../../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
         </View>
 
-        {/* Segmented Control */}
-        <View style={[styles.segmentedControl, { borderColor: colors.tint }]}>
-          <TouchableOpacity 
-            style={[styles.segmentButton, !isSignUp && [styles.segmentButtonActive, { backgroundColor: colors.tint }]]} 
-            onPress={() => setIsSignUp(false)}
-          >
-            <Text style={[styles.segmentText, { color: colors.textMuted }, !isSignUp && [styles.segmentTextActive, { color: colors.card }]]}>Sign in</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.segmentButton, isSignUp && [styles.segmentButtonActive, { backgroundColor: colors.tint }]]} 
-            onPress={() => setIsSignUp(true)}
-          >
-            <Text style={[styles.segmentText, { color: colors.textMuted }, isSignUp && [styles.segmentTextActive, { color: colors.card }]]}>Sign up</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Removed Segmented Control */}
 
         {error ? (
           <View style={styles.errorBox}>
@@ -245,28 +231,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 16,
-  },
-  segmentedControl: {
-    flexDirection: 'row',
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1,
-    padding: 4,
-    marginBottom: 24,
-  },
-  segmentButton: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 22,
-  },
-  segmentButtonActive: {
-  },
-  segmentText: {
-    fontSize: 14,
-  },
-  segmentTextActive: {
-    fontWeight: '600',
   },
   errorBox: {
     flexDirection: 'row',
