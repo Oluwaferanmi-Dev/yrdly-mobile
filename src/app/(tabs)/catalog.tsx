@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { Feather } from '@expo/vector-icons';
 import { MarketplaceGrid } from '../../components/MarketplaceGrid';
 import { EventList } from '../../components/EventList';
@@ -36,9 +34,8 @@ export default function CatalogTab() {
         );
     }
   };
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Search Header */}
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground }]}>
@@ -131,7 +128,7 @@ export default function CatalogTab() {
           </TouchableOpacity>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
