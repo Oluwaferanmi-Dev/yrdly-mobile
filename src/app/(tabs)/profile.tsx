@@ -10,15 +10,21 @@ import { PostSkeleton } from '../../components/Skeleton';
 import { Post } from '../../types';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useWindowDimensions } from 'react-native';
+import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 
 export default function ProfileTab() {
-  const { user, profile, signOut, loading: authLoading } = useAuth();
+  const { user, profile } = useAuth();
   const router = useRouter();
   const { colors } = useAppTheme();
+  const { width: windowWidth } = useWindowDimensions();
+  const GRID_ITEM_WIDTH = windowWidth / 3;
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   const fetchUserPosts = useCallback(async () => {
     if (!user) return;
@@ -31,8 +37,16 @@ export default function ProfileTab() {
 
       if (error) throw error;
       setPosts(data as Post[]);
+
+      // Fetch dynamic follower/following counts
+      const [{ count: fers }, { count: fing }] = await Promise.all([
+        supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', user.id),
+        supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', user.id)
+      ]);
+      setFollowersCount(fers || 0);
+      setFollowingCount(fing || 0);
     } catch (error) {
-      console.error('Error fetching user posts:', error);
+      console.error('Error fetching user data:', error);
     } finally {
       setLoadingPosts(false);
       setRefreshing(false);
@@ -71,6 +85,21 @@ export default function ProfileTab() {
           <Text style={[styles.bio, { color: colors.text }]}>{profile.bio}</Text>
         ) : null}
 
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: colors.text }]}>{posts.length}</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Posts</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: colors.text }]}>{followersCount}</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Followers</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: colors.text }]}>{followingCount}</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Following</Text>
+          </View>
+        </View>
+
         <View style={styles.actionRow}>
           <TouchableOpacity 
             style={[styles.communityButton, { backgroundColor: colors.tint }]} 
@@ -81,13 +110,6 @@ export default function ProfileTab() {
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.settingsButton, { backgroundColor: colors.borderLight }]} 
-            onPress={() => router.push('/settings')}
-          >
-            <Feather name="settings" size={20} color={colors.text} />
-          </TouchableOpacity>
-
-          <TouchableOpacity 
             style={styles.ticketsButton} 
             onPress={() => router.push('/tickets')}
           >
@@ -97,7 +119,6 @@ export default function ProfileTab() {
       </View>
 
       <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>My Posts</Text>
     </View>
   );
 
@@ -106,11 +127,12 @@ export default function ProfileTab() {
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
+        numColumns={3}
         renderItem={({ item }) => (
-          <PostCard 
+          <ProfilePostGridItem 
             post={item} 
+            width={GRID_ITEM_WIDTH}
             onPress={() => router.push(`/posts/${item.id}`)}
-            onComment={() => router.push(`/posts/${item.id}`)}
           />
         )}
         ListHeaderComponent={ListHeader}
@@ -130,21 +152,6 @@ export default function ProfileTab() {
             </View>
           )
         }
-        ListFooterComponent={
-          <View style={styles.footerContainer}>
-            <TouchableOpacity 
-              style={[styles.logoutButton, { backgroundColor: colors.card }]} 
-              onPress={() => signOut()}
-              disabled={authLoading}
-            >
-              {authLoading ? (
-                <ActivityIndicator color="#ef4444" />
-              ) : (
-                <Text style={styles.logoutText}>Sign Out</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        }
       />
     </View>
   );
@@ -163,29 +170,21 @@ const styles = StyleSheet.create({
   avatarText: { fontSize: 36, fontWeight: 'bold' },
   name: { fontSize: 24, fontWeight: 'bold', marginBottom: 4 },
   email: { fontSize: 16, marginBottom: 12 },
-  bio: { fontSize: 14, textAlign: 'center', marginBottom: 20, paddingHorizontal: 20, lineHeight: 20 },
+  bio: { fontSize: 14, lineHeight: 20, textAlign: 'center', marginBottom: 16, paddingHorizontal: 20 },
+  statsRow: { flexDirection: 'row', justifyContent: 'center', gap: 32, marginBottom: 20 },
+  statItem: { alignItems: 'center' },
+  statValue: { fontSize: 18, fontWeight: 'bold' },
+  statLabel: { fontSize: 12, marginTop: 2 },
   actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 12 },
   communityButton: {
-    flex: 1, flexDirection: 'row', height: 36, borderRadius: 18,
-    justifyContent: 'center', alignItems: 'center', maxWidth: 160,
+    paddingHorizontal: 24, flexDirection: 'row', height: 32, borderRadius: 16,
+    justifyContent: 'center', alignItems: 'center', gap: 6,
   },
-  communityButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600', marginLeft: 8 },
-  settingsButton: {
-    width: 44, height: 44, borderRadius: 22,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  ticketsButton: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: '#E8F5E9',
-    justifyContent: 'center', alignItems: 'center',
-  },
+  communityButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 13 },
+  settingsButton: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  ticketsButton: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', backgroundColor: '#E8F5E9' },
   divider: { height: 8, width: '100%', marginTop: 24 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', paddingHorizontal: 16, paddingTop: 16 },
   emptyContainer: { padding: 40, alignItems: 'center' },
   emptyText: { fontSize: 16 },
-  footerContainer: { padding: 24, marginTop: 20 },
-  logoutButton: {
-    height: 54, borderWidth: 1, borderColor: '#E53935',
-    borderRadius: 8, justifyContent: 'center', alignItems: 'center',
-  },
-  logoutText: { color: '#E53935', fontSize: 16, fontWeight: 'bold' },
 });

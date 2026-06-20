@@ -139,8 +139,14 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
         .eq('id', post.id);
 
       if (error) throw error;
-    } catch (error) {
-      console.error('Error updating like:', error);
+
+      // Trigger notification
+      if (newIsLiked) {
+        const { NotificationTriggers } = await import('../lib/notification-triggers');
+        await NotificationTriggers.onPostLiked(post.id, currentUser.id);
+      }
+    } catch (e) {
+      console.error('Error liking post:', e);
       // Revert optimistic update on failure
       setIsLiked(!newIsLiked);
       setLikesCount(prev => newIsLiked ? prev - 1 : prev + 1);
@@ -195,9 +201,15 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
             <Text style={[styles.authorName, { color: colors.text }]}>
               {post.author_name || 'Anonymous'}
             </Text>
-            <Text style={[styles.timeAgo, { color: colors.textMuted }]}>
-              {timeAgo(post.timestamp || post.created_at)}
-            </Text>
+            {(post.ward || post.user?.location?.ward) || (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state) ? (
+              <Text style={[styles.timeAgo, { color: colors.textMuted }]}>
+                {[post.ward || post.user?.location?.ward, (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state)].filter(Boolean).join(', ')} • {timeAgo(post.timestamp || post.created_at)}
+              </Text>
+            ) : (
+              <Text style={[styles.timeAgo, { color: colors.textMuted }]}>
+                {timeAgo(post.timestamp || post.created_at)}
+              </Text>
+            )}
           </View>
         </TouchableOpacity>
 
@@ -262,9 +274,13 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
         </View>
       )}
 
-      {/* For Sale Price */}
-      {post.category === 'For Sale' && post.price !== undefined && (
-        <Text style={[styles.price, { color: colors.tint }]}>{formatPrice(post.price)}</Text>
+      {/* Price or Ticket Info */}
+      {(post.category === 'For Sale' || post.category === 'Event') && post.price !== undefined && (
+        <Text style={[styles.price, { color: colors.tint }]}>
+          {post.category === 'Event' && (post.price === 0 || !post.price) 
+            ? 'FREE' 
+            : formatPrice(post.price)}
+        </Text>
       )}
 
       {/* Engagement Row */}

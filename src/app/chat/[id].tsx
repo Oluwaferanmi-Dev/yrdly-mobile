@@ -4,7 +4,7 @@ import {
   TouchableOpacity, KeyboardAvoidingView, Platform,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -44,6 +44,7 @@ export default function ChatScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const [meta, setMeta] = useState<ConversationMeta | null>(null);
   const [otherUser, setOtherUser] = useState<{ name: string; avatar_url: string | null } | null>(null);
@@ -140,6 +141,13 @@ export default function ChatScreen() {
         updated_at: new Date().toISOString(),
       }).eq('id', id);
 
+      // Trigger notification
+      const toUserId = meta?.participant_ids?.find((pid: string) => pid !== user.id);
+      if (toUserId) {
+        const { NotificationTriggers } = await import('../../lib/notification-triggers');
+        await NotificationTriggers.onMessageSent(toUserId, user.id, id, body);
+      }
+
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (e) {
       console.error('Send message error:', e);
@@ -199,6 +207,13 @@ export default function ChatScreen() {
         last_message_text: isVideo ? 'Sent a video 📹' : 'Sent an image 📸',
         updated_at: new Date().toISOString(),
       }).eq('id', id);
+
+      // Trigger notification
+      const toUserId = meta?.participant_ids?.find((pid: string) => pid !== user.id);
+      if (toUserId) {
+        const { NotificationTriggers } = await import('../../lib/notification-triggers');
+        await NotificationTriggers.onMessageSent(toUserId, user.id, id, isVideo ? 'Sent a video 📹' : 'Sent an image 📸');
+      }
 
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch(e) {
@@ -260,14 +275,20 @@ export default function ChatScreen() {
     : (otherUser?.name || 'Chat');
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
 
-        <View style={styles.headerCenter}>
+        <TouchableOpacity 
+          style={styles.headerCenter}
+          onPress={() => {
+            const otherId = meta?.participant_ids?.find((pid: string) => pid !== user?.id);
+            if (otherId) router.push(`/profile/${otherId}`);
+          }}
+        >
           {otherUser?.avatar_url ? (
             <Image source={{ uri: otherUser.avatar_url }} style={styles.headerAvatar} contentFit="cover" />
           ) : (
@@ -276,7 +297,7 @@ export default function ChatScreen() {
             </View>
           )}
           <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>{title}</Text>
-        </View>
+        </TouchableOpacity>
 
         <View style={{ width: 40 }} />
       </View>
@@ -298,31 +319,34 @@ export default function ChatScreen() {
         </View>
       )}
 
-      {/* Messages */}
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.tint} />
-        </View>
-      ) : (
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={renderMessage}
-          contentContainerStyle={styles.msgListContent}
-          showsVerticalScrollIndicator={false}
-          onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
-          ListEmptyComponent={
-            <View style={styles.center}>
-              <Text style={[styles.emptyText, { color: colors.textMuted }]}>No messages yet. Say hi! 👋</Text>
-            </View>
-          }
-        />
-      )}
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {/* Messages */}
+        {loading ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={colors.tint} />
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item.id}
+            renderItem={renderMessage}
+            contentContainerStyle={styles.msgListContent}
+            showsVerticalScrollIndicator={false}
+            onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            ListEmptyComponent={
+              <View style={styles.center}>
+                <Text style={[styles.emptyText, { color: colors.textMuted }]}>No messages yet. Say hi! 👋</Text>
+              </View>
+            }
+          />
+        )}
 
-      {/* Input */}
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: colors.card }]}>
+        {/* Input */}
+        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: colors.card, paddingBottom: Math.max(insets.bottom, 10) }]}>
           <TouchableOpacity style={styles.attachBtn} onPress={pickMedia} disabled={uploadingMedia}>
             {uploadingMedia ? (
               <ActivityIndicator size="small" color={colors.tint} />

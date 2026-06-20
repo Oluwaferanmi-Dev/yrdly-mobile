@@ -7,6 +7,8 @@ import { supabase } from '../../lib/supabase';
 import { Post } from '../../types';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useLocation } from '../../context/LocationContext';
+import { LocationChip } from '../../components/LocationChip';
 import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -16,6 +18,7 @@ export default function HomeTab() {
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { activeFilter } = useLocation();
   
   const HEADER_HEIGHT = Platform.OS === 'ios' ? 44 + insets.top : 56 + insets.top;
 
@@ -55,16 +58,28 @@ export default function HomeTab() {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('posts')
-        .select('*')
+        .select('*');
+
+      if (activeFilter?.state) query = query.eq('state', activeFilter.state);
+      if (activeFilter?.lga) query = query.eq('lga', activeFilter.lga);
+      if (activeFilter?.ward) query = query.eq('ward', activeFilter.ward);
+
+      const { data, error } = await query
         .order('timestamp', { ascending: false })
         .limit(30);
 
       if (error) {
         console.error('Error fetching posts:', error);
       } else {
-        setPosts(data as Post[]);
+        const validPosts = (data as Post[]).filter(post => {
+          if (post.category === 'Event' && post.event_date) {
+            return new Date(post.event_date).getTime() >= Date.now();
+          }
+          return true;
+        });
+        setPosts(validPosts);
       }
     } catch (error) {
       console.error('Unexpected error fetching posts:', error);
@@ -76,13 +91,13 @@ export default function HomeTab() {
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [activeFilter]);
 
   const onRefresh = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setRefreshing(true);
     fetchPosts();
-  }, []);
+  }, [activeFilter]);
 
   if (loading && !refreshing) {
     return (
@@ -91,9 +106,14 @@ export default function HomeTab() {
           <BlurView intensity={80} tint={isDarkMode ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
           <View style={[styles.headerContent, { paddingTop: insets.top, borderBottomColor: colors.borderLight }]}>
             <Text style={[styles.headerTitle, { color: colors.tint }]}>YRDLY</Text>
+            
+            <View style={{flex: 1, paddingHorizontal: 12, alignItems: 'flex-start'}}>
+              <LocationChip />
+            </View>
+
             <View style={styles.headerRight}>
               <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-                <Feather name="map-pin" size={24} color={colors.text} />
+                <Ionicons name="location-outline" size={24} color={colors.text} />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => router.push('/notifications')}>
                 <Feather name="bell" size={24} color={colors.text} />
@@ -116,9 +136,14 @@ export default function HomeTab() {
         <BlurView intensity={80} tint={isDarkMode ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
         <View style={[styles.headerContent, { paddingTop: insets.top, borderBottomColor: colors.borderLight }]}>
           <Text style={[styles.headerTitle, { color: colors.tint }]}>YRDLY</Text>
+          
+          <View style={{flex: 1, paddingHorizontal: 12, alignItems: 'flex-start'}}>
+            <LocationChip />
+          </View>
+
           <View style={styles.headerRight}>
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-              <Ionicons name="map-outline" size={24} color={colors.text} />
+              <Ionicons name="location-outline" size={24} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications')}>
               <Feather name="bell" size={24} color={colors.text} />
@@ -135,7 +160,11 @@ export default function HomeTab() {
         renderItem={({ item }) => (
           <PostCard 
             post={item} 
-            onPress={() => router.push(`/posts/${item.id}`)}
+            onPress={() => {
+              if (item.category === 'For Sale') router.push(`/marketplace/${item.id}`);
+              else if (item.category === 'Event') router.push(`/events/${item.id}`);
+              else router.push(`/posts/${item.id}`);
+            }}
             onComment={() => router.push(`/posts/${item.id}`)}
           />
         )}

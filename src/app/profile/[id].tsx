@@ -8,9 +8,10 @@ import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { PostCard } from '../../components/PostCard';
 import { Post } from '../../types';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useWindowDimensions } from 'react-native';
+import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 
 interface UserProfile {
   id: string;
@@ -27,12 +28,15 @@ export default function OtherUserProfileScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user: currentUser } = useAuth();
+  const { width: windowWidth } = useWindowDimensions();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   const fetchProfileAndPosts = useCallback(async () => {
     if (!id) return;
@@ -57,6 +61,14 @@ export default function OtherUserProfileScreen() {
         .order('created_at', { ascending: false });
       
       if (postData) setPosts(postData as Post[]);
+
+      // Dynamically fetch accurate follower counts
+      const [{ count: fers }, { count: fing }] = await Promise.all([
+        supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', id),
+        supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', id)
+      ]);
+      setFollowersCount(fers || 0);
+      setFollowingCount(fing || 0);
     } catch (e) {
       console.error(e);
     } finally {
@@ -77,15 +89,17 @@ export default function OtherUserProfileScreen() {
         await supabase.from('followers').delete()
           .eq('follower_id', currentUser.id)
           .eq('following_id', profile.id);
-        setProfile(p => p ? { ...p, followers_count: Math.max(0, p.followers_count - 1) } : p);
+        setFollowersCount(prev => Math.max(0, prev - 1));
       } else {
         await supabase.from('followers').insert({
           follower_id: currentUser.id,
           following_id: profile.id,
         });
-        setProfile(p => p ? { ...p, followers_count: p.followers_count + 1 } : p);
+        setFollowersCount(prev => prev + 1);
         
-        // Notification logic would go here
+        // Trigger notification
+        const { NotificationTriggers } = await import('../../lib/notification-triggers');
+        await NotificationTriggers.onNewFollower(currentUser.id, profile.id);
       }
       setIsFollowing(!isFollowing);
     } catch (e: any) {
@@ -175,11 +189,11 @@ export default function OtherUserProfileScreen() {
                 <Text style={[styles.statLabel, { color: colors.textMuted }]}>Posts</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>{profile.followers_count || 0}</Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>{followersCount}</Text>
                 <Text style={[styles.statLabel, { color: colors.textMuted }]}>Followers</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>{profile.following_count || 0}</Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>{followingCount}</Text>
                 <Text style={[styles.statLabel, { color: colors.textMuted }]}>Following</Text>
               </View>
             </View>
@@ -213,23 +227,24 @@ export default function OtherUserProfileScreen() {
         </View>
 
         <View style={styles.feedSection}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Posts</Text>
-          {posts.length > 0 ? (
-            posts.map(post => (
-              <PostCard 
-                key={post.id} 
-                post={post} 
-                onPress={() => router.push(`/posts/${post.id}`)}
-                onComment={() => router.push(`/posts/${post.id}`)}
-              />
-            ))
-          ) : (
-            <View style={styles.emptyState}>
-              <Feather name="image" size={40} color={colors.border} />
-              <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No posts yet</Text>
-              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>{profile.name} hasn't posted anything.</Text>
-            </View>
-          )}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: '100%' }}>
+            {posts.length > 0 ? (
+              posts.map(post => (
+                <ProfilePostGridItem 
+                  key={post.id} 
+                  post={post} 
+                  width={windowWidth / 3}
+                  onPress={() => router.push(`/posts/${post.id}`)}
+                />
+              ))
+            ) : (
+              <View style={[styles.emptyState, { width: '100%' }]}>
+                <Feather name="image" size={40} color={colors.border} />
+                <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No posts yet</Text>
+                <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>{profile.name} hasn't posted anything.</Text>
+              </View>
+            )}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

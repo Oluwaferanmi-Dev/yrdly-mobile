@@ -49,6 +49,7 @@ export default function TicketsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
 
   const ticketTranslateY = useSharedValue(200);
 
@@ -90,6 +91,15 @@ export default function TicketsScreen() {
 
   useEffect(() => { fetchTickets(); }, [fetchTickets]);
   const onRefresh = useCallback(() => { setRefreshing(true); fetchTickets(); }, [fetchTickets]);
+
+  const isTicketPast = (t: Ticket) => {
+    const info = getTicketStatusInfo(t);
+    return info.isExpired || t.status === 'used' || t.status === 'cancelled' || t.status === 'refunded';
+  };
+
+  const displayedTickets = tickets.filter(t => 
+    activeTab === 'active' ? !isTicketPast(t) : isTicketPast(t)
+  );
 
   const renderTicket = ({ item }: { item: Ticket }) => {
     const event = item.event;
@@ -174,13 +184,28 @@ export default function TicketsScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>My Tickets</Text>
       </View>
 
+      <View style={[styles.tabRow, { borderBottomColor: colors.borderLight }]}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'active' && { borderBottomColor: colors.tint }]} 
+          onPress={() => setActiveTab('active')}
+        >
+          <Text style={[styles.tabText, { color: activeTab === 'active' ? colors.tint : colors.textMuted }]}>Active</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'past' && { borderBottomColor: colors.tint }]} 
+          onPress={() => setActiveTab('past')}
+        >
+          <Text style={[styles.tabText, { color: activeTab === 'past' ? colors.tint : colors.textMuted }]}>Past / Used</Text>
+        </TouchableOpacity>
+      </View>
+
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.tint} />
         </View>
       ) : (
         <FlatList
-          data={tickets}
+          data={displayedTickets}
           keyExtractor={(item) => item.id}
           renderItem={renderTicket}
           contentContainerStyle={styles.listContent}
@@ -281,9 +306,11 @@ const styles = StyleSheet.create({
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     paddingHorizontal: 20, paddingVertical: 16,
-    borderBottomWidth: 1,
   },
   headerTitle: { fontSize: 22, fontWeight: 'bold' },
+  tabRow: { flexDirection: 'row', borderBottomWidth: 1, paddingHorizontal: 20 },
+  tab: { marginRight: 24, paddingVertical: 12, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  tabText: { fontSize: 15, fontWeight: '600' },
   listContent: { padding: 16, paddingBottom: 100 },
 
   ticketCard: {

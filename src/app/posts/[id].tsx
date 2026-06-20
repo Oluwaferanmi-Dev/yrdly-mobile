@@ -4,6 +4,7 @@ import {
   TouchableOpacity, KeyboardAvoidingView, Platform,
   SafeAreaView, ActivityIndicator, Keyboard,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -33,6 +34,7 @@ export default function PostDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -59,7 +61,7 @@ export default function PostDetailScreen() {
     if (!id) return;
     const { data, error } = await supabase
       .from('comments')
-      .select('*, user:users(name, avatar_url)')
+      .select('*, user:users!comments_user_id_fkey(name, avatar_url)')
       .eq('post_id', id)
       .order('timestamp', { ascending: true });
 
@@ -118,6 +120,10 @@ export default function PostDetailScreen() {
         setPost({ ...post, comment_count: newCount });
       }
 
+      // Trigger notification
+      const { NotificationTriggers } = await import('../../lib/notification-triggers');
+      await NotificationTriggers.onPostCommented(id, user.id, body);
+
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (e) {
       console.error('Post comment error:', e);
@@ -164,7 +170,7 @@ export default function PostDetailScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Feather name="arrow-left" size={24} color={colors.text} />
@@ -173,31 +179,34 @@ export default function PostDetailScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      {loading && !post ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.tint} />
-        </View>
-      ) : (
-        <FlatList
-          ref={flatListRef}
-          data={comments}
-          keyExtractor={(item) => item.id}
-          renderItem={renderComment}
-          ListHeaderComponent={ListHeader}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Feather name="message-square" size={40} color={colors.border} />
-              <Text style={[styles.emptyText, { color: colors.textMuted }]}>No comments yet. Be the first!</Text>
-            </View>
-          }
-        />
-      )}
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {loading && !post ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={colors.tint} />
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={comments}
+            keyExtractor={(item) => item.id}
+            renderItem={renderComment}
+            ListHeaderComponent={ListHeader}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Feather name="message-square" size={40} color={colors.border} />
+                <Text style={[styles.emptyText, { color: colors.textMuted }]}>No comments yet. Be the first!</Text>
+              </View>
+            }
+          />
+        )}
 
-      {/* Input */}
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: colors.card }]}>
+        {/* Input */}
+        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: colors.card, paddingBottom: Math.max(insets.bottom, 10) }]}>
           <TextInput
             style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
             placeholder="Add a comment..."

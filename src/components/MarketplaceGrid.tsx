@@ -7,6 +7,7 @@ import { Post } from '../types';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
+import { useLocation } from '../context/LocationContext';
 
 interface MarketplaceGridProps {
   searchQuery?: string;
@@ -17,6 +18,7 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
   const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
+  const { activeFilter } = useLocation();
   const [items, setItems] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [messagingItem, setMessagingItem] = useState<string | null>(null);
@@ -84,6 +86,10 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
         .eq('category', 'For Sale')
         .eq('is_sold', false);
 
+      if (activeFilter?.state) query = query.eq('state', activeFilter.state);
+      if (activeFilter?.lga) query = query.eq('lga', activeFilter.lga);
+      if (activeFilter?.ward) query = query.eq('ward', activeFilter.ward);
+
       if (searchQuery) {
         // Simple search on title or description
         query = query.or(`title.ilike.%${searchQuery}%,text.ilike.%${searchQuery}%`);
@@ -106,7 +112,7 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, sortOption]);
+  }, [searchQuery, sortOption, activeFilter]);
 
   useEffect(() => {
     fetchItems();

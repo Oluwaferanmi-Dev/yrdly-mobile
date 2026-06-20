@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { Post } from '../types';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../context/ThemeContext';
+import { useLocation } from '../context/LocationContext';
 
 interface EventListProps {
   searchQuery?: string;
@@ -14,6 +15,7 @@ interface EventListProps {
 
 export function EventList({ searchQuery = '', sortOption = 'newest' }: EventListProps) {
   const { colors } = useAppTheme();
+  const { activeFilter } = useLocation();
   const router = useRouter();
   const [events, setEvents] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +27,10 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         .from('posts')
         .select('*')
         .eq('category', 'Event');
+
+      if (activeFilter?.state) query = query.eq('state', activeFilter.state);
+      if (activeFilter?.lga) query = query.eq('lga', activeFilter.lga);
+      if (activeFilter?.ward) query = query.eq('ward', activeFilter.ward);
 
       if (searchQuery) {
         query = query.or(`title.ilike.%${searchQuery}%,text.ilike.%${searchQuery}%`);
@@ -43,7 +49,13 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       const { data, error } = await query.limit(30);
 
       if (error) throw error;
-      setEvents(data as Post[]);
+      const validEvents = (data as Post[]).filter(post => {
+        if (post.event_date) {
+          return new Date(post.event_date).getTime() >= Date.now();
+        }
+        return true;
+      });
+      setEvents(validEvents);
     } catch (error) {
       console.error('Error fetching events:', error);
     } finally {

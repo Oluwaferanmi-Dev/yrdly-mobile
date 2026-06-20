@@ -25,8 +25,13 @@ export default function CatalogTab() {
       case 'Businesses':
         return (
           <View style={styles.placeholderContainer}>
-            <Feather name="briefcase" size={48} color={colors.textMuted} />
-            <Text style={[styles.placeholderText, { color: colors.textMuted }]}>Businesses List goes here</Text>
+            <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.inputBackground, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
+              <Feather name="briefcase" size={40} color={colors.tint} />
+            </View>
+            <Text style={{ color: colors.text, fontSize: 22, fontWeight: '800', marginBottom: 8 }}>Coming Soon</Text>
+            <Text style={{ color: colors.textSecondary, textAlign: 'center', fontSize: 15, paddingHorizontal: 40, lineHeight: 22 }}>
+              A dedicated space for local businesses and services is launching soon. Stay tuned!
+            </Text>
           </View>
         );
     }

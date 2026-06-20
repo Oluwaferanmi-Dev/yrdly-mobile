@@ -26,15 +26,9 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
+        headerShadowVisible: false,
         headerStyle: {
           backgroundColor: colors.background,
-          borderBottomWidth: 0.5,
-          borderBottomColor: colors.border,
-          elevation: 0,
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 0.5 },
-          shadowOpacity: 0.1,
-          shadowRadius: 0,
         },
         headerTitleStyle: {
           fontSize: 20,
@@ -45,7 +39,7 @@ export default function TabLayout() {
         headerRight: () => (
           <View style={{ flexDirection: 'row', marginRight: 16 }}>
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-              <Ionicons name="map-outline" size={24} color={colors.text} />
+              <Ionicons name="location-outline" size={24} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications')}>
               <Feather name="bell" size={24} color={colors.text} />
@@ -116,6 +110,11 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           headerTitle: 'Profile',
+          headerRight: () => (
+            <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/settings')}>
+              <Feather name="settings" size={24} color={colors.text} />
+            </TouchableOpacity>
+          ),
           tabBarIcon: ({ color, size }) => (
             <Feather name="user" size={size} color={color} />
           ),

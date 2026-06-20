@@ -76,7 +76,7 @@ export default function ScanTicketScreen() {
   };
 
   if (!permission) {
-    return <SafeAreaView style={styles.center}><Text>Requesting camera permission…</Text></SafeAreaView>;
+    return <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}><Text style={{ color: colors.text }}>Requesting camera permission…</Text></SafeAreaView>;
   }
 
   if (!permission.granted) {
@@ -114,7 +114,7 @@ export default function ScanTicketScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
             <Feather name="x" size={28} color="#FFFFFF" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Scan Ticket</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Scan Ticket</Text>
           <View style={{ width: 48 }} />
         </View>
       </SafeAreaView>

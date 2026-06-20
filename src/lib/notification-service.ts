@@ -21,6 +21,7 @@ export type NotificationType =
   | 'friend_request'
   | 'friend_request_accepted'
   | 'friend_request_declined'
+  | 'new_follower'
   | 'message'
   | 'message_reaction'
   | 'post_like'

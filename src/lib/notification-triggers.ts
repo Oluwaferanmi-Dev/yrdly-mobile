@@ -66,6 +66,35 @@ export class NotificationTriggers {
   }
 
   /**
+   * Trigger notification when a user gets a new follower
+   */
+  static async onNewFollower(followerId: string, followedId: string) {
+    try {
+      // Get follower's name
+      const { data: followerData } = await supabase
+        .from('users')
+        .select('name')
+        .eq('id', followerId)
+        .single();
+
+      if (followerData) {
+        await NotificationService.createNotification({
+          userId: followedId,
+          type: 'new_follower',
+          senderId: followerId,
+          relatedId: followerId,
+          relatedType: 'user',
+          title: 'New Follower',
+          message: `${followerData.name} started following you`,
+          data: { followerName: followerData.name }
+        });
+      }
+    } catch (error) {
+      console.error('Error creating new follower notification:', error);
+    }
+  }
+
+  /**
    * Trigger notification when a message is sent
    */
   static async onMessageSent(

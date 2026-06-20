@@ -151,7 +151,7 @@ export default function NotificationsScreen() {
         return notifications.filter((n) => n.type === 'message' || n.type === 'message_reaction');
       case 'Activity':
         return notifications.filter((n) =>
-          ['post_like', 'post_comment', 'post_share', 'event_invite'].includes(n.type)
+          ['post_like', 'post_comment', 'post_share', 'event_invite', 'new_follower'].includes(n.type)
         );
       default:
         return notifications;
@@ -171,6 +171,9 @@ export default function NotificationsScreen() {
         return <Feather name="message-square" size={16} color="#C084FC" />;
       case 'event_invite':
         return <Feather name="calendar" size={16} color="#FB923C" />;
+      case 'new_follower':
+      case 'friend_request':
+        return <Feather name="user-plus" size={16} color="#34D399" />;
       default:
         return <Feather name="bell" size={16} color={colors.textMuted} />;
     }

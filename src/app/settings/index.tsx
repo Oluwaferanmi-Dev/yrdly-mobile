@@ -14,7 +14,7 @@ import { StorageService } from '../../lib/storage-service';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user, profile, signOut, loading: authLoading } = useAuth();
   const { isDarkMode, toggleTheme, colors } = useAppTheme();
 
   const [name, setName] = useState(profile?.name || user?.user_metadata?.name || '');
@@ -214,6 +214,21 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
+
+        {/* Sign Out */}
+        <View style={{ marginTop: 32, marginBottom: 40 }}>
+          <TouchableOpacity 
+            style={[styles.logoutButton, { backgroundColor: colors.card }]} 
+            onPress={() => signOut()}
+            disabled={authLoading}
+          >
+            {authLoading ? (
+              <ActivityIndicator color="#ef4444" />
+            ) : (
+              <Text style={styles.logoutText}>Sign Out</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
     </SafeAreaView>
@@ -272,4 +287,9 @@ const styles = StyleSheet.create({
   themeRow: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14,
   },
+  logoutButton: {
+    height: 54, borderWidth: 1, borderColor: '#E53935',
+    borderRadius: 8, justifyContent: 'center', alignItems: 'center',
+  },
+  logoutText: { color: '#E53935', fontSize: 16, fontWeight: 'bold' },
 });

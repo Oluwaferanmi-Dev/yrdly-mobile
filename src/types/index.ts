@@ -110,6 +110,11 @@ export interface Post {
     id: string;
     name: string;
     avatar_url?: string;
+    location?: {
+      state?: string;
+      lga?: string;
+      ward?: string;
+    };
     created_at?: string;
   };
 }

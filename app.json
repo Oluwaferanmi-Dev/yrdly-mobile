@@ -6,6 +6,11 @@
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "scheme": "yrdlymobile",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -52,6 +57,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }

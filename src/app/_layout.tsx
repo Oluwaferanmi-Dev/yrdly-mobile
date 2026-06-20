@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { usePushNotifications } from '../hooks/use-push-notifications';
 import { AuthProvider, useAuth } from '../hooks/use-supabase-auth';
 import { ThemeProvider } from '../context/ThemeContext';
+import { LocationProvider } from '../context/LocationContext';
 
 function NotificationsHandler() {
   usePushNotifications();
@@ -63,8 +64,10 @@ export default function Layout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <NotificationsHandler />
-        <RootNavigationGuard />
+        <LocationProvider>
+          <NotificationsHandler />
+          <RootNavigationGuard />
+        </LocationProvider>
       </AuthProvider>
     </ThemeProvider>
   );

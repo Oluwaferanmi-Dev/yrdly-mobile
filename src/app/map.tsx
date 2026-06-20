@@ -131,8 +131,8 @@ export default function MapScreen() {
 
       {errorMsg ? (
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{errorMsg}</Text>
-          <Text style={styles.subErrorText}>Please enable location services in your settings to view the map correctly.</Text>
+          <Text style={[styles.errorText, { color: colors.text }]}>{errorMsg}</Text>
+          <Text style={[styles.subErrorText, { color: colors.textSecondary }]}>Please enable location services in your settings to view the map correctly.</Text>
         </View>
       ) : null}
 

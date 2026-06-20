@@ -22,32 +22,11 @@ LogBox.ignoreLogs([/VirtualizedLists should never be nested/]);
 export default function CreateTab() {
   const { colors } = useAppTheme();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { width } = useWindowDimensions();
   const [category, setCategory] = useState<PostCategory>('General');
   const categories: PostCategory[] = ['General', 'For Sale', 'Event'];
-  
-  const slideX = useSharedValue(0);
-
-  useEffect(() => {
-    const index = categories.indexOf(category);
-    slideX.value = withSpring(index, { damping: 15, stiffness: 120 });
-  }, [category]);
-
-  const pillAnimatedStyle = useAnimatedStyle(() => {
-    // The width of the container is roughly width - 32 (padding 16*2)
-    // The width of each pill is (width - 32) / 3
-    const tabWidth = (width - 32) / 3;
-    return {
-      transform: [{ translateX: slideX.value * tabWidth }],
-      width: tabWidth,
-    };
-  });
-
-  const handleCategoryPress = (cat: PostCategory) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setCategory(cat);
-  };
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
 
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
@@ -215,25 +194,64 @@ export default function CreateTab() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          {/* Category Selector */}
-          <View style={[styles.categoryRow, { backgroundColor: colors.inputBackground }]}>
-            <Animated.View style={[styles.activePill, { backgroundColor: colors.background, shadowColor: colors.text }, pillAnimatedStyle]} />
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat}
-                activeOpacity={1}
-                style={styles.categoryButton}
-                onPress={() => handleCategoryPress(cat)}
-              >
-                <Text style={[styles.categoryText, { color: category === cat ? colors.text : colors.textSecondary }]}>
-                  {cat}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
           {/* Form Fields (Borderless) */}
           <View style={styles.formGroup}>
+            {/* User Info & Category Header */}
+            <View style={[styles.authorHeader, { zIndex: 50 }]}>
+              {profile?.avatar_url ? (
+                <Image source={{ uri: profile.avatar_url }} style={styles.authorAvatar} contentFit="cover" />
+              ) : (
+                <View style={[styles.authorAvatar, styles.avatarFallback, { backgroundColor: colors.tint }]}>
+                  <Text style={styles.avatarFallbackText}>
+                    {profile?.name ? profile.name.charAt(0).toUpperCase() : '?'}
+                  </Text>
+                </View>
+              )}
+              
+              <View style={[styles.authorInfo, { zIndex: 50 }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', zIndex: 50 }}>
+                  <Text style={[styles.authorName, { color: colors.text }]}>{profile?.name || 'Anonymous'}</Text>
+                  
+                  {/* Category Dropdown Badge */}
+                  <View style={{ zIndex: 50 }}>
+                    <TouchableOpacity 
+                      style={[styles.categoryBadge, { backgroundColor: colors.tint + '15' }]} 
+                      onPress={() => setShowCategoryMenu(!showCategoryMenu)}
+                    >
+                      <Text style={[styles.categoryBadgeText, { color: colors.tint }]}>{category}</Text>
+                      <Ionicons name="chevron-down" size={12} color={colors.tint} style={{ marginLeft: 4 }} />
+                    </TouchableOpacity>
+
+                    {showCategoryMenu && (
+                      <View style={[styles.categoryMenu, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                        {categories.map((cat) => (
+                          <TouchableOpacity 
+                            key={cat} 
+                            style={styles.categoryMenuItem} 
+                            onPress={() => { 
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              setCategory(cat); 
+                              setShowCategoryMenu(false); 
+                            }}
+                          >
+                            <Text style={{ color: colors.text, fontWeight: category === cat ? 'bold' : 'normal', fontSize: 14 }}>
+                              {cat}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                {profile?.location && (profile.location.ward || profile.location.lga || profile.location.state) && (
+                  <Text style={[styles.authorLocation, { color: colors.textMuted }]}>
+                    {[profile.location.ward, profile.location.lga || profile.location.state].filter(Boolean).join(', ')}
+                  </Text>
+                )}
+              </View>
+            </View>
+
             <TextInput
               style={[styles.inputTitle, { color: colors.text }]}
               placeholder="Give it a title (optional)"
@@ -252,51 +270,68 @@ export default function CreateTab() {
               textAlignVertical="top"
             />
 
+            {/* Conditional Fields (Sleek Add-on Cards) */}
             {category === 'For Sale' && (
-              <TextInput
-                style={[styles.inputPrice, { color: colors.tint, borderBottomColor: colors.borderLight }]}
-                placeholder="Price (₦)"
-                placeholderTextColor={colors.textMuted}
-                value={price}
-                onChangeText={setPrice}
-                keyboardType="numeric"
-              />
+              <View style={[styles.addonCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                <View style={styles.addonHeader}>
+                  <Ionicons name="pricetag" size={16} color={colors.tint} />
+                  <Text style={[styles.addonTitle, { color: colors.text }]}>Set Price</Text>
+                </View>
+                <TextInput
+                  style={[styles.addonInput, { color: colors.text }]}
+                  placeholder="e.g. 5000 (₦)"
+                  placeholderTextColor={colors.textMuted}
+                  value={price}
+                  onChangeText={setPrice}
+                  keyboardType="numeric"
+                />
+              </View>
             )}
 
             {category === 'Event' && (
-              <View style={{ zIndex: 10 }}>
-                <ScrollView horizontal scrollEnabled={false} style={{ width: '100%' }} contentContainerStyle={{ width: '100%' }} keyboardShouldPersistTaps="handled">
-                  <View style={{ width: '100%', minHeight: 40, borderBottomWidth: 1, borderBottomColor: colors.borderLight, paddingBottom: 8, marginBottom: 12 }}>
-                    <GooglePlacesAutocomplete
-                    placeholder="Location / Address"
-                    fetchDetails={true}
-                    onPress={(data, details = null) => {
-                      if (details?.geometry?.location) {
-                        setLocationData({
-                          address: data.description,
-                          lat: details.geometry.location.lat,
-                          lng: details.geometry.location.lng,
-                        });
-                      }
-                    }}
-                    query={{
-                      key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
-                      language: 'en',
-                    }}
-                    styles={{
-                      textInput: [styles.inputBody, { color: colors.text, margin: 0, padding: 0 }],
-                      textInputContainer: { backgroundColor: 'transparent' },
-                      row: { backgroundColor: colors.background },
-                      description: { color: colors.text },
-                    }}
-                      textInputProps={{
-                        placeholderTextColor: colors.textMuted,
-                      }}
-                    />
-                  </View>
-                </ScrollView>
+              <View style={[styles.addonCard, { backgroundColor: colors.card, borderColor: colors.borderLight, zIndex: 10 }]}>
+                <View style={styles.addonHeader}>
+                  <Ionicons name="calendar" size={16} color={colors.tint} />
+                  <Text style={[styles.addonTitle, { color: colors.text }]}>Event Details</Text>
+                </View>
+
+                {/* Location Autocomplete */}
+                <View style={{ zIndex: 10, marginTop: 8 }}>
+                  <ScrollView horizontal scrollEnabled={false} style={{ width: '100%' }} contentContainerStyle={{ width: '100%' }} keyboardShouldPersistTaps="handled">
+                    <View style={{ width: '100%', minHeight: 44, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.borderLight, marginBottom: 12 }}>
+                      <GooglePlacesAutocomplete
+                        placeholder="Location / Address"
+                        fetchDetails={true}
+                        onPress={(data, details = null) => {
+                          if (details?.geometry?.location) {
+                            setLocationData({
+                              address: data.description,
+                              lat: details.geometry.location.lat,
+                              lng: details.geometry.location.lng,
+                            });
+                          }
+                        }}
+                        query={{
+                          key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+                          language: 'en',
+                        }}
+                        styles={{
+                          textInput: [styles.addonInput, { color: colors.text, margin: 0, padding: 0, backgroundColor: 'transparent', minHeight: 40 }],
+                          textInputContainer: { backgroundColor: 'transparent', borderTopWidth: 0, borderBottomWidth: 0 },
+                          row: { backgroundColor: colors.background },
+                          description: { color: colors.text },
+                          listView: { backgroundColor: colors.background, elevation: 4, zIndex: 100 },
+                        }}
+                        textInputProps={{
+                          placeholderTextColor: colors.textMuted,
+                        }}
+                      />
+                    </View>
+                  </ScrollView>
+                </View>
+
                 <TextInput
-                  style={[styles.inputPrice, { color: colors.tint, borderBottomColor: colors.borderLight }]}
+                  style={[styles.addonInput, { color: colors.text, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.borderLight, marginBottom: 12, paddingBottom: 12 }]}
                   placeholder="Ticket Price (₦) - Leave empty if free"
                   placeholderTextColor={colors.textMuted}
                   value={price}
@@ -304,9 +339,10 @@ export default function CreateTab() {
                   keyboardType="numeric"
                 />
 
+                {/* Date & Time Pickers */}
                 {Platform.OS === 'ios' ? (
-                  <View style={{ flexDirection: 'row', gap: 12, marginTop: 12, alignItems: 'center' }}>
-                    <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Date & Time:</Text>
+                  <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 8 }}>
+                    <Text style={{ color: colors.textSecondary, fontWeight: '500', fontSize: 14 }}>Date & Time:</Text>
                     <DateTimePicker
                       value={eventDate}
                       mode="datetime"
@@ -316,16 +352,16 @@ export default function CreateTab() {
                     />
                   </View>
                 ) : (
-                  <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
-                    <TouchableOpacity style={[styles.dateButton, { borderColor: colors.borderLight }]} onPress={() => setShowDatePicker(true)}>
-                      <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} />
-                      <Text style={{ color: colors.text, marginLeft: 8 }}>
+                  <View style={{ flexDirection: 'row', gap: 12, marginBottom: 8 }}>
+                    <TouchableOpacity style={[styles.addonDateButton, { backgroundColor: colors.inputBackground }]} onPress={() => setShowDatePicker(true)}>
+                      <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
+                      <Text style={{ color: colors.text, marginLeft: 8, fontSize: 14 }}>
                         {eventDate.toLocaleDateString()}
                       </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.dateButton, { borderColor: colors.borderLight }]} onPress={() => setShowTimePicker(true)}>
-                      <Ionicons name="time-outline" size={20} color={colors.textSecondary} />
-                      <Text style={{ color: colors.text, marginLeft: 8 }}>
+                    <TouchableOpacity style={[styles.addonDateButton, { backgroundColor: colors.inputBackground }]} onPress={() => setShowTimePicker(true)}>
+                      <Ionicons name="time-outline" size={18} color={colors.textSecondary} />
+                      <Text style={{ color: colors.text, marginLeft: 8, fontSize: 14 }}>
                         {eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
                     </TouchableOpacity>
@@ -364,43 +400,42 @@ export default function CreateTab() {
                 )}
               </View>
             )}
-          </View>
 
-          {/* Media Picker */}
-          <View style={styles.sectionHeaderRow}>
-            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Add Media</Text>
-            {images.length > 0 && images.length < 5 && (
-              <TouchableOpacity onPress={pickImage}>
-                <Text style={[styles.addMoreText, { color: colors.tint }]}>+ Add More</Text>
+            {/* Action Row */}
+            <View style={[styles.actionRow, { borderTopColor: colors.borderLight }]}>
+              <TouchableOpacity style={styles.actionIconButton} onPress={pickImage}>
+                <Ionicons name="image-outline" size={24} color={colors.tint} />
               </TouchableOpacity>
+              <TouchableOpacity style={styles.actionIconButton} onPress={() => setCategory(category === 'For Sale' ? 'General' : 'For Sale')}>
+                <Ionicons name="pricetag-outline" size={24} color={category === 'For Sale' ? colors.tint : colors.textMuted} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionIconButton} onPress={() => setCategory(category === 'Event' ? 'General' : 'Event')}>
+                <Ionicons name="calendar-outline" size={24} color={category === 'Event' ? colors.tint : colors.textMuted} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Selected Images Preview */}
+            {images.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
+                {images.map((img, index) => (
+                  <View key={index} style={styles.imageWrapper}>
+                    <Image source={{ uri: img.uri }} style={[styles.previewImage, { borderColor: colors.borderLight }]} contentFit="cover" />
+                    <TouchableOpacity style={[styles.removeIconBtn, { backgroundColor: colors.card }]} onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      removeImage(index);
+                    }}>
+                      <Ionicons name="close-circle" size={24} color={colors.textMuted} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                {images.length < 5 && (
+                  <TouchableOpacity style={[styles.addImageBtn, { borderColor: colors.borderLight }]} onPress={pickImage}>
+                    <Ionicons name="add" size={28} color={colors.textMuted} />
+                  </TouchableOpacity>
+                )}
+              </ScrollView>
             )}
           </View>
-          
-          {images.length > 0 ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
-              {images.map((img, index) => (
-                <View key={index} style={styles.imageWrapper}>
-                  <Image source={{ uri: img.uri }} style={[styles.previewImage, { borderColor: colors.borderLight }]} contentFit="cover" />
-                  <TouchableOpacity style={[styles.removeIconBtn, { backgroundColor: colors.card }]} onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    removeImage(index);
-                  }}>
-                    <Ionicons name="close-circle" size={24} color={colors.textMuted} />
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </ScrollView>
-          ) : (
-            <TouchableOpacity style={[styles.imagePicker, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]} onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              pickImage();
-            }}>
-              <View style={styles.imagePlaceholder}>
-                <Ionicons name="images-outline" size={32} color={colors.tint} />
-                <Text style={[styles.imagePlaceholderText, { color: colors.textSecondary }]}>Add photos...</Text>
-              </View>
-            </TouchableOpacity>
-          )}
 
           {/* Submit Button */}
           <TouchableOpacity 
@@ -429,47 +464,75 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 40,
   },
-  sectionLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    marginTop: 16,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    marginBottom: 16,
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 12,
-    padding: 4,
-    position: 'relative',
-  },
-  activePill: {
-    position: 'absolute',
-    top: 4,
-    bottom: 4,
-    borderRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  categoryButton: {
-    flex: 1,
-    paddingVertical: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    zIndex: 1,
+    marginLeft: 8,
   },
-  categoryText: {
-    fontSize: 14,
-    fontWeight: '600',
+  categoryBadgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  categoryMenu: {
+    position: 'absolute',
+    top: 30,
+    left: 8,
+    width: 120,
+    borderRadius: 12,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    paddingVertical: 4,
+  },
+  categoryMenuItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   formGroup: {
     marginBottom: 24,
   },
+  authorHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  authorAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    marginRight: 12,
+  },
+  avatarFallback: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarFallbackText: {
+    color: '#FFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  authorInfo: {
+    flex: 1,
+  },
+  authorName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  authorLocation: {
+    fontSize: 13,
+    marginTop: 2,
+  },
   inputTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '800',
     paddingVertical: 4,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   inputBody: {
     fontSize: 18,
@@ -477,44 +540,57 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     lineHeight: 24,
   },
-  inputPrice: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    paddingVertical: 12,
-    marginTop: 8,
-  },
-  imagePicker: {
-    height: 160,
+  addonCard: {
     borderRadius: 16,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginTop: 16,
   },
-  sectionHeaderRow: {
+  addonHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  addMoreText: {
-    fontSize: 14,
+  addonTitle: {
+    fontSize: 15,
     fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  addonInput: {
+    fontSize: 18,
+    paddingVertical: 8,
+  },
+  addonDateButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 16,
+    marginTop: 16,
+  },
+  actionIconButton: {
+    marginRight: 24,
   },
   imageList: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginTop: 20,
   },
   imageWrapper: {
     position: 'relative',
     marginRight: 12,
   },
   previewImage: {
-    width: 140,
-    height: 140,
+    width: 100,
+    height: 100,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
   },
   removeIconBtn: {
     position: 'absolute',
@@ -522,24 +598,20 @@ const styles = StyleSheet.create({
     right: -8,
     borderRadius: 12,
   },
-  imagePlaceholder: {
-    flex: 1,
+  addImageBtn: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  imagePlaceholderText: {
-    marginTop: 8,
-    fontSize: 14,
-  },
-  removeImageText: {
-    color: '#E53935',
-    fontWeight: '600',
   },
   submitButton: {
     paddingVertical: 16,
     borderRadius: 30,
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 32,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -552,14 +624,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  dateButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderRadius: 12,
   },
 });

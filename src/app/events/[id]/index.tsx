@@ -128,6 +128,7 @@ export default function EventDetailScreen() {
 
   const imageUrls = event.image_urls?.length ? event.image_urls : event.image_url ? [event.image_url] : [];
   const isOwner = user?.id === event.user_id || user?.id === (event as any).organizer_id;
+  const isExpired = event.event_date ? new Date(event.event_date).getTime() < Date.now() : false;
 
   const formattedDate = event.event_date 
     ? new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
@@ -249,10 +250,10 @@ export default function EventDetailScreen() {
           <TouchableOpacity
             style={[
               styles.buyButton, 
-              { backgroundColor: hasTicket ? colors.inputBackground : colors.tint },
-              hasTicket && { opacity: 0.7 }
+              { backgroundColor: hasTicket || isExpired ? colors.inputBackground : colors.tint },
+              (hasTicket || isExpired) && { opacity: 0.7 }
             ]}
-            disabled={hasTicket || rsvping}
+            disabled={hasTicket || rsvping || isExpired}
             onPress={() => {
               if (event.price === 0 || !event.price) {
                 handleFreeRSVP();
@@ -264,8 +265,8 @@ export default function EventDetailScreen() {
             {rsvping ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (
-              <Text style={[styles.buyButtonText, hasTicket && { color: colors.textSecondary }]}>
-                {hasTicket ? 'Ticket Purchased ✓' : event.price === 0 || !event.price ? 'RSVP / Register' : 'Buy Tickets'}
+              <Text style={[styles.buyButtonText, (hasTicket || isExpired) && { color: colors.textSecondary }]}>
+                {isExpired ? 'Event Ended' : hasTicket ? 'Ticket Purchased ✓' : event.price === 0 || !event.price ? 'RSVP / Register' : 'Buy Tickets'}
               </Text>
             )}
           </TouchableOpacity>

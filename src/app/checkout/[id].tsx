@@ -194,8 +194,8 @@ export default function CheckoutScreen() {
         <Feather name="alert-circle" size={48} color="#E53935" />
         <Text style={[styles.errorTitle, { color: colors.text }]}>Payment failed</Text>
         <Text style={[styles.errorMsg, { color: colors.textSecondary }]}>{errorMsg}</Text>
-        <TouchableOpacity style={styles.retryBtn} onPress={() => setStage('summary')}>
-          <Text style={styles.retryBtnText}>Go Back</Text>
+        <TouchableOpacity style={[styles.retryBtn, { backgroundColor: colors.inputBackground }]} onPress={() => setStage('summary')}>
+          <Text style={[styles.retryBtnText, { color: colors.text }]}>Go Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
