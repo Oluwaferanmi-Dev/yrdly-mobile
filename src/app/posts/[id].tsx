@@ -48,7 +48,7 @@ export default function PostDetailScreen() {
     if (!id) return;
     const { data, error } = await supabase
       .from('posts')
-      .select('*, user:users!posts_user_id_fkey(name, avatar_url)')
+      .select('*, user:users!posts_user_id_fkey(id, name, avatar_url, location, created_at)')
       .eq('id', id)
       .single();
 

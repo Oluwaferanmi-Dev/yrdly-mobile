@@ -56,7 +56,16 @@ export default function OtherUserProfileScreen() {
 
       const { data: postData } = await supabase
         .from('posts')
-        .select('*')
+        .select(`
+          *,
+          user:users!posts_user_id_fkey(
+            id,
+            name,
+            avatar_url,
+            location,
+            created_at
+          )
+        `)
         .eq('user_id', id)
         .order('created_at', { ascending: false });
       

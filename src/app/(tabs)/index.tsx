@@ -60,7 +60,16 @@ export default function HomeTab() {
     try {
       let query = supabase
         .from('posts')
-        .select('*');
+        .select(`
+          *,
+          user:users!posts_user_id_fkey(
+            id,
+            name,
+            avatar_url,
+            location,
+            created_at
+          )
+        `);
 
       if (activeFilter?.state) query = query.eq('state', activeFilter.state);
       if (activeFilter?.lga) query = query.eq('lga', activeFilter.lga);
