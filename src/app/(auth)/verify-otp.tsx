@@ -9,6 +9,7 @@ import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
+import { ErrorMessage } from '../../components/ErrorMessage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -179,12 +180,7 @@ export default function VerifyOtpScreen() {
         </View>
 
         {/* Error */}
-        {!!error && (
-          <View style={[styles.errorBox, { backgroundColor: '#FEE2E2' }]}>
-            <Feather name="alert-circle" size={15} color="#E53935" />
-            <Text style={[styles.errorText, { color: '#E53935' }]}>{error}</Text>
-          </View>
-        )}
+        <ErrorMessage error={error} />
 
         {/* Verify button */}
         <TouchableOpacity
@@ -286,19 +282,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   otpBoxFilled: {},
-  errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 16,
-    gap: 8,
-    width: '100%',
-  },
-  errorText: {
-    fontSize: 13,
-    flex: 1,
-  },
   verifyBtn: {
     width: '100%',
     height: 54,

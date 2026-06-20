@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
+import { ErrorMessage } from '../../components/ErrorMessage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -115,12 +116,7 @@ export default function ResetPassword() {
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Enter and confirm your new secure password</Text>
         </View>
 
-        {error ? (
-          <View style={styles.errorBox}>
-            <Feather name="alert-triangle" size={16} color="#E53935" />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        ) : null}
+        <ErrorMessage error={error} />
 
         {message ? (
           <View style={styles.successBox}>
@@ -214,22 +210,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
-  },
-  errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEE2E2',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#FCA5A5',
-  },
-  errorText: {
-    color: '#E53935',
-    marginLeft: 8,
-    fontSize: 13,
-    flex: 1,
   },
   successBox: {
     flexDirection: 'row',

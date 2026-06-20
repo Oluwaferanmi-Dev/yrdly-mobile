@@ -5,6 +5,7 @@ import { Feather, AntDesign } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
+import { ErrorMessage } from '../../components/ErrorMessage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -83,12 +84,7 @@ export default function Login() {
 
         {/* Removed Segmented Control */}
 
-        {error ? (
-          <View style={styles.errorBox}>
-            <Feather name="alert-triangle" size={16} color="#E53935" />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        ) : null}
+        <ErrorMessage error={error} />
 
         {/* Inputs */}
         {isSignUp && (
@@ -231,22 +227,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 16,
-  },
-  errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEE2E2',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#FCA5A5',
-  },
-  errorText: {
-    color: '#E53935',
-    marginLeft: 8,
-    fontSize: 13,
-    flex: 1,
   },
   inputContainer: {
     position: 'relative',
