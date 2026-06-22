@@ -141,6 +141,8 @@ export default function MapScreen() {
         initialRegion={initialRegion}
         showsUserLocation={true}
         showsMyLocationButton={true}
+        showsBuildings={true}
+        pitchEnabled={true}
       >
         {/* Render Users */}
         {users.map(u => {

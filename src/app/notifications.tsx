@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert,
@@ -56,7 +57,7 @@ export default function NotificationsScreen() {
     if (!user) return;
     try {
       const { data, error } = await supabase
-        .from('bell')
+        .from('notifications')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -107,7 +108,7 @@ export default function NotificationsScreen() {
       .channel('notifications_mobile')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'bell', filter: `user_id=eq.${user.id}` },
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
         fetchNotifications
       )
       .subscribe();
@@ -116,14 +117,14 @@ export default function NotificationsScreen() {
   }, [user]);
 
   const handleMarkAsRead = async (id: string) => {
-    await supabase.from('bell').update({ is_read: true }).eq('id', id);
+    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
   };
 
   const handleMarkAllRead = async () => {
     const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
     if (unreadIds.length === 0) return;
-    await supabase.from('bell').update({ is_read: true }).in('id', unreadIds);
+    await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   };
 

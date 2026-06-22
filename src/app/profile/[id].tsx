@@ -175,18 +175,16 @@ export default function OtherUserProfileScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {profile.cover_url ? (
+        {profile.cover_url && (
           <Image source={{ uri: profile.cover_url }} style={styles.cover} contentFit="cover" />
-        ) : (
-          <View style={[styles.cover, { backgroundColor: colors.inputBackground }]} />
         )}
 
         <View style={[styles.profileHeader, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
           <View style={styles.avatarRow}>
             {profile.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
+              <Image source={{ uri: profile.avatar_url }} style={[styles.avatar, !profile.cover_url && { marginTop: 0 }]} contentFit="cover" />
             ) : (
-              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint }]}>
+              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint }, !profile.cover_url && { marginTop: 0 }]}>
                 <Text style={styles.avatarFallbackText}>
                   {profile.name ? profile.name.charAt(0).toUpperCase() : '?'}
                 </Text>

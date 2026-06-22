@@ -29,6 +29,11 @@
         "backgroundColor": "#E6F4FE"
       },
       "package": "com.feranmi.dev.yrdlymobile",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyARxIyqxipli2RtGuzRP_iWgk39z7GSXpU"
+        }
+      },
       "intentFilters": [
         {
           "action": "VIEW",

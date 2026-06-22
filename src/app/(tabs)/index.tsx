@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, RefreshControl, TouchableOpacity, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { PostCard } from '../../components/PostCard';
@@ -13,18 +13,76 @@ import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, w
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
+import { usePosts } from '../../hooks/use-posts';
+import { useAuth } from '../../hooks/use-supabase-auth';
+
+const QuickPostBox = () => {
+  const { user, profile } = useAuth();
+  const { colors, isDarkMode } = useAppTheme();
+  const router = useRouter();
+
+  return (
+    <View style={{
+      backgroundColor: colors.card,
+      marginHorizontal: 16,
+      marginTop: 12,
+      marginBottom: 8,
+      borderRadius: 24,
+      padding: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    }}>
+      <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' }}>
+        {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
+          <Image source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+        ) : (
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
+        )}
+      </View>
+      <TouchableOpacity 
+        style={{ flex: 1, height: 36, justifyContent: 'center' }}
+        onPress={() => router.push('/create')}
+        activeOpacity={0.7}
+      >
+        <Text style={{ color: colors.textSecondary, fontSize: 15 }}>What's happening, neighbour?</Text>
+      </TouchableOpacity>
+      
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <TouchableOpacity 
+          style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: isDarkMode ? '#333' : '#F0F0F0', justifyContent: 'center', alignItems: 'center' }}
+          onPress={() => router.push('/create')}
+        >
+          <Feather name="image" size={18} color={colors.textSecondary} />
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }}
+          onPress={() => router.push('/create')}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>Post</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
 export default function HomeTab() {
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { activeFilter } = useLocation();
+  const { posts: allPosts, loading, refreshPosts } = usePosts(activeFilter);
+  const [refreshing, setRefreshing] = useState(false);
   
   const HEADER_HEIGHT = Platform.OS === 'ios' ? 44 + insets.top : 56 + insets.top;
-
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
   const scrollY = useSharedValue(0);
   const lastScrollY = useSharedValue(0);
@@ -56,57 +114,21 @@ export default function HomeTab() {
     };
   });
 
-  const fetchPosts = async () => {
-    try {
-      let query = supabase
-        .from('posts')
-        .select(`
-          *,
-          user:users!posts_user_id_fkey(
-            id,
-            name,
-            avatar_url,
-            location,
-            created_at
-          )
-        `);
-
-      if (activeFilter?.state) query = query.eq('state', activeFilter.state);
-      if (activeFilter?.lga) query = query.eq('lga', activeFilter.lga);
-      if (activeFilter?.ward) query = query.eq('ward', activeFilter.ward);
-
-      const { data, error } = await query
-        .order('timestamp', { ascending: false })
-        .limit(30);
-
-      if (error) {
-        console.error('Error fetching posts:', error);
-      } else {
-        const validPosts = (data as Post[]).filter(post => {
-          if (post.category === 'Event' && post.event_date) {
-            return new Date(post.event_date).getTime() >= Date.now();
-          }
-          return true;
-        });
-        setPosts(validPosts);
+  const posts = useMemo(() => {
+    return allPosts.filter(post => {
+      if (post.category === 'Event' && post.event_date) {
+        return new Date(post.event_date).getTime() >= Date.now();
       }
-    } catch (error) {
-      console.error('Unexpected error fetching posts:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+      return true;
+    });
+  }, [allPosts]);
 
-  useEffect(() => {
-    fetchPosts();
-  }, [activeFilter]);
-
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setRefreshing(true);
-    fetchPosts();
-  }, [activeFilter]);
+    await refreshPosts();
+    setRefreshing(false);
+  }, [refreshPosts]);
 
   if (loading && !refreshing) {
     return (
@@ -186,6 +208,7 @@ export default function HomeTab() {
             progressViewOffset={HEADER_HEIGHT}
           />
         }
+        ListHeaderComponent={<QuickPostBox />}
         contentContainerStyle={[styles.listContent, { paddingTop: HEADER_HEIGHT, paddingBottom: 80 }]}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>

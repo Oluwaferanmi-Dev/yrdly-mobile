@@ -1,8 +1,9 @@
 import { Tabs, useRouter } from 'expo-router';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { View, TouchableOpacity, Platform, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Platform, StyleSheet, Text } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 
 function GlassTabBarBackground() {
   const { isDarkMode } = useAppTheme();
@@ -21,6 +22,7 @@ function GlassTabBarBackground() {
 export default function TabLayout() {
   const router = useRouter();
   const { colors, isDarkMode } = useAppTheme();
+  const { unreadCount } = useNotificationBadge();
 
   return (
     <Tabs
@@ -41,8 +43,28 @@ export default function TabLayout() {
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
               <Ionicons name="location-outline" size={24} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/notifications')}>
+            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative' }}>
               <Feather name="bell" size={24} color={colors.text} />
+              {unreadCount > 0 && (
+                <View style={{
+                  position: 'absolute',
+                  right: -4,
+                  top: -4,
+                  backgroundColor: '#EF4444',
+                  borderRadius: 10,
+                  minWidth: 18,
+                  height: 18,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingHorizontal: 4,
+                  borderWidth: 1.5,
+                  borderColor: colors.background
+                }}>
+                  <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         ),

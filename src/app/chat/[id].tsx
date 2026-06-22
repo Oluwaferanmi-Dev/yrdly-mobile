@@ -104,7 +104,7 @@ export default function ChatScreen() {
 
     // Realtime subscriptions for messages table
     const ch = supabase
-      .channel(`chat-${id}`)
+      .channel(`chat-${id}-${Date.now()}`)
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${id}`,
       }, (payload) => {

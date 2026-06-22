@@ -15,7 +15,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
   const { colors } = useAppTheme();
   
   const hasImages = post.image_urls && post.image_urls.length > 0;
-  const imageUrl = hasImages ? post.image_urls![0] : post.image_url;
+  const imageUrl = hasImages ? post.image_urls![0] : post.image_url || post.video_thumbnail_url;
   const hasVideo = !!post.video_url;
 
   return (
@@ -27,7 +27,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
       {imageUrl ? (
         <>
           <Image source={{ uri: imageUrl }} style={styles.image} contentFit="cover" />
-          {hasImages && post.image_urls!.length > 1 && (
+          {hasImages && post.image_urls!.length > 1 && !hasVideo && (
             <View style={styles.iconOverlay}>
               <Feather name="layers" size={14} color="#FFF" />
             </View>
@@ -45,7 +45,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
         </View>
       )}
       
-      {hasVideo && !imageUrl && (
+      {hasVideo && imageUrl && (
         <View style={styles.iconOverlay}>
           <Feather name="play" size={16} color="#FFF" />
         </View>

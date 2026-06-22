@@ -5,6 +5,7 @@ import { usePushNotifications } from '../hooks/use-push-notifications';
 import { AuthProvider, useAuth } from '../hooks/use-supabase-auth';
 import { ThemeProvider } from '../context/ThemeContext';
 import { LocationProvider } from '../context/LocationContext';
+import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
 
 function NotificationsHandler() {
   usePushNotifications();
@@ -71,8 +72,10 @@ export default function Layout() {
     <ThemeProvider>
       <AuthProvider>
         <LocationProvider>
-          <NotificationsHandler />
-          <RootNavigationGuard />
+          <NotificationBadgeProvider>
+            <NotificationsHandler />
+            <RootNavigationGuard />
+          </NotificationBadgeProvider>
         </LocationProvider>
       </AuthProvider>
     </ThemeProvider>

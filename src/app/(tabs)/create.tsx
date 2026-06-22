@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 import { decode } from 'base64-arraybuffer';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -129,13 +130,25 @@ export default function CreateTab() {
       // 1. Upload media (if any) and collect public URLs
       let uploadedImageUrls: string[] = [];
       let videoUrl: string | null = null;
+      let videoThumbnailUrl: string | null = null;
 
       if (images.length > 0) {
         for (const img of images) {
           const { url, type } = await uploadMedia(img.uri);
           if (url) {
-            if (type === 'video') videoUrl = url;
-            else uploadedImageUrls.push(url);
+            if (type === 'video') {
+              videoUrl = url;
+              // Generate and upload thumbnail for the video
+              try {
+                const { uri: thumbUri } = await VideoThumbnails.getThumbnailAsync(img.uri, { time: 1000 });
+                const { url: thumbUrl } = await uploadMedia(thumbUri);
+                if (thumbUrl) videoThumbnailUrl = thumbUrl;
+              } catch (e) {
+                console.error('Failed to generate/upload video thumbnail:', e);
+              }
+            } else {
+              uploadedImageUrls.push(url);
+            }
           }
         }
         if (uploadedImageUrls.length === 0 && !videoUrl) {
@@ -158,6 +171,7 @@ export default function CreateTab() {
         image_width: images.length > 0 ? images[0].width : null,
         image_height: images.length > 0 ? images[0].height : null,
         video_url: videoUrl,
+        video_thumbnail_url: videoThumbnailUrl,
         state: profile?.location?.state || null,
         lga: profile?.location?.lga || null,
         ward: profile?.location?.ward || null,

@@ -151,7 +151,7 @@ export class NotificationService {
    */
   static async getNotifications(userId: string, limit = 50, offset = 0): Promise<NotificationData[]> {
     const { data, error } = await supabase
-      .from('bell')
+      .from('notifications')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
@@ -170,7 +170,7 @@ export class NotificationService {
    */
   static async getUnreadCount(userId: string): Promise<number> {
     const { count, error } = await supabase
-      .from('bell')
+      .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('is_read', false);
@@ -204,7 +204,7 @@ export class NotificationService {
       
       // Fallback to direct update
       const { error } = await supabase
-        .from('bell')
+        .from('notifications')
         .update({ 
           is_read: true, 
           read_at: new Date().toISOString() 
@@ -241,7 +241,7 @@ export class NotificationService {
       
       // Fallback to direct update
       const { error } = await supabase
-        .from('bell')
+        .from('notifications')
         .update({ 
           is_read: true, 
           read_at: new Date().toISOString() 
@@ -278,7 +278,7 @@ export class NotificationService {
       
       // Fallback to direct delete
       const { error } = await supabase
-        .from('bell')
+        .from('notifications')
         .delete()
         .eq('user_id', userId);
 
@@ -296,7 +296,7 @@ export class NotificationService {
    */
   static async deleteNotification(notificationId: string, userId: string): Promise<boolean> {
     const { error } = await supabase
-      .from('bell')
+      .from('notifications')
       .delete()
       .eq('id', notificationId)
       .eq('user_id', userId);

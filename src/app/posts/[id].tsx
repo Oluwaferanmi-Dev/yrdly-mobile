@@ -77,7 +77,7 @@ export default function PostDetailScreen() {
 
     // Realtime comments
     const ch = supabase
-      .channel(`comments-${id}`)
+      .channel(`comments-${id}-${Date.now()}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',

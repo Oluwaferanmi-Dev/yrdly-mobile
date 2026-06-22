@@ -109,7 +109,7 @@ export class NotificationTriggers {
       // Debounce: Check for recent notifications in the last 60 seconds to prevent spam
       const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
       const { data: recentNotifs } = await supabase
-        .from('bell')
+        .from('notifications')
         .select('id')
         .eq('user_id', toUserId)
         .eq('type', 'message')
