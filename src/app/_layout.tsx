@@ -8,6 +8,11 @@ import { AuthProvider, useAuth } from '../hooks/use-supabase-auth';
 import { ThemeProvider } from '../context/ThemeContext';
 import { LocationProvider } from '../context/LocationContext';
 import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync().catch(() => {
+  // already hidden, ignore
+});
 
 function NotificationsHandler() {
   usePushNotifications();

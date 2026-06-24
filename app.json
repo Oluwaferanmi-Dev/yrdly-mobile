@@ -57,6 +57,15 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logo.png",
+          "color": "#82DB7E",
+          "androidMode": "default",
+          "androidCollapsedTitle": "Yrdly"
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
@@ -88,8 +97,7 @@
           "photosPermission": "Yrdly needs photo library access to attach evidence to disputes and update your profile picture.",
           "cameraPermission": "Yrdly needs camera access to take photos for disputes."
         }
-      ],
-      "react-native-reanimated"
+      ]
     ],
     "newArchEnabled": true,
     "experiments": {

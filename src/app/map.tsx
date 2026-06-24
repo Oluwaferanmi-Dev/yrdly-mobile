@@ -35,7 +35,9 @@ export default function MapScreen() {
         return;
       }
 
-      let currentLoc = await Location.getCurrentPositionAsync({});
+      let currentLoc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
       setLocation(currentLoc);
 
       // 2. Fetch Users & Businesses with Location Data

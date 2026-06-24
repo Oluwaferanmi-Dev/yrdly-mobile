@@ -6,101 +6,112 @@ import { Platform } from 'react-native';
 import { useAuth } from './use-supabase-auth';
 import { AuthService } from '@/lib/auth-service';
 
-// Only set handler if not in Expo Go (SDK 53+ removed push support from Expo Go)
+// NO top-level Notifications calls here
+
 const isExpoGo = Constants.appOwnership === 'expo';
 
-if (!isExpoGo) {
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-      shouldShowBanner: true,
-      shouldShowList: true,
-    }),
-  });
+async function registerForPushNotificationsAsync(): Promise<string | null> {
+  if (isExpoGo || Platform.OS === 'web') return null;
+
+  try {
+    if (!Device.isDevice) {
+      console.log('Must use physical device for Push Notifications');
+      return null;
+    }
+
+    // Step 1 — check permission
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+
+    // Step 2 — request if not granted
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    // Step 3 — bail if denied
+    if (finalStatus !== 'granted') {
+      console.log('Failed to get push token for push notification!');
+      return null;
+    }
+
+    // Step 4a — handler (only now, after permission confirmed)
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+
+    // Step 4b — channel (Android only, after permission)
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    // Step 4c — get token
+    const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+    if (!projectId) {
+      console.error('Missing EAS projectId in app.json extra.eas.projectId');
+      return null;
+    }
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+    return tokenData.data;
+
+  } catch (error) {
+    console.error('Push notification setup failed:', error);
+    return null;
+  }
 }
 
 export function usePushNotifications() {
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState<Notifications.Notification | false>(false);
-  const notificationListener = useRef<Notifications.Subscription | null>(null);
-  const responseListener = useRef<Notifications.Subscription | null>(null);
+  const notificationListener = useRef<Notifications.EventSubscription | null>(null);
+  const responseListener = useRef<Notifications.EventSubscription | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
-    // Skip all notification setup in Expo Go — not supported in SDK 53+
-    if (isExpoGo || Platform.OS === 'web') return;
+    if (!user || isExpoGo || Platform.OS === 'web') return;
 
-    registerForPushNotificationsAsync().then(token => {
-      if (token) {
-        setExpoPushToken(token);
-        if (user) {
-          AuthService.updateUserProfile(user.id, { push_token: token }).catch(console.error);
-        }
-      }
-    });
+    let mounted = true;
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(n => {
-      setNotification(n);
-    });
+    registerForPushNotificationsAsync().then((token) => {
+      if (!mounted || !token) return;
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification Response:', response);
+      // Save token to your backend/Supabase here
+      setExpoPushToken(token);
+      AuthService.updateUserProfile(user.id, { push_token: token }).catch(console.error);
+
+      // Step 4d & 4e — listeners, only after successful registration
+      notificationListener.current = 
+        Notifications.addNotificationReceivedListener(n => {
+          setNotification(n);
+        });
+
+      responseListener.current = 
+        Notifications.addNotificationResponseReceivedListener(response => {
+          console.log('Notification Response:', response);
+        });
     });
 
     return () => {
-      notificationListener.current?.remove();
-      responseListener.current?.remove();
+      mounted = false;
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
     };
   }, [user]);
 
   return { expoPushToken, notification };
-}
-
-async function registerForPushNotificationsAsync() {
-  if (Platform.OS === 'web') {
-    return;
-  }
-
-  let token;
-
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
-  }
-
-  if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== 'granted') {
-      console.log('Failed to get push token for push notification!');
-      return;
-    }
-    const projectId =
-      Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-    
-    try {
-      const pushTokenString = (
-        await Notifications.getExpoPushTokenAsync({
-          projectId,
-        })
-      ).data;
-      token = pushTokenString;
-    } catch (e: unknown) {
-      console.error(e);
-    }
-  } else {
-    console.log('Must use physical device for Push Notifications');
-  }
-
-  return token;
 }
