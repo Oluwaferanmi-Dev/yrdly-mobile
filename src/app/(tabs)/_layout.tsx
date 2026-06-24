@@ -4,6 +4,10 @@ import { View, TouchableOpacity, Platform, StyleSheet, Text } from 'react-native
 import { BlurView } from 'expo-blur';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
+import { 
+  HomeIcon, ExploreIcon, MessagesIcon, ProfileIcon, 
+  MapIcon, NotificationsIcon 
+} from '../../components/SvgIcons';
 
 function GlassTabBarBackground() {
   const { isDarkMode } = useAppTheme();
@@ -41,10 +45,10 @@ export default function TabLayout() {
         headerRight: () => (
           <View style={{ flexDirection: 'row', marginRight: 16 }}>
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-              <Ionicons name="location-outline" size={24} color={colors.text} />
+              <MapIcon size={24} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative' }}>
-              <Feather name="bell" size={24} color={colors.text} />
+              <NotificationsIcon size={24} color={colors.text} />
               {unreadCount > 0 && (
                 <View style={{
                   position: 'absolute',
@@ -88,7 +92,7 @@ export default function TabLayout() {
           title: 'Home',
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Feather name="home" size={size} color={color} />
+            <HomeIcon size={size} color={color} />
           ),
         }}
       />
@@ -97,7 +101,7 @@ export default function TabLayout() {
         options={{
           title: 'Explore',
           tabBarIcon: ({ color, size }) => (
-            <Feather name="search" size={size} color={color} />
+            <ExploreIcon size={size} color={color} />
           ),
         }}
       />
@@ -123,7 +127,7 @@ export default function TabLayout() {
           title: 'Messages',
           headerTitle: 'Messages',
           tabBarIcon: ({ color, size }) => (
-            <Feather name="message-square" size={size} color={color} />
+            <MessagesIcon size={size} color={color} />
           ),
         }}
       />
@@ -138,7 +142,7 @@ export default function TabLayout() {
             </TouchableOpacity>
           ),
           tabBarIcon: ({ color, size }) => (
-            <Feather name="user" size={size} color={color} />
+            <ProfileIcon size={size} color={color} />
           ),
         }}
       />

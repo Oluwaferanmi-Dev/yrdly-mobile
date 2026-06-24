@@ -6,6 +6,7 @@ import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 // Calculate card width for 2 columns with padding
@@ -21,6 +22,7 @@ interface MarketplaceItemCardProps {
 export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }: MarketplaceItemCardProps) {
   const { user } = useAuth();
   const { colors } = useAppTheme();
+  const router = useRouter();
   const isOwner = user?.id === item.user_id;
 
   const getInitials = (name?: string) => name ? name.charAt(0).toUpperCase() : 'U';
@@ -57,7 +59,10 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
 
         <View style={styles.actionsRow}>
           {isOwner ? (
-            <TouchableOpacity style={[styles.actionButton, styles.editButton, { borderColor: colors.tint }]}>
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.editButton, { borderColor: colors.tint }]}
+              onPress={() => router.push(`/marketplace/edit/${item.id}` as any)}
+            >
               <Feather name="edit-2" size={14} color={colors.tint} />
               <Text style={[styles.editButtonText, { color: colors.tint }]}>Edit</Text>
             </TouchableOpacity>

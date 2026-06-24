@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
+import { usePosts } from '../../../hooks/use-posts';
 import { useAppTheme } from '../../../context/ThemeContext';
 import { Post } from '../../../types';
 
@@ -18,13 +19,14 @@ export default function EditMarketplaceItemScreen() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { deletePost } = usePosts();
 
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [price, setPrice] = useState('');
 
   const fetchPost = useCallback(async () => {
-    if (!id) return;
+    if (!id || user === undefined) return;
     const { data, error } = await supabase
       .from('posts')
       .select('*')
@@ -32,7 +34,7 @@ export default function EditMarketplaceItemScreen() {
       .single();
 
     if (!error && data) {
-      if (data.user_id !== user?.id) {
+      if (user !== null && data.user_id !== user.id) {
         Alert.alert('Unauthorized', 'You can only edit your own listings.');
         router.back();
         return;
@@ -88,6 +90,26 @@ export default function EditMarketplaceItemScreen() {
     }
   };
 
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Listing',
+      'Are you sure you want to delete this listing? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            if (id) {
+              await deletePost(id);
+              router.replace('/');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={[styles.centerContainer, { backgroundColor: colors.background }]}>
@@ -117,8 +139,8 @@ export default function EditMarketplaceItemScreen() {
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Form Fields (Borderless) */}
@@ -170,6 +192,16 @@ export default function EditMarketplaceItemScreen() {
             ) : (
               <Text style={styles.submitButtonText}>Save Changes</Text>
             )}
+          </TouchableOpacity>
+
+          {/* Delete Button */}
+          <TouchableOpacity 
+            style={[styles.deleteButton, { borderColor: '#FF3B30' }]} 
+            onPress={handleDelete}
+            disabled={isSubmitting}
+          >
+            <Feather name="trash-2" size={18} color="#FF3B30" style={{ marginRight: 8 }} />
+            <Text style={styles.deleteButtonText}>Delete Listing</Text>
           </TouchableOpacity>
           
         </ScrollView>
@@ -254,6 +286,20 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  deleteButton: {
+    paddingVertical: 16,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginTop: 16,
+    borderWidth: 1,
+  },
+  deleteButtonText: {
+    color: '#FF3B30',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

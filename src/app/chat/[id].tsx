@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
   TouchableOpacity, KeyboardAvoidingView, Platform,
-  ActivityIndicator,
+  ActivityIndicator, Alert
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -27,6 +27,7 @@ interface Message {
   media_type?: string;
   created_at: string;
   is_read?: boolean;
+  deleted_by?: string[];
 }
 
 interface ConversationMeta {
@@ -159,10 +160,23 @@ export default function ChatScreen() {
 
   const pickMedia = async () => {
     if (sending || uploadingMedia) return;
+    
+    Alert.alert(
+      'Attach Media',
+      'Would you like to crop your media or send the original full size?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Crop Media', onPress: () => launchPicker(true) },
+        { text: 'Send Original', onPress: () => launchPicker(false) }
+      ]
+    );
+  };
+
+  const launchPicker = async (allowEditing: boolean) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images', 'videos'],
-        allowsEditing: true,
+        allowsEditing: allowEditing,
         quality: 0.8,
       });
       if (!result.canceled) {
@@ -170,7 +184,6 @@ export default function ChatScreen() {
       }
     } catch (e) {
       console.log("ImagePicker error:", e);
-      // Let the user know without crashing
     }
   };
 
@@ -233,25 +246,99 @@ export default function ChatScreen() {
     setViewerVisible(true);
   };
 
+  const handleMessageLongPress = (item: Message) => {
+    if (!user) return;
+    
+    const isMine = item.sender_id === user.id;
+    const msgTime = new Date(item.created_at).getTime();
+    const now = new Date().getTime();
+    const diffMins = (now - msgTime) / (1000 * 60);
+    const canDeleteForEveryone = isMine && diffMins <= 15;
+
+    const options = [
+      {
+        text: 'Delete for me',
+        style: 'destructive' as const,
+        onPress: async () => {
+          try {
+            const newDeletedBy = [...(item.deleted_by || []), user.id];
+            await supabase.from('messages').update({ deleted_by: newDeletedBy }).eq('id', item.id);
+            // Optimistic update
+            setMessages(prev => prev.filter(m => m.id !== item.id));
+          } catch (e) {
+            console.error('Failed to delete message for me:', e);
+          }
+        }
+      }
+    ];
+
+    if (canDeleteForEveryone) {
+      options.push({
+        text: 'Delete for everyone',
+        style: 'destructive' as const,
+        onPress: async () => {
+          try {
+            await supabase.from('messages').delete().eq('id', item.id);
+            setMessages(prev => prev.filter(m => m.id !== item.id));
+          } catch (e) {
+            console.error('Failed to delete message for everyone:', e);
+          }
+        }
+      });
+    }
+
+    options.push({
+      text: 'Cancel',
+      style: 'cancel' as const,
+      onPress: () => {}
+    });
+
+    Alert.alert(
+      'Message Options',
+      'Choose an action for this message',
+      options
+    );
+  };
+
   const renderMessage = ({ item }: { item: Message }) => {
+    // Hide message if deleted by current user
+    if (item.deleted_by?.includes(user?.id || '')) {
+      return null;
+    }
+
     const isMine = item.sender_id === user?.id;
     const msgText = item.text || item.content || '';
     const hasMedia = !!item.media_url;
 
     return (
       <View style={[styles.msgRow, isMine ? styles.msgRowRight : styles.msgRowLeft]}>
-        <View style={[
-          styles.bubble, 
-          isMine ? [styles.bubbleMine, { backgroundColor: colors.tint }] : [styles.bubbleTheirs, { backgroundColor: colors.inputBackground }],
-          hasMedia && { paddingHorizontal: 4, paddingVertical: 4, paddingBottom: 6 }
-        ]}>
+        <TouchableOpacity 
+          activeOpacity={0.9} 
+          onLongPress={() => handleMessageLongPress(item)}
+          style={[
+            styles.bubble, 
+            isMine ? styles.bubbleMine : styles.bubbleTheirs,
+            isMine ? { backgroundColor: colors.tint } : { backgroundColor: colors.inputBackground },
+            hasMedia && !msgText && { backgroundColor: 'transparent', paddingHorizontal: 0, paddingVertical: 0, paddingBottom: 0 },
+            hasMedia && msgText && { paddingHorizontal: 4, paddingVertical: 4, paddingBottom: 6 }
+          ]}
+        >
           {item.media_url && item.media_type === 'image' && (
             <TouchableOpacity onPress={() => openViewer(item.media_url!)}>
-              <Image 
-                source={{ uri: item.media_url }} 
-                style={[{ width: 220, height: 220, borderRadius: 14, marginBottom: msgText ? 6 : 0 }, !isMine && { backgroundColor: '#E0E0E0' }]} 
-                contentFit="cover" 
-              />
+              <View style={{ position: 'relative' }}>
+                <Image 
+                  source={{ uri: item.media_url }} 
+                  style={[{ width: 240, height: 300, borderRadius: 16, marginBottom: msgText ? 6 : 0 }, (!isMine && !msgText) && { backgroundColor: 'transparent' }]} 
+                  contentFit="contain" 
+                />
+                {!msgText && (
+                  <View style={{ position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10 }}>
+                    <Text style={{ fontSize: 10, color: '#FFF' }}>
+                      {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </TouchableOpacity>
           )}
           {item.media_url && item.media_type === 'video' && (
@@ -267,10 +354,12 @@ export default function ChatScreen() {
               {msgText}
             </Text>
           )}
-          <Text style={[styles.bubbleTime, { color: colors.textMuted }, isMine && { color: 'rgba(255,255,255,0.6)' }, hasMedia && { paddingHorizontal: 6 }]}>
-            {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </Text>
-        </View>
+          {!!msgText && (
+            <Text style={[styles.bubbleTime, { color: colors.textMuted }, isMine && { color: 'rgba(255,255,255,0.6)' }, hasMedia && { paddingHorizontal: 6 }]}>
+              {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Text>
+          )}
+        </TouchableOpacity>
       </View>
     );
   };
@@ -326,8 +415,8 @@ export default function ChatScreen() {
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {/* Messages */}
         {loading ? (

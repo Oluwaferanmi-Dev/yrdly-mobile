@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, TouchableWi
 import { Feather } from '@expo/vector-icons';
 import { MarketplaceGrid } from '../../components/MarketplaceGrid';
 import { EventList } from '../../components/EventList';
+import { BusinessComingSoon } from '../../components/BusinessComingSoon';
 import { useAppTheme } from '../../context/ThemeContext';
 
 type TabType = 'Marketplace' | 'Events' | 'Businesses';
@@ -21,17 +22,7 @@ export default function CatalogTab() {
       case 'Events':
         return <EventList searchQuery={searchQuery} sortOption={sortOption} />;
       case 'Businesses':
-        return (
-          <View style={styles.placeholderContainer}>
-            <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.inputBackground, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
-              <Feather name="briefcase" size={40} color={colors.tint} />
-            </View>
-            <Text style={{ color: colors.text, fontSize: 22, fontWeight: '800', marginBottom: 8 }}>Coming Soon</Text>
-            <Text style={{ color: colors.textSecondary, textAlign: 'center', fontSize: 15, paddingHorizontal: 40, lineHeight: 22 }}>
-              A dedicated space for local businesses and services is launching soon. Stay tuned!
-            </Text>
-          </View>
-        );
+        return <BusinessComingSoon />;
     }
   };
   return (

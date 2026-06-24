@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, ActivityIndicator, Dimensions, Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import ImageViewing from 'react-native-image-viewing';
@@ -126,7 +127,7 @@ export default function EventDetailScreen() {
     );
   }
 
-  const imageUrls = event.image_urls?.length ? event.image_urls : event.image_url ? [event.image_url] : [];
+  const imageUrls = (event.image_urls?.length ? event.image_urls : event.image_url ? [event.image_url] : []).filter(Boolean);
   const isOwner = user?.id === event.user_id || user?.id === (event as any).organizer_id;
   const isExpired = event.event_date ? new Date(event.event_date).getTime() < Date.now() : false;
 
@@ -273,14 +274,16 @@ export default function EventDetailScreen() {
         )}
       </View>
 
-      <ImageViewing
-        images={imageUrls.map(uri => ({ uri }))}
-        imageIndex={currentImageIndex}
-        visible={isGalleryVisible}
-        onRequestClose={() => setIsGalleryVisible(false)}
-        swipeToCloseEnabled={true}
-        doubleTapToZoomEnabled={true}
-      />
+      {isGalleryVisible && imageUrls.length > 0 && (
+        <ImageViewing
+          images={imageUrls.map(uri => ({ uri }))}
+          imageIndex={currentImageIndex}
+          visible={isGalleryVisible}
+          onRequestClose={() => setIsGalleryVisible(false)}
+          swipeToCloseEnabled={true}
+          doubleTapToZoomEnabled={true}
+        />
+      )}
     </SafeAreaView>
   );
 }

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
-  TouchableOpacity, ActivityIndicator,
+  TouchableOpacity, ActivityIndicator, Alert
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -28,6 +29,7 @@ interface Conversation {
     itemImage?: string;
     itemPrice?: number;
   };
+  deleted_by?: string[];
 }
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -104,6 +106,7 @@ export default function MessagesTab() {
           lastMessage: conv.last_message_text || conv.last_message || 'No messages yet',
           timestamp: conv.updated_at,
           unreadCount: 0,
+          deleted_by: conv.deleted_by || [],
         };
       });
 
@@ -140,6 +143,8 @@ export default function MessagesTab() {
 
   const filtered = useMemo(() => {
     return conversations.filter((c) => {
+      if (c.deleted_by && user && c.deleted_by.includes(user.id)) return false;
+
       const tabOk =
         activeFilter === 'all' ||
         (activeFilter === 'friends' && c.type === 'friend') ||
@@ -190,12 +195,44 @@ export default function MessagesTab() {
     const unread = item.unreadCount > 0;
     const showItemImage = (item.type === 'marketplace' || item.type === 'briefcase') && item.context?.itemImage;
 
+    const handleDelete = async () => {
+      if (!user) return;
+      try {
+        const newDeletedBy = [...(item.deleted_by || []), user.id];
+        await supabase.from('conversations').update({ deleted_by: newDeletedBy }).eq('id', item.id);
+        setConversations(prev => prev.filter(c => c.id !== item.id));
+      } catch (e) {
+        console.error('Failed to delete conversation:', e);
+      }
+    };
+
+    const handleLongPress = () => {
+      if (!user) return;
+      Alert.alert(
+        'Delete Conversation',
+        'Are you sure you want to delete this conversation for yourself?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete', style: 'destructive', onPress: handleDelete }
+        ]
+      );
+    };
+
+    const renderRightActions = () => (
+      <TouchableOpacity style={styles.deleteAction} onPress={handleDelete}>
+        <Feather name="trash-2" size={20} color="#FFF" />
+        <Text style={styles.deleteActionText}>Delete</Text>
+      </TouchableOpacity>
+    );
+
     return (
-      <TouchableOpacity
-        style={[styles.convRow, { borderBottomColor: colors.borderLight }, unread && [styles.convRowUnread, { borderLeftColor: colors.tint }]]}
-        onPress={() => router.push({ pathname: '/chat/[id]', params: { id: item.id } })}
-        activeOpacity={0.8}
-      >
+      <Swipeable renderRightActions={renderRightActions} overshootRight={false}>
+        <TouchableOpacity
+          style={[styles.convRow, { borderBottomColor: colors.borderLight }, unread && [styles.convRowUnread, { borderLeftColor: colors.tint }]]}
+          onPress={() => router.push({ pathname: '/chat/[id]', params: { id: item.id } })}
+          onLongPress={handleLongPress}
+          activeOpacity={1}
+        >
         {/* Avatar / Item thumbnail */}
         <View style={styles.avatarContainer}>
           {showItemImage ? (
@@ -247,8 +284,9 @@ export default function MessagesTab() {
           <View style={[styles.unreadBadge, { backgroundColor: colors.tint }]}>
             <Text style={styles.unreadBadgeText}>{item.unreadCount}</Text>
           </View>
-        )}
-      </TouchableOpacity>
+          )}
+        </TouchableOpacity>
+      </Swipeable>
     );
   };
 
@@ -369,4 +407,17 @@ const styles = StyleSheet.create({
   unreadBadgeText: { fontSize: 11, fontWeight: 'bold', color: '#FFF' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { fontSize: 16, marginTop: 12 },
+  deleteAction: {
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
+  },
+  deleteActionText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
 });

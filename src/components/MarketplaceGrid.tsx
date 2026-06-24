@@ -4,7 +4,7 @@ import { MarketplaceItemCard } from './MarketplaceItemCard';
 import { Skeleton } from './Skeleton';
 import { supabase } from '../lib/supabase';
 import { Post } from '../types';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
@@ -114,9 +114,11 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
     }
   }, [searchQuery, sortOption, activeFilter]);
 
-  useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchItems();
+    }, [fetchItems])
+  );
 
   if (loading) {
     return (

@@ -4,7 +4,7 @@ import { EventCard } from './EventCard';
 import { PostSkeleton } from './Skeleton';
 import { supabase } from '../lib/supabase';
 import { Post } from '../types';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
 
@@ -63,9 +63,11 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
     }
   }, [searchQuery, sortOption]);
 
-  useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchEvents();
+    }, [fetchEvents])
+  );
 
   if (loading) {
     return (

@@ -1,3 +1,5 @@
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { Audio } from 'expo-av';
@@ -69,15 +71,19 @@ function RootNavigationGuard() {
 
 export default function Layout() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <LocationProvider>
-          <NotificationBadgeProvider>
-            <NotificationsHandler />
-            <RootNavigationGuard />
-          </NotificationBadgeProvider>
-        </LocationProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <BottomSheetModalProvider>
+          <AuthProvider>
+            <LocationProvider>
+              <NotificationBadgeProvider>
+                <NotificationsHandler />
+                <RootNavigationGuard />
+              </NotificationBadgeProvider>
+            </LocationProvider>
+          </AuthProvider>
+        </BottomSheetModalProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

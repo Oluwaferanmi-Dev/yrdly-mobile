@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, useWindowDimensions, Image as RNImage, FlatList, Share } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import ImageViewing from 'react-native-image-viewing';
 import Animated, { useSharedValue, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { Video, ResizeMode } from 'expo-av';
@@ -21,9 +20,11 @@ interface PostCardProps {
   onLike?: () => void;
   onComment?: () => void;
   onShare?: () => void;
+  isVisible?: boolean;
+  onOpenImageViewer?: (images: { uri: string }[], index: number) => void;
 }
 
-export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCardProps) {
+export function PostCard({ post, onPress, onLike, onComment, onShare, isVisible, onOpenImageViewer }: PostCardProps) {
   const router = useRouter();
   const { user: currentUser } = useAuth();
   const { colors } = useAppTheme();
@@ -35,8 +36,6 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
   const [likesCount, setLikesCount] = useState(post.liked_by?.length || 0);
   const [isLiked, setIsLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
 
-  const [isViewerVisible, setIsViewerVisible] = useState(false);
-  const [viewerIndex, setViewerIndex] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
 
@@ -54,6 +53,12 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
   const heartOpacity = useSharedValue(0);
 
   const urls = post.image_urls?.length ? post.image_urls : post.image_url ? [post.image_url] : [];
+
+  useEffect(() => {
+    if (isVisible === false) {
+      setIsVideoMuted(true);
+    }
+  }, [isVisible]);
 
   useEffect(() => {
     urls.forEach((url) => {
@@ -107,8 +112,9 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
     } else {
       lastTapRef.current = now;
       singleTapTimerRef.current = setTimeout(() => {
-        setViewerIndex(index);
-        setIsViewerVisible(true);
+        if (onOpenImageViewer) {
+          onOpenImageViewer(urls.map(u => ({ uri: u })), index);
+        }
       }, DOUBLE_PRESS_DELAY);
     }
   };
@@ -248,14 +254,17 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
             posterSource={post.video_thumbnail_url ? { uri: post.video_thumbnail_url } : undefined}
             usePoster={!!post.video_thumbnail_url}
             posterStyle={{ resizeMode: 'cover' }}
-            onPlaybackStatusUpdate={(status) => {
-              if (status.isLoaded && status.isMuted !== undefined) {
-                if (status.isMuted !== isVideoMuted) {
-                  setIsVideoMuted(status.isMuted);
-                }
-              }
-            }}
           />
+          <TouchableOpacity 
+            style={styles.muteButtonOverlay} 
+            onPress={(e) => { 
+              e.stopPropagation(); 
+              setIsVideoMuted(!isVideoMuted); 
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name={isVideoMuted ? "volume-mute" : "volume-medium"} size={20} color="#FFF" />
+          </TouchableOpacity>
         </View>
       )}
 
@@ -291,13 +300,6 @@ export function PostCard({ post, onPress, onLike, onComment, onShare }: PostCard
               ))}
             </View>
           )}
-          <ImageViewing
-            images={urls.map(url => ({ uri: url }))}
-            imageIndex={viewerIndex}
-            visible={isViewerVisible}
-            onRequestClose={() => setIsViewerVisible(false)}
-            swipeToCloseEnabled={true}
-          />
         </View>
       )}
 
@@ -448,6 +450,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 10,
     position: 'relative',
+  },
+  muteButtonOverlay: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
   postImage: {
     width: '100%',

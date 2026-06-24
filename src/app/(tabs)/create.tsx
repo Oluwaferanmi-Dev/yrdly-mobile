@@ -35,6 +35,8 @@ export default function CreateTab() {
     uri: string;
     width: number;
     height: number;
+    type?: 'image' | 'video';
+    thumbnailUri?: string;
   }
   const [images, setImages] = useState<PostImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,10 +67,26 @@ export default function CreateTab() {
       });
 
       if (!result.canceled) {
-        const newImages = result.assets.map(asset => ({
-          uri: asset.uri,
-          width: asset.width,
-          height: asset.height,
+        const newImages = await Promise.all(result.assets.map(async (asset) => {
+          let thumbnailUri = asset.uri;
+          const type = asset.type || (asset.uri.endsWith('.mp4') || asset.uri.endsWith('.mov') ? 'video' : 'image');
+          if (type === 'video') {
+            try {
+              const { uri } = await VideoThumbnails.getThumbnailAsync(asset.uri, {
+                time: 1000,
+              });
+              thumbnailUri = uri;
+            } catch (e) {
+              console.warn("Could not generate thumbnail for video in preview", e);
+            }
+          }
+          return {
+            uri: asset.uri,
+            width: asset.width,
+            height: asset.height,
+            type: type as 'image' | 'video',
+            thumbnailUri: thumbnailUri
+          };
         }));
         setImages(prev => [...prev, ...newImages].slice(0, 5));
       }
@@ -122,6 +140,10 @@ export default function CreateTab() {
     }
     if (!text.trim() && !title.trim()) {
       Alert.alert('Missing Content', 'Please add some text before posting.');
+      return;
+    }
+    if ((category === 'For Sale' || category === 'Event') && images.length === 0) {
+      Alert.alert('Image Required', `Please add at least one image for your ${category === 'For Sale' ? 'marketplace item' : 'event'}.`);
       return;
     }
 
@@ -448,7 +470,12 @@ export default function CreateTab() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
                 {images.map((img, index) => (
                   <View key={index} style={styles.imageWrapper}>
-                    <Image source={{ uri: img.uri }} style={[styles.previewImage, { borderColor: colors.borderLight }]} contentFit="cover" />
+                    <Image source={{ uri: img.thumbnailUri || img.uri }} style={[styles.previewImage, { borderColor: colors.borderLight }]} contentFit="cover" />
+                    {img.type === 'video' && (
+                      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' }}>
+                        <Ionicons name="play-circle" size={36} color="rgba(255,255,255,0.9)" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.5, shadowRadius: 4 }} />
+                      </View>
+                    )}
                     <TouchableOpacity style={[styles.removeIconBtn, { backgroundColor: colors.card }]} onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       removeImage(index);

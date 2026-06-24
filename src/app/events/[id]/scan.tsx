@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, Vibration, Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -36,32 +37,47 @@ export default function ScanTicketScreen() {
     setScanning(false);
 
     try {
-      // Call the web API check-in endpoint
-      const { data: session } = await supabase.auth.getSession();
-      const token = session?.session?.access_token;
-      const webUrl = process.env.EXPO_PUBLIC_WEB_APP_URL;
+      // Direct Supabase implementation for ticket scanning & check-in
+      const { data: ticket, error: ticketError } = await supabase
+        .from('my_tickets')
+        .select(`
+          *,
+          user:users!my_tickets_user_id_fkey(name)
+        `)
+        .eq('id', data)
+        .single();
 
-      const response = await fetch(`${webUrl}/api/events/checkin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ token: data, eventId: id }),
-      });
-
-      const json = await response.json();
-
-      if (response.ok && json.success !== false) {
-        const attendeeName = json.attendee?.name || json.name || 'Attendee';
-        setResult({ success: true, attendee: attendeeName });
-        showFlash(true);
-      } else {
-        const msg = json.error || json.message || 'Invalid or already used ticket.';
-        setResult({ success: false, message: msg });
+      if (ticketError || !ticket) {
+        setResult({ success: false, message: 'Invalid or unrecognized ticket QR code.' });
         showFlash(false);
+      } else if (ticket.event_id !== id) {
+        setResult({ success: false, message: 'This ticket is for a different event.' });
+        showFlash(false);
+      } else if (ticket.status === 'used') {
+        setResult({ success: false, message: 'This ticket has already been used.' });
+        showFlash(false);
+      } else if (ticket.status === 'cancelled' || ticket.status === 'refunded') {
+        setResult({ success: false, message: `This ticket was ${ticket.status}.` });
+        showFlash(false);
+      } else {
+        // Ticket is valid (active or confirmed). Update status to 'used'
+        const { error: updateError } = await supabase
+          .from('my_tickets')
+          .update({ status: 'used' })
+          .eq('id', ticket.id);
+          
+        if (updateError) {
+          setResult({ success: false, message: 'Failed to check in ticket. Please try again.' });
+          showFlash(false);
+        } else {
+          // @ts-ignore - The user property is joined from the users table
+          const attendeeName = ticket.user?.name || 'Attendee';
+          setResult({ success: true, attendee: attendeeName });
+          showFlash(true);
+        }
       }
     } catch (e) {
+      console.error("Scan error", e);
       setResult({ success: false, message: 'Network error. Please check your connection.' });
       showFlash(false);
     }

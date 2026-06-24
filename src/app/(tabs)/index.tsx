@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, RefreshControl, TouchableOpacity, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { PostCard } from '../../components/PostCard';
@@ -14,8 +14,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
+import { MapIcon, NotificationsIcon } from '../../components/SvgIcons';
 import { usePosts } from '../../hooks/use-posts';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import { CommentsBottomSheet, CommentsBottomSheetRef } from '../../components/CommentsBottomSheet';
+import ImageViewing from 'react-native-image-viewing';
 
 const QuickPostBox = () => {
   const { user, profile } = useAuth();
@@ -81,6 +84,12 @@ export default function HomeTab() {
   const { activeFilter } = useLocation();
   const { posts: allPosts, loading, refreshPosts } = usePosts(activeFilter);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
+  const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
+  const [viewerImages, setViewerImages] = useState<{ uri: string }[]>([]);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const bottomSheetRef = useRef<CommentsBottomSheetRef>(null);
   
   const HEADER_HEIGHT = Platform.OS === 'ios' ? 44 + insets.top : 56 + insets.top;
 
@@ -130,6 +139,11 @@ export default function HomeTab() {
     setRefreshing(false);
   }, [refreshPosts]);
 
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+  const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
+    setVisiblePostIds(viewableItems.map((v: any) => v.key));
+  }, []);
+
   if (loading && !refreshing) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -144,10 +158,10 @@ export default function HomeTab() {
 
             <View style={styles.headerRight}>
               <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-                <Ionicons name="location-outline" size={24} color={colors.text} />
+                <MapIcon size={24} color={colors.text} />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => router.push('/notifications')}>
-                <Feather name="bell" size={24} color={colors.text} />
+                <NotificationsIcon size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
           </View>
@@ -174,10 +188,10 @@ export default function HomeTab() {
 
           <View style={styles.headerRight}>
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-              <Ionicons name="location-outline" size={24} color={colors.text} />
+              <MapIcon size={24} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications')}>
-              <Feather name="bell" size={24} color={colors.text} />
+              <NotificationsIcon size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -188,15 +202,26 @@ export default function HomeTab() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         keyExtractor={(item) => item.id}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
         renderItem={({ item }) => (
           <PostCard 
             post={item} 
+            isVisible={visiblePostIds.includes(item.id)}
             onPress={() => {
               if (item.category === 'For Sale') router.push(`/marketplace/${item.id}`);
               else if (item.category === 'Event') router.push(`/events/${item.id}`);
               else router.push(`/posts/${item.id}`);
             }}
-            onComment={() => router.push(`/posts/${item.id}`)}
+            onComment={() => {
+              setActiveCommentPostId(item.id);
+              bottomSheetRef.current?.present();
+            }}
+            onOpenImageViewer={(images, index) => {
+              setViewerImages(images);
+              setViewerIndex(index);
+              setViewerVisible(true);
+            }}
           />
         )}
         refreshControl={
@@ -215,6 +240,14 @@ export default function HomeTab() {
             <Text style={[styles.emptyText, { color: colors.textMuted }]}>No posts yet. Be the first to post!</Text>
           </View>
         }
+      />
+      <CommentsBottomSheet ref={bottomSheetRef} postId={activeCommentPostId} />
+      <ImageViewing
+        images={viewerImages}
+        imageIndex={viewerIndex}
+        visible={viewerVisible}
+        onRequestClose={() => setViewerVisible(false)}
+        swipeToCloseEnabled={true}
       />
     </View>
   );

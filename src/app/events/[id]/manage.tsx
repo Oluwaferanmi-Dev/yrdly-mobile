@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, RefreshControl, FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
+import { usePosts } from '../../../hooks/use-posts';
 import { formatPrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
 
@@ -31,6 +33,7 @@ export default function ManageEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { deletePost } = usePosts();
 
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -103,6 +106,30 @@ export default function ManageEventScreen() {
               ]);
             } catch {
               Alert.alert('Error', 'Failed to cancel event. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteEvent = () => {
+    Alert.alert(
+      'Delete Event?',
+      'This will permanently delete the event from the feed and your profile. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              if (id) {
+                await deletePost(id);
+                router.replace('/');
+              }
+            } catch {
+              Alert.alert('Error', 'Failed to delete event. Please try again.');
             }
           },
         },
@@ -225,10 +252,17 @@ export default function ManageEventScreen() {
           </View>
         }
         ListFooterComponent={
-          <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelEvent}>
-            <Feather name="x-circle" size={18} color="#B71C1C" style={{ marginRight: 8 }} />
-            <Text style={styles.cancelBtnText}>Cancel This Event</Text>
-          </TouchableOpacity>
+          <View>
+            <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelEvent}>
+              <Feather name="x-circle" size={18} color="#B71C1C" style={{ marginRight: 8 }} />
+              <Text style={styles.cancelBtnText}>Cancel This Event</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteEvent}>
+              <Feather name="trash-2" size={18} color="#FFF" style={{ marginRight: 8 }} />
+              <Text style={styles.deleteBtnText}>Delete Event</Text>
+            </TouchableOpacity>
+          </View>
         }
       />
     </SafeAreaView>
@@ -305,8 +339,14 @@ const styles = StyleSheet.create({
 
   cancelBtn: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    margin: 16, paddingVertical: 14, borderRadius: 12,
+    marginHorizontal: 16, marginTop: 16, paddingVertical: 14, borderRadius: 12,
     borderWidth: 1.5, borderColor: '#FFCDD2', backgroundColor: '#FFEBEE',
   },
   cancelBtnText: { fontSize: 14, fontWeight: '700', color: '#B71C1C' },
+  deleteBtn: {
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    margin: 16, paddingVertical: 14, borderRadius: 12,
+    backgroundColor: '#D32F2F',
+  },
+  deleteBtnText: { fontSize: 14, fontWeight: '700', color: '#FFF' },
 });

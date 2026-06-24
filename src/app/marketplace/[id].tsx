@@ -7,6 +7,7 @@ import {
 import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import ImageViewing from 'react-native-image-viewing';
+import { Video, ResizeMode } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -140,6 +141,12 @@ export default function MarketplaceDetailScreen() {
   }
 
   const imageUrls = post.image_urls?.length ? post.image_urls : post.image_url ? [post.image_url] : [];
+  const mediaItems = [];
+  if (post.video_url) {
+    mediaItems.push({ type: 'video', url: post.video_url });
+  }
+  imageUrls.forEach(url => mediaItems.push({ type: 'image', url }));
+
   const isOwner = user?.id === post.user_id;
 
   return (
@@ -159,8 +166,8 @@ export default function MarketplaceDetailScreen() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
-        {/* Images */}
-        {imageUrls.length > 0 ? (
+        {/* Images and Videos */}
+        {mediaItems.length > 0 ? (
           <Animated.View style={[headerAnimatedStyle, { zIndex: -1, position: 'relative' }]}>
             <ScrollView 
               horizontal 
@@ -173,22 +180,36 @@ export default function MarketplaceDetailScreen() {
               }}
               scrollEventThrottle={16}
             >
-              {imageUrls.map((url, i) => (
-                <TouchableOpacity 
-                  key={i} 
-                  activeOpacity={0.9} 
-                  onPress={() => {
-                    setCurrentImageIndex(i);
-                    setIsGalleryVisible(true);
-                  }}
-                >
-                  <Image source={{ uri: url }} style={styles.mainImage} contentFit="cover" />
-                </TouchableOpacity>
+              {mediaItems.map((media, i) => (
+                <View key={i} style={styles.mainImage}>
+                  {media.type === 'video' ? (
+                    <Video
+                      source={{ uri: media.url }}
+                      style={styles.mainImage}
+                      useNativeControls
+                      resizeMode={ResizeMode.COVER}
+                      isLooping
+                      shouldPlay={activeScrollIndex === i}
+                    />
+                  ) : (
+                    <TouchableOpacity 
+                      activeOpacity={0.9} 
+                      style={{ flex: 1 }}
+                      onPress={() => {
+                        const imageIndex = post.video_url ? i - 1 : i;
+                        setCurrentImageIndex(imageIndex);
+                        setIsGalleryVisible(true);
+                      }}
+                    >
+                      <Image source={{ uri: media.url }} style={styles.mainImage} contentFit="cover" />
+                    </TouchableOpacity>
+                  )}
+                </View>
               ))}
             </ScrollView>
-            {imageUrls.length > 1 && (
+            {mediaItems.length > 1 && (
               <View style={styles.paginationDots}>
-                {imageUrls.map((_, i) => (
+                {mediaItems.map((_, i) => (
                   <View key={i} style={[styles.carouselDot, activeScrollIndex === i ? [styles.activeDot, { backgroundColor: colors.tint }] : styles.inactiveDot]} />
                 ))}
               </View>

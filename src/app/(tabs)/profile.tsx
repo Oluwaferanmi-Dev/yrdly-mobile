@@ -8,7 +8,7 @@ import { supabase } from '../../lib/supabase';
 import { PostCard } from '../../components/PostCard';
 import { PostSkeleton } from '../../components/Skeleton';
 import { Post } from '../../types';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useWindowDimensions } from 'react-native';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
@@ -56,6 +56,12 @@ export default function ProfileTab() {
   useEffect(() => {
     fetchUserPosts();
   }, [fetchUserPosts]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserPosts();
+    }, [fetchUserPosts])
+  );
 
   const onRefresh = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

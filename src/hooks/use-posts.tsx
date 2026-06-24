@@ -77,8 +77,9 @@ export const usePosts = (filter?: LocationFilter | null) => {
       filterString = `state=eq.${filterState}`;
     }
 
+    const channelName = `posts-all-${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel('posts-all')
+      .channel(channelName)
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 

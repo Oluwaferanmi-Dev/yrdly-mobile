@@ -10,10 +10,12 @@ import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import { usePosts } from '../../hooks/use-posts';
 import { PostCard } from '../../components/PostCard';
 import { Post } from '../../types';
 import { timeAgo } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
+import { Alert } from 'react-native';
 
 interface Comment {
   id: string;
@@ -41,6 +43,8 @@ export default function PostDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
+  
+  const { deletePost } = usePosts();
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -133,6 +137,26 @@ export default function PostDetailScreen() {
     }
   };
 
+  const handleDeletePost = () => {
+    Alert.alert(
+      'Delete Post',
+      'Are you sure you want to delete this post? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            if (id) {
+              await deletePost(id);
+              router.back();
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const renderComment = ({ item }: { item: Comment }) => {
     return (
       <View style={styles.commentRow}>
@@ -176,13 +200,19 @@ export default function PostDetailScreen() {
           <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Post</Text>
-        <View style={{ width: 40 }} />
+        {post?.user_id === user?.id ? (
+          <TouchableOpacity onPress={handleDeletePost} style={styles.deleteBtn}>
+            <Feather name="trash-2" size={20} color="#FF3B30" />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 40 }} />
+        )}
       </View>
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {loading && !post ? (
           <View style={styles.center}>
@@ -239,6 +269,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
+  deleteBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-end' },
   headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   listContent: { paddingBottom: 20 },
