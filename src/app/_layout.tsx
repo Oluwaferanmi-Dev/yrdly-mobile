@@ -32,6 +32,10 @@ function RootNavigationGuard() {
   useEffect(() => {
     if (loading) return;
 
+    // Auth state resolved — dismiss the splash screen
+    SplashScreen.hideAsync().catch(() => {});
+
+
     const inAuth = segments[0] === '(auth)';
     const inOnboarding = segments[0] === '(onboarding)';
 
