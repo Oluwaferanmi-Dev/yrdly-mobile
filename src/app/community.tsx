@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
@@ -172,8 +173,9 @@ export default function CommunityScreen() {
           <ActivityIndicator size="large" color={colors.tint} />
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={users}
+          estimatedItemSize={65}
           keyExtractor={item => item.id}
           renderItem={renderUser}
           ListHeaderComponent={ListHeader}

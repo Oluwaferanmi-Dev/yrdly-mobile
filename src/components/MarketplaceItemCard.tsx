@@ -7,6 +7,7 @@ import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { useRouter } from 'expo-router';
+import { StorageService } from '../lib/storage-service';
 
 const { width } = Dimensions.get('window');
 // Calculate card width for 2 columns with padding
@@ -40,7 +41,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
       {/* Image Container */}
       <View style={[styles.imageContainer, { backgroundColor: colors.borderLight }]}>
         {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.image} contentFit="cover" />
+          <Image source={{ uri: StorageService.getOptimizedImageUrl(imageUrl, 400) || imageUrl }} style={styles.image} contentFit="cover" />
         ) : (
           <View style={[styles.placeholderImage, { backgroundColor: colors.inputBackground }]}>
             <Feather name="shopping-cart" size={32} color={colors.tint} style={{ opacity: 0.5 }} />
@@ -90,7 +91,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
           <View style={[styles.avatar, { backgroundColor: colors.tint }]}>
             {item.user?.avatar_url || item.author_image ? (
               <Image 
-                source={{ uri: item.user?.avatar_url || item.author_image }} 
+                source={{ uri: StorageService.getOptimizedImageUrl(item.user?.avatar_url || item.author_image, 150) || '' }} 
                 style={styles.avatarImage} 
               />
             ) : (

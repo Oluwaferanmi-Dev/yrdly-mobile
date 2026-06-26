@@ -11,6 +11,7 @@ import { timeAgo, formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
+import { StorageService } from '../lib/storage-service';
 
 const { width } = Dimensions.get('window');
 
@@ -24,7 +25,7 @@ interface PostCardProps {
   onOpenImageViewer?: (images: { uri: string }[], index: number) => void;
 }
 
-export function PostCard({ post, onPress, onLike, onComment, onShare, isVisible, onOpenImageViewer }: PostCardProps) {
+export const PostCard = React.memo(function PostCard({ post, onPress, onLike, onComment, onShare, isVisible, onOpenImageViewer }: PostCardProps) {
   const router = useRouter();
   const { user: currentUser } = useAuth();
   const { colors } = useAppTheme();
@@ -35,6 +36,12 @@ export function PostCard({ post, onPress, onLike, onComment, onShare, isVisible,
 
   const [likesCount, setLikesCount] = useState(post.liked_by?.length || 0);
   const [isLiked, setIsLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
+
+  // Sync state when post prop changes (crucial for FlashList cell recycling)
+  useEffect(() => {
+    setLikesCount(post.liked_by?.length || 0);
+    setIsLiked(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
+  }, [post.liked_by, currentUser]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
@@ -198,7 +205,7 @@ export function PostCard({ post, onPress, onLike, onComment, onShare, isVisible,
         >
           <View style={[styles.avatar, { backgroundColor: colors.inputBackground }]}>
             {post.user?.avatar_url || post.author_image ? (
-              <Image source={{ uri: post.user?.avatar_url || post.author_image }} style={styles.avatarImage} />
+              <Image source={{ uri: StorageService.getOptimizedImageUrl(post.user?.avatar_url || post.author_image, 150) || '' }} style={styles.avatarImage} />
             ) : (
               <Text style={[styles.avatarText, { color: colors.tint }]}>
                 {getInitials(post.user?.name || post.author_name)}
@@ -285,7 +292,7 @@ export function PostCard({ post, onPress, onLike, onComment, onShare, isVisible,
                 onPress={() => handleImageTap(index)}
                 style={[styles.imageContainer, { backgroundColor: colors.borderLight, width: imageDisplayWidth, height: imageHeights[item] ?? 200 }]}
               >
-                <Image source={{ uri: item }} style={[styles.postImage, { height: imageHeights[item] ?? 200 }]} contentFit="cover" />
+                <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={[styles.postImage, { height: imageHeights[item] ?? 200 }]} contentFit="cover" />
                 
                 <Animated.View style={[styles.heartOverlay, { opacity: heartOpacity, transform: [{ scale: heartScale }] }]}>
                   <Ionicons name="heart" size={100} color="#fff" style={styles.heartShadow} />
@@ -344,7 +351,14 @@ export function PostCard({ post, onPress, onLike, onComment, onShare, isVisible,
       </View>
     </TouchableOpacity>
   );
-}
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.post.id === nextProps.post.id &&
+    prevProps.post.liked_by?.length === nextProps.post.liked_by?.length &&
+    prevProps.post.comment_count === nextProps.post.comment_count &&
+    prevProps.isVisible === nextProps.isVisible
+  );
+});
 
 const styles = StyleSheet.create({
   container: {

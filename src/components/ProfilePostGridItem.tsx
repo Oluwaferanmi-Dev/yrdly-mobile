@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { Post } from '../types';
 import { useAppTheme } from '../context/ThemeContext';
+import { StorageService } from '../lib/storage-service';
 
 interface ProfilePostGridItemProps {
   post: Post;
@@ -26,7 +27,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
     >
       {imageUrl ? (
         <>
-          <Image source={{ uri: imageUrl }} style={styles.image} contentFit="cover" />
+          <Image source={{ uri: StorageService.getOptimizedImageUrl(imageUrl, 300) || imageUrl }} style={styles.image} contentFit="cover" />
           {hasImages && post.image_urls!.length > 1 && !hasVideo && (
             <View style={styles.iconOverlay}>
               <Feather name="layers" size={14} color="#FFF" />

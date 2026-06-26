@@ -15,45 +15,18 @@ export class PushNotificationService {
    */
   static async sendToUser(userId: string, payload: PushNotificationPayload): Promise<boolean> {
     try {
-      // 1. Get user's push token from Supabase
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('push_token')
-        .eq('id', userId)
-        .single();
+      const { data, error } = await supabase.functions.invoke('send-push-notification', {
+        body: { userId, payload }
+      });
 
-      if (error || !user?.push_token) {
-        console.log(`[PushNotification] No push token found for user ${userId}`);
+      if (error) {
+        console.error('Edge function error:', error);
         return false;
       }
 
-      // 2. Send request to Expo Push API
-      const message = {
-        to: user.push_token,
-        sound: 'default',
-        title: payload.title,
-        body: payload.body,
-        data: payload.data || {},
-        badge: payload.badge ? parseInt(payload.badge, 10) : undefined,
-      };
-
-      const response = await fetch('https://exp.host/--/api/v2/push/send', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Accept-encoding': 'gzip, deflate',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(message),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Expo API returned ${response.status}`);
-      }
-
-      return true;
+      return data?.success === true;
     } catch (error) {
-      console.error('Error sending push notification:', error);
+      console.error('Error sending push notification via edge function:', error);
       return false;
     }
   }

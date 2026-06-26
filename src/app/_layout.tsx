@@ -9,10 +9,24 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { LocationProvider } from '../context/LocationContext';
 import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Insights from 'expo-insights';
+import { vexo } from 'vexo-analytics';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // already hidden, ignore
 });
+
+// ── Analytics ──────────────────────────────────────────────────────────────
+// expo-insights: automatic cold-start tracking → visible in EAS Dashboard > Insights
+// It sends events automatically on import; no extra call needed.
+void Insights;
+
+// Vexo: React Native product analytics — auto-captures navigation, sessions.
+// Only runs in production builds (not in dev mode).
+if (!__DEV__) {
+  vexo(process.env.EXPO_PUBLIC_VEXO_API_KEY ?? '');
+}
+// ────────────────────────────────────────────────────────────────────────────
 
 function NotificationsHandler() {
   usePushNotifications();
@@ -36,7 +50,7 @@ function RootNavigationGuard() {
     SplashScreen.hideAsync().catch(() => {});
 
 
-    const inAuth = segments[0] === '(auth)';
+    const inAuth = segments[0] === '(auth)' || (segments[0] as string) === 'auth';
     const inOnboarding = segments[0] === '(onboarding)';
 
     if (!user) {

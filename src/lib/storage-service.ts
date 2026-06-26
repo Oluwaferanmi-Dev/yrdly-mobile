@@ -99,6 +99,22 @@ export class StorageService {
     return data.publicUrl;
   }
 
+  /**
+   * Transforms a raw Supabase storage URL into an optimized edge-cached URL.
+   * This drastically reduces cached egress bandwidth by serving resized WebP images.
+   */
+  static getOptimizedImageUrl(url: string | null, width: number = 800, height?: number): string | null {
+    if (!url || typeof url !== 'string' || !url.includes('/storage/v1/object/public/')) {
+      return url;
+    }
+    let optimizedUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+    optimizedUrl += `?width=${width}&format=webp&quality=80`;
+    if (height) {
+      optimizedUrl += `&height=${height}`;
+    }
+    return optimizedUrl;
+  }
+
   /** Get a time-limited signed URL for a private file */
   static async getSignedUrl(
     bucket: string,

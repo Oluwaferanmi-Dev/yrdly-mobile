@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, RefreshControl, TouchableOpacity, Platform } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
 import { PostCard } from '../../components/PostCard';
 import { PostSkeleton } from '../../components/Skeleton';
@@ -19,6 +20,8 @@ import { usePosts } from '../../hooks/use-posts';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { CommentsBottomSheet, CommentsBottomSheetRef } from '../../components/CommentsBottomSheet';
 import ImageViewing from 'react-native-image-viewing';
+
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
 
 const QuickPostBox = () => {
   const { user, profile } = useAuth();
@@ -197,8 +200,9 @@ export default function HomeTab() {
         </View>
       </Animated.View>
 
-      <Animated.FlatList
+      <AnimatedFlashList
         data={posts}
+        estimatedItemSize={400}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         keyExtractor={(item) => item.id}

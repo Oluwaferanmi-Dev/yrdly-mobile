@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -276,8 +277,9 @@ export default function NotificationsScreen() {
           <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>You're all caught up!</Text>
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={filteredNotifications}
+          estimatedItemSize={75}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}

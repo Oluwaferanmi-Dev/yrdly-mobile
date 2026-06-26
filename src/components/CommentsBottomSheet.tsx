@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { timeAgo } from '../lib/utils';
 import { useAppTheme } from '../context/ThemeContext';
 import { Post } from '../types';
+import { StorageService } from '../lib/storage-service';
 
 export interface CommentsBottomSheetProps {
   postId: string | null;
@@ -158,12 +159,12 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
     []
   );
 
-  const renderComment = ({ item }: { item: Comment }) => {
+  const renderComment = useCallback(({ item }: { item: Comment }) => {
     return (
       <View style={styles.commentRow}>
         <View style={styles.avatar}>
           {item.user?.avatar_url || item.author_image ? (
-            <Image source={{ uri: item.user?.avatar_url || item.author_image }} style={styles.avatarImg} contentFit="cover" />
+            <Image source={{ uri: StorageService.getOptimizedImageUrl(item.user?.avatar_url || item.author_image, 100) || '' }} style={styles.avatarImg} contentFit="cover" />
           ) : (
             <View style={[styles.avatarImg, styles.avatarFallback, { backgroundColor: colors.tint }]}>
               <Text style={styles.avatarFallbackText}>
@@ -173,11 +174,13 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
           )}
         </View>
         <View style={styles.commentContent}>
-          <Text style={[styles.authorName, { color: colors.text }]}>
-            {item.user?.name || item.author_name}
-          </Text>
-          <Text style={[styles.commentText, { color: colors.textSecondary }]}>
-            {item.text}
+          <Text style={styles.commentText}>
+            <Text style={[styles.authorName, { color: colors.text }]}>
+              {item.user?.name || item.author_name}{'  '}
+            </Text>
+            <Text style={{ color: colors.text }}>
+              {item.text}
+            </Text>
           </Text>
           <View style={styles.commentActionsRow}>
             <Text style={[styles.timestamp, { color: colors.textMuted }]}>{timeAgo(item.timestamp)}</Text>
@@ -194,7 +197,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
         </TouchableOpacity>
       </View>
     );
-  };
+  }, [colors]);
 
   return (
     <BottomSheetModal
@@ -204,7 +207,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       backdropComponent={renderBackdrop}
       backgroundStyle={{ backgroundColor: colors.background }}
       handleIndicatorStyle={{ backgroundColor: colors.border }}
-      keyboardBehavior="interactive"
+      keyboardBehavior="extend"
       keyboardBlurBehavior="restore"
     >
       <View style={styles.header}>
@@ -236,7 +239,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       <View style={[styles.inputContainer, { borderTopColor: colors.borderLight, backgroundColor: colors.background }]}>
         <View style={styles.inputAvatar}>
           {user?.user_metadata?.avatar_url ? (
-            <Image source={{ uri: user.user_metadata.avatar_url }} style={styles.avatarImg} contentFit="cover" />
+            <Image source={{ uri: StorageService.getOptimizedImageUrl(user.user_metadata.avatar_url, 100) || '' }} style={styles.avatarImg} contentFit="cover" />
           ) : (
             <View style={[styles.avatarImg, styles.avatarFallback, { backgroundColor: colors.tint }]}>
               <Text style={styles.avatarFallbackText}>

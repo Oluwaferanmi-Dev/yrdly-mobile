@@ -59,7 +59,11 @@ export class AuthService {
         email,
         password,
         options: {
-          emailRedirectTo: this.getRedirectUrl(),
+          // NOTE: Do NOT include emailRedirectTo here.
+          // With no redirectTo, Supabase sends a 6-digit OTP code to the user's email,
+          // which is what the verify-otp screen expects.
+          // Adding emailRedirectTo causes Supabase to send a magic-link instead,
+          // which breaks the OTP flow and produces "error sending confirmation code".
           data: {
             name,
           },

@@ -224,7 +224,16 @@ export default function SettingsScreen() {
         <View style={{ marginTop: 32, marginBottom: 40 }}>
           <TouchableOpacity 
             style={[styles.logoutButton, { backgroundColor: colors.card }]} 
-            onPress={() => signOut()}
+            onPress={() => {
+              Alert.alert(
+                'Sign Out',
+                'Are you sure you want to sign out of your account?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
+                ]
+              );
+            }}
             disabled={authLoading}
           >
             {authLoading ? (

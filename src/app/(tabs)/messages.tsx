@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, FlatList, TextInput,
   TouchableOpacity, ActivityIndicator, Alert
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
@@ -65,9 +66,23 @@ export default function MessagesTab() {
 
       if (error || !data) return;
 
+      // Fetch unread counts
+      const { data: unreadData } = await supabase
+        .from('messages')
+        .select('conversation_id')
+        .eq('is_read', false)
+        .neq('sender_id', user.id)
+        .in('conversation_id', data.map((c: any) => c.id));
+
+      const unreadCounts = (unreadData || []).reduce((acc: Record<string, number>, curr: any) => {
+        acc[curr.conversation_id] = (acc[curr.conversation_id] || 0) + 1;
+        return acc;
+      }, {});
+
       // Transform raw DB rows into Conversation objects
       const transformed: Conversation[] = data.map((conv: any) => {
         const otherId = conv.participant_ids?.find((id: string) => id !== user.id);
+        const unreadCount = unreadCounts[conv.id] || 0;
 
         if (conv.type === 'briefcase') {
           return {
@@ -78,7 +93,7 @@ export default function MessagesTab() {
             participantAvatar: conv.business_logo || null,
             lastMessage: conv.last_message_text || conv.last_message || 'No messages yet',
             timestamp: conv.updated_at,
-            unreadCount: 0,
+            unreadCount,
             context: { itemTitle: conv.item_title, itemImage: conv.item_image, itemPrice: conv.item_price },
           };
         }
@@ -92,7 +107,7 @@ export default function MessagesTab() {
             participantAvatar: conv.item_image || null,
             lastMessage: conv.last_message_text || conv.last_message || 'No messages yet',
             timestamp: conv.updated_at,
-            unreadCount: 0,
+            unreadCount,
             context: { itemTitle: conv.item_title, itemImage: conv.item_image, itemPrice: conv.item_price },
           };
         }
@@ -105,7 +120,7 @@ export default function MessagesTab() {
           participantAvatar: null,
           lastMessage: conv.last_message_text || conv.last_message || 'No messages yet',
           timestamp: conv.updated_at,
-          unreadCount: 0,
+          unreadCount,
           deleted_by: conv.deleted_by || [],
         };
       });
@@ -163,24 +178,25 @@ export default function MessagesTab() {
 
     // Realtime subscription
     if (!user) return;
-    let ch: any = null;
+    let chConv: any = null;
+    let chMsg: any = null;
     try {
-      ch = supabase
+      chConv = supabase
         .channel(`conversations-mobile-${user.id}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, fetchConversations)
         .subscribe();
+        
+      chMsg = supabase
+        .channel(`messages-mobile-${user.id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchConversations)
+        .subscribe();
     } catch (e) {
-      console.error('Error subscribing to conversations realtime:', e);
+      console.error('Error subscribing to realtime:', e);
     }
 
     return () => {
-      if (ch) {
-        try {
-          supabase.removeChannel(ch);
-        } catch (e) {
-          console.error('Error removing conversations channel:', e);
-        }
-      }
+      if (chConv) supabase.removeChannel(chConv);
+      if (chMsg) supabase.removeChannel(chMsg);
     };
   }, [user]);
 
@@ -265,9 +281,16 @@ export default function MessagesTab() {
             <Text style={[styles.convName, { color: colors.text }, unread && styles.convNameBold]} numberOfLines={1}>
               {item.participantName}
             </Text>
-            <Text style={[styles.convTime, { color: colors.textMuted }, unread && { color: colors.tint }]}>
-              {timeLabel(item.timestamp)}
-            </Text>
+            <View style={styles.convRight}>
+              <Text style={[styles.convTime, { color: unread ? colors.tint : colors.textMuted }, unread && { fontWeight: 'bold' }]}>
+                {timeLabel(item.timestamp)}
+              </Text>
+              {unread && (
+                <View style={[styles.unreadBadge, { backgroundColor: colors.tint }]}>
+                  <Text style={styles.unreadBadgeText}>{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text>
+                </View>
+              )}
+            </View>
           </View>
           {item.context?.itemTitle && (
             <Text style={[styles.convItemTitle, { color: colors.tint }]} numberOfLines={1}>
@@ -332,8 +355,9 @@ export default function MessagesTab() {
           </Text>
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={filtered}
+          estimatedItemSize={80}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}

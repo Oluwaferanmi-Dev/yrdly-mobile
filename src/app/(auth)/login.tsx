@@ -65,9 +65,9 @@ export default function Login() {
 
       {/* Glass Overlay */}
       {Platform.OS === 'ios' ? (
-        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint="light" />
+        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={colors.background === '#121212' ? 'dark' : 'light'} />
       ) : (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(255, 255, 255, 0.4)' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' }]} />
       )}
 
       <View style={styles.formContainer}>

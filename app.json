@@ -54,7 +54,13 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.VIBRATE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO"
       ]
     },
     "web": {
@@ -112,9 +118,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "daf41020-9d5d-4b26-91f9-1d9bf5573511"
+        "projectId": "d0cca753-650d-4510-bb1d-d26ec8c3d7e9"
       }
     },
-    "owner": "yrdly"
+    "owner": "yrdly-dev"
   }
 }

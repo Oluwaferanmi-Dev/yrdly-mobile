@@ -96,15 +96,17 @@ export default function OtherUserProfileScreen() {
 
     try {
       if (isFollowing) {
-        await supabase.from('followers').delete()
+        const { error } = await supabase.from('followers').delete()
           .eq('follower_id', currentUser.id)
           .eq('following_id', profile.id);
+        if (error) throw error;
         setFollowersCount(prev => Math.max(0, prev - 1));
       } else {
-        await supabase.from('followers').insert({
+        const { error } = await supabase.from('followers').insert({
           follower_id: currentUser.id,
           following_id: profile.id,
         });
+        if (error) throw error;
         setFollowersCount(prev => prev + 1);
         
         // Trigger notification

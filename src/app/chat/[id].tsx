@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -90,7 +90,18 @@ export default function ChatScreen() {
       .eq('conversation_id', id)
       .order('created_at', { ascending: true });
 
-    if (!error && data) setMessages(data as Message[]);
+    if (!error && data) {
+      setMessages(data as Message[]);
+      
+      // Mark received unread messages as read
+      const unreadIds = data
+        .filter((m: any) => !m.is_read && m.sender_id !== user?.id)
+        .map((m: any) => m.id);
+        
+      if (unreadIds.length > 0) {
+        supabase.from('messages').update({ is_read: true }).in('id', unreadIds).then();
+      }
+    }
     setLoading(false);
   }, [id]);
 
@@ -111,6 +122,17 @@ export default function ChatScreen() {
       }, (payload) => {
         setMessages((prev) => [...prev, payload.new as Message]);
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+        
+        // Mark as read if it's from the other user
+        const newMsg = payload.new as Message;
+        if (newMsg.sender_id !== user.id && !newMsg.is_read) {
+          supabase.from('messages').update({ is_read: true }).eq('id', newMsg.id).then();
+        }
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'messages', filter: `conversation_id=eq.${id}`,
+      }, (payload) => {
+        setMessages((prev) => prev.map(m => m.id === payload.new.id ? { ...m, ...payload.new } : m));
       })
       .subscribe();
 
@@ -255,7 +277,7 @@ export default function ChatScreen() {
     const diffMins = (now - msgTime) / (1000 * 60);
     const canDeleteForEveryone = isMine && diffMins <= 15;
 
-    const options = [
+    const options: import('react-native').AlertButton[] = [
       {
         text: 'Delete for me',
         style: 'destructive' as const,
@@ -355,9 +377,19 @@ export default function ChatScreen() {
             </Text>
           )}
           {!!msgText && (
-            <Text style={[styles.bubbleTime, { color: colors.textMuted }, isMine && { color: 'rgba(255,255,255,0.6)' }, hasMedia && { paddingHorizontal: 6 }]}>
-              {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 2, paddingHorizontal: hasMedia ? 6 : 0 }}>
+              <Text style={[styles.bubbleTime, { color: colors.textMuted }, isMine && { color: 'rgba(255,255,255,0.6)' }]}>
+                {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Text>
+              {isMine && (
+                <Ionicons 
+                  name={item.is_read ? 'checkmark-done' : 'checkmark'} 
+                  size={14} 
+                  color={item.is_read ? '#4ade80' : 'rgba(255,255,255,0.6)'} 
+                  style={{ marginLeft: 4 }} 
+                />
+              )}
+            </View>
           )}
         </TouchableOpacity>
       </View>

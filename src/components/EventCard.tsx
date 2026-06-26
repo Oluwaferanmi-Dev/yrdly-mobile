@@ -6,6 +6,7 @@ import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
+import { StorageService } from '../lib/storage-service';
 
 interface EventCardProps {
   event: Post;
@@ -50,7 +51,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
       {/* Header Image */}
       {imageUrl ? (
         <View style={[styles.imageContainer, { backgroundColor: colors.borderLight }]}>
-          <Image source={{ uri: imageUrl }} style={styles.image} contentFit="cover" />
+          <Image source={{ uri: StorageService.getOptimizedImageUrl(imageUrl, 800) || imageUrl }} style={styles.image} contentFit="cover" />
         </View>
       ) : null}
 
