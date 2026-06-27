@@ -22,49 +22,50 @@ export const usePosts = (filter?: LocationFilter | null) => {
   const filterLga = filter?.lga;
   const filterWard = filter?.ward;
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        let query = supabase
-          .from('posts')
-          .select(`
-            *,
-            user:users!posts_user_id_fkey(
-              id,
-              name,
-              avatar_url,
-              location,
-              created_at
-            )
-          `);
+  const fetchPosts = useCallback(async () => {
+    try {
+      let query = supabase
+        .from('posts')
+        .select(`
+          *,
+          user:users!posts_user_id_fkey(
+            id,
+            name,
+            avatar_url,
+            location,
+            created_at
+          )
+        `);
 
-        // Apply location filters
-        if (filterState) {
-          query = query.eq('state', filterState);
-        }
-        if (filterLga) {
-          query = query.eq('lga', filterLga);
-        }
-        if (filterWard) {
-          query = query.eq('ward', filterWard);
-        }
-
-        // Hide sold marketplace items from the feed
-        query = query.or('category.neq.For Sale,is_sold.eq.false');
-
-        const { data, error } = await query.order('timestamp', { ascending: false });
-
-        if (error) {
-          return;
-        }
-
-        setPosts(data as Post[]);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
+      // Apply location filters
+      if (filterState) {
+        query = query.eq('state', filterState);
       }
-    };
+      if (filterLga) {
+        query = query.eq('lga', filterLga);
+      }
+      if (filterWard) {
+        query = query.eq('ward', filterWard);
+      }
 
+      // Hide sold marketplace items from the feed
+      query = query.or('category.neq.For Sale,is_sold.eq.false');
+
+      const { data, error } = await query.order('timestamp', { ascending: false });
+
+      if (error) {
+        setLoading(false);
+        return;
+      }
+
+      setPosts(data as Post[]);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
+  }, [filterState, filterLga, filterWard]);
+
+  useEffect(() => {
     fetchPosts();
 
     // Set up real-time subscription for all posts
@@ -535,21 +536,8 @@ export const usePosts = (filter?: LocationFilter | null) => {
   );
 
   const refreshPosts = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .order('timestamp', { ascending: false });
-
-      if (error) {
-        return;
-      }
-
-      setPosts(data as Post[]);
-    } catch (error) {
-      // Error fetching posts
-    }
-  }, []);
+    await fetchPosts();
+  }, [fetchPosts]);
 
   return { posts, loading, createPost, createBusiness, deletePost, deleteBusiness, refreshPosts };
 };

@@ -6,7 +6,7 @@ import { PostCard } from '../../components/PostCard';
 import { PostSkeleton } from '../../components/Skeleton';
 import { supabase } from '../../lib/supabase';
 import { Post } from '../../types';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useLocation } from '../../context/LocationContext';
 import { LocationChip } from '../../components/LocationChip';
@@ -20,6 +20,8 @@ import { usePosts } from '../../hooks/use-posts';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { CommentsBottomSheet, CommentsBottomSheetRef } from '../../components/CommentsBottomSheet';
 import ImageViewing from 'react-native-image-viewing';
+import { useNotificationBadge } from '../../context/NotificationBadgeContext';
+import { useScrollToTop } from '@react-navigation/native';
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
 
@@ -93,6 +95,10 @@ export default function HomeTab() {
   const [viewerIndex, setViewerIndex] = useState(0);
   const [viewerVisible, setViewerVisible] = useState(false);
   const bottomSheetRef = useRef<CommentsBottomSheetRef>(null);
+  const { unreadCount } = useNotificationBadge();
+  const flashListRef = useRef<any>(null);
+  
+  useScrollToTop(flashListRef);
   
   const HEADER_HEIGHT = Platform.OS === 'ios' ? 44 + insets.top : 56 + insets.top;
 
@@ -142,6 +148,12 @@ export default function HomeTab() {
     setRefreshing(false);
   }, [refreshPosts]);
 
+  useFocusEffect(
+    useCallback(() => {
+      refreshPosts();
+    }, [refreshPosts])
+  );
+
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
   const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
     setVisiblePostIds(viewableItems.map((v: any) => v.key));
@@ -163,8 +175,28 @@ export default function HomeTab() {
               <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
                 <MapIcon size={24} color={colors.text} />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push('/notifications')}>
+              <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative' }}>
                 <NotificationsIcon size={24} color={colors.text} />
+                {unreadCount > 0 && (
+                  <View style={{
+                    position: 'absolute',
+                    right: -4,
+                    top: -4,
+                    backgroundColor: '#EF4444',
+                    borderRadius: 10,
+                    minWidth: 18,
+                    height: 18,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 4,
+                    borderWidth: 1.5,
+                    borderColor: colors.background
+                  }}>
+                    <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Text>
+                  </View>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -193,14 +225,35 @@ export default function HomeTab() {
             <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
               <MapIcon size={24} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/notifications')}>
+            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative' }}>
               <NotificationsIcon size={24} color={colors.text} />
+              {unreadCount > 0 && (
+                <View style={{
+                  position: 'absolute',
+                  right: -4,
+                  top: -4,
+                  backgroundColor: '#EF4444',
+                  borderRadius: 10,
+                  minWidth: 18,
+                  height: 18,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingHorizontal: 4,
+                  borderWidth: 1.5,
+                  borderColor: colors.background
+                }}>
+                  <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>
       </Animated.View>
 
       <AnimatedFlashList
+        ref={flashListRef}
         data={posts}
         estimatedItemSize={400}
         onScroll={scrollHandler}

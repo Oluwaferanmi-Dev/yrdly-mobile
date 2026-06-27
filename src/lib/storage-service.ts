@@ -104,15 +104,10 @@ export class StorageService {
    * This drastically reduces cached egress bandwidth by serving resized WebP images.
    */
   static getOptimizedImageUrl(url: string | null, width: number = 800, height?: number): string | null {
-    if (!url || typeof url !== 'string' || !url.includes('/storage/v1/object/public/')) {
-      return url;
-    }
-    let optimizedUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
-    optimizedUrl += `?width=${width}&format=webp&quality=80`;
-    if (height) {
-      optimizedUrl += `&height=${height}`;
-    }
-    return optimizedUrl;
+    // We are temporarily bypassing the /render/image/ transformation 
+    // because it causes HTTP 400 errors if the project does not have 
+    // Image Transformations enabled (or if limits are exceeded on the free tier).
+    return url;
   }
 
   /** Get a time-limited signed URL for a private file */

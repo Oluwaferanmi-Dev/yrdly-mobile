@@ -10,26 +10,27 @@ import { LocationProvider } from '../context/LocationContext';
 import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Insights from 'expo-insights';
-import { vexo } from 'vexo-analytics';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // already hidden, ignore
 });
 
-// ── Analytics ──────────────────────────────────────────────────────────────
-// expo-insights: automatic cold-start tracking → visible in EAS Dashboard > Insights
-// It sends events automatically on import; no extra call needed.
+// expo-insights: automatic cold-start tracking
 void Insights;
-
-// Vexo: React Native product analytics — auto-captures navigation, sessions.
-// Only runs in production builds (not in dev mode).
-if (!__DEV__) {
-  vexo(process.env.EXPO_PUBLIC_VEXO_API_KEY ?? '');
-}
-// ────────────────────────────────────────────────────────────────────────────
 
 function NotificationsHandler() {
   usePushNotifications();
+
+  useEffect(() => {
+    // Vexo must be initialized after the native bridge is ready (inside useEffect).
+    // Calling it at module load time crashes due to AsyncStorage not being available.
+    if (!__DEV__) {
+      import('vexo-analytics').then(({ vexo }) => {
+        vexo(process.env.EXPO_PUBLIC_VEXO_API_KEY ?? '');
+      });
+    }
+  }, []);
+
   return null;
 }
 

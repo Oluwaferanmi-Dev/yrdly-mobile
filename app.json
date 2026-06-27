@@ -29,6 +29,7 @@
         "backgroundColor": "#E6F4FE"
       },
       "package": "com.feranmi.dev.yrdlymobile",
+      "googleServicesFile": "./google-services.json",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyARxIyqxipli2RtGuzRP_iWgk39z7GSXpU"

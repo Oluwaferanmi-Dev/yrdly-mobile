@@ -302,12 +302,6 @@ export default function MessagesTab() {
           </Text>
         </View>
 
-        {/* Unread badge */}
-        {unread && (
-          <View style={[styles.unreadBadge, { backgroundColor: colors.tint }]}>
-            <Text style={styles.unreadBadgeText}>{item.unreadCount}</Text>
-          </View>
-          )}
         </TouchableOpacity>
       </Swipeable>
     );

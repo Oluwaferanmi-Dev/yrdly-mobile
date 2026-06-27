@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, TouchableWithoutFeedback, ScrollView, Dimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { MarketplaceGrid } from '../../components/MarketplaceGrid';
 import { EventList } from '../../components/EventList';
@@ -7,6 +7,8 @@ import { BusinessComingSoon } from '../../components/BusinessComingSoon';
 import { useAppTheme } from '../../context/ThemeContext';
 
 type TabType = 'Marketplace' | 'Events' | 'Businesses';
+const TABS: TabType[] = ['Marketplace', 'Events', 'Businesses'];
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function CatalogTab() {
   const { colors } = useAppTheme();
@@ -15,14 +17,18 @@ export default function CatalogTab() {
   const [filterVisible, setFilterVisible] = useState(false);
   const [sortOption, setSortOption] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'Marketplace':
-        return <MarketplaceGrid searchQuery={searchQuery} sortOption={sortOption} />;
-      case 'Events':
-        return <EventList searchQuery={searchQuery} sortOption={sortOption} />;
-      case 'Businesses':
-        return <BusinessComingSoon />;
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleTabPress = (tab: TabType, index: number) => {
+    setActiveTab(tab);
+    scrollViewRef.current?.scrollTo({ x: index * SCREEN_WIDTH, animated: true });
+  };
+
+  const handleScroll = (event: any) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const index = Math.round(offsetX / SCREEN_WIDTH);
+    if (TABS[index] !== activeTab) {
+      setActiveTab(TABS[index]);
     }
   };
   return (
@@ -50,7 +56,7 @@ export default function CatalogTab() {
 
       {/* Segmented Control */}
       <View style={[styles.segmentedControl, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        {(['Marketplace', 'Events', 'Businesses'] as TabType[]).map((tab) => {
+        {TABS.map((tab, index) => {
           const isActive = activeTab === tab;
           return (
             <TouchableOpacity
@@ -59,7 +65,7 @@ export default function CatalogTab() {
                 styles.tabButton, 
                 isActive && { backgroundColor: colors.tint + '1A' } // 10% opacity tint
               ]}
-              onPress={() => setActiveTab(tab)}
+              onPress={() => handleTabPress(tab, index)}
             >
               <Text style={[
                 styles.tabText, 
@@ -75,7 +81,24 @@ export default function CatalogTab() {
 
       {/* Content Area */}
       <View style={styles.contentArea}>
-        {renderContent()}
+        <ScrollView
+          ref={scrollViewRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={handleScroll}
+          scrollEventThrottle={16}
+        >
+          <View style={{ width: SCREEN_WIDTH }}>
+            <MarketplaceGrid searchQuery={searchQuery} sortOption={sortOption} />
+          </View>
+          <View style={{ width: SCREEN_WIDTH }}>
+            <EventList searchQuery={searchQuery} sortOption={sortOption} />
+          </View>
+          <View style={{ width: SCREEN_WIDTH }}>
+            <BusinessComingSoon />
+          </View>
+        </ScrollView>
       </View>
 
       {/* Filter/Sort Modal */}

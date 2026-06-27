@@ -333,16 +333,12 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             </Text>
           </TouchableOpacity>
 
-          <View style={[styles.dot, { backgroundColor: colors.textMuted }]} />
-
           <TouchableOpacity style={styles.actionButton} onPress={onComment}>
             <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
             <Text style={[styles.actionText, { color: colors.textSecondary }]}>
               {post.comment_count || 0}
             </Text>
           </TouchableOpacity>
-
-          <View style={[styles.dot, { backgroundColor: colors.textMuted }]} />
 
           <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
             <Ionicons name="share-social-outline" size={20} color={colors.textSecondary} />

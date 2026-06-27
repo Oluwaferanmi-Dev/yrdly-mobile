@@ -4,7 +4,7 @@ import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
@@ -134,11 +134,29 @@ export default function NotificationsScreen() {
 
     switch (notification.type) {
       case 'message':
-      case 'message_reaction':
+      case 'message_reaction': {
         const cid = notification.related_id || notification.data?.conversation_id;
         if (cid) router.push(`/chat/${cid}`);
         break;
-      // You can add more navigation logic here based on type
+      }
+      case 'post_like':
+      case 'post_comment':
+      case 'post_share': {
+        const pid = notification.related_id || notification.data?.post_id;
+        if (pid) router.push(`/posts/${pid}`);
+        break;
+      }
+      case 'event_invite': {
+        const eid = notification.related_id || notification.data?.event_id;
+        if (eid) router.push(`/events/${eid}`);
+        break;
+      }
+      case 'new_follower':
+      case 'friend_request': {
+        const uid = notification.data?.from_user_id || notification.from_user_id;
+        if (uid) router.push(`/profile/${uid}`);
+        break;
+      }
       default:
         break;
     }
@@ -165,18 +183,18 @@ export default function NotificationsScreen() {
     switch (type) {
       case 'message':
       case 'message_reaction':
-        return <Feather name="message-circle" size={16} color="#60A5FA" />;
+        return <Ionicons name="chatbubble" size={16} color="#60A5FA" />;
       case 'post_like':
-        return <Feather name="heart" size={16} color="#F87171" />;
+        return <Ionicons name="heart" size={16} color="#F87171" />;
       case 'post_comment':
-        return <Feather name="message-square" size={16} color="#C084FC" />;
+        return <Ionicons name="chatbubble" size={16} color="#60A5FA" />;
       case 'event_invite':
-        return <Feather name="calendar" size={16} color="#FB923C" />;
+        return <Ionicons name="calendar" size={16} color="#FB923C" />;
       case 'new_follower':
       case 'friend_request':
-        return <Feather name="user-plus" size={16} color="#34D399" />;
+        return <Ionicons name="person-add" size={16} color="#34D399" />;
       default:
-        return <Feather name="bell" size={16} color={colors.textMuted} />;
+        return <Ionicons name="notifications" size={16} color={colors.textMuted} />;
     }
   };
 

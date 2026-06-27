@@ -17,19 +17,9 @@ import { timeAgo } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 import { Alert } from 'react-native';
 
-interface Comment {
-  id: string;
-  user_id: string;
-  author_name: string;
-  author_image: string;
-  text: string;
-  timestamp: string;
-  like_count: number;
-  user?: {
-    name: string;
-    avatar_url: string;
-  };
-}
+import { StorageService } from '../../lib/storage-service';
+import { CommentItem, CommentType } from '../../components/CommentItem';
+import { CommentInput, CommentInputRef } from '../../components/CommentInput';
 
 export default function PostDetailScreen() {
   const { colors } = useAppTheme();
@@ -39,14 +29,48 @@ export default function PostDetailScreen() {
   const insets = useSafeAreaInsets();
 
   const [post, setPost] = useState<Post | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<CommentType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [inputText, setInputText] = useState('');
-  const [sending, setSending] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(null);
   
   const { deletePost } = usePosts();
 
   const flatListRef = useRef<FlatList>(null);
+  const inputRef = useRef<CommentInputRef>(null);
+
+  const userAvatarSource = React.useMemo(() => {
+    if (user?.user_metadata?.avatar_url) {
+      return StorageService.getOptimizedImageUrl(user.user_metadata.avatar_url, 100) || '';
+    }
+    return '';
+  }, [user?.user_metadata?.avatar_url]);
+
+  const handleReply = useCallback((item: CommentType) => {
+    const username = item.user?.name || item.author_name;
+    const parentId = item.parent_id || item.id;
+    if (username) {
+      setReplyingTo({ id: parentId, name: username });
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, []);
+
+  const handleDeleteComment = useCallback(async (item: CommentType) => {
+    if (!id) return;
+    try {
+      const { error } = await supabase.from('comments').delete().eq('id', item.id);
+      if (error) throw error;
+      setComments(prev => prev.filter(c => c.id !== item.id));
+      if (post) {
+        const newCount = Math.max((post.comment_count || 1) - 1, 0);
+        await supabase.from('posts').update({ comment_count: newCount }).eq('id', id);
+        setPost(prev => prev ? { ...prev, comment_count: newCount } : null);
+      }
+    } catch (e) {
+      console.error('Delete comment error:', e);
+    }
+  }, [post, id]);
 
   const fetchPost = useCallback(async () => {
     if (!id) return;
@@ -88,7 +112,7 @@ export default function PostDetailScreen() {
         table: 'comments',
         filter: `post_id=eq.${id}`,
       }, (payload) => {
-        setComments((prev) => [...prev, payload.new as Comment]);
+        setComments((prev) => [...prev, payload.new as CommentType]);
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
       })
       .subscribe();
@@ -96,11 +120,8 @@ export default function PostDetailScreen() {
     return () => { supabase.removeChannel(ch); };
   }, [id, fetchPost, fetchComments]);
 
-  const handleSendComment = async () => {
-    if (!inputText.trim() || !user || !id || sending) return;
-    setSending(true);
-    const body = inputText.trim();
-    setInputText('');
+  const handleSendComment = async (text: string, parentId?: string) => {
+    if (!text.trim() || !user || !id) return;
     Keyboard.dismiss();
 
     try {
@@ -109,9 +130,10 @@ export default function PostDetailScreen() {
         user_id: user.id,
         author_name: user.user_metadata?.name || user.email || 'Anonymous',
         author_image: user.user_metadata?.avatar_url || null,
-        text: body,
+        text: text.trim(),
         timestamp: new Date().toISOString(),
         like_count: 0,
+        parent_id: parentId || null,
       };
 
       const { error } = await supabase.from('comments').insert(payload);
@@ -126,16 +148,22 @@ export default function PostDetailScreen() {
 
       // Trigger notification
       const { NotificationTriggers } = await import('../../lib/notification-triggers');
-      await NotificationTriggers.onPostCommented(id, user.id, body);
+      await NotificationTriggers.onPostCommented(id, user.id, text.trim());
 
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (e) {
       console.error('Post comment error:', e);
-      setInputText(body);
-    } finally {
-      setSending(false);
+      throw e;
     }
   };
+
+  const commentTree = React.useMemo(() => {
+    const rootComments = comments.filter(c => !c.parent_id);
+    return rootComments.map(root => ({
+      ...root,
+      replies: comments.filter(c => c.parent_id === root.id)
+    }));
+  }, [comments]);
 
   const handleDeletePost = () => {
     Alert.alert(
@@ -157,41 +185,16 @@ export default function PostDetailScreen() {
     );
   };
 
-  const renderComment = ({ item }: { item: Comment }) => {
+  const renderComment = useCallback(({ item }: { item: CommentType }) => {
     return (
-      <View style={styles.commentRow}>
-        <View style={styles.avatar}>
-          {item.user?.avatar_url || item.author_image ? (
-            <Image source={{ uri: item.user?.avatar_url || item.author_image }} style={styles.avatarImg} contentFit="cover" />
-          ) : (
-            <View style={[styles.avatarImg, styles.avatarFallback, { backgroundColor: colors.tint }]}>
-              <Text style={styles.avatarFallbackText}>
-                {(item.user?.name || item.author_name || '?').charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
-        </View>
-        <View style={[styles.commentContent, { backgroundColor: colors.inputBackground }]}>
-          <View style={styles.commentHeader}>
-            <Text style={[styles.authorName, { color: colors.text }]}>{item.user?.name || item.author_name}</Text>
-            <Text style={[styles.timestamp, { color: colors.textMuted }]}>{timeAgo(item.timestamp)}</Text>
-          </View>
-          <Text style={[styles.commentText, { color: colors.textSecondary }]}>{item.text}</Text>
-        </View>
-      </View>
+      <CommentItem 
+        item={item} 
+        currentUserId={user?.id}
+        onReply={handleReply} 
+        onDelete={handleDeleteComment}
+      />
     );
-  };
-
-  const ListHeader = () => (
-    <View style={styles.listHeader}>
-      {post ? (
-        <PostCard post={post} />
-      ) : (
-        <ActivityIndicator size="small" color={colors.tint} style={{ padding: 20 }} />
-      )}
-      <Text style={[styles.commentsTitle, { color: colors.text }]}>Comments ({post?.comment_count || 0})</Text>
-    </View>
-  );
+  }, [handleReply, handleDeleteComment, user?.id]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
@@ -221,10 +224,19 @@ export default function PostDetailScreen() {
         ) : (
           <FlatList
             ref={flatListRef}
-            data={comments}
+            data={commentTree}
             keyExtractor={(item) => item.id}
             renderItem={renderComment}
-            ListHeaderComponent={ListHeader}
+            ListHeaderComponent={
+              <View style={styles.listHeader}>
+                {post ? (
+                  <PostCard post={post} />
+                ) : (
+                  <ActivityIndicator size="small" color={colors.tint} style={{ padding: 20 }} />
+                )}
+                <Text style={[styles.commentsTitle, { color: colors.text }]}>Comments ({post?.comment_count || 0})</Text>
+              </View>
+            }
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
@@ -237,26 +249,15 @@ export default function PostDetailScreen() {
         )}
 
         {/* Input */}
-        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: colors.card, paddingBottom: Math.max(insets.bottom, 10) }]}>
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
-            placeholder="Add a comment..."
-            placeholderTextColor={colors.textMuted}
-            value={inputText}
-            onChangeText={setInputText}
-            multiline
-          />
-          <TouchableOpacity
-            style={[styles.sendBtn, { backgroundColor: colors.tint }, !inputText.trim() && [styles.sendBtnDisabled, { backgroundColor: colors.textMuted }]]}
-            onPress={handleSendComment}
-            disabled={!inputText.trim() || sending}
-          >
-            {sending
-              ? <ActivityIndicator size="small" color="#FFF" />
-              : <Feather name="send" size={18} color="#FFFFFF" />
-            }
-          </TouchableOpacity>
-        </View>
+        <CommentInput
+          ref={inputRef}
+          userAvatarSource={userAvatarSource}
+          userInitial={(user?.user_metadata?.name || user?.email || '?').charAt(0).toUpperCase()}
+          replyingTo={replyingTo}
+          onClearReply={() => setReplyingTo(null)}
+          onSubmit={handleSendComment}
+          InputComponent={TextInput}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -276,29 +277,6 @@ const styles = StyleSheet.create({
   listHeader: { paddingBottom: 10 },
   divider: { height: 8, marginVertical: 10 },
   commentsTitle: { fontSize: 16, fontWeight: 'bold', paddingHorizontal: 16, marginBottom: 10 },
-  commentRow: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 16 },
-  avatar: { marginRight: 12 },
-  avatarImg: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#E8F5E9' },
-  avatarFallback: { justifyContent: 'center', alignItems: 'center' },
-  avatarFallbackText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
-  commentContent: { flex: 1, padding: 12, borderRadius: 12 },
-  commentHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  authorName: { fontSize: 14, fontWeight: 'bold' },
-  timestamp: { fontSize: 12 },
-  commentText: { fontSize: 14, lineHeight: 20 },
   emptyContainer: { alignItems: 'center', marginTop: 40 },
   emptyText: { fontSize: 14, marginTop: 12 },
-  inputRow: {
-    flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 12, paddingVertical: 10,
-    borderTopWidth: 1,
-  },
-  input: {
-    flex: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10,
-    fontSize: 15, maxHeight: 100, marginRight: 10, minHeight: 40,
-  },
-  sendBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    justifyContent: 'center', alignItems: 'center', marginBottom: 2,
-  },
-  sendBtnDisabled: { },
 });

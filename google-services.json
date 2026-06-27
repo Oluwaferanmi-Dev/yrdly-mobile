@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "303453233773",
+    "project_id": "yrdly-691cc",
+    "storage_bucket": "yrdly-691cc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:303453233773:android:9166f29c296f509a845564",
+        "android_client_info": {
+          "package_name": "com.feranmi.dev.yrdlymobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvIZ_Tcc8g_ahNkAwETEoNXSW0rWCiUAM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

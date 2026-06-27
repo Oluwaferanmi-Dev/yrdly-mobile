@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, forwardRef, useImperativeHandle, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal, BottomSheetFlatList, BottomSheetTextInput, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
@@ -19,37 +20,62 @@ export type CommentsBottomSheetRef = {
   dismiss: () => void;
 };
 
-interface Comment {
-  id: string;
-  user_id: string;
-  author_name: string;
-  author_image: string;
-  text: string;
-  timestamp: string;
-  like_count: number;
-  user?: {
-    name: string;
-    avatar_url: string;
-  };
-}
+import { CommentItem, CommentType } from './CommentItem';
+import { CommentInput, CommentInputRef } from './CommentInput';
 
 export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBottomSheetProps>(({ postId }, ref) => {
   const { colors } = useAppTheme();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['50%', '100%'], []);
   
   const [post, setPost] = useState<Post | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<CommentType[]>([]);
   const [loading, setLoading] = useState(false);
-  const [inputText, setInputText] = useState('');
-  const [sending, setSending] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(null);
 
   useImperativeHandle(ref, () => ({
     present: () => bottomSheetModalRef.current?.present(),
     dismiss: () => bottomSheetModalRef.current?.dismiss(),
   }));
+
+  const inputRef = useRef<CommentInputRef>(null);
+
+  const handleReply = useCallback((item: CommentType) => {
+    const username = item.user?.name || item.author_name;
+    const parentId = item.parent_id || item.id;
+    if (username) {
+      setReplyingTo({ id: parentId, name: username });
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, []);
+
+  const handleDeleteComment = useCallback(async (item: CommentType) => {
+    if (!postId) return;
+    try {
+      const { error } = await supabase.from('comments').delete().eq('id', item.id);
+      if (error) throw error;
+      setComments(prev => prev.filter(c => c.id !== item.id));
+      if (post) {
+        const newCount = Math.max((post.comment_count || 1) - 1, 0);
+        await supabase.from('posts').update({ comment_count: newCount }).eq('id', postId);
+        setPost(prev => prev ? { ...prev, comment_count: newCount } : null);
+      }
+    } catch (e) {
+      console.error('Delete comment error:', e);
+    }
+  }, [post, postId]);
+
+  const userAvatarSource = useMemo(() => {
+    if (user?.user_metadata?.avatar_url) {
+      return StorageService.getOptimizedImageUrl(user.user_metadata.avatar_url, 100) || '';
+    }
+    return '';
+  }, [user?.user_metadata?.avatar_url]);
 
   const fetchPost = useCallback(async () => {
     if (!postId) return;
@@ -100,7 +126,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
         setComments((prev) => {
           // Check if it already exists (optimistic update prevention)
           if (prev.find(c => c.id === payload.new.id)) return prev;
-          return [...prev, payload.new as Comment];
+          return [...prev, payload.new as CommentType];
         });
       })
       .subscribe();
@@ -108,11 +134,8 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
     return () => { supabase.removeChannel(ch); };
   }, [postId, fetchPost, fetchComments]);
 
-  const handleSendComment = async () => {
-    if (!inputText.trim() || !user || !postId || sending) return;
-    setSending(true);
-    const body = inputText.trim();
-    setInputText('');
+  const handleSendComment = async (text: string, parentId?: string) => {
+    if (!text.trim() || !user || !postId) return;
 
     try {
       const payload = {
@@ -120,9 +143,10 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
         user_id: user.id,
         author_name: user.user_metadata?.name || user.email || 'Anonymous',
         author_image: user.user_metadata?.avatar_url || null,
-        text: body,
+        text: text.trim(),
         timestamp: new Date().toISOString(),
         like_count: 0,
+        parent_id: parentId || null,
       };
 
       const { error } = await supabase.from('comments').insert(payload);
@@ -137,15 +161,21 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
 
       // Trigger notification
       const { NotificationTriggers } = await import('../lib/notification-triggers');
-      await NotificationTriggers.onPostCommented(postId, user.id, body);
+      await NotificationTriggers.onPostCommented(postId, user.id, text.trim());
 
     } catch (e) {
       console.error('Post comment error:', e);
-      setInputText(body);
-    } finally {
-      setSending(false);
+      throw e;
     }
   };
+
+  const commentTree = useMemo(() => {
+    const rootComments = comments.filter(c => !c.parent_id);
+    return rootComments.map(root => ({
+      ...root,
+      replies: comments.filter(c => c.parent_id === root.id)
+    }));
+  }, [comments]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -159,45 +189,16 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
     []
   );
 
-  const renderComment = useCallback(({ item }: { item: Comment }) => {
+  const renderComment = useCallback(({ item }: { item: CommentType }) => {
     return (
-      <View style={styles.commentRow}>
-        <View style={styles.avatar}>
-          {item.user?.avatar_url || item.author_image ? (
-            <Image source={{ uri: StorageService.getOptimizedImageUrl(item.user?.avatar_url || item.author_image, 100) || '' }} style={styles.avatarImg} contentFit="cover" />
-          ) : (
-            <View style={[styles.avatarImg, styles.avatarFallback, { backgroundColor: colors.tint }]}>
-              <Text style={styles.avatarFallbackText}>
-                {(item.user?.name || item.author_name || '?').charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
-        </View>
-        <View style={styles.commentContent}>
-          <Text style={styles.commentText}>
-            <Text style={[styles.authorName, { color: colors.text }]}>
-              {item.user?.name || item.author_name}{'  '}
-            </Text>
-            <Text style={{ color: colors.text }}>
-              {item.text}
-            </Text>
-          </Text>
-          <View style={styles.commentActionsRow}>
-            <Text style={[styles.timestamp, { color: colors.textMuted }]}>{timeAgo(item.timestamp)}</Text>
-            {item.like_count > 0 && (
-              <Text style={[styles.likeCountText, { color: colors.textMuted }]}>{item.like_count} likes</Text>
-            )}
-            <TouchableOpacity>
-              <Text style={[styles.replyText, { color: colors.textMuted }]}>Reply</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.heartIcon}>
-          <Ionicons name="heart-outline" size={16} color={colors.textMuted} />
-        </TouchableOpacity>
-      </View>
+      <CommentItem 
+        item={item} 
+        currentUserId={user?.id}
+        onReply={handleReply} 
+        onDelete={handleDeleteComment}
+      />
     );
-  }, [colors]);
+  }, [handleReply, handleDeleteComment, user?.id]);
 
   return (
     <BottomSheetModal
@@ -221,7 +222,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
         </View>
       ) : (
         <BottomSheetFlatList
-          data={comments}
+          data={commentTree}
           keyExtractor={(item) => item.id}
           renderItem={renderComment}
           contentContainerStyle={styles.listContent}
@@ -236,46 +237,15 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       )}
 
       {/* Input */}
-      <View style={[styles.inputContainer, { borderTopColor: colors.borderLight, backgroundColor: colors.background }]}>
-        <View style={styles.inputAvatar}>
-          {user?.user_metadata?.avatar_url ? (
-            <Image source={{ uri: StorageService.getOptimizedImageUrl(user.user_metadata.avatar_url, 100) || '' }} style={styles.avatarImg} contentFit="cover" />
-          ) : (
-            <View style={[styles.avatarImg, styles.avatarFallback, { backgroundColor: colors.tint }]}>
-              <Text style={styles.avatarFallbackText}>
-                {(user?.user_metadata?.name || user?.email || '?').charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
-        </View>
-        <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground }]}>
-          <BottomSheetTextInput
-            style={[styles.input, { color: colors.text }]}
-            placeholder="Add a comment..."
-            placeholderTextColor={colors.textMuted}
-            value={inputText}
-            onChangeText={setInputText}
-            multiline
-            maxLength={500}
-          />
-          <TouchableOpacity
-            style={styles.sendBtn}
-            onPress={handleSendComment}
-            disabled={!inputText.trim() || sending}
-          >
-            {sending ? (
-              <ActivityIndicator size="small" color={colors.tint} />
-            ) : (
-              <Text style={[
-                styles.sendText,
-                { color: inputText.trim() ? '#82DB7E' : colors.textMuted }
-              ]}>
-                Post
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
+      <CommentInput
+        ref={inputRef}
+        userAvatarSource={userAvatarSource}
+        userInitial={(user?.user_metadata?.name || user?.email || '?').charAt(0).toUpperCase()}
+        replyingTo={replyingTo}
+        onClearReply={() => setReplyingTo(null)}
+        onSubmit={handleSendComment}
+        InputComponent={BottomSheetTextInput}
+      />
     </BottomSheetModal>
   );
 });
@@ -303,65 +273,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 40,
   },
-  commentRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  avatar: {
-    marginRight: 12,
-  },
-  avatarImg: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#E8F5E9',
-  },
-  avatarFallback: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarFallbackText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  commentContent: {
-    flex: 1,
-    paddingRight: 16,
-  },
-  authorName: {
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  commentText: {
-    fontSize: 14,
-    lineHeight: 18,
-    marginBottom: 6,
-  },
-  commentActionsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  timestamp: {
-    fontSize: 12,
-    marginRight: 12,
-  },
-  likeCountText: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginRight: 12,
-  },
-  replyText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  heartIcon: {
-    padding: 4,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-  },
+
   emptyContainer: {
     alignItems: 'center',
     marginTop: 40,
@@ -370,43 +282,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 4,
-  },
-  emptySubText: {
-    fontSize: 14,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-  },
-  inputAvatar: {
-    marginRight: 12,
-  },
-  inputWrapper: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    minHeight: 40,
-  },
-  input: {
-    flex: 1,
-    fontSize: 14,
-    maxHeight: 100,
-    marginRight: 8,
-    paddingTop: 0,
-    paddingBottom: 0,
-  },
-  sendBtn: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendText: {
-    fontSize: 14,
-    fontWeight: 'bold',
   },
 });
