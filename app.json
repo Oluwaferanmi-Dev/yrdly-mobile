@@ -112,7 +112,8 @@
         }
       ],
       "expo-video",
-      "expo-audio"
+      "expo-audio",
+      "./plugins/withAROptional.js"
     ],
     "newArchEnabled": true,
     "experiments": {
