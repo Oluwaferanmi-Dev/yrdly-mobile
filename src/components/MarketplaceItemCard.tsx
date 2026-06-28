@@ -91,7 +91,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
           <View style={[styles.avatar, { backgroundColor: colors.tint }]}>
             {item.user?.avatar_url || item.author_image ? (
               <Image 
-                source={{ uri: StorageService.getOptimizedImageUrl(item.user?.avatar_url || item.author_image, 150) || '' }} 
+                source={{ uri: StorageService.getOptimizedImageUrl(item.user?.avatar_url || item.author_image || null, 150) || '' }} 
                 style={styles.avatarImage} 
               />
             ) : (

@@ -41,7 +41,7 @@ interface ConversationMeta {
 }
 
 export default function ChatScreen() {
-  const { colors } = useAppTheme();
+  const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -125,7 +125,7 @@ export default function ChatScreen() {
         
         // Mark as read if it's from the other user
         const newMsg = payload.new as Message;
-        if (newMsg.sender_id !== user.id && !newMsg.is_read) {
+        if (newMsg.sender_id !== user?.id && !newMsg.is_read) {
           supabase.from('messages').update({ is_read: true }).eq('id', newMsg.id).then();
         }
       })
@@ -340,7 +340,7 @@ export default function ChatScreen() {
           style={[
             styles.bubble, 
             isMine ? styles.bubbleMine : styles.bubbleTheirs,
-            isMine ? { backgroundColor: colors.tint } : { backgroundColor: colors.inputBackground },
+            isMine ? { backgroundColor: colors.tint } : { backgroundColor: isDarkMode ? colors.inputBackground : '#E5E5EA' },
             hasMedia && !msgText && { backgroundColor: 'transparent', paddingHorizontal: 0, paddingVertical: 0, paddingBottom: 0 },
             hasMedia && msgText && { paddingHorizontal: 4, paddingVertical: 4, paddingBottom: 6 }
           ]}

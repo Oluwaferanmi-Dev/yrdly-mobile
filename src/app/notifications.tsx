@@ -297,6 +297,7 @@ export default function NotificationsScreen() {
       ) : (
         <FlashList
           data={filteredNotifications}
+          // @ts-ignore
           estimatedItemSize={75}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}

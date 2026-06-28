@@ -205,7 +205,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         >
           <View style={[styles.avatar, { backgroundColor: colors.inputBackground }]}>
             {post.user?.avatar_url || post.author_image ? (
-              <Image source={{ uri: StorageService.getOptimizedImageUrl(post.user?.avatar_url || post.author_image, 150) || '' }} style={styles.avatarImage} />
+              <Image source={{ uri: StorageService.getOptimizedImageUrl(post.user?.avatar_url || post.author_image || null, 150) || '' }} style={styles.avatarImage} />
             ) : (
               <Text style={[styles.avatarText, { color: colors.tint }]}>
                 {getInitials(post.user?.name || post.author_name)}

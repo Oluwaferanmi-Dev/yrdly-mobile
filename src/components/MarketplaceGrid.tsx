@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator, Text, Alert } from 'react-native';
+import { View, StyleSheet, FlatList, ActivityIndicator, Text, Alert, RefreshControl } from 'react-native';
 import { MarketplaceItemCard } from './MarketplaceItemCard';
 import { Skeleton } from './Skeleton';
 import { supabase } from '../lib/supabase';
@@ -21,6 +21,7 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
   const { activeFilter } = useLocation();
   const [items, setItems] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [messagingItem, setMessagingItem] = useState<string | null>(null);
 
   const handleMessageSeller = useCallback(async (item: Post) => {
@@ -77,8 +78,8 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
     }
   }, [user, router]);
 
-  const fetchItems = useCallback(async () => {
-    setLoading(true);
+  const fetchItems = useCallback(async (isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
     try {
       let query = supabase
         .from('posts')
@@ -110,9 +111,15 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
     } catch (error) {
       console.error('Error fetching marketplace items:', error);
     } finally {
-      setLoading(false);
+      if (!isRefresh) setLoading(false);
     }
   }, [searchQuery, sortOption, activeFilter]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchItems(true);
+    setRefreshing(false);
+  }, [fetchItems]);
 
   useFocusEffect(
     useCallback(() => {
@@ -152,6 +159,7 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
       data={items}
       keyExtractor={(item) => item.id}
       numColumns={2}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
       renderItem={({ item }) => (
         <MarketplaceItemCard 
           item={item} 

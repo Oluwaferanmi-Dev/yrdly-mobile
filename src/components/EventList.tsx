@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator, Text } from 'react-native';
+import { View, StyleSheet, FlatList, ActivityIndicator, Text, RefreshControl } from 'react-native';
 import { EventCard } from './EventCard';
 import { PostSkeleton } from './Skeleton';
 import { supabase } from '../lib/supabase';
@@ -19,9 +19,10 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
   const router = useRouter();
   const [events, setEvents] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchEvents = useCallback(async () => {
-    setLoading(true);
+  const fetchEvents = useCallback(async (isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
     try {
       let query = supabase
         .from('posts')
@@ -59,9 +60,15 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
     } catch (error) {
       console.error('Error fetching events:', error);
     } finally {
-      setLoading(false);
+      if (!isRefresh) setLoading(false);
     }
-  }, [searchQuery, sortOption]);
+  }, [searchQuery, sortOption, activeFilter]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchEvents(true);
+    setRefreshing(false);
+  }, [fetchEvents]);
 
   useFocusEffect(
     useCallback(() => {
@@ -93,6 +100,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
     <FlatList
       data={events}
       keyExtractor={(item) => item.id}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
       renderItem={({ item }) => (
         <EventCard 
           event={item} 

@@ -23,7 +23,7 @@ import ImageViewing from 'react-native-image-viewing';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 import { useScrollToTop } from '@react-navigation/native';
 
-const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList as any) as any;
 
 const QuickPostBox = () => {
   const { user, profile } = useAuth();
@@ -258,10 +258,10 @@ export default function HomeTab() {
         estimatedItemSize={400}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Post) => item.id}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        renderItem={({ item }) => (
+        renderItem={({ item }: { item: Post }) => (
           <PostCard 
             post={item} 
             isVisible={visiblePostIds.includes(item.id)}

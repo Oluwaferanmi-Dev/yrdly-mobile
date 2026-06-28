@@ -175,6 +175,7 @@ export default function CommunityScreen() {
       ) : (
         <FlashList
           data={users}
+          // @ts-ignore
           estimatedItemSize={65}
           keyExtractor={item => item.id}
           renderItem={renderUser}

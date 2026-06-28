@@ -1,0 +1,25 @@
+src/app/(tabs)/index.tsx(258,9): error TS2322: Type '{ ref: RefObject<any>; data: Post[]; estimatedItemSize: number; onScroll: ScrollHandlerProcessed<Record<string, unknown>>; scrollEventThrottle: number; ... 7 more ...; ListEmptyComponent: Element; }' is not assignable to type 'IntrinsicAttributes & RestProps<FlashListProps<unknown> & { ref?: Ref<FlashListRef<unknown>> | undefined; }> & AnimatedStyleProps<...> & LayoutProps & { ...; }'.
+  Property 'estimatedItemSize' does not exist on type 'IntrinsicAttributes & RestProps<FlashListProps<unknown> & { ref?: Ref<FlashListRef<unknown>> | undefined; }> & AnimatedStyleProps<...> & LayoutProps & { ...; }'.
+src/app/(tabs)/index.tsx(261,33): error TS18046: 'item' is of type 'unknown'.
+src/app/(tabs)/index.tsx(266,13): error TS2322: Type 'unknown' is not assignable to type 'Post'.
+src/app/(tabs)/index.tsx(267,48): error TS18046: 'item' is of type 'unknown'.
+src/app/(tabs)/index.tsx(269,19): error TS18046: 'item' is of type 'unknown'.
+src/app/(tabs)/index.tsx(269,77): error TS18046: 'item' is of type 'unknown'.
+src/app/(tabs)/index.tsx(270,24): error TS18046: 'item' is of type 'unknown'.
+src/app/(tabs)/index.tsx(270,74): error TS18046: 'item' is of type 'unknown'.
+src/app/(tabs)/index.tsx(271,42): error TS18046: 'item' is of type 'unknown'.
+src/app/(tabs)/index.tsx(274,38): error TS18046: 'item' is of type 'unknown'.
+src/app/(tabs)/messages.tsx(284,33): error TS2339: Property 'convRight' does not exist on type '{ container: { flex: number; }; searchContainer: { flexDirection: "row"; alignItems: "center"; margin: number; marginBottom: number; borderRadius: number; paddingHorizontal: number; borderWidth: number; }; ... 28 more ...; deleteActionText: { ...; }; }'.
+src/app/(tabs)/messages.tsx(354,11): error TS2322: Type '{ data: Conversation[]; estimatedItemSize: number; keyExtractor: (item: Conversation) => string; renderItem: ({ item }: { item: Conversation; }) => Element; contentContainerStyle: { ...; }; showsVerticalScrollIndicator: false; }' is not assignable to type 'IntrinsicAttributes & FlashListProps<Conversation> & { ref?: Ref<FlashListRef<Conversation>> | undefined; }'.
+  Property 'estimatedItemSize' does not exist on type 'IntrinsicAttributes & FlashListProps<Conversation> & { ref?: Ref<FlashListRef<Conversation>> | undefined; }'.
+src/app/_layout.tsx(15,9): error TS2554: Expected 1 arguments, but got 0.
+src/app/chat/[id].tsx(128,34): error TS18047: 'user' is possibly 'null'.
+src/app/community.tsx(178,11): error TS2322: Type '{ data: any[]; estimatedItemSize: number; keyExtractor: (item: any) => any; renderItem: ({ item }: { item: any; }) => Element; ListHeaderComponent: () => Element; contentContainerStyle: { ...; }; showsVerticalScrollIndicator: false; }' is not assignable to type 'IntrinsicAttributes & FlashListProps<any> & { ref?: Ref<FlashListRef<any>> | undefined; }'.
+  Property 'estimatedItemSize' does not exist on type 'IntrinsicAttributes & FlashListProps<any> & { ref?: Ref<FlashListRef<any>> | undefined; }'.
+src/app/notifications.tsx(300,11): error TS2322: Type '{ data: Notification[]; estimatedItemSize: number; keyExtractor: (item: Notification) => string; renderItem: ({ item }: { item: Notification; }) => Element; contentContainerStyle: { ...; }; showsVerticalScrollIndicator: false; }' is not assignable to type 'IntrinsicAttributes & FlashListProps<Notification> & { ref?: Ref<FlashListRef<Notification>> | undefined; }'.
+  Property 'estimatedItemSize' does not exist on type 'IntrinsicAttributes & FlashListProps<Notification> & { ref?: Ref<FlashListRef<Notification>> | undefined; }'.
+src/components/CommentsBottomSheet.tsx(233,36): error TS2551: Property 'emptySubText' does not exist on type '{ header: { alignItems: "center"; paddingVertical: number; }; headerTitle: { fontSize: number; fontWeight: "bold"; marginBottom: number; }; headerDivider: { width: "100%"; height: number; }; center: { ...; }; listContent: { ...; }; emptyContainer: { ...; }; emptyText: { ...; }; }'. Did you mean 'emptyText'?
+src/components/MarketplaceItemCard.tsx(94,68): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+src/components/PostCard.tsx(208,73): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.

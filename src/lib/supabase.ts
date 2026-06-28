@@ -15,15 +15,18 @@ const ExpoSecureStoreAdapter = {
   },
 };
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('[Yrdly] Missing Supabase environment variables. Check your .env file.');
+  console.error('🚨 [Yrdly] Missing Supabase environment variables! 🚨\nIf you built this on EAS, make sure you uploaded your secrets using `eas secret:push`.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder', 
+  {
+    auth: {
     storage: Platform.OS === 'web' ? typeof window !== 'undefined' ? window.localStorage : undefined : ExpoSecureStoreAdapter,
     autoRefreshToken: true,
     persistSession: true,

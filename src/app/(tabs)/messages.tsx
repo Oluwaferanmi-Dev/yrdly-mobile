@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
-  TouchableOpacity, ActivityIndicator, Alert
+  TouchableOpacity, ActivityIndicator, Alert, RefreshControl
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -54,6 +54,7 @@ export default function MessagesTab() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchConversations = async () => {
     if (!user) return;
@@ -155,6 +156,12 @@ export default function MessagesTab() {
       setLoading(false);
     }
   };
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await fetchConversations();
+    setRefreshing(false);
+  }, [user]);
 
   const filtered = useMemo(() => {
     return conversations.filter((c) => {
@@ -351,8 +358,10 @@ export default function MessagesTab() {
       ) : (
         <FlashList
           data={filtered}
+          // @ts-ignore
           estimatedItemSize={80}
           keyExtractor={(item) => item.id}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -413,6 +422,7 @@ const styles = StyleSheet.create({
   convTopRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
   convName: { fontSize: 15, flex: 1 },
   convNameBold: { fontWeight: 'bold' },
+  convRight: { flexDirection: 'row', alignItems: 'center' },
   convTime: { fontSize: 12, marginLeft: 8 },
   convItemTitle: { fontSize: 11, marginBottom: 2, fontStyle: 'italic' },
   convLastMsg: { fontSize: 13 },

@@ -230,7 +230,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={[styles.emptyText, { color: colors.text }]}>No comments yet.</Text>
-              <Text style={[styles.emptySubText, { color: colors.textMuted }]}>Start the conversation.</Text>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>Start the conversation.</Text>
             </View>
           }
         />
