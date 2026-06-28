@@ -9,16 +9,14 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { LocationProvider } from '../context/LocationContext';
 import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
 import * as SplashScreen from 'expo-splash-screen';
-// import * as Insights from 'expo-insights';
-// import Observe from 'expo-observe';
+import * as Insights from 'expo-insights';
 
-// Observe.configure({});
 SplashScreen.preventAutoHideAsync().catch(() => {
   // already hidden, ignore
 });
 
 // expo-insights: automatic cold-start tracking
-// void Insights;
+void Insights;
 
 function NotificationsHandler() {
   usePushNotifications();
