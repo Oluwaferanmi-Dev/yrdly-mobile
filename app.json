@@ -119,9 +119,8 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "d0cca753-650d-4510-bb1d-d26ec8c3d7e9"
+        "projectId": "0e2cf828-b3ee-4062-ad57-a337ff57fd9f"
       }
-    },
-    "owner": "yrdly-dev"
+    }
   }
 }
