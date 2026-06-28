@@ -12,7 +12,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
 import ImageViewing from 'react-native-image-viewing';
-import { Video, ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -39,6 +39,21 @@ interface ConversationMeta {
   item_price?: number;
   business_name?: string;
 }
+
+const ChatVideo = React.memo(({ url, width, height, borderRadius, marginBottom }: { url: string, width: number, height: number, borderRadius: number, marginBottom: number }) => {
+  const player = useVideoPlayer(url, player => {
+    player.loop = false;
+  });
+
+  return (
+    <VideoView
+      style={{ width, height, borderRadius, marginBottom }}
+      player={player}
+      allowsFullscreen
+      allowsPictureInPicture
+    />
+  );
+});
 
 export default function ChatScreen() {
   const { colors, isDarkMode } = useAppTheme();
@@ -364,11 +379,12 @@ export default function ChatScreen() {
             </TouchableOpacity>
           )}
           {item.media_url && item.media_type === 'video' && (
-            <Video
-              source={{ uri: item.media_url }}
-              style={{ width: 220, height: 220, borderRadius: 14, marginBottom: msgText ? 6 : 0 }}
-              resizeMode={ResizeMode.COVER}
-              useNativeControls
+            <ChatVideo
+              url={item.media_url}
+              width={220}
+              height={220}
+              borderRadius={14}
+              marginBottom={msgText ? 6 : 0}
             />
           )}
           {!!msgText && (

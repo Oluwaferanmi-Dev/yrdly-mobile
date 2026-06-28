@@ -2,7 +2,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import { Audio } from 'expo-av';
 import { usePushNotifications } from '../hooks/use-push-notifications';
 import { AuthProvider, useAuth } from '../hooks/use-supabase-auth';
 import { ThemeProvider } from '../context/ThemeContext';
@@ -34,9 +33,11 @@ function NotificationsHandler() {
   return null;
 }
 
+import { setAudioModeAsync } from 'expo-audio';
+
 // Configure audio to play even when the physical silent switch is enabled on iOS
-Audio.setAudioModeAsync({
-  playsInSilentModeIOS: true,
+setAudioModeAsync({
+  playsInSilentMode: true,
 });
 
 function RootNavigationGuard() {

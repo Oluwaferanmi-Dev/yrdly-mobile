@@ -7,7 +7,7 @@ import {
 import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import ImageViewing from 'react-native-image-viewing';
-import { Video, ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -17,6 +17,29 @@ import { formatPrice, timeAgo } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
+
+const MarketVideo = React.memo(({ url, shouldPlay }: { url: string, shouldPlay: boolean }) => {
+  const player = useVideoPlayer(url, player => {
+    player.loop = true;
+  });
+
+  useEffect(() => {
+    if (shouldPlay) {
+      player.play();
+    } else {
+      player.pause();
+    }
+  }, [shouldPlay, player]);
+
+  return (
+    <VideoView
+      style={styles.mainImage}
+      player={player}
+      allowsFullscreen
+      allowsPictureInPicture
+    />
+  );
+});
 
 export default function MarketplaceDetailScreen() {
   const { colors } = useAppTheme();
@@ -183,14 +206,7 @@ export default function MarketplaceDetailScreen() {
               {mediaItems.map((media, i) => (
                 <View key={i} style={styles.mainImage}>
                   {media.type === 'video' ? (
-                    <Video
-                      source={{ uri: media.url }}
-                      style={styles.mainImage}
-                      useNativeControls
-                      resizeMode={ResizeMode.COVER}
-                      isLooping
-                      shouldPlay={activeScrollIndex === i}
-                    />
+                    <MarketVideo url={media.url} shouldPlay={activeScrollIndex === i} />
                   ) : (
                     <TouchableOpacity 
                       activeOpacity={0.9} 

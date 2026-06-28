@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, useWindowDimensions, Image as RNImage, FlatList, Share } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import Animated, { useSharedValue, withSpring, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Image } from 'expo-image';
-import { Video, ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Post } from '../types';
@@ -24,6 +24,63 @@ interface PostCardProps {
   isVisible?: boolean;
   onOpenImageViewer?: (images: { uri: string }[], index: number) => void;
 }
+
+const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted, setIsVideoMuted }: { post: Post, isVisible?: boolean, isVideoMuted: boolean, setIsVideoMuted: (muted: boolean) => void }) {
+  const [isReady, setIsReady] = useState(false);
+  
+  const player = useVideoPlayer(post.video_url || '', player => {
+    player.loop = true;
+    player.muted = isVideoMuted;
+    if (isVisible !== false) {
+      player.play();
+    }
+  });
+
+  useEffect(() => {
+    if (player) {
+      player.muted = isVideoMuted;
+    }
+  }, [isVideoMuted, player]);
+
+  useEffect(() => {
+    if (player) {
+      if (isVisible === false) {
+        player.pause();
+      } else {
+        player.play();
+      }
+    }
+  }, [isVisible, player]);
+
+  return (
+    <>
+      <VideoView
+        player={player}
+        style={{ width: '100%', height: '100%' }}
+        contentFit="cover"
+        nativeControls={true}
+        onFirstFrameRender={() => setIsReady(true)}
+      />
+      {!isReady && post.video_thumbnail_url && (
+        <Image 
+          source={{ uri: post.video_thumbnail_url }} 
+          style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 1 }} 
+          contentFit="cover" 
+        />
+      )}
+      <TouchableOpacity 
+        style={[styles.muteButtonOverlay, { zIndex: 2 }]} 
+        onPress={(e) => { 
+          e.stopPropagation(); 
+          setIsVideoMuted(!isVideoMuted); 
+        }}
+        activeOpacity={0.8}
+      >
+        <Ionicons name={isVideoMuted ? "volume-mute" : "volume-medium"} size={20} color="#FFF" />
+      </TouchableOpacity>
+    </>
+  );
+});
 
 export const PostCard = React.memo(function PostCard({ post, onPress, onLike, onComment, onShare, isVisible, onOpenImageViewer }: PostCardProps) {
   const router = useRouter();
@@ -102,6 +159,11 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       withTiming(0, { duration: 200 })
     );
   };
+
+  const heartAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: heartOpacity.value,
+    transform: [{ scale: heartScale.value }]
+  }));
 
   const handleImageTap = (index: number) => {
     const now = Date.now();
@@ -250,28 +312,12 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       {/* Video */}
       {post.video_url && (
         <View style={[styles.imageContainer, { width: imageDisplayWidth, height: imageDisplayWidth, backgroundColor: '#000' }]}>
-          <Video
-            source={{ uri: post.video_url }}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode={ResizeMode.COVER}
-            useNativeControls
-            shouldPlay
-            isMuted={isVideoMuted}
-            isLooping
-            posterSource={post.video_thumbnail_url ? { uri: post.video_thumbnail_url } : undefined}
-            usePoster={!!post.video_thumbnail_url}
-            posterStyle={{ resizeMode: 'cover' }}
+          <PostVideo 
+            post={post} 
+            isVisible={isVisible} 
+            isVideoMuted={isVideoMuted} 
+            setIsVideoMuted={setIsVideoMuted} 
           />
-          <TouchableOpacity 
-            style={styles.muteButtonOverlay} 
-            onPress={(e) => { 
-              e.stopPropagation(); 
-              setIsVideoMuted(!isVideoMuted); 
-            }}
-            activeOpacity={0.8}
-          >
-            <Ionicons name={isVideoMuted ? "volume-mute" : "volume-medium"} size={20} color="#FFF" />
-          </TouchableOpacity>
         </View>
       )}
 
@@ -294,7 +340,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               >
                 <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={[styles.postImage, { height: imageHeights[item] ?? 200 }]} contentFit="cover" />
                 
-                <Animated.View style={[styles.heartOverlay, { opacity: heartOpacity, transform: [{ scale: heartScale }] }]}>
+                <Animated.View style={[styles.heartOverlay, heartAnimatedStyle]}>
                   <Ionicons name="heart" size={100} color="#fff" style={styles.heartShadow} />
                 </Animated.View>
               </TouchableOpacity>

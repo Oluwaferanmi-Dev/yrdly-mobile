@@ -59,6 +59,16 @@ export function BusinessComingSoon() {
     transform: [{ translateY: floatY.value }],
   }));
 
+  const opacity1Style = useAnimatedStyle(() => ({
+    opacity: opacity1.value,
+  }));
+  const opacity2Style = useAnimatedStyle(() => ({
+    opacity: opacity2.value,
+  }));
+  const opacity3Style = useAnimatedStyle(() => ({
+    opacity: opacity3.value,
+  }));
+
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       {/* Animated Centerpiece */}
@@ -73,13 +83,13 @@ export function BusinessComingSoon() {
         </Animated.View>
 
         {/* Floating Accent Icons */}
-        <Animated.View style={[styles.accentIcon, styles.accent1, { opacity: opacity1, backgroundColor: colors.card, shadowColor: colors.text }]}>
+        <Animated.View style={[styles.accentIcon, styles.accent1, { backgroundColor: colors.card, shadowColor: colors.text }, opacity1Style]}>
           <Feather name="trending-up" size={16} color={colors.tint} />
         </Animated.View>
-        <Animated.View style={[styles.accentIcon, styles.accent2, { opacity: opacity2, backgroundColor: colors.card, shadowColor: colors.text }]}>
+        <Animated.View style={[styles.accentIcon, styles.accent2, { backgroundColor: colors.card, shadowColor: colors.text }, opacity2Style]}>
           <Feather name="star" size={18} color="#FFC107" />
         </Animated.View>
-        <Animated.View style={[styles.accentIcon, styles.accent3, { opacity: opacity3, backgroundColor: colors.card, shadowColor: colors.text }]}>
+        <Animated.View style={[styles.accentIcon, styles.accent3, { backgroundColor: colors.card, shadowColor: colors.text }, opacity3Style]}>
           <Feather name="map-pin" size={16} color="#FF5252" />
         </Animated.View>
       </View>
