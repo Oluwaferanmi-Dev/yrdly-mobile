@@ -35,10 +35,23 @@ function NotificationsHandler() {
 
 import { setAudioModeAsync } from 'expo-audio';
 
-// Configure audio to play even when the physical silent switch is enabled on iOS
-setAudioModeAsync({
-  playsInSilentMode: true,
-});
+function AudioSettingsHandler() {
+  useEffect(() => {
+    // Configure audio to play even when the physical silent switch is enabled on iOS
+    // Wrapping in try-catch to prevent native bridge initialization crashes on Android
+    const configureAudio = async () => {
+      try {
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+        });
+      } catch (e) {
+        console.warn('[Yrdly] Failed to configure audio mode:', e);
+      }
+    };
+    configureAudio();
+  }, []);
+  return null;
+}
 
 function RootNavigationGuard() {
   const { user, profile, loading } = useAuth();
@@ -102,6 +115,7 @@ export default function Layout() {
           <AuthProvider>
             <LocationProvider>
               <NotificationBadgeProvider>
+                <AudioSettingsHandler />
                 <NotificationsHandler />
                 <RootNavigationGuard />
               </NotificationBadgeProvider>
