@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -38,6 +38,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
   const isReply = !!item.parent_id;
   const isOwner = currentUserId && item.user_id === currentUserId;
 
+  const avatarUri = StorageService.getOptimizedImageUrl(item.user?.avatar_url || item.author_image, 100) || '';
+  const avatarSource = useMemo(() => ({ uri: avatarUri }), [avatarUri]);
+
   const handleDelete = () => {
     Alert.alert(
       "Delete Comment",
@@ -64,7 +67,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
       <View style={styles.avatar}>
         {item.user?.avatar_url || item.author_image ? (
           <Image 
-            source={{ uri: StorageService.getOptimizedImageUrl(item.user?.avatar_url || item.author_image, 100) || '' }} 
+            source={avatarSource} 
             style={[styles.avatarImg, isReply && styles.avatarImgSmall]} 
             contentFit="cover" 
           />

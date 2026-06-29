@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, useWindowDimensions, Image as RNImage, FlatList, Share } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image as RNImage, FlatList, Share } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Image } from 'expo-image';
@@ -88,8 +88,8 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   const { colors } = useAppTheme();
 
   const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
-  const { width } = useWindowDimensions();
   const imageDisplayWidth = width - 32;
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const [likesCount, setLikesCount] = useState(post.liked_by?.length || 0);
   const [isLiked, setIsLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
@@ -303,9 +303,18 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           <Text style={[styles.title, { color: colors.text }]}>{post.title}</Text>
         )}
         {!!post.text && (
-          <Text style={[styles.bodyText, { color: colors.textSecondary }]} numberOfLines={3}>
-            {post.text}
-          </Text>
+          <View>
+            <Text style={[styles.bodyText, { color: colors.textSecondary }]} numberOfLines={isExpanded ? undefined : 3}>
+              {post.text}
+            </Text>
+            {post.text.length > 120 && (
+              <TouchableOpacity onPress={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} style={{ marginTop: 4 }}>
+                <Text style={{ color: colors.tint, fontWeight: '600' }}>
+                  {isExpanded ? 'Show less' : 'Read more'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
       </View>
 

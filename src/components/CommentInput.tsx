@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -38,6 +38,8 @@ export const CommentInput = forwardRef<CommentInputRef, CommentInputProps>(({
     }
   }));
 
+  const avatarSource = useMemo(() => ({ uri: userAvatarSource }), [userAvatarSource]);
+
   const handleSend = async () => {
     if (!inputText.trim() || sending) return;
     setSending(true);
@@ -71,7 +73,7 @@ export const CommentInput = forwardRef<CommentInputRef, CommentInputProps>(({
       <View style={styles.inputRow}>
         <View style={styles.inputAvatar}>
           {userAvatarSource ? (
-            <Image source={{ uri: userAvatarSource }} style={styles.avatarImg} contentFit="cover" />
+            <Image source={avatarSource} style={styles.avatarImg} contentFit="cover" />
           ) : (
             <View style={[styles.avatarImg, styles.avatarFallback, { backgroundColor: colors.tint }]}>
               <Text style={styles.avatarFallbackText}>{userInitial}</Text>

@@ -188,13 +188,14 @@ export default function MessagesTab() {
     let chConv: any = null;
     let chMsg: any = null;
     try {
+      const suffix = Math.random().toString(36).substring(7);
       chConv = supabase
-        .channel(`conversations-mobile-${user.id}`)
+        .channel(`conversations-mobile-${user.id}-${suffix}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, fetchConversations)
         .subscribe();
         
       chMsg = supabase
-        .channel(`messages-mobile-${user.id}`)
+        .channel(`messages-mobile-${user.id}-${suffix}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchConversations)
         .subscribe();
     } catch (e) {
