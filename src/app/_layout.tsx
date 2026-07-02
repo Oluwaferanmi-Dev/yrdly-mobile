@@ -9,6 +9,9 @@ import { LocationProvider } from '../context/LocationContext';
 import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Insights from 'expo-insights';
+import { vexo } from 'vexo-analytics';
+import { setAudioModeAsync } from 'expo-audio';
+import { OfflineBanner } from '../components/OfflineBanner';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // already hidden, ignore
@@ -17,23 +20,18 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 // expo-insights: automatic cold-start tracking
 void Insights;
 
-function NotificationsHandler() {
-  usePushNotifications();
-
-  useEffect(() => {
-    // Vexo must be initialized after the native bridge is ready (inside useEffect).
-    // Calling it at module load time crashes due to AsyncStorage not being available.
-    if (!__DEV__) {
-      import('vexo-analytics').then(({ vexo }) => {
-        vexo(process.env.EXPO_PUBLIC_VEXO_API_KEY ?? '');
-      });
-    }
-  }, []);
-
-  return null;
+if (!__DEV__) {
+  try {
+    vexo(process.env.EXPO_PUBLIC_VEXO_API_KEY ?? '');
+  } catch (e) {
+    console.warn('[Yrdly] Failed to initialize vexo analytics:', e);
+  }
 }
 
-import { setAudioModeAsync } from 'expo-audio';
+function NotificationsHandler() {
+  usePushNotifications();
+  return null;
+}
 
 function AudioSettingsHandler() {
   useEffect(() => {
@@ -118,6 +116,7 @@ export default function Layout() {
                 <AudioSettingsHandler />
                 <NotificationsHandler />
                 <RootNavigationGuard />
+                <OfflineBanner />
               </NotificationBadgeProvider>
             </LocationProvider>
           </AuthProvider>

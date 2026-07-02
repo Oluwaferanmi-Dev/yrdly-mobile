@@ -110,7 +110,12 @@ export class AuthService {
 
       if (data?.url) {
         // Opens the secure native browser to complete OAuth
-        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        // Force Chrome on Android to bypass buggy app interceptors (like OPay/EaseMoni)
+        const result = await WebBrowser.openAuthSessionAsync(
+          data.url, 
+          redirectTo, 
+          { browserPackage: 'com.android.chrome' }
+        );
         
         if (result.type === 'success' && result.url) {
           // If Supabase uses PKCE flow (default in v2), extract code:

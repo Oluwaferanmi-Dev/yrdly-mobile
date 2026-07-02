@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // Removed Firebase imports - now using Supabase
 import { useAuth } from '@/hooks/use-supabase-auth';
 import { supabase } from '@/lib/supabase';
@@ -23,6 +24,24 @@ export const usePosts = (filter?: LocationFilter | null) => {
   const filterWard = filter?.ward;
 
   const fetchPosts = useCallback(async () => {
+    // Generate a cache key based on filters
+    let filterString: string | undefined = undefined;
+    if (filterWard) filterString = `ward=eq.${filterWard}`;
+    else if (filterLga) filterString = `lga=eq.${filterLga}`;
+    else if (filterState) filterString = `state=eq.${filterState}`;
+    
+    const cacheKey = `@yrdly_posts_cache_${filterString || 'all'}`;
+
+    try {
+      // 1. Try to load from cache first to instantly populate the UI
+      const cachedData = await AsyncStorage.getItem(cacheKey);
+      if (cachedData) {
+        setPosts(JSON.parse(cachedData) as Post[]);
+      }
+    } catch (e) {
+      // Ignore cache read errors
+    }
+
     try {
       let query = supabase
         .from('posts')
@@ -58,7 +77,12 @@ export const usePosts = (filter?: LocationFilter | null) => {
         return;
       }
 
-      setPosts(data as Post[]);
+      const freshPosts = data as Post[];
+      setPosts(freshPosts);
+      
+      // 2. Save fresh data back to cache
+      AsyncStorage.setItem(cacheKey, JSON.stringify(freshPosts)).catch(() => {});
+      
       setLoading(false);
     } catch (error) {
       setLoading(false);
