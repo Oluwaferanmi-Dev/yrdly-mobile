@@ -96,6 +96,7 @@ export default function MessagesTab() {
             timestamp: conv.updated_at,
             unreadCount,
             context: { itemTitle: conv.item_title, itemImage: conv.item_image, itemPrice: conv.item_price },
+            deleted_by: conv.deleted_by || [],
           };
         }
 
@@ -110,6 +111,7 @@ export default function MessagesTab() {
             timestamp: conv.updated_at,
             unreadCount,
             context: { itemTitle: conv.item_title, itemImage: conv.item_image, itemPrice: conv.item_price },
+            deleted_by: conv.deleted_by || [],
           };
         }
 

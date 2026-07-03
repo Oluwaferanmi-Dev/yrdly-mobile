@@ -59,6 +59,18 @@ export default function SettingsScreen() {
     if (!user) return;
     setUploadingImage(true);
     try {
+      // Clean up the old avatar if it exists in our storage
+      if (avatarUrl && avatarUrl.includes('user-avatars/')) {
+        try {
+          const oldPath = avatarUrl.split('user-avatars/')[1];
+          if (oldPath) {
+            await StorageService.deleteFile('user-avatars', oldPath);
+          }
+        } catch (e) {
+          console.log("Failed to delete old avatar:", e);
+        }
+      }
+
       const ext = localUri.split('.').pop()?.split('?')[0] || 'jpeg';
       const fileName = `${user.id}_${Date.now()}.${ext}`;
       const file = {

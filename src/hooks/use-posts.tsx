@@ -552,12 +552,49 @@ export const usePosts = (filter?: LocationFilter | null) => {
             return;
         }
         try {
+            // First, get the business to retrieve image URLs
+            const { data: businessData, error: fetchError } = await supabase
+                .from('businesses')
+                .select('image_urls')
+                .eq('id', businessId)
+                .single();
+
+            if (fetchError) {
+                // Error fetching business for deletion
+            }
+
             const { error } = await supabase
                 .from('businesses')
                 .delete()
                 .eq('id', businessId);
             
             if (error) throw error;
+
+            // Delete associated images from storage
+            if (businessData?.image_urls && businessData.image_urls.length > 0) {
+                const deletePromises = businessData.image_urls.map(async (imageUrl: string) => {
+                    try {
+                        // Extract the path from the full URL
+                        const url = new URL(imageUrl);
+                        const pathParts = url.pathname.split('/');
+                        const bucket = pathParts[2]; // post-images
+                        const path = pathParts.slice(3).join('/'); // posts/userId/filename
+                        
+                        const { error: deleteError } = await supabase.storage
+                            .from(bucket)
+                            .remove([path]);
+                        
+                        if (deleteError) {
+                            // Error deleting image
+                        }
+                    } catch (error) {
+                        // Error processing image deletion
+                    }
+                });
+
+                await Promise.all(deletePromises);
+            }
+
             toast({ title: 'Success', description: 'Business deleted successfully.' });
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete business.' });
