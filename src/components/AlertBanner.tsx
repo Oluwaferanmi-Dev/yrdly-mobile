@@ -21,7 +21,7 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ alert, onPress, onDism
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Ionicons 
-            name={isAmber ? "warning" : "shield-alert"} 
+            name={isAmber ? "warning" : "alert-circle"} 
             size={20} 
             color={isAmber ? "#7f1d1d" : "#7c2d12"} 
           />
@@ -29,7 +29,7 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ alert, onPress, onDism
             {isAmber ? 'AMBER ALERT' : 'SAFETY ALERT'}
           </Text>
         </View>
-        {onDismiss && !isAmber && (
+        {onDismiss && (
           <TouchableOpacity onPress={onDismiss} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
             <Ionicons name="close" size={20} color={isAmber ? "#7f1d1d" : "#7c2d12"} />
           </TouchableOpacity>

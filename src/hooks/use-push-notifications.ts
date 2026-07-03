@@ -8,9 +8,11 @@ import { AuthService } from '@/lib/auth-service';
 
 // NO top-level Notifications calls here
 
+// appOwnership is 'expo' in Expo Go, null/undefined in production builds
 const isExpoGo = Constants.appOwnership === 'expo';
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {
+  // Only skip in Expo Go — production APK/IPA should always register
   if (isExpoGo || Platform.OS === 'web') return null;
 
   try {

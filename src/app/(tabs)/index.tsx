@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
 import { View, Text, StyleSheet, RefreshControl, TouchableOpacity, Platform } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
@@ -24,13 +24,16 @@ import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 import { useScrollToTop } from '@react-navigation/native';
 import { AlertBanner } from '../../components/AlertBanner';
 import { AlertService, Alert } from '../../lib/alert-service';
+import * as SecureStore from 'expo-secure-store';
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList as any) as any;
 
-const QuickPostBox = () => {
+const QuickPostBox = memo(() => {
   const { user, profile } = useAuth();
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
+
+  const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
 
   return (
     <View style={{
@@ -51,8 +54,8 @@ const QuickPostBox = () => {
       elevation: 2,
     }}>
       <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' }}>
-        {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
-          <Image source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+        {avatarUri ? (
+          <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
         ) : (
           <Text style={{ color: 'white', fontWeight: 'bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
         )}
@@ -82,7 +85,7 @@ const QuickPostBox = () => {
       </View>
     </View>
   );
-};
+});
 
 export default function HomeTab() {
   const { colors, isDarkMode } = useAppTheme();
@@ -146,7 +149,18 @@ export default function HomeTab() {
 
   const fetchAlert = useCallback(async () => {
     const alert = await AlertService.getActiveAlert();
-    setActiveAlert(alert);
+    if (alert) {
+      // Check if the user has already dismissed this specific alert
+      const dismissedKey = `yrdly_dismissed_alert_${alert.id}`;
+      const dismissed = await SecureStore.getItemAsync(dismissedKey);
+      if (!dismissed) {
+        setActiveAlert(alert);
+      } else {
+        setActiveAlert(null);
+      }
+    } else {
+      setActiveAlert(null);
+    }
   }, []);
 
   const onRefresh = useCallback(async () => {
@@ -307,10 +321,12 @@ export default function HomeTab() {
             {activeAlert && (
               <AlertBanner 
                 alert={activeAlert} 
-                onPress={() => {
-                  // Phase 2: navigate to alert details. For now, maybe just show it
-                }} 
-                onDismiss={activeAlert.type === 'community_safety' ? () => setActiveAlert(null) : undefined}
+                onPress={() => {}} 
+                onDismiss={async () => {
+                  // Persist dismissal so it doesn't reappear on refresh
+                  await SecureStore.setItemAsync(`yrdly_dismissed_alert_${activeAlert.id}`, 'true');
+                  setActiveAlert(null);
+                }}
               />
             )}
             <QuickPostBox />

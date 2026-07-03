@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system/legacy';
 // Removed Firebase imports - now using Supabase
 import { useAuth } from '@/hooks/use-supabase-auth';
 import { supabase } from '@/lib/supabase';
@@ -30,13 +30,16 @@ export const usePosts = (filter?: LocationFilter | null) => {
     else if (filterLga) filterString = `lga=eq.${filterLga}`;
     else if (filterState) filterString = `state=eq.${filterState}`;
     
-    const cacheKey = `@yrdly_posts_cache_${filterString || 'all'}`;
+    const cacheFile = FileSystem.documentDirectory + (filterString ? `yrdly_posts_cache_${filterString.replace(/\W/g, '_')}.json` : 'yrdly_posts_cache_all.json');
 
     try {
       // 1. Try to load from cache first to instantly populate the UI
-      const cachedData = await AsyncStorage.getItem(cacheKey);
-      if (cachedData) {
-        setPosts(JSON.parse(cachedData) as Post[]);
+      const fileInfo = await FileSystem.getInfoAsync(cacheFile);
+      if (fileInfo.exists) {
+        const cachedData = await FileSystem.readAsStringAsync(cacheFile);
+        if (cachedData) {
+          setPosts(JSON.parse(cachedData) as Post[]);
+        }
       }
     } catch (e) {
       // Ignore cache read errors
@@ -81,7 +84,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
       setPosts(freshPosts);
       
       // 2. Save fresh data back to cache
-      AsyncStorage.setItem(cacheKey, JSON.stringify(freshPosts)).catch(() => {});
+      FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(freshPosts)).catch(() => {});
       
       setLoading(false);
     } catch (error) {
@@ -217,8 +220,9 @@ export const usePosts = (filter?: LocationFilter | null) => {
   // This ensures that when ANY user updates their avatar, all their posts in the feed
   // update immediately — past, present and future posts.
   useEffect(() => {
+    const channelName = `users-profile-changes-${Math.random().toString(36).substring(7)}`;
     const userChannel = supabase
-      .channel('users-profile-changes')
+      .channel(channelName)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',

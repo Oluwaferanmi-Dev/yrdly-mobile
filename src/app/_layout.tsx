@@ -9,9 +9,10 @@ import { LocationProvider } from '../context/LocationContext';
 import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Insights from 'expo-insights';
-import { vexo } from 'vexo-analytics';
+// vexo is imported dynamically below
 import { setAudioModeAsync } from 'expo-audio';
 import { OfflineBanner } from '../components/OfflineBanner';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // already hidden, ignore
@@ -22,6 +23,7 @@ void Insights;
 
 if (!__DEV__) {
   try {
+    const vexo = require('vexo-analytics').vexo;
     vexo(process.env.EXPO_PUBLIC_VEXO_API_KEY ?? '');
   } catch (e) {
     console.warn('[Yrdly] Failed to initialize vexo analytics:', e);
@@ -108,20 +110,22 @@ function RootNavigationGuard() {
 export default function Layout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
-        <BottomSheetModalProvider>
-          <AuthProvider>
-            <LocationProvider>
-              <NotificationBadgeProvider>
-                <AudioSettingsHandler />
-                <NotificationsHandler />
-                <RootNavigationGuard />
-                <OfflineBanner />
-              </NotificationBadgeProvider>
-            </LocationProvider>
-          </AuthProvider>
-        </BottomSheetModalProvider>
-      </ThemeProvider>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <BottomSheetModalProvider>
+            <AuthProvider>
+              <LocationProvider>
+                <NotificationBadgeProvider>
+                  <AudioSettingsHandler />
+                  <NotificationsHandler />
+                  <RootNavigationGuard />
+                  <OfflineBanner />
+                </NotificationBadgeProvider>
+              </LocationProvider>
+            </AuthProvider>
+          </BottomSheetModalProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
     </GestureHandlerRootView>
   );
 }

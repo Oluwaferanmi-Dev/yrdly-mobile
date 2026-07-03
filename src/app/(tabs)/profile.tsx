@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -69,14 +69,18 @@ export default function ProfileTab() {
     fetchUserPosts();
   }, [fetchUserPosts]);
 
-  const ListHeader = () => (
+  const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
+
+  const listHeader = useMemo(() => (
     <View style={[styles.headerContainer, { backgroundColor: colors.card }]}>
       <View style={styles.header}>
         <View style={styles.avatarPlaceholder}>
-          {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
+          {avatarUri ? (
             <Image 
-              source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} 
-              style={styles.avatarImage} 
+              source={{ uri: avatarUri }} 
+              style={styles.avatarImage}
+              cachePolicy="memory-disk"
+              transition={0}
             />
           ) : (
             <Text style={[styles.avatarText, { color: colors.tint }]}>
@@ -127,7 +131,7 @@ export default function ProfileTab() {
               style={[styles.ticketsButton, { backgroundColor: '#fee2e2' }]} 
               onPress={() => router.push('/(admin)/create-alert')}
             >
-              <Ionicons name="shield-alert-outline" size={24} color="#ef4444" />
+              <Ionicons name="shield-half-outline" size={24} color="#ef4444" />
             </TouchableOpacity>
           )}
         </View>
@@ -135,7 +139,8 @@ export default function ProfileTab() {
 
       <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
     </View>
-  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [avatarUri, profile?.name, profile?.bio, profile?.role, profile?.is_admin, user?.email, posts.length, followersCount, followingCount, colors]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -150,7 +155,7 @@ export default function ProfileTab() {
             onPress={() => router.push(`/posts/${item.id}`)}
           />
         )}
-        ListHeaderComponent={ListHeader}
+        ListHeaderComponent={() => listHeader}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}

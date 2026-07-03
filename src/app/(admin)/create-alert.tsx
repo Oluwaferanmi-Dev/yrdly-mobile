@@ -68,27 +68,30 @@ export default function CreateAlertScreen() {
 
     setLoading(true);
     
-    // Defaulting location to a placeholder for Phase 1 if we don't have a map picker yet.
-    // In a real scenario, this would use a map picker component.
-    const { error } = await AlertService.createAlert({
-      type,
-      title,
-      description,
-      radius_km: parseInt(radiusKm, 10) || 50,
-      source: 'yrdly_admin',
-      last_seen_address: address,
-      lat: coordinate.latitude,
-      lng: coordinate.longitude,
-    });
+    try {
+      const { error } = await AlertService.createAlert({
+        type,
+        title,
+        description,
+        radius_km: parseInt(radiusKm, 10) || 50,
+        source: 'yrdly_admin',
+        last_seen_address: address,
+        lat: coordinate.latitude,
+        lng: coordinate.longitude,
+      });
 
-    setLoading(false);
+      setLoading(false);
 
-    if (error) {
+      if (error) {
+        RNAlert.alert('Error', 'Failed to create alert: ' + (error as any).message);
+      } else {
+        RNAlert.alert('Success', 'Alert broadcasted successfully.', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      }
+    } catch (error: any) {
+      setLoading(false);
       RNAlert.alert('Error', 'Failed to create alert: ' + error.message);
-    } else {
-      RNAlert.alert('Success', 'Alert broadcasted successfully.', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
     }
   };
 
@@ -175,9 +178,14 @@ export default function CreateAlertScreen() {
           {geocoding ? (
             <ActivityIndicator size="small" color="#6b7280" />
           ) : (
-            <Text style={styles.addressText} numberOfLines={2}>
-              {address || 'Tap on the map to set location'}
-            </Text>
+            <TextInput
+              style={styles.addressText}
+              value={address}
+              onChangeText={setAddress}
+              placeholder="Tap map or type address..."
+              placeholderTextColor="#9ca3af"
+              multiline
+            />
           )}
         </View>
       </View>

@@ -42,6 +42,7 @@ export interface AuthUser {
   updated_at?: string;
   push_token?: string;
   role?: 'user' | 'admin';
+  is_admin?: boolean;
 }
 
 export class AuthService {
