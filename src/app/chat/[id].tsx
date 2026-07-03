@@ -17,6 +17,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 import { formatPrice } from '../../lib/utils';
+import { ErrorBoundary } from '../../components/ErrorBoundary';
 
 interface Message {
   id: string;
@@ -55,7 +56,7 @@ const ChatVideo = React.memo(({ url, width, height, borderRadius, marginBottom }
   );
 });
 
-export default function ChatScreen() {
+function ChatContent() {
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -585,3 +586,11 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   emptyText: { fontSize: 15, textAlign: 'center' },
 });
+
+export default function ChatScreen() {
+  return (
+    <ErrorBoundary screenName="Chat">
+      <ChatContent />
+    </ErrorBoundary>
+  );
+}

@@ -20,8 +20,9 @@ import { Alert } from 'react-native';
 import { StorageService } from '../../lib/storage-service';
 import { CommentItem, CommentType } from '../../components/CommentItem';
 import { CommentInput, CommentInputRef } from '../../components/CommentInput';
+import { ErrorBoundary } from '../../components/ErrorBoundary';
 
-export default function PostDetailScreen() {
+function PostDetailContent() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -280,3 +281,11 @@ const styles = StyleSheet.create({
   emptyContainer: { alignItems: 'center', marginTop: 40 },
   emptyText: { fontSize: 14, marginTop: 12 },
 });
+
+export default function PostDetailScreen() {
+  return (
+    <ErrorBoundary screenName="PostDetail">
+      <PostDetailContent />
+    </ErrorBoundary>
+  );
+}

@@ -15,6 +15,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { Post } from '../../types';
 import { formatPrice, timeAgo } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
+import { ErrorBoundary } from '../../components/ErrorBoundary';
 
 const { width } = Dimensions.get('window');
 
@@ -41,7 +42,7 @@ const MarketVideo = React.memo(({ url, shouldPlay }: { url: string, shouldPlay: 
   );
 });
 
-export default function MarketplaceDetailScreen() {
+function MarketplaceDetailContent() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -378,3 +379,11 @@ const styles = StyleSheet.create({
   },
   buyButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
 });
+
+export default function MarketplaceDetailScreen() {
+  return (
+    <ErrorBoundary screenName="MarketplaceDetail">
+      <MarketplaceDetailContent />
+    </ErrorBoundary>
+  );
+}
