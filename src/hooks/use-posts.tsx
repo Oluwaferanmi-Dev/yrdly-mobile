@@ -213,38 +213,45 @@ export const usePosts = (filter?: LocationFilter | null) => {
     };
   }, [filterState, filterLga, filterWard]);
 
-  // Listen for profile changes to refresh posts with updated user data
+  // Listen for ANY user's profile changes (avatar, name) via realtime
+  // This ensures that when ANY user updates their avatar, all their posts in the feed
+  // update immediately — past, present and future posts.
   useEffect(() => {
-    if (!user || !profile) return;
-
-    const refreshUserPosts = async () => {
-      try {
-        // Update posts that belong to the current user with fresh profile data
-        setPosts(prevPosts => 
+    const userChannel = supabase
+      .channel('users-profile-changes')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'users',
+      }, (payload) => {
+        const updatedUser = payload.new as { id: string; name: string; avatar_url: string; location: any; created_at: string };
+        // Patch every in-memory post that belongs to this user
+        setPosts(prevPosts =>
           prevPosts.map(post => {
-            if (post.user_id === user.id) {
+            if (post.user_id === updatedUser.id) {
               return {
                 ...post,
-                author_name: profile.name || post.author_name || 'Unknown User',
-                author_image: profile.avatar_url || post.author_image,
+                author_name: updatedUser.name || post.author_name,
+                author_image: updatedUser.avatar_url || post.author_image,
                 user: {
-                  id: user.id,
-                  name: profile.name || post.user?.name || 'Unknown User',
-                  avatar_url: profile.avatar_url || post.user?.avatar_url,
-                  created_at: post.user?.created_at
-                }
+                  id: updatedUser.id,
+                  name: updatedUser.name,
+                  avatar_url: updatedUser.avatar_url,
+                  location: updatedUser.location,
+                  created_at: updatedUser.created_at,
+                },
               };
             }
             return post;
           })
         );
-      } catch (error) {
-        // Error refreshing user posts
-      }
-    };
+      })
+      .subscribe();
 
-    refreshUserPosts();
-  }, [user, profile]);
+    return () => {
+      supabase.removeChannel(userChannel);
+    };
+  }, []);
 
   const uploadImages = useCallback(async (
     files: MobileFile[],

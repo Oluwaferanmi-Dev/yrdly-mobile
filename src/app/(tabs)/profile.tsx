@@ -121,6 +121,15 @@ export default function ProfileTab() {
           >
             <Ionicons name="ticket-outline" size={24} color={colors.tint} />
           </TouchableOpacity>
+          
+          {(profile?.role === 'admin' || profile?.is_admin) && (
+            <TouchableOpacity 
+              style={[styles.ticketsButton, { backgroundColor: '#fee2e2' }]} 
+              onPress={() => router.push('/(admin)/create-alert')}
+            >
+              <Ionicons name="shield-alert-outline" size={24} color="#ef4444" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 

@@ -41,6 +41,7 @@ export interface AuthUser {
   created_at?: string;
   updated_at?: string;
   push_token?: string;
+  role?: 'user' | 'admin';
 }
 
 export class AuthService {
@@ -266,6 +267,30 @@ export class AuthService {
     } catch (error) {
       console.error('Update user profile error:', error);
       throw error;
+    }
+  }
+
+  // Promote user to admin (admin-only)
+  static async promoteToAdmin(userId: string) {
+    try {
+      const currentUser = await this.getCurrentUser();
+      if (!currentUser) throw new Error('Not authenticated');
+
+      const profile = await this.getUserProfile(currentUser.id);
+      if (profile?.role !== 'admin' && !profile?.is_admin) {
+        throw new Error('Not authorized to promote users');
+      }
+
+      const { error } = await supabase
+        .from('users')
+        .update({ role: 'admin', is_admin: true })
+        .eq('id', userId);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      console.error('Promote to admin error:', error);
+      return { error };
     }
   }
 

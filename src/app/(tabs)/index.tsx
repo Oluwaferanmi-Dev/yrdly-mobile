@@ -22,6 +22,8 @@ import { CommentsBottomSheet, CommentsBottomSheetRef } from '../../components/Co
 import ImageViewing from 'react-native-image-viewing';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 import { useScrollToTop } from '@react-navigation/native';
+import { AlertBanner } from '../../components/AlertBanner';
+import { AlertService, Alert } from '../../lib/alert-service';
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList as any) as any;
 
@@ -97,6 +99,7 @@ export default function HomeTab() {
   const bottomSheetRef = useRef<CommentsBottomSheetRef>(null);
   const { unreadCount } = useNotificationBadge();
   const flashListRef = useRef<any>(null);
+  const [activeAlert, setActiveAlert] = useState<Alert | null>(null);
   
   useScrollToTop(flashListRef);
   
@@ -141,17 +144,26 @@ export default function HomeTab() {
     });
   }, [allPosts]);
 
+  const fetchAlert = useCallback(async () => {
+    const alert = await AlertService.getActiveAlert();
+    setActiveAlert(alert);
+  }, []);
+
   const onRefresh = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setRefreshing(true);
-    await refreshPosts();
+    await Promise.all([
+      refreshPosts(),
+      fetchAlert()
+    ]);
     setRefreshing(false);
-  }, [refreshPosts]);
+  }, [refreshPosts, fetchAlert]);
 
   useFocusEffect(
     useCallback(() => {
       refreshPosts();
-    }, [refreshPosts])
+      fetchAlert();
+    }, [refreshPosts, fetchAlert])
   );
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
@@ -290,7 +302,20 @@ export default function HomeTab() {
             progressViewOffset={HEADER_HEIGHT}
           />
         }
-        ListHeaderComponent={<QuickPostBox />}
+        ListHeaderComponent={
+          <View>
+            {activeAlert && (
+              <AlertBanner 
+                alert={activeAlert} 
+                onPress={() => {
+                  // Phase 2: navigate to alert details. For now, maybe just show it
+                }} 
+                onDismiss={activeAlert.type === 'community_safety' ? () => setActiveAlert(null) : undefined}
+              />
+            )}
+            <QuickPostBox />
+          </View>
+        }
         contentContainerStyle={[styles.listContent, { paddingTop: HEADER_HEIGHT, paddingBottom: 80 }]}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
