@@ -139,8 +139,8 @@ export default function EditMarketplaceItemScreen() {
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 50 : 0}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Form Fields (Borderless) */}

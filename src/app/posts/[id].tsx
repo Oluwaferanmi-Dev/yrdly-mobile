@@ -39,6 +39,17 @@ function PostDetailContent() {
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<CommentInputRef>(null);
 
+  // iOS Keyboard Gap Fix
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  useEffect(() => {
+    const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardVisible(false));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   const userAvatarSource = React.useMemo(() => {
     if (user?.user_metadata?.avatar_url) {
       return StorageService.getOptimizedImageUrl(user.user_metadata.avatar_url, 100) || '';
@@ -215,8 +226,8 @@ function PostDetailContent() {
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 61 : 0}
       >
         {loading && !post ? (
           <View style={styles.center}>

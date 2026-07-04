@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
-  TouchableOpacity, KeyboardAvoidingView, Platform,
-  ActivityIndicator, Alert
+  TouchableOpacity, Platform,
+  ActivityIndicator, Alert, Keyboard
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -74,6 +75,17 @@ function ChatContent() {
   const [viewerVisible, setViewerVisible] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
+
+  // iOS Keyboard Gap Fix
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  useEffect(() => {
+    const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardVisible(false));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const fetchMeta = useCallback(async () => {
     if (!id || !user) return;
@@ -464,8 +476,7 @@ function ChatContent() {
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 60}
+        behavior="padding"
       >
         {/* Messages */}
         {loading ? (
@@ -490,7 +501,7 @@ function ChatContent() {
         )}
 
         {/* Input */}
-        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: colors.card, paddingBottom: Math.max(insets.bottom, 10) }]}>
+        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: colors.card, paddingBottom: keyboardVisible ? 10 : Math.max(insets.bottom, 10) }]}>
           <TouchableOpacity style={styles.attachBtn} onPress={pickMedia} disabled={uploadingMedia}>
             {uploadingMedia ? (
               <ActivityIndicator size="small" color={colors.tint} />

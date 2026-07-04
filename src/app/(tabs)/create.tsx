@@ -11,6 +11,7 @@ import { decode } from 'base64-arraybuffer';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -24,6 +25,7 @@ export default function CreateTab() {
   const router = useRouter();
   const { user, profile } = useAuth();
   const { width } = useWindowDimensions();
+  const headerHeight = useHeaderHeight();
   const [category, setCategory] = useState<PostCategory>('General');
   const categories: PostCategory[] = ['General', 'For Sale', 'Event'];
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
@@ -243,6 +245,7 @@ export default function CreateTab() {
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : 0}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           {/* Form Fields (Borderless) */}

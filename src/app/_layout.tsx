@@ -107,25 +107,29 @@ function RootNavigationGuard() {
   );
 }
 
+import { KeyboardProvider } from 'react-native-keyboard-controller';
+
 export default function Layout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ErrorBoundary>
-        <ThemeProvider>
-          <BottomSheetModalProvider>
-            <AuthProvider>
-              <LocationProvider>
-                <NotificationBadgeProvider>
-                  <AudioSettingsHandler />
-                  <NotificationsHandler />
-                  <RootNavigationGuard />
-                  <OfflineBanner />
-                </NotificationBadgeProvider>
-              </LocationProvider>
-            </AuthProvider>
-          </BottomSheetModalProvider>
-        </ThemeProvider>
-      </ErrorBoundary>
+      <KeyboardProvider>
+        <ErrorBoundary>
+          <ThemeProvider>
+            <BottomSheetModalProvider>
+              <AuthProvider>
+                <LocationProvider>
+                  <NotificationBadgeProvider>
+                    <AudioSettingsHandler />
+                    <NotificationsHandler />
+                    <RootNavigationGuard />
+                    <OfflineBanner />
+                  </NotificationBadgeProvider>
+                </LocationProvider>
+              </AuthProvider>
+            </BottomSheetModalProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

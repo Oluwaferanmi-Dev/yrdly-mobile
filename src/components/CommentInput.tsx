@@ -1,5 +1,5 @@
 import React, { useState, forwardRef, useImperativeHandle, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput, Platform, Keyboard } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../context/ThemeContext';
@@ -32,6 +32,17 @@ export const CommentInput = forwardRef<CommentInputRef, CommentInputProps>(({
   const [sending, setSending] = useState(false);
   const inputRef = useRef<any>(null);
 
+  // iOS Keyboard Gap Fix
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  React.useEffect(() => {
+    const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardVisible(false));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   useImperativeHandle(ref, () => ({
     focus: () => {
       inputRef.current?.focus();
@@ -58,7 +69,7 @@ export const CommentInput = forwardRef<CommentInputRef, CommentInputProps>(({
   };
 
   return (
-    <View style={[styles.container, { borderTopColor: colors.borderLight, backgroundColor: colors.background, paddingBottom: Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 12) }]}>
+    <View style={[styles.container, { borderTopColor: colors.borderLight, backgroundColor: colors.background, paddingBottom: keyboardVisible ? (Platform.OS === 'android' ? 12 : 12) : Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 12) }]}>
       {replyingTo && (
         <View style={styles.replyBanner}>
           <Text style={[styles.replyBannerText, { color: colors.textMuted }]}>

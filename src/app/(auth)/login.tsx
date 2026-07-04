@@ -53,7 +53,7 @@ export default function Login() {
   return (
     <KeyboardAvoidingView 
       style={[styles.container, { backgroundColor: colors.background }]} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Background Blobs */}
       <View style={StyleSheet.absoluteFillObject}>

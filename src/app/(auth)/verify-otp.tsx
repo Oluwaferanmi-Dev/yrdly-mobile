@@ -129,7 +129,7 @@ export default function VerifyOtpScreen() {
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       {/* Background blobs */}
       <View style={StyleSheet.absoluteFillObject}>
