@@ -17,6 +17,11 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+google-services.json
+GoogleService-Info.plist
+
+# Debug / build artifacts
+ts-errors.txt
 
 # Metro
 .metro-health-check*

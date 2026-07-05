@@ -150,7 +150,9 @@ export class StorageService {
     const ext = file.name.split('.').pop() ?? 'jpg';
     const path = `posts/${postId}/${Date.now()}.${ext}`;
 
-    const { data, error } = await this.uploadFile('post-images', path, file);
+    const { data, error } = await this.uploadFile('post-images', path, file, {
+      cacheControl: '604800',
+    });
     if (error || !data) return { url: null, error };
 
     return { url: this.getPublicUrl('post-images', path), error: null };
@@ -164,7 +166,9 @@ export class StorageService {
     const ext = file.name.split('.').pop() ?? 'jpg';
     const path = `${conversationId}/${Date.now()}.${ext}`;
 
-    const { data, error } = await this.uploadFile('chat-images', path, file);
+    const { data, error } = await this.uploadFile('chat-images', path, file, {
+      cacheControl: '86400',
+    });
     if (error || !data) return { url: null, error };
 
     return { url: this.getPublicUrl('chat-images', path), error: null };
@@ -207,7 +211,9 @@ export class StorageService {
     const safeName = file.name.replace(/\s+/g, '_');
     const path = `${transactionId}/${Date.now()}_${safeName}`;
 
-    const { data, error } = await this.uploadFile('dispute-evidence', path, file);
+    const { data, error } = await this.uploadFile('dispute-evidence', path, file, {
+      cacheControl: '86400',
+    });
     if (error || !data) return { url: null, error };
 
     return { url: this.getPublicUrl('dispute-evidence', path), error: null };
@@ -224,6 +230,7 @@ export class StorageService {
 
     const { data, error } = await this.uploadFile('post-videos', path, file, {
       contentType: mimeType,
+      cacheControl: '604800',
     });
 
     if (error || !data) return { url: null, error };
@@ -241,6 +248,7 @@ export class StorageService {
 
     const { data, error } = await this.uploadFile('chat-videos', path, file, {
       contentType: mimeType,
+      cacheControl: '604800',
     });
 
     if (error || !data) return { url: null, error };

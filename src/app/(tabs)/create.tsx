@@ -121,7 +121,11 @@ export default function CreateTab() {
 
       const { error: uploadError } = await supabase.storage
         .from(bucketName)
-        .upload(filePath, arrayBuffer, { contentType, upsert: false });
+        .upload(filePath, arrayBuffer, {
+          contentType,
+          upsert: false,
+          cacheControl: isVideo ? '604800' : '604800',
+        });
 
       if (uploadError) throw uploadError;
 
