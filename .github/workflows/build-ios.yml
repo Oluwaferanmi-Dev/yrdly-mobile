@@ -1,0 +1,76 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      note:
+        description: 'Build note (optional)'
+        required: false
+        default: 'Manual build'
+
+jobs:
+  build-ios:
+    name: Build unsigned iOS IPA
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write .env file from secrets
+        run: |
+          cat <<EOF > .env
+          EXPO_PUBLIC_SUPABASE_URL=${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+          EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY=${{ secrets.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY }}
+          EXPO_PUBLIC_WEB_APP_URL=${{ secrets.EXPO_PUBLIC_WEB_APP_URL }}
+          EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY }}
+          EXPO_PUBLIC_VEXO_API_KEY=${{ secrets.EXPO_PUBLIC_VEXO_API_KEY }}
+          EOF
+
+      - name: Run Expo prebuild
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install --repo-update
+
+      - name: Build app archive (unsigned)
+        run: |
+          cd ios
+          xcodebuild \
+            -workspace yrdly-mobile.xcworkspace \
+            -scheme yrdly-mobile \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath $RUNNER_TEMP/yrdly.xcarchive \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            archive | xcpretty --color
+
+      - name: Package IPA from archive
+        run: |
+          APP_PATH=$(find $RUNNER_TEMP/yrdly.xcarchive/Products/Applications -name "*.app" | head -1)
+          mkdir -p $RUNNER_TEMP/Payload
+          cp -r "$APP_PATH" $RUNNER_TEMP/Payload/
+          cd $RUNNER_TEMP
+          zip -r yrdly-unsigned.ipa Payload/
+          echo "IPA created at: $RUNNER_TEMP/yrdly-unsigned.ipa"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yrdly-ios-${{ github.run_number }}
+          path: ${{ runner.temp }}/yrdly-unsigned.ipa
+          retention-days: 7
