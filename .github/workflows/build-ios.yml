@@ -47,10 +47,11 @@ jobs:
 
       - name: Build app archive (unsigned)
         run: |
+          set -o pipefail
           cd ios
           xcodebuild \
-            -workspace yrdly-mobile.xcworkspace \
-            -scheme yrdly-mobile \
+            -workspace yrdlymobile.xcworkspace \
+            -scheme yrdlymobile \
             -configuration Release \
             -sdk iphoneos \
             -archivePath $RUNNER_TEMP/yrdly.xcarchive \
