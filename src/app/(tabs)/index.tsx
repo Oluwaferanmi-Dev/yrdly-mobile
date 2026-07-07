@@ -65,7 +65,7 @@ const QuickPostBox = memo(() => {
         onPress={() => router.push('/create')}
         activeOpacity={0.7}
       >
-        <Text style={{ color: colors.textSecondary, fontSize: 15 }}>What's happening, neighbour?</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 15 }} numberOfLines={1} ellipsizeMode="tail">What's happening, neighbour?</Text>
       </TouchableOpacity>
       
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -95,7 +95,7 @@ export default function HomeTab() {
   const { posts: allPosts, loading, refreshPosts } = usePosts(activeFilter);
   const [refreshing, setRefreshing] = useState(false);
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
-  const [visiblePostIds, setVisiblePostIds] = useState<string[]>([]);
+  const [activePostId, setActivePostId] = useState<string | null>(null);
   const [viewerImages, setViewerImages] = useState<{ uri: string }[]>([]);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [viewerVisible, setViewerVisible] = useState(false);
@@ -180,9 +180,13 @@ export default function HomeTab() {
     }, [refreshPosts, fetchAlert])
   );
 
-  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 }).current;
   const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
-    setVisiblePostIds(viewableItems.map((v: any) => v.key));
+    if (viewableItems && viewableItems.length > 0) {
+      setActivePostId(viewableItems[0].key);
+    } else {
+      setActivePostId(null);
+    }
   }, []);
 
   if (loading && !refreshing) {
@@ -290,7 +294,7 @@ export default function HomeTab() {
         renderItem={({ item }: { item: Post }) => (
           <PostCard 
             post={item} 
-            isVisible={visiblePostIds.includes(item.id)}
+            isVisible={activePostId === item.id}
             onPress={() => {
               if (item.category === 'For Sale') router.push(`/marketplace/${item.id}`);
               else if (item.category === 'Event') router.push(`/events/${item.id}`);

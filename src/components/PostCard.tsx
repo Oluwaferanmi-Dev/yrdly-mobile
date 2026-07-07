@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image as RNImage, FlatList, Share } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image as RNImage, FlatList, Share, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { VideoView, useVideoPlayer } from 'expo-video';
+import { useEventListener } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Post } from '../types';
@@ -24,15 +25,22 @@ interface PostCardProps {
   isVisible?: boolean;
   onOpenImageViewer?: (images: { uri: string }[], index: number) => void;
 }
-
 const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted, setIsVideoMuted }: { post: Post, isVisible?: boolean, isVideoMuted: boolean, setIsVideoMuted: (muted: boolean) => void }) {
   const [isReady, setIsReady] = useState(false);
+  const [progress, setProgress] = useState(0);
   
   const player = useVideoPlayer(post.video_url || '', player => {
     player.loop = true;
     player.muted = isVideoMuted;
+    player.timeUpdateEventInterval = 0.05;
     if (isVisible !== false) {
       player.play();
+    }
+  });
+
+  useEventListener(player, 'timeUpdate', (payload) => {
+    if (player.duration > 0) {
+      setProgress(payload.currentTime / player.duration);
     }
   });
 
@@ -58,7 +66,7 @@ const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted,
         player={player}
         style={{ width: '100%', height: '100%' }}
         contentFit="cover"
-        nativeControls={true}
+        nativeControls={false}
         onFirstFrameRender={() => setIsReady(true)}
       />
       {!isReady && post.video_thumbnail_url && (
@@ -78,6 +86,22 @@ const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted,
       >
         <Ionicons name={isVideoMuted ? "volume-mute" : "volume-medium"} size={20} color="#FFF" />
       </TouchableOpacity>
+
+      <View style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 3,
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        zIndex: 2,
+      }}>
+        <View style={{
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+          width: `${Math.min(100, Math.max(0, progress * 100))}%`,
+        }} />
+      </View>
     </>
   );
 });
@@ -234,10 +258,9 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
     try {
       const shareUrl = `https://app.yrdly.ng/posts/${post.id}`;
       
-      const shareOptions = {
-        message: shareUrl,
-        url: shareUrl,
-      };
+      const shareOptions = Platform.OS === 'ios'
+        ? { url: shareUrl }
+        : { message: shareUrl };
       
       await Share.share(shareOptions);
       if (onShare) onShare();
@@ -320,7 +343,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
       {/* Video */}
       {post.video_url && (
-        <View style={[styles.imageContainer, { width: imageDisplayWidth, height: imageDisplayWidth, backgroundColor: '#000' }]}>
+        <View style={[styles.imageContainer, { width: imageDisplayWidth, aspectRatio: 4/5, backgroundColor: '#000' }]}>
           <PostVideo 
             post={post} 
             isVisible={isVisible} 
@@ -345,9 +368,9 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               <TouchableOpacity 
                 activeOpacity={0.95}
                 onPress={() => handleImageTap(index)}
-                style={[styles.imageContainer, { backgroundColor: colors.borderLight, width: imageDisplayWidth, height: imageHeights[item] ?? 200 }]}
+                style={[styles.imageContainer, { backgroundColor: colors.borderLight, width: imageDisplayWidth, aspectRatio: 4/5 }]}
               >
-                <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={[styles.postImage, { height: imageHeights[item] ?? 200 }]} contentFit="cover" />
+                <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={[styles.postImage, { aspectRatio: 4/5 }]} contentFit="cover" />
                 
                 <Animated.View style={[styles.heartOverlay, heartAnimatedStyle]}>
                   <Ionicons name="heart" size={100} color="#fff" style={styles.heartShadow} />

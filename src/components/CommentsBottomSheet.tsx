@@ -29,7 +29,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
   const insets = useSafeAreaInsets();
   
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ['50%', '100%'], []);
+  const snapPoints = useMemo(() => ['60%', '100%'], []);
   
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<CommentType[]>([]);

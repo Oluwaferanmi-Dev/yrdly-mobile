@@ -14,9 +14,9 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 
+import { MARKETPLACE_CONSTANTS } from '../../lib/constants';
 
-const COMMISSION_RATE = 0.05; // 5% — kept in sync with backend
-
+const COMMISSION_RATE = MARKETPLACE_CONSTANTS.COMMISSION_RATE; // Kept in sync with backend
 interface ItemDetails {
   id: string;
   title: string;
