@@ -1,5 +1,5 @@
 import { Tabs, useRouter } from 'expo-router';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Plus } from 'phosphor-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -43,6 +43,25 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="create"
+          options={{
+            title: 'Create',
+            tabBarIcon: () => (
+              <View style={{
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: '#10B981',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: Platform.OS === 'android' ? 24 : 0,
+              }}>
+                <Plus size={24} color="#FFF" weight="bold" />
+              </View>
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="messages"
           options={{
             title: 'Messages',
@@ -56,45 +75,10 @@ export default function TabLayout() {
             tabBarIcon: ({ color, focused }) => <ProfileIcon color={color} size={24} filled={focused} />,
           }}
         />
-        <Tabs.Screen
-          name="create"
-          options={{ href: null }}
-        />
       </Tabs>
-
-      {/* Custom Floating Create Button Overlay */}
-      <View style={[styles.fabContainer, { bottom: insets.bottom + 90 }]} pointerEvents="box-none">
-        <TouchableOpacity 
-          activeOpacity={0.8}
-          style={[styles.createButton, { backgroundColor: '#10B981', shadowColor: '#10B981' }]}
-          onPress={() => router.push('/create')}
-        >
-          <Plus size={28} color="#FFF" weight="bold" />
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fabContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 100,
-    elevation: 100,
-  },
-  createButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
-  },
 });

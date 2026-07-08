@@ -12,6 +12,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 // ── Types ─────────────────────────────────────────────────────────
 type ConvType = 'friend' | 'marketplace' | 'briefcase';
@@ -320,7 +321,8 @@ export default function MessagesTab() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.card, paddingTop: insets.top }]}>
+    <View style={[styles.container, { backgroundColor: colors.card }]}>
+      <ScreenHeader title="Messages" />
       {/* Search */}
       <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
         <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />

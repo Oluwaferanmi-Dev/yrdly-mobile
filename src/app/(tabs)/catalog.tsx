@@ -6,6 +6,7 @@ import { EventList } from '../../components/EventList';
 import { BusinessComingSoon } from '../../components/BusinessComingSoon';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 type TabType = 'Marketplace' | 'Events' | 'Businesses';
 const TABS: TabType[] = ['Marketplace', 'Events', 'Businesses'];
@@ -34,7 +35,8 @@ export default function CatalogTab() {
     }
   };
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenHeader title="Explore" />
       {/* Search Header */}
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground }]}>

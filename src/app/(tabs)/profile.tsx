@@ -13,6 +13,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 export default function ProfileTab() {
   const insets = useSafeAreaInsets();
@@ -74,7 +75,7 @@ export default function ProfileTab() {
   const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
 
   const listHeader = useMemo(() => (
-    <View style={[styles.headerContainer, { backgroundColor: colors.card, paddingTop: insets.top + 10 }]}>
+    <View style={[styles.headerContainer, { backgroundColor: colors.card, paddingTop: 10 }]}>
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.settingsButton}
@@ -152,6 +153,7 @@ export default function ProfileTab() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScreenHeader title="Profile" />
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
