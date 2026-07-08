@@ -140,10 +140,14 @@ export default function NotificationsScreen() {
         break;
       }
       case 'post_like':
-      case 'post_comment':
       case 'post_share': {
         const pid = notification.related_id || notification.data?.post_id;
         if (pid) router.push(`/posts/${pid}`);
+        break;
+      }
+      case 'post_comment': {
+        const pid = notification.related_id || notification.data?.post_id;
+        if (pid) router.push(`/posts/${pid}?focusComments=true`);
         break;
       }
       case 'event_invite': {

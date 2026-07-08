@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
-  TouchableOpacity, KeyboardAvoidingView, Platform,
+  TouchableOpacity, Platform,
   ActivityIndicator, Keyboard,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
@@ -25,7 +26,8 @@ import { ErrorBoundary } from '../../components/ErrorBoundary';
 function PostDetailContent() {
   const { colors } = useAppTheme();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, focusComments } = useLocalSearchParams<{ id: string; focusComments?: string }>();
+  const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
 
@@ -132,6 +134,25 @@ function PostDetailContent() {
     return () => { supabase.removeChannel(ch); };
   }, [id, fetchPost, fetchComments]);
 
+  useEffect(() => {
+    if (focusComments === 'true' && !loading && post && !hasAutoScrolled) {
+      setHasAutoScrolled(true);
+      setTimeout(() => {
+        if (comments.length > 0) {
+          try {
+            flatListRef.current?.scrollToIndex({ index: 0, animated: true, viewPosition: 0 });
+          } catch (e) {
+            // fallback if layout isn't fully ready
+            flatListRef.current?.scrollToEnd({ animated: true });
+          }
+        } else {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }
+        inputRef.current?.focus();
+      }, 500);
+    }
+  }, [focusComments, loading, post, hasAutoScrolled, comments]);
+
   const handleSendComment = async (text: string, parentId?: string) => {
     if (!text.trim() || !user || !id) return;
     Keyboard.dismiss();
@@ -226,8 +247,7 @@ function PostDetailContent() {
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 61 : 0}
+        behavior="padding"
       >
         {loading && !post ? (
           <View style={styles.center}>

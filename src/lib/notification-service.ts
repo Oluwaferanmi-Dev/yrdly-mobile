@@ -785,9 +785,10 @@ function getNotificationUrl(type: NotificationType, relatedId?: string | null): 
     case 'message_reaction':
       return relatedId ? `/messages/${relatedId}` : '/messages';
     case 'post_like':
-    case 'post_comment':
     case 'post_share':
       return relatedId ? `/posts/${relatedId}` : '/home';
+    case 'post_comment':
+      return relatedId ? `/posts/${relatedId}?focusComments=true` : '/home';
     case 'event_invite':
     case 'event_reminder':
     case 'event_cancelled':

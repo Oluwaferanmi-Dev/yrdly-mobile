@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform }
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomSheetModal, BottomSheetFlatList, BottomSheetTextInput, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetFlatList, BottomSheetTextInput, BottomSheetBackdrop, BottomSheetFooter } from '@gorhom/bottom-sheet';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { timeAgo } from '../lib/utils';
@@ -200,12 +200,31 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
     );
   }, [handleReply, handleDeleteComment, user?.id]);
 
+  const renderFooter = useCallback(
+    (props: any) => (
+      <BottomSheetFooter {...props} bottomInset={0}>
+        <CommentInput
+          ref={inputRef}
+          userAvatarSource={userAvatarSource}
+          userInitial={(user?.user_metadata?.name || user?.email || '?').charAt(0).toUpperCase()}
+          replyingTo={replyingTo}
+          onClearReply={() => setReplyingTo(null)}
+          onSubmit={handleSendComment}
+          InputComponent={BottomSheetTextInput}
+        />
+      </BottomSheetFooter>
+    ),
+    [userAvatarSource, user, replyingTo, handleSendComment]
+  );
+
   return (
     <BottomSheetModal
       ref={bottomSheetModalRef}
       index={0}
       snapPoints={snapPoints}
+      enableDynamicSizing={false}
       backdropComponent={renderBackdrop}
+      footerComponent={renderFooter}
       backgroundStyle={{ backgroundColor: colors.background }}
       handleIndicatorStyle={{ backgroundColor: colors.border }}
       keyboardBehavior="extend"
@@ -235,17 +254,6 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
           }
         />
       )}
-
-      {/* Input */}
-      <CommentInput
-        ref={inputRef}
-        userAvatarSource={userAvatarSource}
-        userInitial={(user?.user_metadata?.name || user?.email || '?').charAt(0).toUpperCase()}
-        replyingTo={replyingTo}
-        onClearReply={() => setReplyingTo(null)}
-        onSubmit={handleSendComment}
-        InputComponent={BottomSheetTextInput}
-      />
     </BottomSheetModal>
   );
 });
