@@ -1,0 +1,26 @@
+{
+  "extends": ["expo", "expo/web"],
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "build",
+    ".expo",
+    "coverage"
+  ],
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "react-native/no-unused-styles": "warn",
+    "no-unused-vars": "warn",
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error", "info"]
+      }
+    ]
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
+}
