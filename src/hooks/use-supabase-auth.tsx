@@ -5,6 +5,7 @@ import { User } from '@supabase/supabase-js';
 import { AuthService, AuthUser } from '@/lib/auth-service';
 import { supabase } from '@/lib/supabase';
 import { identifyDevice } from 'vexo-analytics';
+import { usePostHog } from 'posthog-react-native';
 
 interface AuthContextType {
   user: User | null;
@@ -27,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileCreationInProgress, setProfileCreationInProgress] = useState(false);
+  const posthog = usePostHog();
 
   useEffect(() => {
     let isMounted = true;
@@ -143,6 +145,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(user);
         
         if (user) {
+          if (posthog) {
+            posthog.identify(user.id, {
+              email: user.email,
+              name: user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0],
+            });
+          }
+
           try {
             if (user.email) {
               try {
@@ -252,6 +261,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     setLoading(true);
     try {
+      if (posthog) {
+        posthog.capture('user_signed_out');
+        posthog.reset();
+      }
       const result = await AuthService.signOut();
       setUser(null);
       setProfile(null);
