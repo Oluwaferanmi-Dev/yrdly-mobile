@@ -204,12 +204,17 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
   const renderFooter = useCallback(
     (props: any) => (
       <BottomSheetFooter {...props} bottomInset={0}>
-        <LiquidGlassView
-          intensity={80}
-          tint={colors.background === '#000000' ? 'dark' : 'light'}
-          // Fallback color: translucent black for dark mode, translucent white for light mode
-          fallbackColor={colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)'}
-        >
+        <View style={{ overflow: 'hidden' }}>
+          {isLiquidGlassSupported ? (
+            <LiquidGlassView
+              intensity={80}
+              tint={colors.background === '#000000' ? 'dark' : 'light'}
+              fallbackColor={colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)'}
+              style={StyleSheet.absoluteFill}
+            />
+          ) : (
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' }]} />
+          )}
           <CommentInput
             ref={inputRef}
             userAvatarSource={userAvatarSource}
@@ -219,7 +224,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
             onSubmit={handleSendComment}
             InputComponent={BottomSheetTextInput}
           />
-        </LiquidGlassView>
+        </View>
       </BottomSheetFooter>
     ),
     [userAvatarSource, user, replyingTo, handleSendComment, colors.background]

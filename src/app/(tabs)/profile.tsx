@@ -76,6 +76,12 @@ export default function ProfileTab() {
   const listHeader = useMemo(() => (
     <View style={[styles.headerContainer, { backgroundColor: colors.card, paddingTop: insets.top + 10 }]}>
       <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.settingsButton}
+          onPress={() => router.push('/settings')}
+        >
+          <Feather name="settings" size={24} color={colors.text} />
+        </TouchableOpacity>
         <View style={styles.avatarPlaceholder}>
           {avatarUri ? (
             <Image 
@@ -183,7 +189,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   listContent: { paddingBottom: 40 },
   headerContainer: { paddingBottom: 16 },
-  header: { alignItems: 'center', paddingHorizontal: 20 },
+  header: { alignItems: 'center', paddingHorizontal: 20, position: 'relative' },
   avatarPlaceholder: {
     width: 100, height: 100, borderRadius: 50, backgroundColor: '#E8F5E9',
     justifyContent: 'center', alignItems: 'center', marginBottom: 16, overflow: 'hidden'
@@ -203,7 +209,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center', gap: 6,
   },
   communityButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 13 },
-  settingsButton: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  settingsButton: { 
+    position: 'absolute',
+    top: 0,
+    right: 20,
+    width: 32, 
+    height: 32, 
+    borderRadius: 16, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    zIndex: 10
+  },
   ticketsButton: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', backgroundColor: '#E8F5E9' },
   divider: { height: 8, width: '100%', marginTop: 24 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', paddingHorizontal: 16, paddingTop: 16 },

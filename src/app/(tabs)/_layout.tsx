@@ -17,6 +17,7 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
+          tabBarShowLabel: false,
           tabBarStyle: {
             backgroundColor: colors.card,
             borderTopColor: colors.borderLight,
@@ -54,6 +55,10 @@ export default function TabLayout() {
             title: 'Profile',
             tabBarIcon: ({ color, focused }) => <ProfileIcon color={color} size={24} filled={focused} />,
           }}
+        />
+        <Tabs.Screen
+          name="create"
+          options={{ href: null }}
         />
       </Tabs>
 

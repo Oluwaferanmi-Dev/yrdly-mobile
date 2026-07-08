@@ -400,7 +400,10 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       {/* Engagement Row */}
       <View style={[styles.footer, { borderTopColor: colors.borderLight }]}>
         <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={(e) => { e.stopPropagation(); handleLike(); }}
+          >
             <Ionicons
               name={isLiked ? 'heart' : 'heart-outline'}
               size={22}
@@ -411,14 +414,20 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} onPress={onComment}>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={(e) => { e.stopPropagation(); if (onComment) onComment(); }}
+          >
             <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
             <Text style={[styles.actionText, { color: colors.textSecondary }]}>
               {post.comment_count || 0}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={(e) => { e.stopPropagation(); handleShare(); }}
+          >
             <Ionicons name="share-social-outline" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
