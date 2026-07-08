@@ -47,7 +47,7 @@ export default function SettingsScreen() {
       });
 
       if (!result.canceled && result.assets[0].uri) {
-        uploadAvatar(result.assets[0].uri);
+        uploadAvatar(result.assets[0]);
       }
     } catch (e) {
       console.log("ImagePicker error:", e);
@@ -55,7 +55,7 @@ export default function SettingsScreen() {
     }
   };
 
-  const uploadAvatar = async (localUri: string) => {
+  const uploadAvatar = async (asset: ImagePicker.ImagePickerAsset) => {
     if (!user) return;
     setUploadingImage(true);
     try {
@@ -71,18 +71,31 @@ export default function SettingsScreen() {
         }
       }
 
-      const ext = localUri.split('.').pop()?.split('?')[0] || 'jpeg';
+      // Safe extraction for iOS where allowsEditing can strip the extension
+      const localUri = asset.uri;
+      const mimeType = asset.mimeType || 'image/jpeg';
+      const extMatch = asset.fileName?.match(/\.([^.]+)$/) || localUri.match(/\.([^.]+)$/);
+      let ext = extMatch ? extMatch[1].split('?')[0].toLowerCase() : (mimeType.split('/')[1] || 'jpeg');
+      
+      // Expo on iOS converts HEIC to JPEG when allowsEditing is true
+      if (ext === 'heic' || ext === 'heif') {
+        ext = 'jpg';
+      }
+
       const fileName = `${user.id}_${Date.now()}.${ext}`;
       const file = {
         uri: localUri,
         name: fileName,
-        type: `image/${ext}`
+        type: mimeType
       };
 
       const { url, error } = await StorageService.uploadUserAvatar(user.id, file);
       if (error) throw error;
       if (url) {
         setAvatarUrl(url);
+        // Save immediately so the user doesn't end up with a broken avatar if they don't hit "Save"
+        await AuthService.updateUserProfile(user.id, { avatar_url: url });
+        await supabase.auth.updateUser({ data: { avatar_url: url } });
       }
     } catch (e) {
       console.error(e);
