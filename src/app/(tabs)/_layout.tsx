@@ -1,14 +1,3 @@
-import { Tabs, useRouter } from 'expo-router';
-import { Feather, Ionicons } from '@expo/vector-icons';
-import { View, TouchableOpacity, Platform, StyleSheet, Text } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { useAppTheme } from '../../context/ThemeContext';
-import { useNotificationBadge } from '../../context/NotificationBadgeContext';
-import { 
-  HomeIcon, ExploreIcon, MessagesIcon, ProfileIcon, 
-  MapIcon, NotificationsIcon 
-} from '../../components/SvgIcons';
-
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Plus } from 'phosphor-react-native';
