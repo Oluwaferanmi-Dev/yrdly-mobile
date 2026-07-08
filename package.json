@@ -70,13 +70,20 @@
     "@babel/plugin-transform-private-methods": "^7.29.7",
     "@types/react": "~19.1.10",
     "babel-preset-expo": "~54.0.10",
+    "eslint": "^8.56.0",
+    "eslint-config-expo": "^7.0.0",
+    "prettier": "^3.1.1",
     "typescript": "~5.9.2"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "lint": "eslint . --ext .ts,.tsx --ignore-path .gitignore",
+    "lint:fix": "eslint . --ext .ts,.tsx --ignore-path .gitignore --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\""
   },
   "private": true
 }
