@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // ── Types ─────────────────────────────────────────────────────────
 type ConvType = 'friend' | 'marketplace' | 'briefcase';
@@ -55,6 +56,7 @@ export default function MessagesTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const fetchConversations = async () => {
     if (!user) return;
@@ -318,7 +320,7 @@ export default function MessagesTab() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.card }]}>
+    <View style={[styles.container, { backgroundColor: colors.card, paddingTop: insets.top }]}>
       {/* Search */}
       <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
         <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />

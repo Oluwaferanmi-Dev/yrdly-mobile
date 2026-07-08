@@ -72,40 +72,40 @@ const QuickPostBox = memo(() => {
   );
 
   const containerStyle = {
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 8,
-    borderRadius: 24,
     padding: 8,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     borderWidth: 1,
     borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    overflow: 'hidden' as const,
   };
 
-  return isLiquidGlassSupported ? (
-    <LiquidGlassView
-      intensity={80}
-      tint={isDarkMode ? 'dark' : 'light'}
-      // Fallback color for older iOS/Android: translucent black or white
-      fallbackColor={isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)'}
-      style={containerStyle}
+  return (
+    <TouchableOpacity 
+      activeOpacity={0.9} 
+      onPress={() => router.push('/create')}
+      style={{ overflow: 'hidden', marginHorizontal: 16, marginTop: 12, marginBottom: 8, borderRadius: 24 }}
     >
-      {content}
-    </LiquidGlassView>
-  ) : (
-    <BlurView
-      intensity={80}
-      tint={isDarkMode ? 'dark' : 'light'}
-      style={[containerStyle, { backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.4)' : 'rgba(255, 255, 255, 0.5)' }]}
-    >
-      {content}
-    </BlurView>
+      {isLiquidGlassSupported ? (
+        <LiquidGlassView
+          intensity={80}
+          tint={isDarkMode ? 'dark' : 'light'}
+          fallbackColor={isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)'}
+          style={containerStyle}
+          pointerEvents="none"
+        >
+          {content}
+        </LiquidGlassView>
+      ) : (
+        <BlurView
+          intensity={80}
+          tint={isDarkMode ? 'dark' : 'light'}
+          style={[containerStyle, { backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.4)' : 'rgba(255, 255, 255, 0.5)' }]}
+          pointerEvents="none"
+        >
+          {content}
+        </BlurView>
+      )}
+    </TouchableOpacity>
   );
 });
 

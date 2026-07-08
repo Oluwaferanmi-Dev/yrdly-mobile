@@ -1,34 +1,64 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Tabs, useRouter } from 'expo-router';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Plus } from 'phosphor-react-native';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../context/ThemeContext';
+import { 
+  HomeIcon, ExploreIcon, MessagesIcon, ProfileIcon 
+} from '../../components/SvgIcons';
 
 export default function TabLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { colors } = useAppTheme();
+  const { colors, isDarkMode } = useAppTheme();
 
   return (
     <View style={{ flex: 1 }}>
-      <NativeTabs>
-        <NativeTabs.Trigger name="index">
-          <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="catalog">
-          <NativeTabs.Trigger.Icon sf="magnifyingglass" md="search" />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="messages">
-          <NativeTabs.Trigger.Icon sf="message.fill" md="message" />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="profile">
-          <NativeTabs.Trigger.Icon sf="person.fill" md="person" />
-        </NativeTabs.Trigger>
-      </NativeTabs>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: {
+            backgroundColor: colors.card,
+            borderTopColor: colors.borderLight,
+            paddingBottom: insets.bottom > 0 ? 0 : 10,
+            height: insets.bottom + 60,
+          },
+          tabBarActiveTintColor: colors.tint,
+          tabBarInactiveTintColor: colors.textMuted,
+        }}
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ color, focused }) => <HomeIcon color={color} size={24} filled={focused} />,
+          }}
+        />
+        <Tabs.Screen
+          name="catalog"
+          options={{
+            title: 'Catalog',
+            tabBarIcon: ({ color, focused }) => <ExploreIcon color={color} size={24} filled={focused} />,
+          }}
+        />
+        <Tabs.Screen
+          name="messages"
+          options={{
+            title: 'Messages',
+            tabBarIcon: ({ color, focused }) => <MessagesIcon color={color} size={24} filled={focused} />,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color, focused }) => <ProfileIcon color={color} size={24} filled={focused} />,
+          }}
+        />
+      </Tabs>
 
       {/* Custom Floating Create Button Overlay */}
-      <View style={[styles.fabContainer, { bottom: insets.bottom + 60 }]} pointerEvents="box-none">
+      <View style={[styles.fabContainer, { bottom: insets.bottom + 90 }]} pointerEvents="box-none">
         <TouchableOpacity 
           activeOpacity={0.8}
           style={[styles.createButton, { backgroundColor: '#10B981', shadowColor: '#10B981' }]}
@@ -48,6 +78,8 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 100,
+    elevation: 100,
   },
   createButton: {
     width: 56,

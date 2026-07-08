@@ -5,6 +5,7 @@ import { MarketplaceGrid } from '../../components/MarketplaceGrid';
 import { EventList } from '../../components/EventList';
 import { BusinessComingSoon } from '../../components/BusinessComingSoon';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type TabType = 'Marketplace' | 'Events' | 'Businesses';
 const TABS: TabType[] = ['Marketplace', 'Events', 'Businesses'];
@@ -16,6 +17,7 @@ export default function CatalogTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVisible, setFilterVisible] = useState(false);
   const [sortOption, setSortOption] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
+  const insets = useSafeAreaInsets();
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -32,7 +34,7 @@ export default function CatalogTab() {
     }
   };
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       {/* Search Header */}
       <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
         <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground }]}>

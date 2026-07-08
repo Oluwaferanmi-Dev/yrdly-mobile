@@ -11,9 +11,11 @@ import { Post } from '../../types';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 
 export default function ProfileTab() {
+  const insets = useSafeAreaInsets();
   const { user, profile } = useAuth();
   const router = useRouter();
   const { colors } = useAppTheme();
@@ -72,7 +74,7 @@ export default function ProfileTab() {
   const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
 
   const listHeader = useMemo(() => (
-    <View style={[styles.headerContainer, { backgroundColor: colors.card }]}>
+    <View style={[styles.headerContainer, { backgroundColor: colors.card, paddingTop: insets.top + 10 }]}>
       <View style={styles.header}>
         <View style={styles.avatarPlaceholder}>
           {avatarUri ? (
@@ -140,7 +142,7 @@ export default function ProfileTab() {
       <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
     </View>
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [avatarUri, profile?.name, profile?.bio, profile?.role, profile?.is_admin, user?.email, posts.length, followersCount, followingCount, colors]);
+  ), [avatarUri, profile?.name, profile?.bio, profile?.role, profile?.is_admin, user?.email, posts.length, followersCount, followingCount, colors, insets.top]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -181,7 +183,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   listContent: { paddingBottom: 40 },
   headerContainer: { paddingBottom: 16 },
-  header: { alignItems: 'center', paddingTop: 30, paddingHorizontal: 20 },
+  header: { alignItems: 'center', paddingHorizontal: 20 },
   avatarPlaceholder: {
     width: 100, height: 100, borderRadius: 50, backgroundColor: '#E8F5E9',
     justifyContent: 'center', alignItems: 'center', marginBottom: 16, overflow: 'hidden'
