@@ -102,7 +102,7 @@ export default function HomeTab() {
   const bottomSheetRef = useRef<CommentsBottomSheetRef>(null);
   const { unreadCount } = useNotificationBadge();
   const flashListRef = useRef<any>(null);
-  const [activeAlert, setActiveAlert] = useState<Alert | null>(null);
+  const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
   
   useScrollToTop(flashListRef);
   
@@ -147,20 +147,14 @@ export default function HomeTab() {
     });
   }, [allPosts]);
 
-  const fetchAlert = useCallback(async () => {
-    const alert = await AlertService.getActiveAlert();
-    if (alert) {
-      // Check if the user has already dismissed this specific alert
-      const dismissedKey = `yrdly_dismissed_alert_${alert.id}`;
-      const dismissed = await SecureStore.getItemAsync(dismissedKey);
-      if (!dismissed) {
-        setActiveAlert(alert);
-      } else {
-        setActiveAlert(null);
-      }
-    } else {
-      setActiveAlert(null);
+  const fetchAlerts = useCallback(async () => {
+    const alerts = await AlertService.getActiveAlerts();
+    const visibleAlerts = [];
+    for (const alert of alerts) {
+      const dismissed = await SecureStore.getItemAsync(`yrdly_dismissed_alert_${alert.id}`);
+      if (!dismissed) visibleAlerts.push(alert);
     }
+    setActiveAlerts(visibleAlerts);
   }, []);
 
   const onRefresh = useCallback(async () => {
@@ -168,16 +162,16 @@ export default function HomeTab() {
     setRefreshing(true);
     await Promise.all([
       refreshPosts(),
-      fetchAlert()
+      fetchAlerts()
     ]);
     setRefreshing(false);
-  }, [refreshPosts, fetchAlert]);
+  }, [refreshPosts, fetchAlerts]);
 
   useFocusEffect(
     useCallback(() => {
       refreshPosts();
-      fetchAlert();
-    }, [refreshPosts, fetchAlert])
+      fetchAlerts();
+    }, [refreshPosts, fetchAlerts])
   );
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 }).current;
@@ -322,16 +316,48 @@ export default function HomeTab() {
         }
         ListHeaderComponent={
           <View>
-            {activeAlert && (
+            {activeAlerts.length === 1 && (
               <AlertBanner 
-                alert={activeAlert} 
-                onPress={() => {}} 
+                alert={activeAlerts[0]} 
+                onPress={() => router.push('/alerts')} 
                 onDismiss={async () => {
                   // Persist dismissal so it doesn't reappear on refresh
-                  await SecureStore.setItemAsync(`yrdly_dismissed_alert_${activeAlert.id}`, 'true');
-                  setActiveAlert(null);
+                  await SecureStore.setItemAsync(`yrdly_dismissed_alert_${activeAlerts[0].id}`, 'true');
+                  setActiveAlerts([]);
                 }}
               />
+            )}
+            {activeAlerts.length > 1 && (
+              <TouchableOpacity 
+                activeOpacity={0.9} 
+                onPress={() => router.push('/alerts')}
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 16,
+                  marginBottom: 8,
+                  borderRadius: 12,
+                  padding: 16,
+                  backgroundColor: '#fee2e2',
+                  borderWidth: 1,
+                  borderColor: '#fca5a5',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  elevation: 4,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="warning" size={24} color="#7f1d1d" />
+                  <Text style={{ marginLeft: 12, fontFamily: 'Inter-Bold', fontSize: 14, color: '#7f1d1d' }}>
+                    {activeAlerts.length} Active Safety Alerts
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#7f1d1d" />
+              </TouchableOpacity>
             )}
             <QuickPostBox />
           </View>

@@ -58,6 +58,33 @@ export class AlertService {
   }
 
   /**
+   * Fetches all recent active alerts.
+   */
+  static async getActiveAlerts(): Promise<Alert[]> {
+    try {
+      const { data, error } = await supabase
+        .from('alerts')
+        .select('*')
+        .eq('is_resolved', false)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching active alerts:', error);
+        return [];
+      }
+
+      if (data) {
+        const now = new Date();
+        return data.filter(alert => !alert.expires_at || new Date(alert.expires_at) >= now);
+      }
+      return [];
+    } catch (error) {
+      console.error('getActiveAlerts error:', error);
+      return [];
+    }
+  }
+
+  /**
    * Post a new alert (Admin only)
    */
   static async createAlert(alertData: CreateAlertData) {
