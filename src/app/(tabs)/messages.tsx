@@ -361,8 +361,6 @@ export default function MessagesTab() {
       ) : (
         <FlashList
           data={filtered}
-          // @ts-ignore
-          estimatedItemSize={80}
           keyExtractor={(item) => item.id}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
           renderItem={renderItem}

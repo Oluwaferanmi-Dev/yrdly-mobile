@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../yrdly-app"
+		},
+		{
+			"path": "../yrdly"
+		}
+	],
+	"settings": {}
+}

@@ -271,7 +271,7 @@ export class SupabaseChatService {
 
         if (chatRow) {
           const toUserId = chatRow.buyer_id === senderId ? chatRow.seller_id : chatRow.buyer_id;
-          const { NotificationTriggers } = await import('@/lib/notification-triggers');
+          const { NotificationTriggers } = await import('./notification-triggers');
           await NotificationTriggers.onMessageSent(
             toUserId,
             senderId,

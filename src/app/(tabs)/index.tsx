@@ -319,7 +319,6 @@ export default function HomeTab() {
       <AnimatedFlashList
         ref={flashListRef}
         data={posts}
-        estimatedItemSize={400}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         keyExtractor={(item: Post) => item.id}
