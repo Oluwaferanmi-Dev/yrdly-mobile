@@ -113,7 +113,8 @@
       ],
       "expo-video",
       "expo-audio",
-      "./plugins/withAROptional.js"
+      "./plugins/withAROptional.js",
+      "expo-localization"
     ],
     "newArchEnabled": true,
     "experiments": {

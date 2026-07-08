@@ -9,6 +9,7 @@ import { LocationProvider } from '../context/LocationContext';
 import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Insights from 'expo-insights';
+import { PostHogProvider } from 'posthog-react-native';
 // vexo is imported dynamically below
 import { setAudioModeAsync } from 'expo-audio';
 import { OfflineBanner } from '../components/OfflineBanner';
@@ -112,7 +113,8 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 export default function Layout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <KeyboardProvider>
+      <PostHogProvider apiKey={process.env.EXPO_PUBLIC_POSTHOG_KEY!} options={{ host: process.env.EXPO_PUBLIC_POSTHOG_HOST }}>
+        <KeyboardProvider>
         <ErrorBoundary>
           <ThemeProvider>
             <BottomSheetModalProvider>
@@ -130,6 +132,7 @@ export default function Layout() {
           </ThemeProvider>
         </ErrorBoundary>
       </KeyboardProvider>
+      </PostHogProvider>
     </GestureHandlerRootView>
   );
 }

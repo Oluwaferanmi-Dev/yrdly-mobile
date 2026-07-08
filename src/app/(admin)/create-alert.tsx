@@ -19,6 +19,7 @@ export default function CreateAlertScreen() {
   const [coordinate, setCoordinate] = useState({ latitude: 6.5244, longitude: 3.3792 }); // Default Lagos
   const [address, setAddress] = useState('');
   const [geocoding, setGeocoding] = useState(false);
+  const [duration, setDuration] = useState<'24h' | '48h' | '7d'>('48h');
 
   React.useEffect(() => {
     (async () => {
@@ -68,6 +69,11 @@ export default function CreateAlertScreen() {
 
     setLoading(true);
     
+    const expiresAt = new Date();
+    if (duration === '24h') expiresAt.setHours(expiresAt.getHours() + 24);
+    else if (duration === '48h') expiresAt.setHours(expiresAt.getHours() + 48);
+    else expiresAt.setDate(expiresAt.getDate() + 7);
+
     try {
       const { error } = await AlertService.createAlert({
         type,
@@ -78,6 +84,7 @@ export default function CreateAlertScreen() {
         last_seen_address: address,
         lat: coordinate.latitude,
         lng: coordinate.longitude,
+        expires_at: expiresAt.toISOString(),
       });
 
       setLoading(false);
@@ -124,6 +131,28 @@ export default function CreateAlertScreen() {
           onPress={() => setType('community_safety')}
         >
           <Text style={[styles.typeText, type === 'community_safety' && styles.typeTextActive]}>Safety</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.label}>Alert Duration</Text>
+      <View style={styles.typeSelector}>
+        <TouchableOpacity 
+          style={[styles.typeButton, duration === '24h' && styles.typeButtonActive]}
+          onPress={() => setDuration('24h')}
+        >
+          <Text style={[styles.typeText, duration === '24h' && styles.typeTextActive]}>24 Hours</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.typeButton, duration === '48h' && styles.typeButtonActive]}
+          onPress={() => setDuration('48h')}
+        >
+          <Text style={[styles.typeText, duration === '48h' && styles.typeTextActive]}>48 Hours</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.typeButton, duration === '7d' && styles.typeButtonActive]}
+          onPress={() => setDuration('7d')}
+        >
+          <Text style={[styles.typeText, duration === '7d' && styles.typeTextActive]}>7 Days</Text>
         </TouchableOpacity>
       </View>
 
