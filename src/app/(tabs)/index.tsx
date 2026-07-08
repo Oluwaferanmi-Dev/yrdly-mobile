@@ -14,6 +14,7 @@ import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, w
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
 import { Image } from 'expo-image';
 import { MapIcon, NotificationsIcon } from '../../components/SvgIcons';
 import { usePosts } from '../../hooks/use-posts';
@@ -35,24 +36,8 @@ const QuickPostBox = memo(() => {
 
   const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
 
-  return (
-    <View style={{
-      backgroundColor: colors.card,
-      marginHorizontal: 16,
-      marginTop: 12,
-      marginBottom: 8,
-      borderRadius: 24,
-      padding: 8,
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: colors.borderLight,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      elevation: 2,
-    }}>
+  const content = (
+    <>
       <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' }}>
         {avatarUri ? (
           <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
@@ -83,7 +68,44 @@ const QuickPostBox = memo(() => {
           <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>Post</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </>
+  );
+
+  const containerStyle = {
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 8,
+    borderRadius: 24,
+    padding: 8,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    borderWidth: 1,
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    overflow: 'hidden' as const,
+  };
+
+  return isLiquidGlassSupported ? (
+    <LiquidGlassView
+      intensity={80}
+      tint={isDarkMode ? 'dark' : 'light'}
+      // Fallback color for older iOS/Android: translucent black or white
+      fallbackColor={isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)'}
+      style={containerStyle}
+    >
+      {content}
+    </LiquidGlassView>
+  ) : (
+    <BlurView
+      intensity={80}
+      tint={isDarkMode ? 'dark' : 'light'}
+      style={[containerStyle, { backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.4)' : 'rgba(255, 255, 255, 0.5)' }]}
+    >
+      {content}
+    </BlurView>
   );
 });
 
@@ -187,7 +209,16 @@ export default function HomeTab() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Animated.View style={headerAnimatedStyle}>
-          <BlurView intensity={80} tint={isDarkMode ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+          {isLiquidGlassSupported ? (
+            <LiquidGlassView 
+              intensity={80} 
+              tint={isDarkMode ? 'dark' : 'light'} 
+              fallbackColor={isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.85)'} 
+              style={StyleSheet.absoluteFill} 
+            />
+          ) : (
+            <BlurView intensity={80} tint={isDarkMode ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+          )}
           <View style={[styles.headerContent, { paddingTop: insets.top, borderBottomColor: colors.borderLight }]}>
             <Text style={[styles.headerTitle, { color: colors.tint }]}>YRDLY</Text>
             
@@ -237,7 +268,16 @@ export default function HomeTab() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Animated.View style={headerAnimatedStyle}>
-        <BlurView intensity={80} tint={isDarkMode ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+        {isLiquidGlassSupported ? (
+          <LiquidGlassView 
+            intensity={80} 
+            tint={isDarkMode ? 'dark' : 'light'} 
+            fallbackColor={isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.85)'} 
+            style={StyleSheet.absoluteFill} 
+          />
+        ) : (
+          <BlurView intensity={80} tint={isDarkMode ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+        )}
         <View style={[styles.headerContent, { paddingTop: insets.top, borderBottomColor: colors.borderLight }]}>
           <Text style={[styles.headerTitle, { color: colors.tint }]}>YRDLY</Text>
           
@@ -335,28 +375,64 @@ export default function HomeTab() {
                   marginHorizontal: 16,
                   marginTop: 16,
                   marginBottom: 8,
-                  borderRadius: 12,
-                  padding: 16,
-                  backgroundColor: '#fee2e2',
-                  borderWidth: 1,
-                  borderColor: '#fca5a5',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  borderRadius: 16,
                   elevation: 4,
                   shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 12,
+                  overflow: 'visible',
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="warning" size={24} color="#7f1d1d" />
-                  <Text style={{ marginLeft: 12, fontFamily: 'Inter-Bold', fontSize: 14, color: '#7f1d1d' }}>
-                    {activeAlerts.length} Active Safety Alerts
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#7f1d1d" />
+                {isLiquidGlassSupported ? (
+                  <LiquidGlassView
+                    intensity={90}
+                    tint="light"
+                    fallbackColor="rgba(254, 226, 226, 0.95)"
+                    style={{
+                      borderRadius: 16,
+                      padding: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(252, 165, 165, 0.5)',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Ionicons name="warning" size={24} color="#7f1d1d" />
+                      <Text style={{ marginLeft: 12, fontFamily: 'Inter-Bold', fontSize: 14, color: '#7f1d1d' }}>
+                        {activeAlerts.length} Active Safety Alerts
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#7f1d1d" />
+                  </LiquidGlassView>
+                ) : (
+                  <BlurView
+                    intensity={90}
+                    tint="light"
+                    style={{
+                      borderRadius: 16,
+                      padding: 16,
+                      backgroundColor: 'rgba(254, 226, 226, 0.4)',
+                      borderWidth: 1,
+                      borderColor: 'rgba(252, 165, 165, 0.5)',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Ionicons name="warning" size={24} color="#7f1d1d" />
+                      <Text style={{ marginLeft: 12, fontFamily: 'Inter-Bold', fontSize: 14, color: '#7f1d1d' }}>
+                        {activeAlerts.length} Active Safety Alerts
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#7f1d1d" />
+                  </BlurView>
+                )}
               </TouchableOpacity>
             )}
             <QuickPostBox />

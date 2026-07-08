@@ -17,7 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.feranmi.dev.yrdlymobile",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "MinimumOSVersion": "26.5"
       },
       "associatedDomains": [
         "applinks:app.yrdly.ng"

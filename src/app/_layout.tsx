@@ -19,13 +19,14 @@ SplashScreen.preventAutoHideAsync().catch(() => {
   // already hidden, ignore
 });
 
+import { vexo } from 'vexo-analytics';
+
 // expo-insights: automatic cold-start tracking
 void Insights;
 
-if (!__DEV__) {
+if (process.env.EXPO_PUBLIC_VEXO_API_KEY) {
   try {
-    const vexo = require('vexo-analytics').vexo;
-    vexo(process.env.EXPO_PUBLIC_VEXO_API_KEY ?? '');
+    vexo(process.env.EXPO_PUBLIC_VEXO_API_KEY);
   } catch (e) {
     console.warn('[Yrdly] Failed to initialize vexo analytics:', e);
   }

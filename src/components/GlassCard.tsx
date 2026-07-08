@@ -17,6 +17,22 @@ export function GlassCard({
   tint = 'systemChromeMaterial',
   borderRadius = 20,
 }: GlassCardProps) {
+  if (isLiquidGlassSupported) {
+    return (
+      <LiquidGlassView
+        intensity={intensity}
+        tint={(tint === 'light' || tint === 'dark' || tint === 'default') ? tint : 'light'}
+        // Fallback color: Translucent white
+        fallbackColor="rgba(255, 255, 255, 0.92)"
+        style={[styles.glassIOS, { borderRadius }, style]}
+      >
+        <View style={[styles.glassInner, { borderRadius }]}>
+          {children}
+        </View>
+      </LiquidGlassView>
+    );
+  }
+
   if (Platform.OS === 'ios') {
     return (
       <BlurView

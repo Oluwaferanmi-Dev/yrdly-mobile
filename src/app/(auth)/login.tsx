@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -64,7 +65,14 @@ export default function Login() {
       </View>
 
       {/* Glass Overlay */}
-      {Platform.OS === 'ios' ? (
+      {isLiquidGlassSupported ? (
+        <LiquidGlassView 
+          intensity={20} 
+          style={StyleSheet.absoluteFillObject} 
+          tint={colors.background === '#121212' ? 'dark' : 'light'} 
+          fallbackColor={colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)'}
+        />
+      ) : Platform.OS === 'ios' ? (
         <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={colors.background === '#121212' ? 'dark' : 'light'} />
       ) : (
         <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' }]} />

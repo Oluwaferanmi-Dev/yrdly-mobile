@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../lib/alert-service';
+import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
 
 interface AlertBannerProps {
   alert: Alert;
@@ -12,12 +14,8 @@ interface AlertBannerProps {
 export const AlertBanner: React.FC<AlertBannerProps> = ({ alert, onPress, onDismiss }) => {
   const isAmber = alert.type === 'amber';
   
-  return (
-    <TouchableOpacity 
-      activeOpacity={0.9} 
-      onPress={onPress}
-      style={[styles.container, isAmber ? styles.amberContainer : styles.safetyContainer]}
-    >
+  const content = (
+    <>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Ionicons 
@@ -56,32 +54,64 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ alert, onPress, onDism
           )}
         </View>
       </View>
+    </>
+  );
+
+  return (
+    <TouchableOpacity 
+      activeOpacity={0.9} 
+      onPress={onPress}
+      style={styles.touchContainer}
+    >
+      {isLiquidGlassSupported ? (
+        <LiquidGlassView
+          intensity={90}
+          tint="light"
+          // Fallback color: Translucent red for amber alerts, translucent orange for safety alerts
+          fallbackColor={isAmber ? 'rgba(254, 226, 226, 0.95)' : 'rgba(255, 237, 213, 0.95)'}
+          style={[styles.container, isAmber ? styles.amberContainer : styles.safetyContainer]}
+        >
+          {content}
+        </LiquidGlassView>
+      ) : (
+        <BlurView
+          intensity={90}
+          tint="light"
+          style={[styles.container, isAmber ? styles.amberContainer : styles.safetyContainer]}
+        >
+          {content}
+        </BlurView>
+      )}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  touchContainer: {
     marginHorizontal: 16,
     marginTop: 16,
     marginBottom: 8,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
     elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    overflow: 'visible',
+  },
+  container: {
+    borderRadius: 16,
+    padding: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
   },
   amberContainer: {
-    backgroundColor: '#fee2e2', // Red for missing child
-    borderWidth: 1,
-    borderColor: '#fca5a5',
+    backgroundColor: 'rgba(254, 226, 226, 0.4)', // Liquid Glass Red
+    borderColor: 'rgba(252, 165, 165, 0.5)',
   },
   safetyContainer: {
-    backgroundColor: '#ffedd5', // Orange for safety
-    borderWidth: 1,
-    borderColor: '#fdba74',
+    backgroundColor: 'rgba(255, 237, 213, 0.4)', // Liquid Glass Orange
+    borderColor: 'rgba(253, 186, 116, 0.5)',
   },
   header: {
     flexDirection: 'row',
