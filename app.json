@@ -115,7 +115,15 @@
       "expo-video",
       "expo-audio",
       "./plugins/withAROptional.js",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "swiftVersion": "5.0"
+          }
+        }
+      ]
     ],
     "newArchEnabled": true,
     "experiments": {
