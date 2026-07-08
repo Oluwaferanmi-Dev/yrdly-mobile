@@ -120,7 +120,7 @@
         "expo-build-properties",
         {
           "ios": {
-            "swiftVersion": "5.0"
+            "swiftVersion": "5.9"
           }
         }
       ]
