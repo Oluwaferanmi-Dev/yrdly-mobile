@@ -50,8 +50,8 @@ jobs:
           set -o pipefail
           cd ios
           xcodebuild \
-            -workspace yrdlymobile.xcworkspace \
-            -scheme yrdlymobile \
+            -workspace YRDLY.xcworkspace \
+            -scheme YRDLY \
             -configuration Release \
             -sdk iphoneos \
             -archivePath $RUNNER_TEMP/yrdly.xcarchive \
