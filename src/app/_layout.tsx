@@ -15,7 +15,7 @@ import { setAudioModeAsync } from 'expo-audio';
 import { OfflineBanner } from '../components/OfflineBanner';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 
-SplashScreen.preventAutoHideAsync({}).catch(() => {
+SplashScreen.preventAutoHideAsync().catch(() => {
   // already hidden, ignore
 });
 

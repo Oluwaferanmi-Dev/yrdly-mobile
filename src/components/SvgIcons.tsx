@@ -4,6 +4,7 @@ import Svg, { Path, G, Circle, Rect, Defs, ClipPath } from 'react-native-svg';
 export interface SvgIconProps {
   color?: string;
   size?: number;
+  filled?: boolean;
 }
 
 export function BusinessIcon({ color = '#000', size = 24 }: SvgIconProps) {
