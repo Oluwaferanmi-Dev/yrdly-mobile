@@ -22,6 +22,7 @@ export interface PaymentInitRequest {
   buyerId: string;
   sellerId: string;
   amount: number;
+  callbackUrl?: string;
 }
 
 export interface PaymentInitResult {
@@ -62,6 +63,7 @@ export class PaystackService {
           buyerId: data.buyerId,
           sellerId: data.sellerId,
           amount: data.amount,
+          callbackUrl: data.callbackUrl,
         }),
       });
 

@@ -4,7 +4,8 @@ import {
   View, Text, StyleSheet, ActivityIndicator,
   TouchableOpacity, Alert, ScrollView,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -37,11 +38,8 @@ export default function CheckoutScreen() {
 
   const [stage, setStage] = useState<Stage>('loading');
   const [item, setItem] = useState<ItemDetails | null>(null);
-  const [paymentLink, setPaymentLink] = useState('');
   const [transactionId, setTransactionId] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-
-  const webViewRef = useRef<any>(null);
 
   // 1. Fetch item + seller info
   const fetchItem = useCallback(async () => {
@@ -76,6 +74,7 @@ export default function CheckoutScreen() {
     setStage('paying');
     setErrorMsg('');
     try {
+      const callbackUrl = Linking.createURL('payment-verify');
       const result = await api.post<{ paymentLink: string; transactionId: string }>(
         '/api/payment/initialize',
         {
@@ -87,56 +86,52 @@ export default function CheckoutScreen() {
           buyerName: profile.name ?? user.user_metadata?.name ?? 'Yrdly User',
           itemTitle: item.title,
           sellerName: item.seller?.name ?? 'Seller',
+          callbackUrl,
         }
       );
-      setPaymentLink(result.paymentLink);
+      
       setTransactionId(result.transactionId);
+      
+      // Open in-app browser for payment
+      const browserResult = await WebBrowser.openAuthSessionAsync(result.paymentLink, callbackUrl);
+      
+      if (browserResult.type === 'success' && browserResult.url) {
+        setStage('verifying');
+        
+        // Extract tx_ref from the Paystack redirect URL
+        const urlObj = new URL(browserResult.url);
+        const txRef = urlObj.searchParams.get('tx_ref') ?? urlObj.searchParams.get('reference') ?? result.transactionId;
+        const status = urlObj.searchParams.get('status');
+
+        if (status === 'cancelled') {
+          setStage('summary');
+          Alert.alert('Cancelled', 'Payment was not completed.');
+          return;
+        }
+
+        const verifyResult = await api.post('/api/payment/verify', { txRef });
+
+        if (verifyResult.success) {
+          router.replace({
+            pathname: '/checkout/success',
+            params: {
+              transactionId: verifyResult.transactionId ?? txRef,
+              itemTitle: item?.title ?? 'Item',
+              amount: String(item?.price ?? 0),
+            },
+          } as any);
+        } else {
+          throw new Error('Payment verification failed');
+        }
+      } else {
+        // User closed the browser manually
+        setStage('summary');
+      }
     } catch (e: any) {
       setStage('error');
       setErrorMsg(e?.message ?? 'Could not initialize payment.');
     }
   };
-
-  // 3. Intercept Paystack's redirect back to /payment/verify
-  const handleNavigationChange = useCallback(async (navState: any) => {
-    const url: string = navState.url ?? '';
-    if (!url.includes('/payment/verify') && !url.includes('payment/verify')) return;
-
-    // Stop WebView from loading that page
-    webViewRef.current?.stopLoading();
-    setStage('verifying');
-
-    try {
-      // Extract tx_ref from the Paystack redirect URL
-      const urlObj = new URL(url.startsWith('http') ? url : `https://placeholder.com${url}`);
-      const txRef = urlObj.searchParams.get('tx_ref') ?? urlObj.searchParams.get('reference') ?? transactionId;
-      const status = urlObj.searchParams.get('status');
-
-      if (status === 'cancelled') {
-        setStage('summary');
-        Alert.alert('Cancelled', 'Payment was not completed.');
-        return;
-      }
-
-      const result = await api.post('/api/payment/verify', { txRef });
-
-      if (result.success) {
-        router.replace({
-          pathname: '/checkout/success',
-          params: {
-            transactionId: result.transactionId ?? txRef,
-            itemTitle: item?.title ?? 'Item',
-            amount: String(item?.price ?? 0),
-          },
-        } as any);
-      } else {
-        throw new Error('Payment verification failed');
-      }
-    } catch (e: any) {
-      setStage('error');
-      setErrorMsg(e?.message ?? 'Payment verification failed. Please contact support.');
-    }
-  }, [transactionId, item]);
 
   const commission = item ? Math.round(item.price * COMMISSION_RATE) : 0;
   const thumbnail = item?.image_urls?.[0] || item?.image_url;
@@ -150,40 +145,14 @@ export default function CheckoutScreen() {
     );
   }
 
-  // ── Payment WebView ──────────────────────────────────────────
+  // ── Payment In Progress ──────────────────────────────────────────
   if (stage === 'paying' || stage === 'verifying') {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <View style={[styles.webHeader, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
-          <TouchableOpacity onPress={() => setStage('summary')} style={styles.backBtn}>
-            <Feather name="x" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={[styles.webHeaderTitle, { color: colors.text }]}>Secure Payment</Text>
-          <View style={{ width: 40 }} />
-        </View>
-        {stage === 'verifying' ? (
-          <View style={[styles.center, { backgroundColor: colors.background }]}>
-            <ActivityIndicator size="large" color={colors.tint} />
-            <Text style={[styles.verifyingText, { color: colors.textSecondary }]}>Verifying your payment…</Text>
-          </View>
-        ) : paymentLink ? (
-          <WebView
-            ref={webViewRef}
-            source={{ uri: paymentLink }}
-            onNavigationStateChange={handleNavigationChange}
-            startInLoadingState
-            renderLoading={() => (
-              <View style={[styles.center, { backgroundColor: colors.background }]}>
-                <ActivityIndicator size="large" color={colors.tint} />
-              </View>
-            )}
-          />
-        ) : (
-          <View style={[styles.center, { backgroundColor: colors.background }]}>
-            <ActivityIndicator size="large" color={colors.tint} />
-            <Text style={{ marginTop: 12, color: colors.textMuted }}>Preparing payment…</Text>
-          </View>
-        )}
+      <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
+        <Text style={[styles.verifyingText, { color: colors.textSecondary }]}>
+          {stage === 'verifying' ? 'Verifying your payment…' : 'Secure payment in progress…'}
+        </Text>
       </SafeAreaView>
     );
   }
@@ -284,12 +253,6 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
   headerTitle: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
-
-  webHeader: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
-    paddingVertical: 14, borderBottomWidth: 1,
-  },
-  webHeaderTitle: { fontSize: 16, fontWeight: '700', flex: 1, textAlign: 'center' },
 
   itemCard: {
     flexDirection: 'row', borderRadius: 16,

@@ -11,7 +11,7 @@ import { Post, Business } from '@/types';
 import { useToast } from './use-toast';
 
 
-import { LocationFilter } from '@/contexts/LocationContext';
+import { LocationFilter } from '@/context/LocationContext';
 
 export const usePosts = (filter?: LocationFilter | null) => {
   const { user, profile } = useAuth();
@@ -59,32 +59,82 @@ export const usePosts = (filter?: LocationFilter | null) => {
           )
         `);
 
+      let eventsQuery = supabase
+        .from('events')
+        .select(`
+          *,
+          organizer:users!events_organizer_id_fkey(
+            id,
+            name,
+            avatar_url,
+            location,
+            created_at
+          )
+        `)
+        .eq('status', 'PUBLISHED')
+        .or(`end_time.gte.${new Date().toISOString()},start_time.gte.${new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()}`);
+
       // Apply location filters
       if (filterState) {
         query = query.eq('state', filterState);
+        eventsQuery = eventsQuery.eq('state', filterState);
       }
       if (filterLga) {
         query = query.eq('lga', filterLga);
+        eventsQuery = eventsQuery.eq('lga', filterLga);
       }
       if (filterWard) {
         query = query.eq('ward', filterWard);
+        eventsQuery = eventsQuery.eq('ward', filterWard);
       }
 
       // Hide sold marketplace items from the feed
       query = query.or('category.neq.For Sale,is_sold.eq.false');
 
-      const { data, error } = await query.order('timestamp', { ascending: false });
+      const [postsRes, eventsRes] = await Promise.all([
+        query.order('timestamp', { ascending: false }),
+        eventsQuery.order('created_at', { ascending: false })
+      ]);
 
-      if (error) {
+      if (postsRes.error || eventsRes.error) {
         setLoading(false);
         return;
       }
 
-      const freshPosts = data as Post[];
-      setPosts(freshPosts);
+      const freshPosts = postsRes.data as Post[];
+      const freshEvents = (eventsRes.data || []).map((event: any): Post => ({
+        id: event.id,
+        user_id: event.organizer_id,
+        author_name: event.organizer?.name || 'Unknown',
+        author_image: event.organizer?.avatar_url || '',
+        text: event.description || '',
+        description: event.description || '',
+        image_urls: event.cover_image_url ? [event.cover_image_url] : [],
+        image_url: event.cover_image_url || undefined,
+        timestamp: event.created_at,
+        comment_count: 0,
+        category: 'Event',
+        state: event.state,
+        lga: event.lga,
+        ward: event.ward,
+        title: event.title,
+        event_date: event.start_time,
+        event_time: event.start_time,
+        event_location: { address: event.location_address || (event.location_online ? 'Online' : 'TBA') },
+        liked_by: [],
+        created_at: event.created_at,
+        user: event.organizer,
+      }));
+
+      // Merge and sort
+      const merged = [...freshPosts, ...freshEvents].sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+
+      setPosts(merged);
       
       // 2. Save fresh data back to cache
-      FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(freshPosts)).catch(() => {});
+      FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(merged)).catch(() => {});
       
       setLoading(false);
     } catch (error) {
@@ -207,6 +257,102 @@ export const usePosts = (filter?: LocationFilter | null) => {
           setPosts(prevPosts => 
             prevPosts.filter(post => post.id !== deletedId)
           );
+        }
+      })
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'events',
+        filter: filterString,
+      }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          const newEvent = payload.new as any;
+          if (newEvent.status !== 'PUBLISHED') return;
+          
+          if (filterState && newEvent.state && newEvent.state !== filterState) return;
+          if (filterLga && newEvent.lga && newEvent.lga !== filterLga) return;
+          if (filterWard && newEvent.ward && newEvent.ward !== filterWard) return;
+          
+          setPosts(currentPosts => {
+            if (currentPosts.some(p => p.id === newEvent.id)) return currentPosts;
+            
+            const postFormat: Post = {
+              id: newEvent.id,
+              user_id: newEvent.organizer_id,
+              author_name: 'Unknown',
+              author_image: '',
+              text: newEvent.description || '',
+              description: newEvent.description || '',
+              image_urls: newEvent.cover_image_url ? [newEvent.cover_image_url] : [],
+              image_url: newEvent.cover_image_url || undefined,
+              timestamp: newEvent.created_at,
+              comment_count: 0,
+              category: 'Event',
+              state: newEvent.state,
+              lga: newEvent.lga,
+              ward: newEvent.ward,
+              title: newEvent.title,
+              event_date: newEvent.start_time,
+              event_time: newEvent.start_time,
+              event_location: { address: newEvent.location_address || (newEvent.location_online ? 'Online' : 'TBA') },
+              liked_by: [],
+              created_at: newEvent.created_at,
+            };
+            return [postFormat, ...currentPosts].sort((a, b) => 
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            );
+          });
+          
+          // Fetch user data for the new event
+          const fetchUserData = async () => {
+            try {
+              const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('id, name, avatar_url, location, created_at')
+                .eq('id', newEvent.organizer_id)
+                .single();
+              
+              if (!userError && userData) {
+                setPosts(prevPosts => prevPosts.map(p => {
+                  if (p.id === newEvent.id) {
+                    return { ...p, author_name: userData.name || 'Unknown', author_image: userData.avatar_url || '', user: userData };
+                  }
+                  return p;
+                }));
+              }
+            } catch (error) {}
+          };
+          fetchUserData();
+        } else if (payload.eventType === 'UPDATE') {
+          const updatedEvent = payload.new as any;
+          const isExpired = 
+            (updatedEvent.end_time && new Date(updatedEvent.end_time).getTime() < Date.now()) || 
+            (!updatedEvent.end_time && updatedEvent.start_time && new Date(updatedEvent.start_time).getTime() < Date.now() - 24 * 60 * 60 * 1000);
+            
+          if (updatedEvent.status !== 'PUBLISHED' || isExpired) {
+            setPosts(prevPosts => prevPosts.filter(p => p.id !== updatedEvent.id));
+            return;
+          }
+          
+          setPosts(prevPosts => prevPosts.map(p => {
+            if (p.id === updatedEvent.id) {
+              return {
+                ...p,
+                text: updatedEvent.description || '',
+                description: updatedEvent.description || '',
+                image_urls: updatedEvent.cover_image_url ? [updatedEvent.cover_image_url] : [],
+                image_url: updatedEvent.cover_image_url || undefined,
+                title: updatedEvent.title,
+                event_date: updatedEvent.start_time,
+                event_time: updatedEvent.start_time,
+                event_location: { address: updatedEvent.location_address || (updatedEvent.location_online ? 'Online' : 'TBA') },
+              };
+            }
+            return p;
+          }));
+        } else if (payload.eventType === 'DELETE') {
+          const deletedId = payload.old.id;
+          setPosts(prevPosts => prevPosts.filter(post => post.id !== deletedId));
         }
       })
       .subscribe();
@@ -485,20 +631,36 @@ export const usePosts = (filter?: LocationFilter | null) => {
             return;
         }
         try {
+            let table = 'posts';
             // First, get the post to retrieve image and video URLs
-            const { data: postData, error: fetchError } = await supabase
+            let { data: postData, error: fetchError } = await supabase
                 .from('posts')
                 .select('image_urls, video_url')
                 .eq('id', postId)
                 .single();
 
-            if (fetchError) {
-                // Error fetching post for deletion
+            if (fetchError || !postData) {
+                // Might be an event
+                const { data: eventData, error: eventError } = await supabase
+                    .from('events')
+                    .select('cover_image_url')
+                    .eq('id', postId)
+                    .single();
+                    
+                if (eventError || !eventData) {
+                    throw new Error('Item not found');
+                }
+                
+                table = 'events';
+                postData = {
+                    image_urls: eventData.cover_image_url ? [eventData.cover_image_url] : [],
+                    video_url: null
+                } as any;
             }
 
-            // Delete the post from database
+            // Delete the item from database
             const { error } = await supabase
-                .from('posts')
+                .from(table)
                 .delete()
                 .eq('id', postId);
             

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, ActivityIndicator, Dimensions, Alert
+  TouchableOpacity, ActivityIndicator, Dimensions, Alert, Modal, TextInput
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
@@ -9,9 +9,13 @@ import { Image } from 'expo-image';
 import ImageViewing from 'react-native-image-viewing';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
-import { Post } from '../../../types';
+import { Event, TicketTier } from '../../../types/events';
+import { getEventById } from '../../../lib/event-service';
+import { api } from '../../../lib/api';
 import { formatPrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
 
@@ -21,91 +25,92 @@ export default function EventDetailScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
-  const [event, setEvent] = useState<Post | null>(null);
+  const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
-  const [hasTicket, setHasTicket] = useState(false);
   const [isGalleryVisible, setIsGalleryVisible] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [rsvping, setRsvping] = useState(false);
+
+  // Ticket Purchase State
+  const [selectedTier, setSelectedTier] = useState<TicketTier | null>(null);
+  const [attendeeName, setAttendeeName] = useState('');
+  const [attendeeEmail, setAttendeeEmail] = useState('');
+  const [attendeePhone, setAttendeePhone] = useState('');
+  const [purchasing, setPurchasing] = useState(false);
 
   const fetchEvent = useCallback(async () => {
     if (!id) return;
-    const { data, error } = await supabase
-      .from('posts')
-      .select(`*, user:users!posts_user_id_fkey(id, name, avatar_url)`)
-      .eq('id', id)
-      .single();
-
-    if (!error && data) {
+    const data = await getEventById(id as string);
+    if (data) {
       setEvent(data);
-      if (user) {
-        const { data: ticket } = await supabase
-          .from('my_tickets')
-          .select('id')
-          .eq('event_id', data.id)
-          .eq('user_id', user.id)
-          .maybeSingle();
-        setHasTicket(!!ticket);
-      }
     }
     setLoading(false);
-  }, [id, user]);
+  }, [id]);
 
   useEffect(() => {
     fetchEvent();
   }, [fetchEvent]);
 
-  const handleFreeRSVP = async () => {
-    if (!user || !event) return;
-    setRsvping(true);
+  useEffect(() => {
+    if (user) {
+      setAttendeeEmail(user.email || '');
+      setAttendeeName(profile?.name || user.user_metadata?.name || '');
+    }
+  }, [user, profile]);
+
+  const handlePurchase = async () => {
+    if (!event || !selectedTier) return;
+    if (!attendeeName.trim() || !attendeeEmail.trim()) {
+      Alert.alert('Error', 'Please enter your name and email.');
+      return;
+    }
+    setPurchasing(true);
     try {
-      const { error } = await supabase.from('my_tickets').insert({
-        user_id: user.id,
+      const callbackUrl = Linking.createURL('payment-verify');
+      const res = await api.post<any>('/api/events/tickets/purchase', {
         event_id: event.id,
-        status: 'active',
+        tier_id: selectedTier.id,
+        attendee_name: attendeeName,
+        attendee_email: attendeeEmail,
+        attendee_phone: attendeePhone,
+        callbackUrl,
       });
 
-      if (error) {
-        if (error.code === '23505') { // Unique violation
-          setHasTicket(true);
-          Alert.alert('RSVP Confirmed', 'You are already registered for this event!');
-          return;
+      if (selectedTier.price === 0) {
+        Alert.alert('Success', 'Free ticket registered successfully!');
+        setSelectedTier(null);
+        fetchEvent();
+      } else {
+        const browserResult = await WebBrowser.openAuthSessionAsync(res.paymentLink, callbackUrl);
+        if (browserResult.type === 'success' && browserResult.url) {
+          const urlObj = new URL(browserResult.url);
+          const status = urlObj.searchParams.get('status');
+          if (status === 'cancelled') {
+            Alert.alert('Cancelled', 'Payment was cancelled.');
+          } else {
+            Alert.alert('Success', 'Payment successful! Check your tickets.');
+            setSelectedTier(null);
+            fetchEvent();
+          }
         }
-        throw error;
       }
-      
-      setHasTicket(true);
-      Alert.alert('RSVP Confirmed', 'You have successfully registered for this free event!');
     } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Could not RSVP. Please try again.');
+      Alert.alert('Error', e?.message || 'Could not process ticket purchase.');
     } finally {
-      setRsvping(false);
+      setPurchasing(false);
     }
   };
 
   const scrollY = useSharedValue(0);
-  const scrollHandler = useAnimatedScrollHandler((event) => {
-    scrollY.value = event.contentOffset.y;
+  const scrollHandler = useAnimatedScrollHandler((e) => {
+    scrollY.value = e.contentOffset.y;
   });
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(
-      scrollY.value,
-      [-200, 0, 300],
-      [-100, 0, 150],
-      Extrapolation.CLAMP
-    );
-    const scale = interpolate(
-      scrollY.value,
-      [-200, 0],
-      [1.5, 1],
-      Extrapolation.CLAMP
-    );
-    return {
-      transform: [{ translateY }, { scale }],
-    };
+    const translateY = interpolate(scrollY.value, [-200, 0, 300], [-100, 0, 150], Extrapolation.CLAMP);
+    const scale = interpolate(scrollY.value, [-200, 0], [1.5, 1], Extrapolation.CLAMP);
+    return { transform: [{ translateY }, { scale }] };
   });
 
   if (loading) {
@@ -127,21 +132,19 @@ export default function EventDetailScreen() {
     );
   }
 
-  const imageUrls = (event.image_urls?.length ? event.image_urls : event.image_url ? [event.image_url] : []).filter(Boolean);
-  const isOwner = user?.id === event.user_id || user?.id === (event as any).organizer_id;
-  const isExpired = event.event_date ? new Date(event.event_date).getTime() < Date.now() : false;
+  const imageUrls = event.cover_image_url ? [event.cover_image_url] : [];
+  const isOwner = user?.id === event.organizer_id;
+  const isExpired = event.start_time ? new Date(event.start_time).getTime() < Date.now() : false;
 
-  const formattedDate = event.event_date 
-    ? new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+  const formattedDate = event.start_time 
+    ? new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
     : 'Date TBD';
-  
-  const formattedTime = event.event_date 
-    ? new Date(event.event_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  const formattedTime = event.start_time 
+    ? new Date(event.start_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
     : 'Time TBD';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
@@ -156,23 +159,11 @@ export default function EventDetailScreen() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
-        {/* Images */}
         {imageUrls.length > 0 ? (
           <Animated.View style={[headerAnimatedStyle, { zIndex: -1 }]}>
-            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.imageScroll}>
-              {imageUrls.map((url, i) => (
-                <TouchableOpacity 
-                  key={i} 
-                  activeOpacity={0.9} 
-                  onPress={() => {
-                    setCurrentImageIndex(i);
-                    setIsGalleryVisible(true);
-                  }}
-                >
-                  <Image source={{ uri: url }} style={styles.mainImage} contentFit="cover" />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            <TouchableOpacity activeOpacity={0.9} onPress={() => { setCurrentImageIndex(0); setIsGalleryVisible(true); }}>
+              <Image source={{ uri: imageUrls[0] }} style={styles.mainImage} contentFit="cover" />
+            </TouchableOpacity>
           </Animated.View>
         ) : (
           <View style={styles.placeholderImage}>
@@ -181,7 +172,7 @@ export default function EventDetailScreen() {
         )}
 
         <View style={[styles.infoSection, { backgroundColor: colors.background }]}>
-          <Text style={[styles.title, { color: colors.text }]}>{event.title || event.text || 'Untitled Event'}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{event.title}</Text>
           
           <View style={styles.dateTimeContainer}>
             <View style={styles.dateTimeRow}>
@@ -192,87 +183,131 @@ export default function EventDetailScreen() {
               <Ionicons name="time" size={20} color={colors.tint} />
               <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>{formattedTime}</Text>
             </View>
-            {!!((event as any)?.location) && (
             <View style={styles.dateTimeRow}>
-              <Ionicons name="location" size={20} color={colors.tint} />
+              <Ionicons name={event.location_online ? "globe" : "location"} size={20} color={colors.tint} />
               <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>
-                {(() => {
-                  const loc = (event as any).location;
-                  return typeof loc === 'object' && loc !== null 
-                    ? (loc.address || [loc.ward, loc.lga, loc.state].filter(Boolean).join(', ') || 'TBA') 
-                    : (loc || 'TBA');
-                })()}
+                {event.location_online ? 'Online Event' : (event.location_address || [event.ward, event.lga, event.state].filter(Boolean).join(', ') || 'TBA')}
               </Text>
             </View>
-          )}
-          </View>
-
-          <View style={[styles.ticketBox, { backgroundColor: colors.inputBackground }]}>
-            <Text style={[styles.ticketLabel, { color: colors.textSecondary }]}>Ticket Price</Text>
-            <Text style={[styles.price, { color: colors.tint }]}>{event.price === 0 || !event.price ? 'FREE' : formatPrice(event.price)}</Text>
           </View>
 
           <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
 
           <Text style={[styles.sectionTitle, { color: colors.text }]}>About this event</Text>
-          <Text style={[styles.description, { color: colors.textSecondary }]}>{event.text}</Text>
+          <Text style={[styles.description, { color: colors.textSecondary }]}>{event.description || 'No description provided.'}</Text>
 
           <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
 
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Organizer</Text>
           <View style={styles.sellerRow}>
             <View style={[styles.avatar, { backgroundColor: colors.tint }]}>
-              {event.user?.avatar_url || event.author_image ? (
-                <Image source={{ uri: event.user?.avatar_url || event.author_image }} style={styles.avatarImage} />
+              {event.organizer?.avatar_url ? (
+                <Image source={{ uri: event.organizer.avatar_url }} style={styles.avatarImage} />
               ) : (
                 <Text style={styles.avatarText}>
-                  {event.user?.name ? event.user.name.charAt(0).toUpperCase() : 'U'}
+                  {event.organizer?.name ? event.organizer.name.charAt(0).toUpperCase() : 'O'}
                 </Text>
               )}
             </View>
             <View>
-              <Text style={[styles.sellerName, { color: colors.text }]}>{event.user?.name || event.author_name || 'Unknown Organizer'}</Text>
+              <Text style={[styles.sellerName, { color: colors.text }]}>{event.organizer?.name || 'Unknown Organizer'}</Text>
             </View>
           </View>
+
+          <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
+
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Tickets</Text>
+          {event.ticket_tiers?.filter(t => t.is_visible).length ? (
+            event.ticket_tiers.filter(t => t.is_visible).map((tier) => (
+              <View key={tier.id} style={[styles.tierCard, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]}>
+                <View style={styles.tierInfo}>
+                  <Text style={[styles.tierName, { color: colors.text }]}>{tier.name}</Text>
+                  {tier.description && <Text style={[styles.tierDesc, { color: colors.textSecondary }]}>{tier.description}</Text>}
+                  <Text style={[styles.tierPrice, { color: colors.tint }]}>{tier.price === 0 ? 'FREE' : formatPrice(tier.price)}</Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.tierBuyButton, { backgroundColor: tier.is_sold_out || isExpired ? colors.borderLight : colors.tint }]}
+                  disabled={tier.is_sold_out || isExpired || isOwner}
+                  onPress={() => setSelectedTier(tier)}
+                >
+                  <Text style={styles.tierBuyText}>
+                    {isExpired ? 'Ended' : tier.is_sold_out ? 'Sold Out' : isOwner ? 'Owner' : 'Select'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <Text style={{ color: colors.textSecondary }}>No tickets available.</Text>
+          )}
+
+          <View style={{ height: 40 }} />
         </View>
       </Animated.ScrollView>
 
-      {/* Footer Actions */}
-      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.borderLight }]}>
-        {isOwner ? (
-          <TouchableOpacity
-            style={[styles.actionButton, styles.manageButton, { backgroundColor: colors.tint }]}
-            onPress={() => router.push(`/events/${event.id}/manage` as any)}
-          >
-            <Ionicons name="settings-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-            <Text style={styles.manageButtonText}>Manage Event</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[
-              styles.buyButton, 
-              { backgroundColor: hasTicket || isExpired ? colors.inputBackground : colors.tint },
-              (hasTicket || isExpired) && { opacity: 0.7 }
-            ]}
-            disabled={hasTicket || rsvping || isExpired}
-            onPress={() => {
-              if (event.price === 0 || !event.price) {
-                handleFreeRSVP();
-              } else {
-                router.push({ pathname: '/checkout/[id]', params: { id: event.id, type: 'event' } });
-              }
-            }}
-          >
-            {rsvping ? (
-              <ActivityIndicator size="small" color="#FFF" />
-            ) : (
-              <Text style={[styles.buyButtonText, (hasTicket || isExpired) && { color: colors.textSecondary }]}>
-                {isExpired ? 'Event Ended' : hasTicket ? 'Ticket Purchased ✓' : event.price === 0 || !event.price ? 'RSVP / Register' : 'Buy Tickets'}
-              </Text>
+      {/* Ticket Purchase Modal */}
+      <Modal visible={!!selectedTier} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Get Tickets</Text>
+              <TouchableOpacity onPress={() => setSelectedTier(null)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            
+            {selectedTier && (
+              <View style={[styles.modalTierSummary, { backgroundColor: colors.inputBackground }]}>
+                <Text style={[styles.modalTierName, { color: colors.text }]}>{selectedTier.name}</Text>
+                <Text style={[styles.modalTierPrice, { color: colors.tint }]}>{selectedTier.price === 0 ? 'FREE' : formatPrice(selectedTier.price)}</Text>
+              </View>
             )}
-          </TouchableOpacity>
-        )}
-      </View>
+
+            <ScrollView style={styles.modalForm}>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Name *</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+                value={attendeeName}
+                onChangeText={setAttendeeName}
+                placeholder="Enter your name"
+                placeholderTextColor={colors.textSecondary}
+              />
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Email *</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+                value={attendeeEmail}
+                onChangeText={setAttendeeEmail}
+                placeholder="Enter your email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholderTextColor={colors.textSecondary}
+              />
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Phone (Optional)</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+                value={attendeePhone}
+                onChangeText={setAttendeePhone}
+                placeholder="Enter your phone number"
+                keyboardType="phone-pad"
+                placeholderTextColor={colors.textSecondary}
+              />
+            </ScrollView>
+
+            <TouchableOpacity 
+              style={[styles.purchaseBtn, { backgroundColor: purchasing ? colors.borderLight : colors.tint }]}
+              disabled={purchasing}
+              onPress={handlePurchase}
+            >
+              {purchasing ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.purchaseBtnText}>
+                  {selectedTier?.price === 0 ? 'Register Now' : 'Proceed to Payment'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {isGalleryVisible && imageUrls.length > 0 && (
         <ImageViewing
@@ -294,10 +329,7 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 18, marginBottom: 20 },
   backBtnWrapper: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
   backBtnText: { fontWeight: 'bold' },
-  header: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12, borderBottomWidth: 1 },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
   headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
   scrollContent: { flex: 1 },
@@ -309,9 +341,6 @@ const styles = StyleSheet.create({
   dateTimeContainer: { marginBottom: 20 },
   dateTimeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   dateTimeText: { fontSize: 16, marginLeft: 8 },
-  ticketBox: { padding: 16, borderRadius: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  ticketLabel: { fontSize: 16, fontWeight: '600' },
-  price: { fontSize: 24, fontWeight: 'bold' },
   divider: { height: 1, marginVertical: 20 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
   description: { fontSize: 16, lineHeight: 24 },
@@ -320,15 +349,23 @@ const styles = StyleSheet.create({
   avatarImage: { width: '100%', height: '100%' },
   avatarText: { color: '#FFFFFF', fontSize: 20, fontWeight: 'bold' },
   sellerName: { fontSize: 16, fontWeight: 'bold' },
-  footer: {
-    flexDirection: 'row', padding: 16, borderTopWidth: 1,
-    paddingBottom: 30,
-  },
-  actionButton: { flex: 1, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' },
-  manageButton: { },
-  manageButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
-  editButton: { },
-  editButtonText: { fontSize: 16, fontWeight: 'bold' },
-  buyButton: { flex: 1, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
-  buyButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
+  tierCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: 12, marginBottom: 12, borderWidth: 1 },
+  tierInfo: { flex: 1, marginRight: 16 },
+  tierName: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
+  tierDesc: { fontSize: 14, marginBottom: 8 },
+  tierPrice: { fontSize: 16, fontWeight: '600' },
+  tierBuyButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
+  tierBuyText: { color: '#FFF', fontWeight: 'bold' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '80%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold' },
+  modalTierSummary: { padding: 16, borderRadius: 12, flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
+  modalTierName: { fontSize: 16, fontWeight: '600' },
+  modalTierPrice: { fontSize: 16, fontWeight: 'bold' },
+  modalForm: { marginBottom: 24 },
+  inputLabel: { fontSize: 14, fontWeight: '500', marginBottom: 8 },
+  input: { padding: 16, borderRadius: 12, marginBottom: 16, fontSize: 16 },
+  purchaseBtn: { padding: 18, borderRadius: 12, alignItems: 'center' },
+  purchaseBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
 });
