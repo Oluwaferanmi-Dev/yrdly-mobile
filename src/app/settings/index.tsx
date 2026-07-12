@@ -15,7 +15,7 @@ import { StorageService } from '../../lib/storage-service';
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, profile, signOut, loading: authLoading } = useAuth();
-  const { isDarkMode, toggleTheme, colors } = useAppTheme();
+  const { isDarkMode, toggleTheme } = useAppTheme();
 
   const [name, setName] = useState(profile?.name || user?.user_metadata?.name || '');
   const [bio, setBio] = useState(profile?.bio || '');
@@ -59,7 +59,6 @@ export default function SettingsScreen() {
     if (!user) return;
     setUploadingImage(true);
     try {
-      // Clean up the old avatar if it exists in our storage
       if (avatarUrl && avatarUrl.includes('user-avatars/')) {
         try {
           const oldPath = avatarUrl.split('user-avatars/')[1];
@@ -71,13 +70,11 @@ export default function SettingsScreen() {
         }
       }
 
-      // Safe extraction for iOS where allowsEditing can strip the extension
       const localUri = asset.uri;
       const mimeType = asset.mimeType || 'image/jpeg';
       const extMatch = asset.fileName?.match(/\.([^.]+)$/) || localUri.match(/\.([^.]+)$/);
       let ext = extMatch ? extMatch[1].split('?')[0].toLowerCase() : (mimeType.split('/')[1] || 'jpeg');
       
-      // Expo on iOS converts HEIC to JPEG when allowsEditing is true
       if (ext === 'heic' || ext === 'heif') {
         ext = 'jpg';
       }
@@ -93,7 +90,6 @@ export default function SettingsScreen() {
       if (error) throw error;
       if (url) {
         setAvatarUrl(url);
-        // Save immediately so the user doesn't end up with a broken avatar if they don't hit "Save"
         await AuthService.updateUserProfile(user.id, { avatar_url: url });
         await supabase.auth.updateUser({ data: { avatar_url: url } });
       }
@@ -115,7 +111,6 @@ export default function SettingsScreen() {
         avatar_url: avatarUrl,
       });
 
-      // Update auth metadata as well just in case
       await supabase.auth.updateUser({
         data: {
           name,
@@ -134,201 +129,310 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out of your account?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
+      ]
+    );
+  };
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn}>
+          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Edit Profile</Text>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving || uploadingImage}>
-          {saving ? <ActivityIndicator size="small" color={colors.tint} /> : <Text style={[styles.saveBtnText, { color: colors.tint }]}>Save</Text>}
+        <Text style={styles.headerTitle}>Settings</Text>
+        <TouchableOpacity onPress={handleSave} disabled={saving || uploadingImage} style={styles.headerIconBtn}>
+          {saving ? <ActivityIndicator size="small" color="#82E157" /> : <Text style={styles.saveText}>Save</Text>}
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.avatarSection}>
-          <View style={styles.avatarWrapper}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        
+        {/* Profile Card */}
+        <View style={styles.profileCard}>
+          <TouchableOpacity style={styles.avatarWrapper} onPress={handlePickImage} disabled={uploadingImage}>
             {avatarUrl ? (
               <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={40} color={colors.tint} />
+                <Ionicons name="person" size={32} color="#82E157" />
               </View>
             )}
+            <View style={styles.editBadge}>
+              <Ionicons name="pencil" size={12} color="#0B0D0B" />
+            </View>
             {uploadingImage && (
               <View style={styles.uploadOverlay}>
                 <ActivityIndicator size="small" color="#FFFFFF" />
               </View>
             )}
-          </View>
-          <TouchableOpacity style={styles.changePhotoBtn} onPress={handlePickImage} disabled={uploadingImage}>
-            <Text style={[styles.changePhotoText, { color: colors.tint }]}>Change Photo</Text>
           </TouchableOpacity>
+
+          <View style={styles.profileInfo}>
+            <TextInput
+              style={styles.nameInput}
+              value={name}
+              onChangeText={setName}
+              placeholder="Your Name"
+              placeholderTextColor="#A6A6A6"
+            />
+            <View style={styles.locationBadgeRow}>
+              <Ionicons name="location" size={12} color="#82E157" style={{marginRight: 4}} />
+              <TextInput
+                style={styles.bioInput}
+                value={bio}
+                onChangeText={setBio}
+                placeholder="Add a bio or location..."
+                placeholderTextColor="#A6A6A6"
+              />
+            </View>
+            <View style={styles.memberBadge}>
+              <Ionicons name="people" size={12} color="#82E157" style={{marginRight: 6}} />
+              <Text style={styles.memberBadgeText}>Yrdly member</Text>
+            </View>
+          </View>
         </View>
 
-        <View style={styles.formGroup}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>Name</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
-            value={name}
-            onChangeText={setName}
-            placeholder="Your name"
-            placeholderTextColor={colors.textMuted}
-          />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>Bio</Text>
-          <TextInput
-            style={[styles.input, styles.textArea, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
-            value={bio}
-            onChangeText={setBio}
-            placeholder="Tell your neighbors about yourself..."
-            placeholderTextColor={colors.textMuted}
-            multiline
-            numberOfLines={4}
-          />
+        {/* Stronger Together Banner */}
+        <View style={styles.bannerContainer}>
+          <View style={styles.bannerIconWrap}>
+            <Ionicons name="home-outline" size={24} color="#82E157" />
+          </View>
+          <View style={styles.bannerTextWrap}>
+            <Text style={styles.bannerTitle}>Stronger together.</Text>
+            <Text style={styles.bannerSubtitle}>Buy, sell, connect and look out for your neighborhood.</Text>
+          </View>
         </View>
 
         {/* Commerce & Account */}
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>Commerce & Account</Text>
-        {[
-          { icon: 'receipt-outline',   label: 'Transactions',       route: '/transactions' },
-          { icon: 'wallet-outline',    label: 'Payouts',            route: '/settings/payouts' },
-          { icon: 'business-outline',  label: 'Bank Account',       route: '/settings/payout-settings' },
-          { icon: 'location-outline',  label: 'Location',           route: '/settings/location' },
-        ].map((item) => (
-          <TouchableOpacity
-            key={item.route}
-            style={[styles.navRow, { backgroundColor: colors.card }]}
-            onPress={() => router.push(item.route as any)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.navIconWrap, { backgroundColor: colors.tint + '22' }]}>
-              <Ionicons name={item.icon as any} size={20} color={colors.tint} />
-            </View>
-            <Text style={[styles.navLabel, { color: colors.text }]}>{item.label}</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-          </TouchableOpacity>
-        ))}
+        <Text style={styles.sectionHeader}>COMMERCE & ACCOUNT</Text>
+        <View style={styles.glassCard}>
+          {[
+            { icon: 'bag-handle-outline', label: 'Transactions', subtext: 'Track your orders and activity', route: '/transactions' },
+            { icon: 'wallet-outline', label: 'Payouts', subtext: 'Manage your earnings', route: '/settings/payouts' },
+            { icon: 'business-outline', label: 'Bank Account', subtext: 'Manage your linked account', route: '/settings/payout-settings' },
+            { icon: 'location-outline', label: 'Location', subtext: 'Your neighbourhood and alerts', route: '/settings/location', isLast: true },
+          ].map((item) => (
+            <TouchableOpacity
+              key={item.route}
+              style={[styles.navRow, !item.isLast && styles.navRowBorder]}
+              onPress={() => router.push(item.route as any)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.iconGlow}>
+                <Ionicons name={item.icon as any} size={24} color="#82E157" />
+              </View>
+              <View style={styles.navTextWrap}>
+                <Text style={styles.navLabel}>{item.label}</Text>
+                <Text style={styles.navSubtext}>{item.subtext}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#A6A6A6" />
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {/* Preferences */}
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>Preferences</Text>
-        <TouchableOpacity
-          style={[styles.navRow, { backgroundColor: colors.card }]}
-          onPress={() => router.push('/settings/notifications' as any)}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.navIconWrap, { backgroundColor: colors.tint + '22' }]}>
-            <Ionicons name="notifications-outline" size={20} color={colors.tint} />
-          </View>
-          <Text style={[styles.navLabel, { color: colors.text }]}>Notifications</Text>
-          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-        </TouchableOpacity>
-
-        {/* Dark Mode Toggle */}
-        <View style={[styles.themeSection, { backgroundColor: colors.card }]}>
-          <View style={styles.themeRow}>
-            <View style={[styles.navIconWrap, { backgroundColor: colors.tint + '22' }]}>
-              <Ionicons name={isDarkMode ? 'moon' : 'sunny'} size={20} color={colors.tint} />
+        <Text style={styles.sectionHeader}>PREFERENCES</Text>
+        <View style={styles.glassCard}>
+          <TouchableOpacity
+            style={[styles.navRow, styles.navRowBorder]}
+            onPress={() => router.push('/settings/notifications' as any)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconWrapPlain}>
+              <Ionicons name="notifications-outline" size={24} color="#82E157" />
             </View>
-            <Text style={[styles.navLabel, { color: colors.text }]}>Dark Mode</Text>
+            <View style={styles.navTextWrap}>
+              <Text style={styles.navLabel}>Notifications</Text>
+              <Text style={styles.navSubtext}>Choose what you want to hear</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#A6A6A6" />
+          </TouchableOpacity>
+
+          <View style={styles.navRow}>
+            <View style={styles.iconWrapPlain}>
+              <Ionicons name="moon-outline" size={24} color="#82E157" />
+            </View>
+            <View style={styles.navTextWrap}>
+              <Text style={styles.navLabel}>Dark Mode</Text>
+              <Text style={styles.navSubtext}>Keep it easy on your eyes</Text>
+            </View>
             <Switch
               value={isDarkMode}
               onValueChange={toggleTheme}
-              trackColor={{ false: colors.border, true: colors.tint + '66' }}
-              thumbColor={isDarkMode ? colors.tint : '#FFFFFF'}
-              ios_backgroundColor={colors.border}
+              trackColor={{ false: '#353534', true: '#82E157' }}
+              thumbColor={'#FFFFFF'}
+              ios_backgroundColor="#353534"
             />
           </View>
         </View>
 
         {/* Sign Out */}
-        <View style={{ marginTop: 32, marginBottom: 40 }}>
-          <TouchableOpacity 
-            style={[styles.logoutButton, { backgroundColor: colors.card }]} 
-            onPress={() => {
-              Alert.alert(
-                'Sign Out',
-                'Are you sure you want to sign out of your account?',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
-                ]
-              );
-            }}
-            disabled={authLoading}
-          >
-            {authLoading ? (
-              <ActivityIndicator color="#ef4444" />
-            ) : (
-              <Text style={styles.logoutText}>Sign Out</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut} disabled={authLoading}>
+          <View style={styles.logoutIconWrap}>
+            <Ionicons name="log-out-outline" size={24} color="#E53E3E" />
+          </View>
+          <View style={styles.navTextWrap}>
+            <Text style={styles.logoutLabel}>Sign Out</Text>
+            <Text style={styles.navSubtext}>Log out of your yrdly account</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="rgba(229, 62, 62, 0.4)" />
+        </TouchableOpacity>
+
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#0B0D0B' },
   header: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: 1,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 12,
   },
-  backBtn: { width: 60, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
-  saveBtn: { width: 60, justifyContent: 'center', alignItems: 'flex-end' },
-  saveBtnText: { fontSize: 16, fontWeight: 'bold' },
-  content: { padding: 24 },
-  avatarSection: { alignItems: 'center', marginBottom: 32 },
+  headerIconBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' },
+  saveText: { color: '#82E157', fontSize: 16, fontWeight: 'bold' },
+  
+  content: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 12 },
+  
+  profileCard: {
+    backgroundColor: '#1C1C1C',
+    borderRadius: 28,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    marginBottom: 24,
+  },
   avatarWrapper: {
-    width: 120, height: 120, borderRadius: 60, backgroundColor: '#E8F5E9',
-    justifyContent: 'center', alignItems: 'center', overflow: 'hidden', marginBottom: 16,
-    position: 'relative'
+    width: 80, height: 80,
+    position: 'relative',
+    marginRight: 16,
   },
-  avatarImage: { width: '100%', height: '100%' },
-  avatarPlaceholder: { justifyContent: 'center', alignItems: 'center' },
+  avatarImage: {
+    width: 80, height: 80,
+    borderRadius: 40,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+  },
+  avatarPlaceholder: {
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: 'rgba(130, 225, 87, 0.1)',
+    justifyContent: 'center', alignItems: 'center',
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+  },
+  editBadge: {
+    position: 'absolute', bottom: 0, right: 0,
+    backgroundColor: '#82E157',
+    width: 24, height: 24, borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center',
+    borderWidth: 2, borderColor: '#1C1C1C',
+  },
   uploadOverlay: {
-    ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center', alignItems: 'center'
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 40,
+    justifyContent: 'center', alignItems: 'center',
   },
-  changePhotoBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20 },
-  changePhotoText: { fontSize: 14, fontWeight: 'bold' },
-  formGroup: { marginBottom: 24 },
-  label: { fontSize: 14, fontWeight: 'bold', marginBottom: 8, textTransform: 'uppercase' },
-  input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16 },
-  textArea: { height: 100, textAlignVertical: 'top' },
+  profileInfo: {
+    flex: 1,
+  },
+  nameInput: {
+    fontSize: 20, fontWeight: '700', color: '#FFFFFF',
+    marginBottom: 2, padding: 0,
+  },
+  locationBadgeRow: {
+    flexDirection: 'row', alignItems: 'center',
+    marginBottom: 8,
+  },
+  bioInput: {
+    fontSize: 14, color: '#A6A6A6',
+    flex: 1, padding: 0,
+  },
+  memberBadge: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(130, 225, 87, 0.1)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8, paddingVertical: 2,
+    borderRadius: 12,
+    borderColor: 'rgba(130, 225, 87, 0.2)',
+    borderWidth: 1,
+  },
+  memberBadgeText: {
+    color: '#82E157', fontSize: 11, fontWeight: '600'
+  },
+  
+  bannerContainer: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#121A10',
+    borderRadius: 24, padding: 20,
+    borderColor: 'rgba(130, 225, 87, 0.1)', borderWidth: 1,
+    marginBottom: 24,
+  },
+  bannerIconWrap: {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: 'rgba(130, 225, 87, 0.1)',
+    borderColor: 'rgba(130, 225, 87, 0.2)', borderWidth: 1,
+    justifyContent: 'center', alignItems: 'center',
+    marginRight: 16,
+  },
+  bannerTextWrap: { flex: 1 },
+  bannerTitle: { color: '#82E157', fontSize: 14, fontWeight: 'bold', marginBottom: 4 },
+  bannerSubtitle: { color: '#A6A6A6', fontSize: 12, lineHeight: 16 },
+
   sectionHeader: {
-    fontSize: 12, fontWeight: '800',
-    textTransform: 'uppercase', letterSpacing: 0.8,
-    marginBottom: 12, marginTop: 8,
+    color: '#A6A6A6', fontSize: 12, fontWeight: '700',
+    letterSpacing: 1.2, marginLeft: 8, marginBottom: 12,
+  },
+  glassCard: {
+    backgroundColor: '#1C1C1C',
+    borderRadius: 24,
+    borderColor: 'rgba(255,255,255,0.06)', borderWidth: 1,
+    marginBottom: 24,
+    overflow: 'hidden',
   },
   navRow: {
     flexDirection: 'row', alignItems: 'center',
-    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
+    padding: 16,
   },
-  navIconWrap: {
-    width: 36, height: 36, borderRadius: 10,
-    justifyContent: 'center', alignItems: 'center', marginRight: 14,
+  navRowBorder: {
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)',
   },
-  navLabel: { flex: 1, fontSize: 15, fontWeight: '600' },
+  iconGlow: {
+    width: 40, height: 40, borderRadius: 20,
+    justifyContent: 'center', alignItems: 'center',
+    marginRight: 16,
+    backgroundColor: 'rgba(130, 225, 87, 0.1)',
+  },
+  iconWrapPlain: {
+    width: 40, height: 40, borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center',
+    marginRight: 16,
+  },
+  navTextWrap: { flex: 1 },
+  navLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', marginBottom: 2 },
+  navSubtext: { color: '#A6A6A6', fontSize: 12 },
 
-  themeSection: {
-    borderRadius: 12, marginBottom: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
-  },
-  themeRow: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14,
-  },
   logoutButton: {
-    height: 54, borderWidth: 1, borderColor: '#E53935',
-    borderRadius: 8, justifyContent: 'center', alignItems: 'center',
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(26, 17, 17, 0.4)',
+    borderColor: 'rgba(229, 62, 62, 0.2)', borderWidth: 1,
+    borderRadius: 24, padding: 16,
   },
-  logoutText: { color: '#E53935', fontSize: 16, fontWeight: 'bold' },
+  logoutIconWrap: {
+    width: 40, height: 40, borderRadius: 12,
+    backgroundColor: 'rgba(229, 62, 62, 0.1)',
+    justifyContent: 'center', alignItems: 'center',
+    marginRight: 16,
+  },
+  logoutLabel: { color: '#E53E3E', fontSize: 16, fontWeight: '600', marginBottom: 2 },
 });

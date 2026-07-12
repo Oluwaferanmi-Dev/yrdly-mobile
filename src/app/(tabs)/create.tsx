@@ -69,6 +69,12 @@ export default function CreateTab() {
       setImages([]);
       setLocationData(null);
       setEventDate(new Date());
+      
+      setPostSuccess(false);
+      successOverlayOp.value = 0;
+      successSheetY.value = 300;
+      successContentOp.value = 0;
+      
       router.replace('/(tabs)/' as any);
     }, 2200);
   }
@@ -538,7 +544,7 @@ export default function CreateTab() {
       {postSuccess && (
         <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: 'flex-end' }, successOverlayStyle]}>
           <View style={styles.postSuccessBackdrop} />
-          <Animated.View style={[styles.postSuccessSheet, { backgroundColor: colors.card }, successSheetStyle]}>
+          <Animated.View style={[styles.postSuccessSheet, { backgroundColor: colors.card, paddingBottom: insets.bottom + 90 }, successSheetStyle]}>
             <View style={styles.postSuccessHandle} />
             <LottieView
               autoPlay

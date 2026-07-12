@@ -162,6 +162,22 @@ export default function NotificationsScreen() {
         if (uid) router.push(`/profile/${uid}`);
         break;
       }
+      case 'payment_successful':
+      case 'item_shipped':
+      case 'delivery_confirmed':
+      case 'funds_released':
+      case 'dispute_opened':
+      case 'dispute_resolved': {
+        const txId = notification.related_id || notification.data?.transactionId;
+        if (txId) router.push(`/transactions/${txId}`);
+        break;
+      }
+      case 'marketplace_item_sold':
+      case 'marketplace_item_interest': {
+        const pid = notification.related_id || notification.data?.itemId;
+        if (pid) router.push(`/posts/${pid}`);
+        break;
+      }
       default:
         break;
     }
@@ -198,6 +214,16 @@ export default function NotificationsScreen() {
       case 'new_follower':
       case 'friend_request':
         return <Ionicons name="person-add" size={16} color="#34D399" />;
+      case 'payment_successful':
+      case 'funds_released':
+        return <Ionicons name="cash" size={16} color="#34D399" />;
+      case 'item_shipped':
+        return <Ionicons name="cube" size={16} color="#60A5FA" />;
+      case 'delivery_confirmed':
+        return <Ionicons name="checkmark-done" size={16} color="#34D399" />;
+      case 'marketplace_item_sold':
+      case 'marketplace_item_interest':
+        return <Ionicons name="cart" size={16} color="#FBBF24" />;
       default:
         return <Ionicons name="notifications" size={16} color={colors.textMuted} />;
     }
@@ -215,10 +241,17 @@ export default function NotificationsScreen() {
         <View style={styles.avatarContainer}>
           {item.from_user_avatar ? (
             <Image source={{ uri: item.from_user_avatar }} style={styles.avatar} contentFit="cover" />
+          ) : item.data?.item_image ? (
+            <Image source={{ uri: item.data.item_image }} style={styles.avatar} contentFit="cover" />
           ) : (
             <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint }]}>
               <Text style={styles.avatarFallbackText}>
-                {item.from_user_name ? item.from_user_name.charAt(0).toUpperCase() : '?'}
+                {item.from_user_name ? item.from_user_name.charAt(0).toUpperCase() : 
+                  (item.type === 'payment_successful' ? '💰' : 
+                   item.type === 'item_shipped' ? '📦' : 
+                   item.type === 'delivery_confirmed' ? '✅' : 
+                   item.type === 'funds_released' ? '💸' : 
+                   item.type.includes('marketplace') ? '🛒' : '?')}
               </Text>
             </View>
           )}

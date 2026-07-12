@@ -129,8 +129,25 @@ export default function CheckoutScreen() {
           throw new Error('Payment verification failed');
         }
       } else {
-        // User closed the browser manually
-        setStage('summary');
+        // User closed the browser manually, proactively check if payment succeeded
+        setStage('verifying');
+        try {
+          const verifyResult = await api.post('/api/payment/verify', { txRef: result.transactionId });
+          if (verifyResult.success) {
+            router.replace({
+              pathname: '/checkout/success',
+              params: {
+                transactionId: result.transactionId,
+                itemTitle: item?.title ?? 'Item',
+                amount: String(item?.price ?? 0),
+              },
+            } as any);
+          } else {
+            setStage('summary');
+          }
+        } catch (e) {
+          setStage('summary');
+        }
       }
     } catch (e: any) {
       setStage('error');
