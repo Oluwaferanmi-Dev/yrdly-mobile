@@ -1,19 +1,24 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, ActivityIndicator,
-  TouchableOpacity, Alert, ScrollView,
-} from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { Image } from 'expo-image';
-import { supabase } from '../../lib/supabase';
-import { api, WEB_APP_URL } from '../../lib/api';
-import { useAuth } from '../../hooks/use-supabase-auth';
-import { formatPrice } from '../../lib/utils';
+import * as WebBrowser from 'expo-web-browser';
+import LottieView from 'lottie-react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert, ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../hooks/use-supabase-auth';
+import { api } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/utils';
 
 import { MARKETPLACE_CONSTANTS } from '../../lib/constants';
 
@@ -89,15 +94,15 @@ export default function CheckoutScreen() {
           callbackUrl,
         }
       );
-      
+
       setTransactionId(result.transactionId);
-      
+
       // Open in-app browser for payment
       const browserResult = await WebBrowser.openAuthSessionAsync(result.paymentLink, callbackUrl);
-      
+
       if (browserResult.type === 'success' && browserResult.url) {
         setStage('verifying');
-        
+
         // Extract tx_ref from the Paystack redirect URL
         const urlObj = new URL(browserResult.url);
         const txRef = urlObj.searchParams.get('tx_ref') ?? urlObj.searchParams.get('reference') ?? result.transactionId;
@@ -145,14 +150,35 @@ export default function CheckoutScreen() {
     );
   }
 
-  // ── Payment In Progress ──────────────────────────────────────────
+  // ── Payment In Progress ──────────────────────────────────
   if (stage === 'paying' || stage === 'verifying') {
+    const isVerifying = stage === 'verifying';
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
-        <Text style={[styles.verifyingText, { color: colors.textSecondary }]}>
-          {stage === 'verifying' ? 'Verifying your payment…' : 'Secure payment in progress…'}
-        </Text>
+        <LottieView
+          autoPlay
+          loop
+          style={{ width: 200, height: 200 }}
+          source={{
+            uri: isVerifying
+              ? 'https://lottie.host/5c0e7b6c-f5a2-4c8c-9b0c-5a1234567890/placeh older.json'
+              : 'https://lottie.host/bd082041-1e56-4996-8107-a5b72bbf6a1a/1v73RJlEKA.json'
+          }}
+        />
+        <View style={styles.payingTextBlock}>
+          <Text style={[styles.payingTitle, { color: colors.text }]}>
+            {isVerifying ? 'Confirming Payment' : 'Redirecting to Paystack'}
+          </Text>
+          <Text style={[styles.payingSubtitle, { color: colors.textMuted }]}>
+            {isVerifying
+              ? 'Verifying your transaction, please wait…'
+              : 'A secure browser will open for payment.'}
+          </Text>
+        </View>
+        <View style={[styles.secureTag, { backgroundColor: colors.inputBackground }]}>
+          <Ionicons name="lock-closed-outline" size={13} color={colors.tint} style={{ marginRight: 5 }} />
+          <Text style={[styles.secureTagText, { color: colors.tint }]}>256-bit encrypted</Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -297,7 +323,15 @@ const styles = StyleSheet.create({
   payBtnText: { fontSize: 17, fontWeight: '800' },
   poweredBy: { textAlign: 'center', marginTop: 10, fontSize: 12 },
 
-  verifyingText: { marginTop: 16, fontSize: 15 },
+  payingTextBlock: { alignItems: 'center', paddingHorizontal: 32, marginTop: 8, marginBottom: 24 },
+  payingTitle: { fontSize: 20, fontWeight: '800', marginBottom: 8, textAlign: 'center', letterSpacing: -0.3 },
+  payingSubtitle: { fontSize: 13, textAlign: 'center', lineHeight: 19 },
+  secureTag: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
+  },
+  secureTagText: { fontSize: 12, fontWeight: '700' },
+
   errorTitle: { fontSize: 22, fontWeight: '800', marginTop: 16, marginBottom: 8 },
   errorMsg: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24, maxWidth: 280 },
   retryBtn: { paddingHorizontal: 32, paddingVertical: 14, borderRadius: 24 },

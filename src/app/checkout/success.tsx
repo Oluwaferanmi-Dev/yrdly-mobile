@@ -1,6 +1,13 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import {
+  View, Text, StyleSheet, TouchableOpacity, Dimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, {
+  useSharedValue, useAnimatedStyle,
+  withSpring, withTiming, withDelay, withSequence,
+  Easing, runOnJS,
+} from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
@@ -8,118 +15,323 @@ import * as Haptics from 'expo-haptics';
 import { formatPrice } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 
+const { height: SCREEN_H, width: SCREEN_W } = Dimensions.get('window');
 
+const LOTTIE_SUCCESS = {
+  uri: 'https://lottie.host/3acad958-cd8e-424a-a1c9-58e8bff45d87/XvFdYxtUDF.json',
+};
+const LOTTIE_CONFETTI = {
+  uri: 'https://lottie.host/ea97d544-2453-48db-8cdb-7a35e9821946/LwHylkZ0X9.json',
+};
+
+const STEPS = [
+  { icon: 'shield-checkmark-outline' as const, label: 'Funds\nsecured' },
+  { icon: 'cube-outline' as const,             label: 'Seller\nships' },
+  { icon: 'checkmark-done-outline' as const,   label: 'You\nconfirm' },
+];
 
 export default function CheckoutSuccessScreen() {
-  const { colors } = useAppTheme();
+  const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const { transactionId, itemTitle, amount } = useLocalSearchParams<{
     transactionId: string; itemTitle: string; amount: string;
   }>();
 
-  const scaleAnim = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  // ── Sheet slide-up ────────────────────────────────────────────
+  const sheetY    = useSharedValue(SCREEN_H);
+  const overlayOp = useSharedValue(0);
+
+  // ── Content sequence ──────────────────────────────────────────
+  const lottieOp  = useSharedValue(0);
+  const titleOp   = useSharedValue(0);
+  const titleY    = useSharedValue(20);
+  const stepperOp = useSharedValue(0);
+  const stepperY  = useSharedValue(24);
+  const footerOp  = useSharedValue(0);
+  const footerY   = useSharedValue(20);
+
+  const lottieRef = useRef<LottieView>(null);
+
+  function triggerHaptic() {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }
 
   useEffect(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Animated.sequence([
-      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 60, friction: 6 }),
-      Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }),
-    ]).start();
+    // 1. Dim overlay
+    overlayOp.value = withTiming(1, { duration: 250, easing: Easing.out(Easing.quad) });
+
+    // 2. Sheet slides up
+    sheetY.value = withSpring(0, {
+      damping: 22,
+      stiffness: 180,
+      mass: 0.9,
+    }, () => {
+      runOnJS(triggerHaptic)();
+
+      // 3. Lottie fades in
+      lottieOp.value = withTiming(1, { duration: 300 }, () => {
+        // 4. Title + escrow pill
+        titleOp.value  = withDelay(200, withTiming(1, { duration: 400 }));
+        titleY.value   = withDelay(200, withSpring(0, { damping: 18, stiffness: 140 }));
+
+        // 5. Stepper
+        stepperOp.value = withDelay(500, withTiming(1, { duration: 400 }));
+        stepperY.value  = withDelay(500, withSpring(0, { damping: 18, stiffness: 120 }));
+
+        // 6. Footer buttons
+        footerOp.value = withDelay(750, withTiming(1, { duration: 350 }));
+        footerY.value  = withDelay(750, withSpring(0, { damping: 18, stiffness: 120 }));
+      });
+    });
   }, []);
 
+  // ── Animated styles ───────────────────────────────────────────
+  const overlayStyle  = useAnimatedStyle(() => ({ opacity: overlayOp.value }));
+  const sheetStyle    = useAnimatedStyle(() => ({ transform: [{ translateY: sheetY.value }] }));
+  const lottieStyle   = useAnimatedStyle(() => ({ opacity: lottieOp.value }));
+  const titleStyle    = useAnimatedStyle(() => ({ opacity: titleOp.value, transform: [{ translateY: titleY.value }] }));
+  const stepperStyle  = useAnimatedStyle(() => ({ opacity: stepperOp.value, transform: [{ translateY: stepperY.value }] }));
+  const footerStyle   = useAnimatedStyle(() => ({ opacity: footerOp.value, transform: [{ translateY: footerY.value }] }));
+
+  const amountNum = Number(amount ?? 0);
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <LottieView
-          autoPlay
-          loop={false}
-          style={{
-            width: Dimensions.get('window').width,
-            height: Dimensions.get('window').height,
-            position: 'absolute',
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
-          source={{ uri: 'https://lottie.host/ea97d544-2453-48db-8cdb-7a35e9821946/LwHylkZ0X9.json' }} // Public Confetti URL
-        />
-        
-        {/* Animated checkmark */}
-        <Animated.View style={[styles.iconRing, { backgroundColor: colors.tint, shadowColor: colors.tint, transform: [{ scale: scaleAnim }] }]}>
-          <Ionicons name="checkmark" size={56} color={colors.card} />
-        </Animated.View>
+    <View style={styles.root}>
+      {/* Dimmed backdrop */}
+      <Animated.View style={[styles.overlay, overlayStyle]} />
 
-        <Animated.View style={{ opacity: fadeAnim, alignItems: 'center' }}>
-          <Text style={[styles.title, { color: colors.text }]}>Payment Successful! 🎉</Text>
-          <Text style={[styles.subtitle, { color: colors.tint }]}>
-            Your payment of {formatPrice(Number(amount ?? 0))} is held in escrow.
-          </Text>
-          <Text style={[styles.body, { color: colors.textSecondary }]}>
-            The seller has been notified. You'll receive your item and then confirm receipt to release the funds.
-          </Text>
+      {/* Confetti — full screen, behind sheet */}
+      <LottieView
+        autoPlay
+        loop={false}
+        style={styles.confetti}
+        source={LOTTIE_CONFETTI}
+        resizeMode="cover"
+      />
 
-          {/* Escrow steps */}
-          <View style={styles.steps}>
-            {[
-              { icon: 'cash', label: 'Payment held in escrow' },
-              { icon: 'cube-outline', label: 'Seller prepares & hands over item' },
-              { icon: 'checkmark-circle-outline', label: 'You confirm receipt → funds released' },
-            ].map((step, i) => (
-              <View key={i} style={styles.step}>
-                <View style={[styles.stepIcon, { backgroundColor: colors.inputBackground }]}>
-                  <Ionicons name={step.icon as any} size={18} color={colors.tint} />
+      {/* Slide-up sheet */}
+      <Animated.View style={[styles.sheet, { backgroundColor: colors.card }, sheetStyle]}>
+        <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
+
+          {/* ── Lottie hero ─────────────────────────── */}
+          <Animated.View style={[styles.lottieWrapper, lottieStyle]}>
+            <LottieView
+              ref={lottieRef}
+              autoPlay
+              loop={false}
+              style={styles.lottie}
+              source={LOTTIE_SUCCESS}
+            />
+          </Animated.View>
+
+          {/* ── Title + pill ─────────────────────────── */}
+          <Animated.View style={[styles.titleBlock, titleStyle]}>
+            <Text style={[styles.title, { color: colors.text }]}>Payment Successful!</Text>
+
+            <View style={[styles.escrowPill, {
+              backgroundColor: colors.tint + '15',
+              borderColor: colors.tint + '35',
+            }]}>
+              <Ionicons name="lock-closed-outline" size={13} color={colors.tint} style={{ marginRight: 5 }} />
+              <Text style={[styles.pillText, { color: colors.tint }]}>
+                {formatPrice(amountNum)} held in escrow
+              </Text>
+            </View>
+
+            {!!itemTitle && (
+              <Text style={[styles.itemLabel, { color: colors.textMuted }]} numberOfLines={2}>
+                for <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>{itemTitle}</Text>
+              </Text>
+            )}
+
+            <Text style={[styles.body, { color: colors.textMuted }]}>
+              Your funds are protected until you confirm receipt of the item.
+            </Text>
+          </Animated.View>
+
+          {/* ── Stepper ───────────────────────────────── */}
+          <Animated.View style={[styles.stepper, stepperStyle]}>
+            {STEPS.map((step, i) => (
+              <View key={i} style={styles.stepItem}>
+                <View style={styles.stepTrack}>
+                  {i > 0 && (
+                    <View style={[styles.stepLine, { backgroundColor: colors.tint + '35' }]} />
+                  )}
+                  <View style={[styles.stepDot, {
+                    backgroundColor: isDarkMode ? colors.tint + '20' : colors.tint + '12',
+                    borderColor: colors.tint + '50',
+                  }]}>
+                    <Ionicons name={step.icon} size={15} color={colors.tint} />
+                  </View>
+                  {i < STEPS.length - 1 && (
+                    <View style={[styles.stepLine, { backgroundColor: colors.tint + '35' }]} />
+                  )}
                 </View>
-                <Text style={[styles.stepLabel, { color: colors.textSecondary }]}>{step.label}</Text>
+                <Text style={[styles.stepLabel, { color: colors.textMuted }]}>{step.label}</Text>
               </View>
             ))}
-          </View>
-        </Animated.View>
-      </View>
+          </Animated.View>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.primaryBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }]}
-          onPress={() => router.push(`/transactions/${transactionId}` as any)}
-          activeOpacity={0.85}
-        >
-          <Text style={[styles.primaryBtnText, { color: colors.card }]}>View Transaction</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.secondaryBtn}
-          onPress={() => router.replace('/(tabs)/' as any)}
-        >
-          <Text style={[styles.secondaryBtnText, { color: colors.textMuted }]}>Back to Home</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          {/* ── Footer buttons ────────────────────────── */}
+          <Animated.View style={[styles.footer, footerStyle]}>
+            <TouchableOpacity
+              style={[styles.primaryBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }]}
+              onPress={() => router.replace(`/transactions/${transactionId}` as any)}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.primaryBtnText, { color: '#fff' }]}>View Transaction</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.secondaryBtn}
+              onPress={() => router.replace('/(tabs)/' as any)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.secondaryBtnText, { color: colors.textMuted }]}>Back to Home</Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+        </SafeAreaView>
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  iconRing: {
-    width: 100, height: 100, borderRadius: 50,
-    justifyContent: 'center', alignItems: 'center', marginBottom: 28,
-    shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 16, elevation: 8,
+  root: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
-  title: { fontSize: 28, fontWeight: '800', textAlign: 'center', marginBottom: 10 },
-  subtitle: { fontSize: 16, fontWeight: '700', textAlign: 'center', marginBottom: 16 },
-  body: { fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 32, maxWidth: 300 },
-  steps: { width: '100%', gap: 14 },
-  step: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  stepIcon: {
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
+  confetti: {
+    position: 'absolute',
+    width: SCREEN_W,
+    height: SCREEN_H,
+    zIndex: 0,
+    pointerEvents: 'none',
+  },
+
+  // Sheet
+  sheet: {
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingTop: 12,
+    paddingHorizontal: 24,
+    zIndex: 10,
+    // subtle shadow above sheet
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+
+  // Drag handle
+  handle: {
+    width: 40, height: 4, borderRadius: 2,
+    alignSelf: 'center', marginBottom: 16,
+  },
+
+  // Lottie
+  lottieWrapper: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  lottie: {
+    width: 180,
+    height: 180,
+  },
+
+  // Title block
+  titleBlock: {
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  escrowPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 13,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  pillText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  itemLabel: {
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  body: {
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 19,
+    maxWidth: 280,
+  },
+
+  // Stepper
+  stepper: {
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+    marginBottom: 28,
+  },
+  stepItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  stepTrack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 8,
+  },
+  stepLine: {
+    flex: 1,
+    height: 1.5,
+  },
+  stepDot: {
     width: 36, height: 36, borderRadius: 18,
     justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1.5,
   },
-  stepLabel: { fontSize: 14, flex: 1, fontWeight: '500' },
-  footer: { padding: 24, gap: 12 },
+  stepLabel: {
+    fontSize: 10.5,
+    textAlign: 'center',
+    lineHeight: 14,
+    fontWeight: '500',
+  },
+
+  // Footer
+  footer: {
+    gap: 8,
+    paddingBottom: 8,
+  },
   primaryBtn: {
-    height: 56, borderRadius: 28,
+    height: 54, borderRadius: 27,
     justifyContent: 'center', alignItems: 'center',
-    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
   },
   primaryBtnText: { fontSize: 16, fontWeight: '800' },
-  secondaryBtn: { height: 48, justifyContent: 'center', alignItems: 'center' },
-  secondaryBtnText: { fontSize: 15, fontWeight: '600' },
+  secondaryBtn: {
+    height: 44,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  secondaryBtnText: { fontSize: 14, fontWeight: '600' },
 });

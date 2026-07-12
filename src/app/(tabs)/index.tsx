@@ -10,7 +10,10 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useLocation } from '../../context/LocationContext';
 import { LocationChip } from '../../components/LocationChip';
-import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedScrollHandler, useSharedValue, useAnimatedStyle,
+  withTiming, withDelay, withSpring,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -28,6 +31,25 @@ import { AlertService, Alert } from '../../lib/alert-service';
 import * as SecureStore from 'expo-secure-store';
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList as any) as any;
+
+/** Staggered entrance for each feed item — only animates on first mount */
+const FeedItemWrapper = memo(({ index, children }: { index: number; children: React.ReactNode }) => {
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(18);
+
+  useEffect(() => {
+    const delay = Math.min(index, 6) * 60; // stagger first 6, cap rest
+    opacity.value = withDelay(delay, withTiming(1, { duration: 350 }));
+    translateY.value = withDelay(delay, withSpring(0, { damping: 20, stiffness: 150 }));
+  }, []);
+
+  const style = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  return <Animated.View style={style}>{children}</Animated.View>;
+});
 
 const QuickPostBox = memo(() => {
   const { user, profile } = useAuth();
@@ -324,25 +346,37 @@ export default function HomeTab() {
         keyExtractor={(item: Post) => item.id}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        renderItem={({ item }: { item: Post }) => (
-          <PostCard 
-            post={item} 
-            isVisible={activePostId === item.id}
-            onPress={() => {
-              if (item.category === 'For Sale') router.push(`/marketplace/${item.id}`);
-              else if (item.category === 'Event') router.push(`/events/${item.id}`);
-              else router.push(`/posts/${item.id}`);
-            }}
-            onComment={() => {
-              setActiveCommentPostId(item.id);
-              bottomSheetRef.current?.present();
-            }}
-            onOpenImageViewer={(images, index) => {
-              setViewerImages(images);
-              setViewerIndex(index);
-              setViewerVisible(true);
-            }}
-          />
+        renderItem={({ item, index }: { item: Post; index: number }) => (
+          <FeedItemWrapper index={index}>
+            <PostCard 
+              post={item} 
+              isVisible={activePostId === item.id}
+              onPress={() => {
+                if (item.category === 'For Sale') {
+                  router.push(`/marketplace/${item.id}`);
+                } else if (item.category === 'Event' && item.event_link) {
+                  const parts = item.event_link.split('/');
+                  const eventId = parts.pop() || parts.pop();
+                  if (eventId) {
+                    router.push(`/events/${eventId}`);
+                  } else {
+                    router.push(`/posts/${item.id}`);
+                  }
+                } else {
+                  router.push(`/posts/${item.id}`);
+                }
+              }}
+              onComment={() => {
+                setActiveCommentPostId(item.id);
+                bottomSheetRef.current?.present();
+              }}
+              onOpenImageViewer={(images, index) => {
+                setViewerImages(images);
+                setViewerIndex(index);
+                setViewerVisible(true);
+              }}
+            />
+          </FeedItemWrapper>
         )}
         refreshControl={
           <RefreshControl 

@@ -6,6 +6,7 @@ import {
 import { FlashList } from '@shopify/flash-list';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import LottieView from 'lottie-react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
@@ -294,7 +295,12 @@ export default function NotificationsScreen() {
         </View>
       ) : filteredNotifications.length === 0 ? (
         <View style={styles.center}>
-          <Feather name="bell-off" size={48} color={colors.border} />
+          <LottieView
+            autoPlay
+            loop
+            style={{ width: 160, height: 160 }}
+            source={{ uri: 'https://lottie.host/6e2e1f4c-0e6e-4e02-9a91-1a0f1dff01c9/7vJ8b3Xkdj.json' }}
+          />
           <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No notifications yet</Text>
           <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>You're all caught up!</Text>
         </View>

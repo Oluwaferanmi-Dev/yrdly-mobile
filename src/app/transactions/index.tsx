@@ -6,6 +6,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import LottieView from 'lottie-react-native';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
@@ -22,19 +23,20 @@ interface Transaction {
   created_at: string;
   buyer_id: string;
   seller_id: string;
+  item_title?: string | null;
   item: { id: string; title: string; images: string[] | null } | null;
   buyer: { name: string; avatar_url: string | null } | null;
   seller: { name: string; avatar_url: string | null } | null;
 }
 
-const STATUS_META: Record<EscrowStatus, { label: string; color: string; bg: string; icon: string }> = {
-  pending:   { label: 'Awaiting Payment', color: '#E65100', bg: '#FFF3E0', icon: 'clock' },
-  paid:      { label: 'Paid — Awaiting Delivery', color: '#1565C0', bg: '#E3F2FD', icon: 'box' },
-  shipped:   { label: 'Shipped', color: '#6A1B9A', bg: '#F3E5F5', icon: 'truck' },
-  delivered: { label: 'Delivered', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
-  completed: { label: 'Completed', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
-  disputed:  { label: 'Disputed', color: '#B71C1C', bg: '#FFEBEE', icon: 'alert-circle' },
-  cancelled: { label: 'Cancelled', color: '#757575', bg: '#F5F5F5', icon: 'x-circle' },
+const STATUS_META: Record<EscrowStatus, { label: string; color: string; bg: string; dot: string }> = {
+  pending:   { label: 'Awaiting Payment',      color: '#D84315', bg: '#FFF3E0', dot: '#FF6D00' },
+  paid:      { label: 'Paid — Awaiting Delivery', color: '#1565C0', bg: '#E8F0FE', dot: '#1A73E8' },
+  shipped:   { label: 'Shipped',               color: '#6A1B9A', bg: '#F3E5F5', dot: '#8E24AA' },
+  delivered: { label: 'Delivered',             color: '#2E7D32', bg: '#E8F5E9', dot: '#43A047' },
+  completed: { label: 'Completed',             color: '#2E7D32', bg: '#E8F5E9', dot: '#43A047' },
+  disputed:  { label: 'Disputed',              color: '#B71C1C', bg: '#FFEBEE', dot: '#E53935' },
+  cancelled: { label: 'Cancelled',             color: '#616161', bg: '#F5F5F5', dot: '#9E9E9E' },
 };
 
 type Tab = 'purchases' | 'sales';
@@ -58,7 +60,7 @@ export default function TransactionsScreen() {
       const { data, error } = await supabase
         .from('escrow_transactions')
         .select(`
-          id, amount, status, created_at, buyer_id, seller_id,
+          id, amount, status, created_at, buyer_id, seller_id, item_title,
           item:posts(id, title, images:image_urls),
           buyer:users!escrow_transactions_buyer_id_fkey(name, avatar_url),
           seller:users!escrow_transactions_seller_id_fkey(name, avatar_url)
@@ -109,13 +111,13 @@ export default function TransactionsScreen() {
         {/* Info */}
         <View style={styles.txInfo}>
           <Text style={[styles.txTitle, { color: colors.text }]} numberOfLines={1}>
-            {tx.item?.title ?? 'Marketplace Item'}
+            {tx.item?.title || tx.item_title || 'Item'}
           </Text>
           <Text style={[styles.txCounterparty, { color: colors.textMuted }]}>
             {tab === 'purchases' ? 'From' : 'To'} {counterparty?.name ?? 'User'}
           </Text>
           <View style={[styles.statusBadge, { backgroundColor: meta.bg }]}>
-            <Feather name={meta.icon as any} size={11} color={meta.color} style={{ marginRight: 4 }} />
+            <View style={[styles.statusDot, { backgroundColor: meta.dot }]} />
             <Text style={[styles.statusText, { color: meta.color }]}>{meta.label}</Text>
           </View>
         </View>
@@ -174,7 +176,12 @@ export default function TransactionsScreen() {
           }
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Feather name="file-text" size={48} color={colors.borderLight} />
+              <LottieView
+                autoPlay
+                loop
+                style={{ width: 160, height: 160 }}
+                source={{ uri: 'https://lottie.host/1c248ba5-2d9a-4898-9b94-b0f7d3e9c90a/hhyaO2TJBJ.json' }}
+              />
               <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No {tab} yet</Text>
               <Text style={[styles.emptyBody, { color: colors.textMuted }]}>
                 {tab === 'purchases'
@@ -223,8 +230,10 @@ const styles = StyleSheet.create({
   txCounterparty: { fontSize: 12, marginBottom: 6 },
   statusBadge: {
     flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start',
-    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20,
+    paddingHorizontal: 9, paddingVertical: 4, borderRadius: 6,
+    marginTop: 2,
   },
+  statusDot: { width: 7, height: 7, borderRadius: 4, marginRight: 6 },
   statusText: { fontSize: 11, fontWeight: '700' },
   txRight: { alignItems: 'flex-end', marginLeft: 8 },
   txAmount: { fontSize: 15, fontWeight: '800' },

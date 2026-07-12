@@ -3,6 +3,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
+import Animated, {
+  useSharedValue, useAnimatedStyle,
+  withSpring, withTiming, withDelay, Easing,
+} from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -10,8 +14,6 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { formatPrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
-
-
 
 type EscrowStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled';
 
@@ -70,7 +72,43 @@ export default function TransactionDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // ── Animation values ──────────────────────────────────────────
+  const bannerX   = useSharedValue(-60);
+  const bannerOp  = useSharedValue(0);
+  const card1Op   = useSharedValue(0);
+  const card1Y    = useSharedValue(16);
+  const card2Op   = useSharedValue(0);
+  const card2Y    = useSharedValue(16);
+  const card3Op   = useSharedValue(0);
+  const card3Y    = useSharedValue(16);
 
+  const bannerStyle = useAnimatedStyle(() => ({
+    opacity: bannerOp.value,
+    transform: [{ translateX: bannerX.value }],
+  }));
+  const card1Style = useAnimatedStyle(() => ({
+    opacity: card1Op.value, transform: [{ translateY: card1Y.value }],
+  }));
+  const card2Style = useAnimatedStyle(() => ({
+    opacity: card2Op.value, transform: [{ translateY: card2Y.value }],
+  }));
+  const card3Style = useAnimatedStyle(() => ({
+    opacity: card3Op.value, transform: [{ translateY: card3Y.value }],
+  }));
+
+  function runEntranceAnimation() {
+    const ease = Easing.out(Easing.cubic);
+    // Banner slides in from left
+    bannerOp.value = withTiming(1, { duration: 350, easing: ease });
+    bannerX.value  = withSpring(0, { damping: 20, stiffness: 160 });
+    // Cards stagger up
+    card1Op.value = withDelay(120, withTiming(1, { duration: 350, easing: ease }));
+    card1Y.value  = withDelay(120, withSpring(0, { damping: 20, stiffness: 140 }));
+    card2Op.value = withDelay(220, withTiming(1, { duration: 350, easing: ease }));
+    card2Y.value  = withDelay(220, withSpring(0, { damping: 20, stiffness: 140 }));
+    card3Op.value = withDelay(320, withTiming(1, { duration: 350, easing: ease }));
+    card3Y.value  = withDelay(320, withSpring(0, { damping: 20, stiffness: 140 }));
+  }
 
   const fetchTx = useCallback(async () => {
     if (!id) return;
@@ -96,6 +134,8 @@ export default function TransactionDetailScreen() {
         seller: Array.isArray(data.seller) ? data.seller[0] ?? null : data.seller,
       } as TxDetail;
       setTx(normalised);
+      // Run entrance after data is ready
+      setTimeout(runEntranceAnimation, 80);
     } catch {
       Alert.alert('Error', 'Transaction not found.');
       router.back();
@@ -206,14 +246,19 @@ export default function TransactionDetailScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Status badge */}
-        <View style={[styles.statusBanner, { backgroundColor: meta.bg }]}>
-          <Feather name={meta.icon as any} size={22} color={meta.color} />
-          <Text style={[styles.statusLabel, { color: meta.color }]}>{meta.label}</Text>
-        </View>
+        {/* Status banner */}
+        <Animated.View style={[styles.statusBanner, { backgroundColor: meta.bg, borderColor: meta.color + '30' }, bannerStyle]}>
+          <View style={[styles.statusIconCircle, { backgroundColor: meta.color + '20' }]}>
+            <Feather name={meta.icon as any} size={20} color={meta.color} />
+          </View>
+          <View style={styles.statusTextGroup}>
+            <Text style={[styles.statusLabel, { color: meta.color }]}>{meta.label}</Text>
+            <Text style={[styles.statusSub, { color: meta.color + 'AA' }]}>Transaction #{tx.id.slice(0, 8).toUpperCase()}</Text>
+          </View>
+        </Animated.View>
 
         {/* Item card */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <Animated.View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }, card1Style]}>
           <View style={styles.itemRow}>
             {thumb ? (
               <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" />
@@ -240,10 +285,10 @@ export default function TransactionDetailScreen() {
               <Text style={[styles.priceValue, { color: colors.tint }]}>{formatPrice(tx.seller_amount)}</Text>
             </View>
           )}
-        </View>
+        </Animated.View>
 
         {/* Counterparty */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <Animated.View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }, card2Style]}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{isBuyer ? 'Seller' : 'Buyer'}</Text>
           <View style={styles.personRow}>
             {counterparty?.avatar_url ? (
@@ -265,10 +310,10 @@ export default function TransactionDetailScreen() {
               <Text style={[styles.messageBtnText, { color: colors.tint }]}>Message</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Timeline */}
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <Animated.View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }, card3Style]}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Timeline</Text>
           {TIMELINE_STEPS.map((step, i) => {
             const done = STATUS_ORDER.indexOf(step.status) <= currentStepIndex
@@ -306,7 +351,7 @@ export default function TransactionDetailScreen() {
             <Text style={styles.disputeText}>
               A dispute has been raised on this transaction. Our team will review and contact both parties within 24 hours.
             </Text>
-          </View>
+          </Animated.View>
         )}
 
         {/* Action buttons */}
@@ -350,8 +395,10 @@ export default function TransactionDetailScreen() {
           <TouchableOpacity
             style={styles.disputeAction}
             onPress={() => router.push(`/transactions/${tx.id}/dispute` as any)}
+            activeOpacity={0.8}
           >
-            <Feather name="alert-circle" size={18} color="#B71C1C" style={{ marginRight: 8 }} />
+            <View style={styles.disputeAccent} />
+            <Feather name="alert-circle" size={16} color="#C62828" style={{ marginRight: 10 }} />
             <Text style={styles.disputeActionText}>Open a Dispute</Text>
           </TouchableOpacity>
         )}
@@ -384,10 +431,17 @@ const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 40 },
 
   statusBanner: {
-    flexDirection: 'row', alignItems: 'center', borderRadius: 14, padding: 16,
-    marginBottom: 16, gap: 10,
+    flexDirection: 'row', alignItems: 'center',
+    borderRadius: 16, padding: 16, marginBottom: 16,
+    borderWidth: 1, gap: 14,
   },
-  statusLabel: { fontSize: 15, fontWeight: '700', flex: 1 },
+  statusIconCircle: {
+    width: 44, height: 44, borderRadius: 22,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  statusTextGroup: { flex: 1 },
+  statusLabel: { fontSize: 16, fontWeight: '800', marginBottom: 2 },
+  statusSub: { fontSize: 11, fontWeight: '500', letterSpacing: 0.3 },
 
   card: {
     borderRadius: 16, padding: 16, marginBottom: 14,
@@ -446,11 +500,17 @@ const styles = StyleSheet.create({
   },
   primaryActionText: { fontSize: 16, fontWeight: '800' },
   disputeAction: {
-    flexDirection: 'row', height: 48, borderRadius: 24,
-    justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1.5, borderColor: '#FFCDD2', backgroundColor: '#FFEBEE', marginBottom: 12,
+    flexDirection: 'row', height: 52, borderRadius: 14,
+    alignItems: 'center', paddingHorizontal: 20,
+    backgroundColor: '#FFF5F5', marginBottom: 12,
+    borderWidth: 1, borderColor: '#FFCDD2',
+    overflow: 'hidden',
   },
-  disputeActionText: { fontSize: 15, fontWeight: '700', color: '#B71C1C' },
+  disputeAccent: {
+    position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
+    backgroundColor: '#C62828', borderRadius: 2,
+  },
+  disputeActionText: { fontSize: 15, fontWeight: '700', color: '#C62828', flex: 1 },
   reviewAction: {
     flexDirection: 'row', height: 48, borderRadius: 24,
     justifyContent: 'center', alignItems: 'center',

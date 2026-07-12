@@ -6,6 +6,24 @@ import { useAppTheme } from '../../context/ThemeContext';
 import {
   HomeIcon, ExploreIcon, MessagesIcon, ProfileIcon
 } from '../../components/SvgIcons';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useEffect } from 'react';
+
+/** Wraps any tab icon with a spring scale animation on focus */
+function TabIconWrapper({ focused, children }: { focused: boolean; children: React.ReactNode }) {
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    scale.value = focused
+      ? withSpring(1.22, { damping: 12, stiffness: 260 })
+      : withSpring(1,    { damping: 14, stiffness: 200 });
+  }, [focused]);
+
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  return <Animated.View style={style}>{children}</Animated.View>;
+}
+
 
 const TAB_BAR_HEIGHT = 64;
 
@@ -44,14 +62,22 @@ export default function TabLayout() {
           name="index"
           options={{
             title: 'Home',
-            tabBarIcon: ({ color, focused }) => <HomeIcon color={color} size={26} filled={focused} />,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIconWrapper focused={focused}>
+                <HomeIcon color={color} size={26} filled={focused} />
+              </TabIconWrapper>
+            ),
           }}
         />
         <Tabs.Screen
           name="catalog"
           options={{
             title: 'Explore',
-            tabBarIcon: ({ color, focused }) => <ExploreIcon color={color} size={26} filled={focused} />,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIconWrapper focused={focused}>
+                <ExploreIcon color={color} size={26} filled={focused} />
+              </TabIconWrapper>
+            ),
           }}
         />
         <Tabs.Screen
@@ -73,14 +99,22 @@ export default function TabLayout() {
           name="messages"
           options={{
             title: 'Messages',
-            tabBarIcon: ({ color, focused }) => <MessagesIcon color={color} size={26} filled={focused} />,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIconWrapper focused={focused}>
+                <MessagesIcon color={color} size={26} filled={focused} />
+              </TabIconWrapper>
+            ),
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ color, focused }) => <ProfileIcon color={color} size={26} filled={focused} />,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIconWrapper focused={focused}>
+                <ProfileIcon color={color} size={26} filled={focused} />
+              </TabIconWrapper>
+            ),
           }}
         />
       </Tabs>

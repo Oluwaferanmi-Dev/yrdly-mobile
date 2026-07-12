@@ -1,10 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, ActivityIndicator, Dimensions, Alert, Modal, TextInput
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedScrollHandler, useSharedValue, useAnimatedStyle,
+  interpolate, Extrapolation, withSpring, withTiming, withDelay,
+} from 'react-native-reanimated';
+import LottieView from 'lottie-react-native';
+import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import ImageViewing from 'react-native-image-viewing';
 import { Ionicons } from '@expo/vector-icons';
@@ -38,6 +43,41 @@ export default function EventDetailScreen() {
   const [attendeeEmail, setAttendeeEmail] = useState('');
   const [attendeePhone, setAttendeePhone] = useState('');
   const [purchasing, setPurchasing] = useState(false);
+
+  // Ticket success overlay
+  const [ticketSuccess, setTicketSuccess] = useState(false);
+  const [successTierName, setSuccessTierName] = useState('');
+  const successSheetY  = useSharedValue(400);
+  const successOverlayOp = useSharedValue(0);
+  const successContentOp = useSharedValue(0);
+  const successContentY  = useSharedValue(20);
+
+  const successOverlayStyle = useAnimatedStyle(() => ({ opacity: successOverlayOp.value }));
+  const successSheetStyle   = useAnimatedStyle(() => ({ transform: [{ translateY: successSheetY.value }] }));
+  const successContentStyle = useAnimatedStyle(() => ({
+    opacity: successContentOp.value,
+    transform: [{ translateY: successContentY.value }],
+  }));
+
+  function showTicketSuccess(tierName: string) {
+    setSuccessTierName(tierName);
+    setTicketSuccess(true);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    successOverlayOp.value = withTiming(1, { duration: 250 });
+    successSheetY.value    = withSpring(0, { damping: 22, stiffness: 200 });
+    successContentOp.value = withDelay(280, withTiming(1, { duration: 380 }));
+    successContentY.value  = withDelay(280, withSpring(0, { damping: 18, stiffness: 140 }));
+  }
+
+  function dismissTicketSuccess() {
+    successOverlayOp.value = withTiming(0, { duration: 200 });
+    successSheetY.value    = withSpring(400, { damping: 22, stiffness: 200 });
+    setTimeout(() => {
+      setTicketSuccess(false);
+      setSelectedTier(null);
+      fetchEvent();
+    }, 220);
+  }
 
   const fetchEvent = useCallback(async () => {
     if (!id) return;
@@ -78,9 +118,7 @@ export default function EventDetailScreen() {
       });
 
       if (selectedTier.price === 0) {
-        Alert.alert('Success', 'Free ticket registered successfully!');
-        setSelectedTier(null);
-        fetchEvent();
+        showTicketSuccess(selectedTier.name);
       } else {
         const browserResult = await WebBrowser.openAuthSessionAsync(res.paymentLink, callbackUrl);
         if (browserResult.type === 'success' && browserResult.url) {
@@ -89,9 +127,7 @@ export default function EventDetailScreen() {
           if (status === 'cancelled') {
             Alert.alert('Cancelled', 'Payment was cancelled.');
           } else {
-            Alert.alert('Success', 'Payment successful! Check your tickets.');
-            setSelectedTier(null);
-            fetchEvent();
+            showTicketSuccess(selectedTier.name);
           }
         }
       }
@@ -319,6 +355,40 @@ export default function EventDetailScreen() {
           doubleTapToZoomEnabled={true}
         />
       )}
+
+      {/* ── Ticket Success Overlay ─────────────────── */}
+      {ticketSuccess && (
+        <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 100, justifyContent: 'flex-end' }, successOverlayStyle]}>
+          <View style={styles.successBackdrop} />
+          <Animated.View style={[styles.successSheet, { backgroundColor: colors.card }, successSheetStyle]}>
+            <View style={styles.successHandleBar} />
+            <LottieView
+              autoPlay
+              loop={false}
+              style={styles.successLottie}
+              source={{ uri: 'https://lottie.host/3acad958-cd8e-424a-a1c9-58e8bff45d87/XvFdYxtUDF.json' }}
+            />
+            <Animated.View style={[{ alignItems: 'center', paddingHorizontal: 24 }, successContentStyle]}>
+              <Text style={[styles.successTitle, { color: colors.text }]}>You're In! 🎟️</Text>
+              <Text style={[styles.successTier, { color: colors.tint }]}>{successTierName}</Text>
+              <Text style={[styles.successBody, { color: colors.textMuted }]}>
+                Your ticket has been confirmed. Check the Tickets tab to view it.
+              </Text>
+              <TouchableOpacity
+                style={[styles.successBtn, { backgroundColor: colors.tint }]}
+                onPress={() => { dismissTicketSuccess(); router.push('/tickets' as any); }}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.successBtnText}>View My Ticket</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.successSecondary} onPress={dismissTicketSuccess}>
+                <Text style={[styles.successSecondaryText, { color: colors.textMuted }]}>Back to Event</Text>
+              </TouchableOpacity>
+            </Animated.View>
+            <View style={{ height: 24 }} />
+          </Animated.View>
+        </Animated.View>
+      )}
     </SafeAreaView>
   );
 }
@@ -368,4 +438,33 @@ const styles = StyleSheet.create({
   input: { padding: 16, borderRadius: 12, marginBottom: 16, fontSize: 16 },
   purchaseBtn: { padding: 18, borderRadius: 12, alignItems: 'center' },
   purchaseBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+
+  // Success overlay
+  successBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
+  successSheet: {
+    borderTopLeftRadius: 32, borderTopRightRadius: 32,
+    paddingTop: 12, alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.2, shadowRadius: 16, elevation: 20,
+  },
+  successHandleBar: {
+    width: 40, height: 4, borderRadius: 2,
+    backgroundColor: 'rgba(128,128,128,0.3)',
+    marginBottom: 8,
+  },
+  successLottie: { width: 160, height: 160 },
+  successTitle: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, marginBottom: 6, textAlign: 'center' },
+  successTier:  { fontSize: 15, fontWeight: '700', marginBottom: 12 },
+  successBody:  { fontSize: 13, textAlign: 'center', lineHeight: 19, marginBottom: 24, maxWidth: 270 },
+  successBtn: {
+    width: '100%', height: 52, borderRadius: 26,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 8,
+  },
+  successBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  successSecondary: { height: 40, justifyContent: 'center', alignItems: 'center' },
+  successSecondaryText: { fontSize: 14, fontWeight: '600' },
 });
+

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, useWindowDimensions, LogBox } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withDelay } from 'react-native-reanimated';
+import LottieView from 'lottie-react-native';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -45,6 +46,32 @@ export default function CreateTab() {
   }
   const [images, setImages] = useState<PostImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [postSuccess, setPostSuccess] = useState(false);
+
+  // Post success overlay animation
+  const successOverlayOp = useSharedValue(0);
+  const successSheetY    = useSharedValue(300);
+  const successContentOp = useSharedValue(0);
+  const successOverlayStyle = useAnimatedStyle(() => ({ opacity: successOverlayOp.value }));
+  const successSheetStyle   = useAnimatedStyle(() => ({ transform: [{ translateY: successSheetY.value }] }));
+  const successContentStyle = useAnimatedStyle(() => ({ opacity: successContentOp.value }));
+
+  function showPostSuccess() {
+    setPostSuccess(true);
+    successOverlayOp.value = withTiming(1, { duration: 250 });
+    successSheetY.value    = withSpring(0, { damping: 22, stiffness: 200 });
+    successContentOp.value = withDelay(300, withTiming(1, { duration: 400 }));
+    // Auto-navigate after 2.2s
+    setTimeout(() => {
+      setTitle('');
+      setText('');
+      setPrice('');
+      setImages([]);
+      setLocationData(null);
+      setEventDate(new Date());
+      router.replace('/(tabs)/' as any);
+    }, 2200);
+  }
 
   // Event specific state
   const [eventDate, setEventDate] = useState<Date>(new Date());
@@ -225,21 +252,8 @@ export default function CreateTab() {
       const { error: insertError } = await supabase.from('posts').insert(postData);
       if (insertError) throw insertError;
 
-      // 4. Success — reset form and navigate to home feed
-      Alert.alert('Posted! 🎉', 'Your post is now live on Yrdly.', [
-        {
-          text: 'View Feed',
-          onPress: () => {
-            setTitle('');
-            setText('');
-            setPrice('');
-            setImages([]);
-            setLocationData(null);
-            setEventDate(new Date());
-            router.push('/');
-          },
-        },
-      ]);
+      // 4. Success — show animated overlay then navigate
+      showPostSuccess();
     } catch (e: any) {
       console.error('Post submit error:', e);
       Alert.alert('Error', e?.message || 'Something went wrong. Please try again.');
@@ -519,14 +533,51 @@ export default function CreateTab() {
           
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* ── Post Success Overlay ──────────────── */}
+      {postSuccess && (
+        <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: 'flex-end' }, successOverlayStyle]}>
+          <View style={styles.postSuccessBackdrop} />
+          <Animated.View style={[styles.postSuccessSheet, { backgroundColor: colors.card }, successSheetStyle]}>
+            <View style={styles.postSuccessHandle} />
+            <LottieView
+              autoPlay
+              loop={false}
+              style={{ width: 160, height: 160 }}
+              source={{ uri: 'https://lottie.host/3acad958-cd8e-424a-a1c9-58e8bff45d87/XvFdYxtUDF.json' }}
+            />
+            <Animated.View style={[{ alignItems: 'center', paddingHorizontal: 32 }, successContentStyle]}>
+              <Text style={[styles.postSuccessTitle, { color: colors.text }]}>Posted! 🎉</Text>
+              <Text style={[styles.postSuccessBody, { color: colors.textMuted }]}>
+                Your post is live on Yrdly. Taking you to the feed…
+              </Text>
+            </Animated.View>
+            <View style={{ height: 40 }} />
+          </Animated.View>
+        </Animated.View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1 },
+  postSuccessBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.55)',
   },
+  postSuccessSheet: {
+    borderTopLeftRadius: 32, borderTopRightRadius: 32,
+    paddingTop: 12, alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.2, shadowRadius: 16, elevation: 20,
+  },
+  postSuccessHandle: {
+    width: 40, height: 4, borderRadius: 2,
+    backgroundColor: 'rgba(128,128,128,0.3)', marginBottom: 8,
+  },
+  postSuccessTitle: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, marginBottom: 8, textAlign: 'center' },
+  postSuccessBody: { fontSize: 13, textAlign: 'center', lineHeight: 19, maxWidth: 260 },
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
