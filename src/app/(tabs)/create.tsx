@@ -176,6 +176,7 @@ export default function CreateTab() {
 
   // ── Submit post to Supabase ───────────────────────────────────────
   const handleSubmit = async () => {
+    Keyboard.dismiss();
     if (!user) {
       Alert.alert('Not signed in', 'You must be logged in to create a post.');
       return;
@@ -259,6 +260,7 @@ export default function CreateTab() {
       if (insertError) throw insertError;
 
       // 4. Success — show animated overlay then navigate
+      Keyboard.dismiss();
       showPostSuccess();
     } catch (e: any) {
       console.error('Post submit error:', e);

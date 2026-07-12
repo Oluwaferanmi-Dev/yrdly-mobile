@@ -87,7 +87,7 @@ export default function CheckoutScreen() {
           buyerId: user.id,
           sellerId: item.user_id,
           price: item.price,
-          buyerEmail: user.email,
+          buyerEmail: user.email || 'no-email@yrdly.ng',
           buyerName: profile.name ?? user.user_metadata?.name ?? 'Yrdly User',
           itemTitle: item.title,
           sellerName: item.seller?.name ?? 'Seller',
@@ -96,6 +96,19 @@ export default function CheckoutScreen() {
       );
 
       setTransactionId(result.transactionId);
+
+      // If free item, paymentLink will be empty and transaction is already marked PAID
+      if (!result.paymentLink) {
+        router.replace({
+          pathname: '/checkout/success',
+          params: {
+            transactionId: result.transactionId,
+            itemTitle: item?.title ?? 'Item',
+            amount: String(item?.price ?? 0),
+          },
+        } as any);
+        return;
+      }
 
       // Open in-app browser for payment
       const browserResult = await WebBrowser.openAuthSessionAsync(result.paymentLink, callbackUrl);

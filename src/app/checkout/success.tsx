@@ -96,11 +96,8 @@ export default function CheckoutSuccessScreen() {
   const amountNum = Number(amount ?? 0);
 
   return (
-    <View style={styles.root}>
-      {/* Dimmed backdrop */}
-      <Animated.View style={[styles.overlay, overlayStyle]} />
-
-      {/* Confetti — full screen, behind sheet */}
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      {/* Confetti — full screen */}
       <LottieView
         autoPlay
         loop={false}
@@ -109,9 +106,9 @@ export default function CheckoutSuccessScreen() {
         resizeMode="cover"
       />
 
-      {/* Slide-up sheet */}
-      <Animated.View style={[styles.sheet, { backgroundColor: colors.card }, sheetStyle]}>
-        <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
+      {/* Main content area */}
+      <View style={[styles.sheet, { backgroundColor: colors.background, flex: 1 }]}>
+        <SafeAreaView edges={['bottom', 'top']} style={{ flex: 1, paddingTop: 40 }}>
 
           {/* ── Lottie hero ─────────────────────────── */}
           <Animated.View style={[styles.lottieWrapper, lottieStyle]}>
@@ -192,7 +189,7 @@ export default function CheckoutSuccessScreen() {
           </Animated.View>
 
         </SafeAreaView>
-      </Animated.View>
+      </View>
     </View>
   );
 }
@@ -201,11 +198,11 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: '#111', // Solid background so it's not transparent over nothing
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: '#111',
   },
   confetti: {
     position: 'absolute',

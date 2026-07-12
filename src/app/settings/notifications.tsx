@@ -104,50 +104,50 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: '#131313' }]}>
+      <View style={[styles.header, { backgroundColor: '#131313', borderBottomColor: 'rgba(255,255,255,0.06)' }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={24} color={colors.text} />
+          <Feather name="arrow-left" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
+        <Text style={[styles.headerTitle, { color: '#FFFFFF' }]}>Notifications</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.tint} />
+          <ActivityIndicator size="large" color="#82E157" />
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={[styles.intro, { color: colors.textMuted }]}>
+          <Text style={[styles.intro, { color: '#A6A6A6' }]}>
             Choose which notifications you receive. These apply to both push and in-app notifications.
           </Text>
 
           {NOTIFICATION_GROUPS.map((group) => (
             <View key={group.title} style={styles.group}>
-              <Text style={[styles.groupTitle, { color: colors.textMuted }]}>{group.title.toUpperCase()}</Text>
-              <View style={[styles.groupCard, { backgroundColor: colors.card }]}>
+              <Text style={[styles.groupTitle, { color: '#A6A6A6' }]}>{group.title.toUpperCase()}</Text>
+              <View style={[styles.groupCard, { backgroundColor: '#1C1C1C', borderColor: 'rgba(255,255,255,0.06)', borderWidth: 1 }]}>
                 {group.items.map((item, index) => (
                   <View
                     key={item.key}
-                    style={[styles.row, index < group.items.length - 1 && [styles.rowDivider, { borderBottomColor: colors.borderLight }]]}
+                    style={[styles.row, index < group.items.length - 1 && [styles.rowDivider, { borderBottomColor: 'rgba(255,255,255,0.06)' }]]}
                   >
-                    <View style={[styles.iconWrap, { backgroundColor: colors.tint + '22' }]}>
-                      <Feather name={item.icon as any} size={20} color={colors.tint} />
+                    <View style={[styles.iconWrap, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
+                      <Feather name={item.icon as any} size={20} color="#82E157" />
                     </View>
                     <View style={styles.rowInfo}>
-                      <Text style={[styles.rowLabel, { color: colors.text }]}>{item.label}</Text>
-                      <Text style={[styles.rowDesc, { color: colors.textMuted }]}>{item.desc}</Text>
+                      <Text style={[styles.rowLabel, { color: '#FFFFFF' }]}>{item.label}</Text>
+                      <Text style={[styles.rowDesc, { color: '#A6A6A6' }]}>{item.desc}</Text>
                     </View>
                     {saving === item.key ? (
-                      <ActivityIndicator size="small" color={colors.tint} />
+                      <ActivityIndicator size="small" color="#82E157" />
                     ) : (
                       <Switch
                         value={settings[item.key]}
                         onValueChange={(v) => handleToggle(item.key, v)}
-                        trackColor={{ false: colors.border, true: colors.tint + '66' }}
-                        thumbColor={settings[item.key] ? colors.tint : '#FFFFFF'}
-                        ios_backgroundColor={colors.border}
+                        trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(130, 225, 87, 0.4)' }}
+                        thumbColor={settings[item.key] ? '#82E157' : '#FFFFFF'}
+                        ios_backgroundColor="rgba(255,255,255,0.1)"
                       />
                     )}
                   </View>
@@ -168,29 +168,28 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 12, paddingVertical: 12,
+    paddingHorizontal: 12, paddingVertical: 14,
     borderBottomWidth: 1,
   },
-  backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold' },
+  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)' },
+  headerTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '800' },
   scroll: { padding: 16 },
   intro: { fontSize: 13, marginBottom: 20, lineHeight: 18 },
   group: { marginBottom: 24 },
   groupTitle: {
     fontSize: 11, fontWeight: '800',
-    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10,
+    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10, marginLeft: 4,
   },
   groupCard: {
-    borderRadius: 14,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
+    borderRadius: 20,
   },
-  row: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
   rowDivider: { borderBottomWidth: 1 },
   iconWrap: {
-    width: 36, height: 36, borderRadius: 10,
+    width: 44, height: 44, borderRadius: 12,
     justifyContent: 'center', alignItems: 'center',
   },
   rowInfo: { flex: 1 },
-  rowLabel: { fontSize: 14, fontWeight: '700', marginBottom: 2 },
+  rowLabel: { fontSize: 15, fontWeight: '700', marginBottom: 2 },
   rowDesc: { fontSize: 12 },
 });
