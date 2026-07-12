@@ -184,10 +184,10 @@ export default function OtherUserProfileScreen() {
         <View style={[styles.profileHeader, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
           <View style={styles.avatarRow}>
             {profile.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={[styles.avatar, !profile.cover_url && { marginTop: 0 }]} contentFit="cover" />
+              <Image source={{ uri: profile.avatar_url }} style={[styles.avatar, { borderColor: colors.background, backgroundColor: colors.card }, !profile.cover_url && { marginTop: 0 }]} contentFit="cover" />
             ) : (
-              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint }, !profile.cover_url && { marginTop: 0 }]}>
-                <Text style={styles.avatarFallbackText}>
+              <View style={[styles.avatar, styles.avatarFallback, { borderColor: colors.background, backgroundColor: colors.tint }, !profile.cover_url && { marginTop: 0 }]}>
+                <Text style={[styles.avatarFallbackText, { color: colors.background }]}>
                   {profile.name ? profile.name.charAt(0).toUpperCase() : '?'}
                 </Text>
               </View>
@@ -228,7 +228,7 @@ export default function OtherUserProfileScreen() {
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.btnMessage, { backgroundColor: '#E8F5E9' }]} onPress={handleMessage}>
+              <TouchableOpacity style={[styles.btnMessage, { backgroundColor: colors.tint + '15' }]} onPress={handleMessage}>
                 <Feather name="message-circle" size={18} color={colors.tint} />
                 <Text style={[styles.btnMessageText, { color: colors.tint }]}>Message</Text>
               </TouchableOpacity>
@@ -275,11 +275,10 @@ const styles = StyleSheet.create({
   avatarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   avatar: {
     width: 80, height: 80, borderRadius: 40,
-    marginTop: -40, borderWidth: 4, borderColor: '#FFFFFF',
-    backgroundColor: '#E8F5E9',
+    marginTop: -40, borderWidth: 4,
   },
   avatarFallback: { justifyContent: 'center', alignItems: 'center' },
-  avatarFallbackText: { color: '#FFFFFF', fontSize: 32, fontWeight: 'bold' },
+  avatarFallbackText: { fontSize: 32, fontWeight: 'bold' },
   statsRow: { flex: 1, flexDirection: 'row', justifyContent: 'space-around', marginLeft: 10 },
   statItem: { alignItems: 'center' },
   statValue: { fontSize: 18, fontWeight: 'bold' },

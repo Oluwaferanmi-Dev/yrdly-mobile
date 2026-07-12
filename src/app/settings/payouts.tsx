@@ -112,14 +112,14 @@ export default function PayoutsScreen() {
   const renderItem = ({ item }: { item: PayoutRequest }) => {
     const meta = STATUS_META[item.status] ?? STATUS_META.pending;
     return (
-      <View style={[styles.payoutCard, { backgroundColor: colors.card }]}>
+      <View style={[styles.payoutCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
         <View style={styles.payoutLeft}>
           <View style={[styles.payoutIconWrap, { backgroundColor: meta.bg }]}>
             <Feather name={meta.icon as any} size={20} color={meta.color} />
           </View>
           <View>
-            <Text style={styles.payoutAmount}>{formatPrice(item.amount)}</Text>
-            <Text style={styles.payoutDate}>{fmt(item.created_at)}</Text>
+            <Text style={[styles.payoutAmount, { color: colors.text }]}>{formatPrice(item.amount)}</Text>
+            <Text style={[styles.payoutDate, { color: colors.textSecondary }]}>{fmt(item.created_at)}</Text>
           </View>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: meta.bg }]}>
@@ -130,46 +130,46 @@ export default function PayoutsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#131313' }]}>
-      <View style={[styles.header, { backgroundColor: '#131313', borderBottomColor: 'rgba(255,255,255,0.06)' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={24} color="#FFFFFF" />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: '#FFFFFF' }]}>Payouts</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Payouts</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color="#82E157" /></View>
+        <View style={styles.center}><ActivityIndicator size="large" color={colors.tint} /></View>
       ) : (
         <FlatList
           data={payouts}
           keyExtractor={p => p.id}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor="#82E157" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={colors.tint} />}
           ListHeaderComponent={
             <View style={styles.listHeader}>
               {/* Balance card */}
-              <View style={[styles.balanceCard, { backgroundColor: '#1C1C1C', borderColor: 'rgba(255,255,255,0.06)', borderWidth: 1 }]}>
+              <View style={[styles.balanceCard, { backgroundColor: colors.card, borderColor: colors.borderLight, borderWidth: 1 }]}>
                 <View style={styles.balanceIconWrap}>
-                  <Feather name="dollar-sign" size={24} color="#82E157" />
+                  <Feather name="dollar-sign" size={24} color={colors.tint} />
                 </View>
-                <Text style={styles.balanceLabel}>Available Balance</Text>
-                <Text style={styles.balanceAmount}>{formatPrice(balance)}</Text>
+                <Text style={[styles.balanceLabel, { color: colors.textMuted }]}>Available Balance</Text>
+                <Text style={[styles.balanceAmount, { color: colors.text }]}>{formatPrice(balance)}</Text>
                 <TouchableOpacity
-                  style={[styles.withdrawBtn, (balance <= 0 || requesting) && styles.withdrawBtnDisabled]}
+                  style={[styles.withdrawBtn, { backgroundColor: colors.tint }, (balance <= 0 || requesting) && styles.withdrawBtnDisabled]}
                   onPress={handleRequestPayout}
                   disabled={balance <= 0 || requesting}
                 >
                   {requesting
-                    ? <ActivityIndicator color="#111" size="small" />
-                    : <Text style={[styles.withdrawBtnText, { color: '#111' }]}>Withdraw Funds</Text>}
+                    ? <ActivityIndicator color={colors.background} size="small" />
+                    : <Text style={[styles.withdrawBtnText, { color: colors.background }]}>Withdraw Funds</Text>}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)} style={styles.bankLink}>
-                  <Feather name="briefcase" size={14} color="#82E157" />
-                  <Text style={styles.bankLinkText}>Manage bank account</Text>
+                  <Feather name="briefcase" size={14} color={colors.tint} />
+                  <Text style={[styles.bankLinkText, { color: colors.tint }]}>Manage bank account</Text>
                 </TouchableOpacity>
               </View>
-              <Text style={[styles.historyTitle, { color: '#FFFFFF' }]}>Payout History</Text>
+              <Text style={[styles.historyTitle, { color: colors.text }]}>Payout History</Text>
             </View>
           }
           renderItem={renderItem}
@@ -177,9 +177,9 @@ export default function PayoutsScreen() {
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Feather name="credit-card" size={48} color="rgba(255,255,255,0.1)" />
-              <Text style={[styles.emptyTitle, { color: '#FFFFFF' }]}>No payouts yet</Text>
-              <Text style={[styles.emptyBody, { color: '#A6A6A6' }]}>Funds from completed sales will appear here.</Text>
+              <Feather name="credit-card" size={48} color={colors.border} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>No payouts yet</Text>
+              <Text style={[styles.emptyBody, { color: colors.textMuted }]}>Funds from completed sales will appear here.</Text>
             </View>
           }
         />

@@ -75,7 +75,7 @@ export default function ProfileTab() {
   const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
 
   const listHeader = useMemo(() => (
-    <View style={[styles.headerContainer, { backgroundColor: colors.card, paddingTop: 10 }]}>
+    <View style={[styles.headerContainer, { backgroundColor: colors.background, paddingTop: 10 }]}>
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.settingsButton}
@@ -83,7 +83,7 @@ export default function ProfileTab() {
         >
           <Feather name="settings" size={24} color={colors.text} />
         </TouchableOpacity>
-        <View style={styles.avatarPlaceholder}>
+        <View style={[styles.avatarPlaceholder, { backgroundColor: colors.tint + '15' }]}>
           {avatarUri ? (
             <Image 
               source={{ uri: avatarUri }} 
@@ -129,7 +129,7 @@ export default function ProfileTab() {
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.ticketsButton} 
+            style={[styles.ticketsButton, { backgroundColor: colors.tint + '15' }]} 
             onPress={() => router.push('/tickets')}
           >
             <Ionicons name="ticket-outline" size={24} color={colors.tint} />
@@ -222,8 +222,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10
   },
-  ticketsButton: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', backgroundColor: '#E8F5E9' },
-  divider: { height: 8, width: '100%', marginTop: 24 },
+  ticketsButton: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  divider: { height: 1, width: '100%', marginTop: 24 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', paddingHorizontal: 16, paddingTop: 16 },
   emptyContainer: { padding: 40, alignItems: 'center' },
   emptyText: { fontSize: 16 },

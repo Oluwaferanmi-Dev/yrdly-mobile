@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, useWindowDimensions, LogBox } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, useWindowDimensions, LogBox, Modal, Keyboard } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withDelay } from 'react-native-reanimated';
 import LottieView from 'lottie-react-native';
 import * as Haptics from 'expo-haptics';
@@ -543,7 +543,7 @@ export default function CreateTab() {
       </KeyboardAvoidingView>
 
       {/* ── Post Success Overlay ──────────────── */}
-      {postSuccess && (
+      <Modal visible={postSuccess} transparent={true} animationType="none" onRequestClose={() => {}}>
         <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: 'flex-end' }, successOverlayStyle]}>
           <View style={styles.postSuccessBackdrop} />
           <Animated.View style={[styles.postSuccessSheet, { backgroundColor: colors.card, paddingBottom: insets.bottom + 90 }, successSheetStyle]}>
@@ -563,7 +563,7 @@ export default function CreateTab() {
             <View style={{ height: 40 }} />
           </Animated.View>
         </Animated.View>
-      )}
+      </Modal>
     </View>
   );
 }

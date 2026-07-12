@@ -299,7 +299,7 @@ export class AuthService {
   static async resetPassword(email: string) {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: Linking.createURL('reset-password'),
+        redirectTo: makeRedirectUri({ path: 'reset-password' }),
       });
 
       if (error) throw error;

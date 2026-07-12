@@ -15,7 +15,7 @@ import { StorageService } from '../../lib/storage-service';
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, profile, signOut, loading: authLoading } = useAuth();
-  const { isDarkMode, toggleTheme } = useAppTheme();
+  const { isDarkMode, toggleTheme, colors } = useAppTheme();
 
   const [name, setName] = useState(profile?.name || user?.user_metadata?.name || '');
   const [bio, setBio] = useState(profile?.bio || '');
@@ -141,31 +141,31 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn}>
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
         <TouchableOpacity onPress={handleSave} disabled={saving || uploadingImage} style={styles.headerIconBtn}>
-          {saving ? <ActivityIndicator size="small" color="#82E157" /> : <Text style={styles.saveText}>Save</Text>}
+          {saving ? <ActivityIndicator size="small" color={colors.tint} /> : <Text style={[styles.saveText, { color: colors.tint }]}>Save</Text>}
         </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         
         {/* Profile Card */}
-        <View style={styles.profileCard}>
+        <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
           <TouchableOpacity style={styles.avatarWrapper} onPress={handlePickImage} disabled={uploadingImage}>
             {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+              <Image source={{ uri: avatarUrl }} style={[styles.avatarImage, { borderColor: colors.borderLight }]} />
             ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={32} color="#82E157" />
+              <View style={[styles.avatarPlaceholder, { borderColor: colors.borderLight, backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
+                <Ionicons name="person" size={32} color={colors.tint} />
               </View>
             )}
-            <View style={styles.editBadge}>
-              <Ionicons name="pencil" size={12} color="#0B0D0B" />
+            <View style={[styles.editBadge, { backgroundColor: colors.tint, borderColor: colors.card }]}>
+              <Ionicons name="pencil" size={12} color={colors.background} />
             </View>
             {uploadingImage && (
               <View style={styles.uploadOverlay}>
@@ -176,43 +176,43 @@ export default function SettingsScreen() {
 
           <View style={styles.profileInfo}>
             <TextInput
-              style={styles.nameInput}
+              style={[styles.nameInput, { color: colors.text }]}
               value={name}
               onChangeText={setName}
               placeholder="Your Name"
-              placeholderTextColor="#A6A6A6"
+              placeholderTextColor={colors.textMuted}
             />
             <View style={styles.locationBadgeRow}>
-              <Ionicons name="location" size={12} color="#82E157" style={{marginRight: 4}} />
+              <Ionicons name="location" size={12} color={colors.tint} style={{marginRight: 4}} />
               <TextInput
-                style={styles.bioInput}
+                style={[styles.bioInput, { color: colors.textSecondary }]}
                 value={bio}
                 onChangeText={setBio}
                 placeholder="Add a bio or location..."
-                placeholderTextColor="#A6A6A6"
+                placeholderTextColor={colors.textMuted}
               />
             </View>
             <View style={styles.memberBadge}>
-              <Ionicons name="people" size={12} color="#82E157" style={{marginRight: 6}} />
-              <Text style={styles.memberBadgeText}>Yrdly member</Text>
+              <Ionicons name="people" size={12} color={colors.tint} style={{marginRight: 6}} />
+              <Text style={[styles.memberBadgeText, { color: colors.tint }]}>Yrdly member</Text>
             </View>
           </View>
         </View>
 
         {/* Stronger Together Banner */}
-        <View style={styles.bannerContainer}>
-          <View style={styles.bannerIconWrap}>
-            <Ionicons name="home-outline" size={24} color="#82E157" />
+        <View style={[styles.bannerContainer, { backgroundColor: isDarkMode ? '#121A10' : '#E8F5E9', borderColor: 'rgba(130, 225, 87, 0.2)' }]}>
+          <View style={[styles.bannerIconWrap, { backgroundColor: 'rgba(130, 225, 87, 0.15)', borderColor: 'rgba(130, 225, 87, 0.3)' }]}>
+            <Ionicons name="home-outline" size={24} color={colors.tint} />
           </View>
           <View style={styles.bannerTextWrap}>
-            <Text style={styles.bannerTitle}>Stronger together.</Text>
-            <Text style={styles.bannerSubtitle}>Buy, sell, connect and look out for your neighborhood.</Text>
+            <Text style={[styles.bannerTitle, { color: colors.tint }]}>Stronger together.</Text>
+            <Text style={[styles.bannerSubtitle, { color: colors.textSecondary }]}>Buy, sell, connect and look out for your neighborhood.</Text>
           </View>
         </View>
 
         {/* Commerce & Account */}
-        <Text style={styles.sectionHeader}>COMMERCE & ACCOUNT</Text>
-        <View style={styles.glassCard}>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>COMMERCE & ACCOUNT</Text>
+        <View style={[styles.glassCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
           {[
             { icon: 'bag-handle-outline', label: 'Transactions', subtext: 'Track your orders and activity', route: '/transactions' },
             { icon: 'wallet-outline', label: 'Payouts', subtext: 'Manage your earnings', route: '/settings/payouts' },
@@ -221,52 +221,52 @@ export default function SettingsScreen() {
           ].map((item) => (
             <TouchableOpacity
               key={item.route}
-              style={[styles.navRow, !item.isLast && styles.navRowBorder]}
+              style={[styles.navRow, !item.isLast && styles.navRowBorder, !item.isLast && { borderBottomColor: colors.borderLight }]}
               onPress={() => router.push(item.route as any)}
               activeOpacity={0.7}
             >
-              <View style={styles.iconGlow}>
-                <Ionicons name={item.icon as any} size={24} color="#82E157" />
+              <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
+                <Ionicons name={item.icon as any} size={24} color={colors.tint} />
               </View>
               <View style={styles.navTextWrap}>
-                <Text style={styles.navLabel}>{item.label}</Text>
-                <Text style={styles.navSubtext}>{item.subtext}</Text>
+                <Text style={[styles.navLabel, { color: colors.text }]}>{item.label}</Text>
+                <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>{item.subtext}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color="#A6A6A6" />
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Preferences */}
-        <Text style={styles.sectionHeader}>PREFERENCES</Text>
-        <View style={styles.glassCard}>
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>PREFERENCES</Text>
+        <View style={[styles.glassCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
           <TouchableOpacity
-            style={[styles.navRow, styles.navRowBorder]}
+            style={[styles.navRow, styles.navRowBorder, { borderBottomColor: colors.borderLight }]}
             onPress={() => router.push('/settings/notifications' as any)}
             activeOpacity={0.7}
           >
-            <View style={styles.iconWrapPlain}>
-              <Ionicons name="notifications-outline" size={24} color="#82E157" />
+            <View style={[styles.iconWrapPlain, { backgroundColor: isDarkMode ? '#222' : '#F5F5F5' }]}>
+              <Ionicons name="notifications-outline" size={24} color={colors.text} />
             </View>
             <View style={styles.navTextWrap}>
-              <Text style={styles.navLabel}>Notifications</Text>
-              <Text style={styles.navSubtext}>Choose what you want to hear</Text>
+              <Text style={[styles.navLabel, { color: colors.text }]}>Notifications</Text>
+              <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>Choose what you want to hear</Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color="#A6A6A6" />
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
 
           <View style={styles.navRow}>
-            <View style={styles.iconWrapPlain}>
-              <Ionicons name="moon-outline" size={24} color="#82E157" />
+            <View style={[styles.iconWrapPlain, { backgroundColor: isDarkMode ? '#222' : '#F5F5F5' }]}>
+              <Ionicons name="moon-outline" size={24} color={colors.text} />
             </View>
             <View style={styles.navTextWrap}>
-              <Text style={styles.navLabel}>Dark Mode</Text>
-              <Text style={styles.navSubtext}>Keep it easy on your eyes</Text>
+              <Text style={[styles.navLabel, { color: colors.text }]}>Dark Mode</Text>
+              <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>Keep it easy on your eyes</Text>
             </View>
             <Switch
               value={isDarkMode}
               onValueChange={toggleTheme}
-              trackColor={{ false: '#353534', true: '#82E157' }}
+              trackColor={{ false: '#353534', true: colors.tint }}
               thumbColor={'#FFFFFF'}
               ios_backgroundColor="#353534"
             />
@@ -274,13 +274,13 @@ export default function SettingsScreen() {
         </View>
 
         {/* Sign Out */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut} disabled={authLoading}>
+        <TouchableOpacity style={[styles.logoutButton, { backgroundColor: isDarkMode ? 'rgba(26, 17, 17, 0.4)' : '#FFF5F5', borderColor: 'rgba(229, 62, 62, 0.2)' }]} onPress={handleSignOut} disabled={authLoading}>
           <View style={styles.logoutIconWrap}>
             <Ionicons name="log-out-outline" size={24} color="#E53E3E" />
           </View>
           <View style={styles.navTextWrap}>
-            <Text style={styles.logoutLabel}>Sign Out</Text>
-            <Text style={styles.navSubtext}>Log out of your yrdly account</Text>
+            <Text style={[styles.logoutLabel, { color: '#E53E3E' }]}>Sign Out</Text>
+            <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>Log out of your yrdly account</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color="rgba(229, 62, 62, 0.4)" />
         </TouchableOpacity>

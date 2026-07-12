@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import { makeRedirectUri } from 'expo-auth-session';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -79,16 +80,16 @@ export default function CheckoutScreen() {
     setStage('paying');
     setErrorMsg('');
     try {
-      const callbackUrl = Linking.createURL('payment-verify');
+      const callbackUrl = makeRedirectUri({ path: 'payment-verify' });
       const result = await api.post<{ paymentLink: string; transactionId: string }>(
         '/api/payment/initialize',
         {
           itemId: item.id,
           buyerId: user.id,
           sellerId: item.user_id,
-          price: item.price,
+          price: item.price ?? 0,
           buyerEmail: user.email || 'no-email@yrdly.ng',
-          buyerName: profile.name ?? user.user_metadata?.name ?? 'Yrdly User',
+          buyerName: profile?.name ?? user.user_metadata?.name ?? 'Yrdly User',
           itemTitle: item.title,
           sellerName: item.seller?.name ?? 'Seller',
           callbackUrl,

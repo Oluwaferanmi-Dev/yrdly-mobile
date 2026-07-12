@@ -104,50 +104,50 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#131313' }]}>
-      <View style={[styles.header, { backgroundColor: '#131313', borderBottomColor: 'rgba(255,255,255,0.06)' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={24} color="#FFFFFF" />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: '#FFFFFF' }]}>Notifications</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#82E157" />
+          <ActivityIndicator size="large" color={colors.tint} />
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={[styles.intro, { color: '#A6A6A6' }]}>
+          <Text style={[styles.intro, { color: colors.textMuted }]}>
             Choose which notifications you receive. These apply to both push and in-app notifications.
           </Text>
 
           {NOTIFICATION_GROUPS.map((group) => (
             <View key={group.title} style={styles.group}>
-              <Text style={[styles.groupTitle, { color: '#A6A6A6' }]}>{group.title.toUpperCase()}</Text>
-              <View style={[styles.groupCard, { backgroundColor: '#1C1C1C', borderColor: 'rgba(255,255,255,0.06)', borderWidth: 1 }]}>
+              <Text style={[styles.groupTitle, { color: colors.textMuted }]}>{group.title.toUpperCase()}</Text>
+              <View style={[styles.groupCard, { backgroundColor: colors.card, borderColor: colors.borderLight, borderWidth: 1 }]}>
                 {group.items.map((item, index) => (
                   <View
                     key={item.key}
-                    style={[styles.row, index < group.items.length - 1 && [styles.rowDivider, { borderBottomColor: 'rgba(255,255,255,0.06)' }]]}
+                    style={[styles.row, index < group.items.length - 1 && [styles.rowDivider, { borderBottomColor: colors.borderLight }]]}
                   >
                     <View style={[styles.iconWrap, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
-                      <Feather name={item.icon as any} size={20} color="#82E157" />
+                      <Feather name={item.icon as any} size={20} color={colors.tint} />
                     </View>
                     <View style={styles.rowInfo}>
-                      <Text style={[styles.rowLabel, { color: '#FFFFFF' }]}>{item.label}</Text>
-                      <Text style={[styles.rowDesc, { color: '#A6A6A6' }]}>{item.desc}</Text>
+                      <Text style={[styles.rowLabel, { color: colors.text }]}>{item.label}</Text>
+                      <Text style={[styles.rowDesc, { color: colors.textMuted }]}>{item.desc}</Text>
                     </View>
                     {saving === item.key ? (
-                      <ActivityIndicator size="small" color="#82E157" />
+                      <ActivityIndicator size="small" color={colors.tint} />
                     ) : (
                       <Switch
                         value={settings[item.key]}
                         onValueChange={(v) => handleToggle(item.key, v)}
-                        trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(130, 225, 87, 0.4)' }}
-                        thumbColor={settings[item.key] ? '#82E157' : '#FFFFFF'}
-                        ios_backgroundColor="rgba(255,255,255,0.1)"
+                        trackColor={{ false: 'rgba(150,150,150,0.3)', true: 'rgba(130, 225, 87, 0.4)' }}
+                        thumbColor={settings[item.key] ? colors.tint : '#FFFFFF'}
+                        ios_backgroundColor="rgba(150,150,150,0.3)"
                       />
                     )}
                   </View>

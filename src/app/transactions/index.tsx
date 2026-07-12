@@ -62,8 +62,8 @@ export default function TransactionsScreen() {
         .select(`
           id, amount, status, created_at, buyer_id, seller_id,
           item:posts(id, title, images:image_urls),
-          buyer:users!buyer_id(name, avatar_url),
-          seller:users!seller_id(name, avatar_url)
+          buyer:users!escrow_transactions_buyer_id_fkey(name, avatar_url),
+          seller:users!escrow_transactions_seller_id_fkey(name, avatar_url)
         `)
         .eq(field, user.id)
         .order('created_at', { ascending: false });
@@ -132,25 +132,25 @@ export default function TransactionsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#131313' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: '#131313', borderBottomColor: 'rgba(255,255,255,0.06)' }]}>
+      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={24} color="#FFFFFF" />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: '#FFFFFF' }]}>Transactions</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Transactions</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {/* Tabs */}
-      <View style={[styles.tabs, { backgroundColor: '#131313', borderBottomColor: 'rgba(255,255,255,0.06)' }]}>
+      <View style={[styles.tabs, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
         {(['purchases', 'sales'] as Tab[]).map((t) => (
           <TouchableOpacity
             key={t}
-            style={[styles.tab, tab === t && [styles.tabActive, { borderBottomColor: '#82E157' }]]}
+            style={[styles.tab, tab === t && [styles.tabActive, { borderBottomColor: colors.tint }]]}
             onPress={() => setTab(t)}
           >
-            <Text style={[styles.tabText, tab === t && styles.tabTextActive, { color: tab === t ? '#82E157' : '#A6A6A6' }]}>
+            <Text style={[styles.tabText, tab === t && styles.tabTextActive, { color: tab === t ? colors.tint : colors.textMuted }]}>
               {t === 'purchases' ? 'Purchases' : 'Sales'}
             </Text>
           </TouchableOpacity>
@@ -159,7 +159,7 @@ export default function TransactionsScreen() {
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#82E157" />
+          <ActivityIndicator size="large" color={colors.tint} />
         </View>
       ) : (
         <FlatList
@@ -171,7 +171,7 @@ export default function TransactionsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchTransactions(true)}
-              tintColor="#82E157"
+              tintColor={colors.tint}
             />
           }
           ListEmptyComponent={
@@ -182,8 +182,8 @@ export default function TransactionsScreen() {
                 style={{ width: 160, height: 160 }}
                 source={{ uri: 'https://lottie.host/1c248ba5-2d9a-4898-9b94-b0f7d3e9c90a/hhyaO2TJBJ.json' }}
               />
-              <Text style={[styles.emptyTitle, { color: '#FFFFFF' }]}>No {tab} yet</Text>
-              <Text style={[styles.emptyBody, { color: '#A6A6A6' }]}>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>No {tab} yet</Text>
+              <Text style={[styles.emptyBody, { color: colors.textMuted }]}>
                 {tab === 'purchases'
                   ? 'Items you buy on the marketplace will appear here.'
                   : 'Items you sell will appear here.'}

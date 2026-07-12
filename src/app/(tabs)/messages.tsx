@@ -321,10 +321,10 @@ export default function MessagesTab() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.card }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScreenHeader title="Messages" />
       {/* Search */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
+      <View style={[styles.searchContainer, { backgroundColor: 'transparent', borderColor: colors.borderLight }]}>
         <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
         <TextInput
           style={[styles.searchInput, { color: colors.text }]}
@@ -336,11 +336,11 @@ export default function MessagesTab() {
       </View>
 
       {/* Filter tabs */}
-      <View style={[styles.filterRow, { backgroundColor: colors.borderLight }]}>
+      <View style={[styles.filterRow, { backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: colors.borderLight }]}>
         {FILTERS.map(({ key, label }) => (
           <TouchableOpacity
             key={key}
-            style={[styles.filterTab, activeFilter === key && [styles.filterTabActive, { backgroundColor: colors.card }]]}
+            style={[styles.filterTab, activeFilter === key && [styles.filterTabActive, { backgroundColor: colors.tint + '15' }]]}
             onPress={() => setActiveFilter(key)}
           >
             <Text style={[styles.filterTabText, { color: colors.textMuted }, activeFilter === key && [styles.filterTabTextActive, { color: colors.tint }]]}>

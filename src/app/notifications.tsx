@@ -68,7 +68,6 @@ export default function NotificationsScreen() {
 
       const senderIds = Array.from(new Set(data.map(n => n.sender_id || n.data?.from_user_id).filter(Boolean)));
       let senderMap = new Map();
-      
       if (senderIds.length > 0) {
         const { data: senders } = await supabase.from('users').select('id, name, avatar_url').in('id', senderIds);
         if (senders) {
@@ -76,15 +75,55 @@ export default function NotificationsScreen() {
         }
       }
 
+      // Collect transaction IDs to fetch item images
+      const txIds = Array.from(new Set(data.map(n => n.related_id || n.data?.transactionId).filter(Boolean)));
+      let txImageMap = new Map();
+      if (txIds.length > 0) {
+        const { data: txs } = await supabase
+          .from('escrow_transactions')
+          .select('id, item:posts(image_urls)')
+          .in('id', txIds);
+        if (txs) {
+          txs.forEach((tx: any) => {
+            const itemObj = Array.isArray(tx.item) ? tx.item[0] : tx.item;
+            const imgUrls = itemObj?.image_urls;
+            const img = Array.isArray(imgUrls) ? imgUrls[0] : null;
+            if (img) txImageMap.set(tx.id, img);
+          });
+        }
+      }
+
+      // Collect item IDs (for marketplace notifications)
+      const postIds = Array.from(new Set(data.map(n => n.data?.itemId || n.data?.post_id).filter(Boolean)));
+      let postImageMap = new Map();
+      if (postIds.length > 0) {
+        const { data: posts } = await supabase
+          .from('posts')
+          .select('id, image_urls')
+          .in('id', postIds);
+        if (posts) {
+          posts.forEach((p: any) => {
+            const img = Array.isArray(p.image_urls) ? p.image_urls[0] : null;
+            if (img) postImageMap.set(p.id, img);
+          });
+        }
+      }
+
       const formatted = data.map((notif: any) => {
         const sId = notif.sender_id || notif.data?.from_user_id;
         const sender = sId ? senderMap.get(sId) : null;
+        
+        // Resolve item image
+        const txId = notif.related_id || notif.data?.transactionId;
+        const pId = notif.data?.itemId || notif.data?.post_id;
+        const itemImage = (txId && txImageMap.get(txId)) || (pId && postImageMap.get(pId)) || notif.data?.item_image;
+
         return {
           id: notif.id,
           type: notif.type,
           title: notif.title,
           message: notif.message,
-          data: notif.data,
+          data: { ...notif.data, item_image: itemImage },
           is_read: notif.is_read,
           created_at: notif.created_at,
           from_user_id: sId,

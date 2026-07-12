@@ -1,4 +1,4 @@
-const GREEN = '#388E3C';
+const PRIMARY = '#82E157';
 
 export default {
   light: {
@@ -9,9 +9,9 @@ export default {
     card: '#FFFFFF',
     border: '#E0E0E0',
     borderLight: '#F2F2F2',
-    tint: GREEN,
+    tint: PRIMARY,
     tabIconDefault: '#9E9E9E',
-    tabIconSelected: GREEN,
+    tabIconSelected: PRIMARY,
     inputBackground: '#F9F9F9',
     shadow: '#000000',
     statusBar: 'dark-content',
@@ -20,14 +20,14 @@ export default {
     text: '#FFFFFF',
     textSecondary: '#BDBDBD',
     textMuted: '#757575',
-    background: '#121212',
-    card: '#1E1E1E',
-    border: '#2C2C2C',
-    borderLight: '#2C2C2C',
-    tint: GREEN,
+    background: '#000000',
+    card: '#000000',
+    border: '#1C1C1C',
+    borderLight: '#1C1C1C',
+    tint: PRIMARY,
     tabIconDefault: '#BDBDBD',
-    tabIconSelected: GREEN,
-    inputBackground: '#2A2A2A',
+    tabIconSelected: PRIMARY,
+    inputBackground: '#1C1C1C',
     shadow: '#000000',
     statusBar: 'light-content',
   },

@@ -38,17 +38,17 @@ export default function CheckoutSuccessScreen() {
   }>();
 
   // ── Sheet slide-up ────────────────────────────────────────────
-  const sheetY    = useSharedValue(SCREEN_H);
-  const overlayOp = useSharedValue(0);
+  const sheetY    = useSharedValue(0);
+  const overlayOp = useSharedValue(1);
 
   // ── Content sequence ──────────────────────────────────────────
-  const lottieOp  = useSharedValue(0);
-  const titleOp   = useSharedValue(0);
-  const titleY    = useSharedValue(20);
-  const stepperOp = useSharedValue(0);
-  const stepperY  = useSharedValue(24);
-  const footerOp  = useSharedValue(0);
-  const footerY   = useSharedValue(20);
+  const lottieOp  = useSharedValue(1);
+  const titleOp   = useSharedValue(1);
+  const titleY    = useSharedValue(0);
+  const stepperOp = useSharedValue(1);
+  const stepperY  = useSharedValue(0);
+  const footerOp  = useSharedValue(1);
+  const footerY   = useSharedValue(0);
 
   const lottieRef = useRef<LottieView>(null);
 
@@ -57,32 +57,7 @@ export default function CheckoutSuccessScreen() {
   }
 
   useEffect(() => {
-    // 1. Dim overlay
-    overlayOp.value = withTiming(1, { duration: 250, easing: Easing.out(Easing.quad) });
-
-    // 2. Sheet slides up
-    sheetY.value = withSpring(0, {
-      damping: 22,
-      stiffness: 180,
-      mass: 0.9,
-    }, () => {
-      runOnJS(triggerHaptic)();
-
-      // 3. Lottie fades in
-      lottieOp.value = withTiming(1, { duration: 300 }, () => {
-        // 4. Title + escrow pill
-        titleOp.value  = withDelay(200, withTiming(1, { duration: 400 }));
-        titleY.value   = withDelay(200, withSpring(0, { damping: 18, stiffness: 140 }));
-
-        // 5. Stepper
-        stepperOp.value = withDelay(500, withTiming(1, { duration: 400 }));
-        stepperY.value  = withDelay(500, withSpring(0, { damping: 18, stiffness: 120 }));
-
-        // 6. Footer buttons
-        footerOp.value = withDelay(750, withTiming(1, { duration: 350 }));
-        footerY.value  = withDelay(750, withSpring(0, { damping: 18, stiffness: 120 }));
-      });
-    });
+    triggerHaptic();
   }, []);
 
   // ── Animated styles ───────────────────────────────────────────
@@ -107,7 +82,7 @@ export default function CheckoutSuccessScreen() {
       />
 
       {/* Main content area */}
-      <View style={[styles.sheet, { backgroundColor: colors.background, flex: 1 }]}>
+      <Animated.View style={[styles.sheet, { backgroundColor: colors.background, flex: 1 }, sheetStyle]}>
         <SafeAreaView edges={['bottom', 'top']} style={{ flex: 1, paddingTop: 40 }}>
 
           {/* ── Lottie hero ─────────────────────────── */}
