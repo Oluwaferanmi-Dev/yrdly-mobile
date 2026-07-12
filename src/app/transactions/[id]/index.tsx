@@ -342,7 +342,7 @@ export default function TransactionDetailScreen() {
               </View>
             );
           })}
-        </View>
+        </Animated.View>
 
         {/* Disputed state */}
         {tx.status === 'disputed' && (
@@ -351,7 +351,7 @@ export default function TransactionDetailScreen() {
             <Text style={styles.disputeText}>
               A dispute has been raised on this transaction. Our team will review and contact both parties within 24 hours.
             </Text>
-          </Animated.View>
+          </View>
         )}
 
         {/* Action buttons */}

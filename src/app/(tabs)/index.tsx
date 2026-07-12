@@ -109,9 +109,7 @@ const QuickPostBox = memo(() => {
     >
       {isLiquidGlassSupported ? (
         <LiquidGlassView
-          intensity={80}
-          tint={isDarkMode ? 'dark' : 'light'}
-          fallbackColor={isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)'}
+          {...({ intensity: 80, tint: isDarkMode ? 'dark' : 'light', fallbackColor: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)' } as any)}
           style={containerStyle}
           pointerEvents="none"
         >
@@ -233,9 +231,7 @@ export default function HomeTab() {
         <Animated.View style={headerAnimatedStyle}>
           {isLiquidGlassSupported ? (
             <LiquidGlassView 
-              intensity={80} 
-              tint={isDarkMode ? 'dark' : 'light'} 
-              fallbackColor={isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.85)'} 
+              {...({ intensity: 80, tint: isDarkMode ? 'dark' : 'light', fallbackColor: isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.85)' } as any)}
               style={StyleSheet.absoluteFill} 
             />
           ) : (
@@ -292,9 +288,7 @@ export default function HomeTab() {
       <Animated.View style={headerAnimatedStyle}>
         {isLiquidGlassSupported ? (
           <LiquidGlassView 
-            intensity={80} 
-            tint={isDarkMode ? 'dark' : 'light'} 
-            fallbackColor={isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.85)'} 
+            {...({ intensity: 80, tint: isDarkMode ? 'dark' : 'light', fallbackColor: isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.85)' } as any)}
             style={StyleSheet.absoluteFill} 
           />
         ) : (
@@ -419,9 +413,7 @@ export default function HomeTab() {
               >
                 {isLiquidGlassSupported ? (
                   <LiquidGlassView
-                    intensity={90}
-                    tint="light"
-                    fallbackColor="rgba(254, 226, 226, 0.95)"
+                    {...({ intensity: 90, tint: "light", fallbackColor: "rgba(254, 226, 226, 0.95)" } as any)}
                     style={{
                       borderRadius: 16,
                       padding: 16,

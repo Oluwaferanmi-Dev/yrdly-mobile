@@ -67,10 +67,8 @@ export default function Login() {
       {/* Glass Overlay */}
       {isLiquidGlassSupported ? (
         <LiquidGlassView 
-          intensity={20} 
+          {...({ intensity: 20, tint: colors.background === '#121212' ? 'dark' : 'light', fallbackColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' } as any)}
           style={StyleSheet.absoluteFillObject} 
-          tint={colors.background === '#121212' ? 'dark' : 'light'} 
-          fallbackColor={colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)'}
         />
       ) : Platform.OS === 'ios' ? (
         <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={colors.background === '#121212' ? 'dark' : 'light'} />

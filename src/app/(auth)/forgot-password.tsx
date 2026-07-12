@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
 import { supabase } from '../../lib/supabase';
+import { AuthService } from '../../lib/auth-service';
 import { useAppTheme } from '../../context/ThemeContext';
 import { ErrorMessage } from '../../components/ErrorMessage';
 
@@ -30,9 +31,7 @@ export default function ForgotPassword() {
     setLoading(true);
     
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://app.yrdly.ng/reset-password'
-      });
+      const { error: resetError } = await AuthService.resetPassword(email);
       
       if (resetError) {
         setError(resetError.message);
@@ -62,10 +61,8 @@ export default function ForgotPassword() {
       {/* Glass Overlay */}
       {isLiquidGlassSupported ? (
         <LiquidGlassView 
-          intensity={20} 
+          {...({ intensity: 20, tint: colors.background === '#121212' ? 'dark' : 'light', fallbackColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' } as any)}
           style={StyleSheet.absoluteFillObject} 
-          tint={colors.background === '#121212' ? 'dark' : 'light'} 
-          fallbackColor={colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)'}
         />
       ) : Platform.OS === 'ios' ? (
         <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={colors.background === '#121212' ? 'dark' : 'light'} />

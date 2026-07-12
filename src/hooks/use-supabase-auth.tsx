@@ -147,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (user) {
           if (posthog) {
             posthog.identify(user.id, {
-              email: user.email,
+              email: user.email || '',
               name: user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split('@')[0],
             });
           }

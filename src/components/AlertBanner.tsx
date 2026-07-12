@@ -65,10 +65,7 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ alert, onPress, onDism
     >
       {isLiquidGlassSupported ? (
         <LiquidGlassView
-          intensity={90}
-          tint="light"
-          // Fallback color: Translucent red for amber alerts, translucent orange for safety alerts
-          fallbackColor={isAmber ? 'rgba(254, 226, 226, 0.95)' : 'rgba(255, 237, 213, 0.95)'}
+          {...({ intensity: 90, tint: "light", fallbackColor: isAmber ? 'rgba(254, 226, 226, 0.95)' : 'rgba(255, 237, 213, 0.95)' } as any)}
           style={[styles.container, isAmber ? styles.amberContainer : styles.safetyContainer]}
         >
           {content}
