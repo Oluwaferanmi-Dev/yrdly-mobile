@@ -34,7 +34,7 @@ export default function ForgotPassword() {
       const { error: resetError } = await AuthService.resetPassword(email);
       
       if (resetError) {
-        setError(resetError.message);
+        setError((resetError as any).message || 'An error occurred');
       } else {
         setMessage('Check your email for a password reset link.');
       }

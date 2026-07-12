@@ -164,7 +164,7 @@ export default function CheckoutSuccessScreen() {
           </Animated.View>
 
         </SafeAreaView>
-      </View>
+      </Animated.View>
     </View>
   );
 }
