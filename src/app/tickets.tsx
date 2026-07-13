@@ -11,26 +11,19 @@ import { useRouter } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { getMyTickets } from '../lib/event-service';
 import { Post } from '../types';
+import { Ticket, Event } from '../types/events';
 import { useAppTheme } from '../context/ThemeContext';
 
-interface Ticket {
-  id: string;
-  event_id: string;
-  status: string;
-  created_at: string;
-  token?: string;
-  event?: Post;
-}
-
 const getTicketStatusInfo = (ticket: Ticket) => {
-  const isActiveOrConfirmed = ticket.status === 'active' || ticket.status === 'confirmed';
+  const isActiveOrConfirmed = ticket.status === 'PAID';
   
   if (!isActiveOrConfirmed) {
     return { isExpired: false, isValid: false, text: ticket.status.toUpperCase() };
   }
 
-  const eventDate = ticket.event?.event_date ? new Date(ticket.event.event_date) : null;
+  const eventDate = ticket.event?.start_time ? new Date(ticket.event.start_time) : null;
   // Give a 24-hour buffer after the event date before expiring the ticket
   const isExpired = eventDate ? (new Date().getTime() - eventDate.getTime() > 24 * 60 * 60 * 1000) : false;
 
@@ -38,7 +31,7 @@ const getTicketStatusInfo = (ticket: Ticket) => {
     return { isExpired: true, isValid: false, text: 'EXPIRED' };
   }
 
-  return { isExpired: false, isValid: true, text: ticket.status === 'confirmed' ? 'CONFIRMED' : 'ACTIVE' };
+  return { isExpired: false, isValid: true, text: 'PAID' };
 };
 
 export default function TicketsScreen() {
@@ -70,19 +63,8 @@ export default function TicketsScreen() {
   const fetchTickets = useCallback(async () => {
     if (!user) return;
     try {
-      const { data, error } = await supabase
-        .from('my_tickets')
-        .select(`
-          *,
-          event:posts!my_tickets_event_id_fkey(
-            id, title, text, event_date, location, image_url, image_urls, price
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setTickets(data as Ticket[]);
+      const data = await getMyTickets(user.id);
+      setTickets(data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -96,7 +78,7 @@ export default function TicketsScreen() {
 
   const isTicketPast = (t: Ticket) => {
     const info = getTicketStatusInfo(t);
-    return info.isExpired || t.status === 'used' || t.status === 'cancelled' || t.status === 'refunded';
+    return info.isExpired || t.status === 'USED' || t.status === 'CANCELLED' || t.status === 'REFUNDED';
   };
 
   const displayedTickets = tickets.filter(t => 
@@ -131,9 +113,9 @@ export default function TicketsScreen() {
 
   const renderTicket = ({ item }: { item: Ticket }) => {
     const event = item.event;
-    const imageUrl = event?.image_urls?.[0] || event?.image_url;
-    const formattedDate = event?.event_date
-      ? new Date(event.event_date).toLocaleDateString('en-US', {
+    const imageUrl = event?.cover_image_url;
+    const formattedDate = event?.start_time
+      ? new Date(event.start_time).toLocaleDateString('en-US', {
           weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
         })
       : 'Date TBD';
@@ -290,9 +272,9 @@ export default function TicketsScreen() {
             <Animated.View style={[styles.modalContent, animatedTicketStyle]}>
               {/* Event card */}
               <View style={[styles.modalEventCard, { backgroundColor: colors.inputBackground }]}>
-                {(selectedTicket.event?.image_urls?.[0] || selectedTicket.event?.image_url) && (
+                {(selectedTicket.event?.cover_image_url) && (
                   <Image
-                    source={{ uri: selectedTicket.event?.image_urls?.[0] || selectedTicket.event?.image_url }}
+                    source={{ uri: selectedTicket.event?.cover_image_url }}
                     style={styles.modalEventImage}
                     contentFit="cover"
                   />
@@ -300,8 +282,8 @@ export default function TicketsScreen() {
                 <View style={styles.modalEventInfo}>
                   <Text style={[styles.modalEventTitle, { color: colors.text }]}>{selectedTicket.event?.title || 'Event'}</Text>
                   <Text style={[styles.modalEventDate, { color: colors.textSecondary }]}>
-                    {selectedTicket.event?.event_date
-                      ? new Date(selectedTicket.event.event_date).toLocaleDateString('en-US', {
+                    {selectedTicket.event?.start_time
+                      ? new Date(selectedTicket.event.start_time).toLocaleDateString('en-US', {
                           weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
                         })
                       : 'Date TBD'
@@ -313,7 +295,7 @@ export default function TicketsScreen() {
               {/* QR Code */}
               <View style={[styles.qrContainer, { backgroundColor: colors.card }]}>
                 <QRCode
-                  value={selectedTicket.token || selectedTicket.id}
+                  value={selectedTicket.id}
                   size={220}
                   color={colors.text}
                   backgroundColor={colors.card}
@@ -322,7 +304,7 @@ export default function TicketsScreen() {
 
               {/* Ticket token */}
               <Text style={[styles.tokenLabel, { color: colors.textMuted }]}>TICKET ID</Text>
-              <Text style={[styles.tokenValue, { color: colors.text }]}>{(selectedTicket.token || selectedTicket.id).slice(0, 16).toUpperCase()}</Text>
+              <Text style={[styles.tokenValue, { color: colors.text }]}>{(selectedTicket.id).slice(0, 16).toUpperCase()}</Text>
 
               <View style={[
                 styles.modalStatusBadge,
