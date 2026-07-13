@@ -2,11 +2,11 @@
 "use client";
 
 import { useCallback, useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../lib/supabase";
 import { useAuth } from "./use-supabase-auth";
 import { useToast } from "./use-toast";
-import { useFriendshipContext } from "@/contexts/FriendshipContext";
-import type { FriendshipStatus } from "@/contexts/FriendshipContext";
+import { useFriendshipContext } from "../context/FriendshipContext";
+import type { FriendshipStatus } from "../context/FriendshipContext";
 
 interface UseFriendshipGlobalReturn {
   status: FriendshipStatus;
@@ -94,7 +94,7 @@ export function useFriendshipGlobal(targetUserId: string | undefined): UseFriend
 
       // Trigger notification
       try {
-        const { NotificationTriggers } = await import("@/lib/notification-triggers");
+        const { NotificationTriggers } = await import("../lib/notification-triggers");
         await NotificationTriggers.onFriendRequestSent(user.id, targetUserId);
       } catch {
         // Non-fatal
@@ -257,7 +257,7 @@ export function useFriendshipGlobal(targetUserId: string | undefined): UseFriend
 
       // Trigger notification
       try {
-        const { NotificationTriggers } = await import("@/lib/notification-triggers");
+        const { NotificationTriggers } = await import("../lib/notification-triggers");
         await NotificationTriggers.onFriendRequestAccepted(targetUserId, user.id);
       } catch {
         // Non-fatal

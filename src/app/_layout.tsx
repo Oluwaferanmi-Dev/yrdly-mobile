@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '../hooks/use-supabase-auth';
 import { ThemeProvider } from '../context/ThemeContext';
 import { LocationProvider } from '../context/LocationContext';
 import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
+import { FriendshipProvider } from '../context/FriendshipContext';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Insights from 'expo-insights';
 import { PostHogProvider } from 'posthog-react-native';
@@ -122,10 +123,12 @@ export default function Layout() {
               <AuthProvider>
                 <LocationProvider>
                   <NotificationBadgeProvider>
-                    <AudioSettingsHandler />
-                    <NotificationsHandler />
-                    <RootNavigationGuard />
-                    <OfflineBanner />
+                    <FriendshipProvider>
+                      <AudioSettingsHandler />
+                      <NotificationsHandler />
+                      <RootNavigationGuard />
+                      <OfflineBanner />
+                    </FriendshipProvider>
                   </NotificationBadgeProvider>
                 </LocationProvider>
               </AuthProvider>
