@@ -8,11 +8,13 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
+import { useLocation } from '../context/LocationContext';
 
 export default function CommunityScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, profile } = useAuth();
+  const { activeFilter, displayLabel } = useLocation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState<any[]>([]);
@@ -40,19 +42,37 @@ export default function CommunityScreen() {
         .neq('id', currentUser.id)
         .limit(50);
       
+      if (activeFilter) {
+        if (activeFilter.state) {
+          userQuery = userQuery.eq('location->>state', activeFilter.state);
+        }
+        if (activeFilter.lga) {
+          userQuery = userQuery.eq('location->>lga', activeFilter.lga);
+        }
+        if (activeFilter.ward) {
+          userQuery = userQuery.eq('location->>ward', activeFilter.ward);
+        }
+      }
+
       if (searchQuery) {
         userQuery = userQuery.ilike('name', `%${searchQuery}%`);
       }
 
       const { data: userData } = await userQuery;
-      setUsers(userData || []);
+      
+      if (userData) {
+        const blocked = profile?.blocked_users || [];
+        setUsers(userData.filter(u => !blocked.includes(u.id)));
+      } else {
+        setUsers([]);
+      }
 
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-  }, [currentUser, searchQuery]);
+  }, [currentUser, searchQuery, activeFilter, profile?.blocked_users]);
 
   useEffect(() => {
     fetchCommunityData();

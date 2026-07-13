@@ -6,7 +6,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { useNotificationBadge } from '../context/NotificationBadgeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export function ScreenHeader({ title }: { title: string }) {
+export function ScreenHeader({ title, hideIcons }: { title: string; hideIcons?: boolean }) {
   const router = useRouter();
   const { colors } = useAppTheme();
   const { unreadCount } = useNotificationBadge();
@@ -17,19 +17,23 @@ export function ScreenHeader({ title }: { title: string }) {
       <View style={{ flex: 1 }} />
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       <View style={styles.rightContainer}>
-        <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-          <MapIcon size={24} color={colors.text} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative' }}>
-          <NotificationsIcon size={24} color={colors.text} />
-          {unreadCount > 0 && (
-            <View style={[styles.badge, { borderColor: colors.background }]}>
-              <Text style={styles.badgeText}>
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        {!hideIcons && (
+          <>
+            <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
+              <MapIcon size={24} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative' }}>
+              <NotificationsIcon size={24} color={colors.text} />
+              {unreadCount > 0 && (
+                <View style={[styles.badge, { borderColor: colors.background }]}>
+                  <Text style={styles.badgeText}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </View>
   );

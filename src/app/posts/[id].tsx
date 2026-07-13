@@ -9,6 +9,7 @@ import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { usePosts } from '../../hooks/use-posts';
@@ -27,6 +28,7 @@ function PostDetailContent() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id, focusComments } = useLocalSearchParams<{ id: string; focusComments?: string }>();
+  const isFocused = useIsFocused();
   const [hasAutoScrolled, setHasAutoScrolled] = useState(false);
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
@@ -262,7 +264,7 @@ function PostDetailContent() {
             ListHeaderComponent={
               <View style={styles.listHeader}>
                 {post ? (
-                  <PostCard post={post} />
+                  <PostCard post={post} isVisible={isFocused} />
                 ) : (
                   <ActivityIndicator size="small" color={colors.tint} style={{ padding: 20 }} />
                 )}

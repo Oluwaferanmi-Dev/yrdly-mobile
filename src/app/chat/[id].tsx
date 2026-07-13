@@ -10,6 +10,7 @@ import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { useIsFocused } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
 import ImageViewing from 'react-native-image-viewing';
@@ -42,10 +43,32 @@ interface ConversationMeta {
   business_name?: string;
 }
 
-const ChatVideo = React.memo(({ url, width, height, borderRadius, marginBottom }: { url: string, width: number, height: number, borderRadius: number, marginBottom: number }) => {
+import { AppState } from 'react-native';
+
+const ChatVideo = React.memo(({ url, width, height, borderRadius, marginBottom, isFocused }: { url: string, width: number, height: number, borderRadius: number, marginBottom: number, isFocused: boolean }) => {
   const player = useVideoPlayer(url, player => {
     player.loop = false;
   });
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (player) {
+        if (nextAppState !== 'active' || !isFocused) {
+          player.pause();
+        }
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [player, isFocused]);
+
+  useEffect(() => {
+    if (!isFocused && player) {
+      player.pause();
+    }
+  }, [isFocused, player]);
 
   return (
     <VideoView
@@ -61,8 +84,9 @@ function ChatContent() {
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused();
 
   const [meta, setMeta] = useState<ConversationMeta | null>(null);
   const [otherUser, setOtherUser] = useState<{ name: string; avatar_url: string | null } | null>(null);
@@ -75,6 +99,49 @@ function ChatContent() {
   const [viewerVisible, setViewerVisible] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
+
+  const formatChatDate = (date: Date) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      const day = date.getDate();
+      const month = date.toLocaleString('default', { month: 'short' }).toUpperCase();
+      const year = date.getFullYear();
+      if (year === today.getFullYear()) {
+        return `${day} ${month}`;
+      }
+      return `${day} ${month} ${year}`;
+    }
+  };
+
+  const messagesWithDates = React.useMemo(() => {
+    const result = [];
+    for (let i = 0; i < messages.length; i++) {
+      const m = messages[i];
+      const d = new Date(m.created_at);
+      const dateStr = d.toDateString();
+      
+      result.push(m);
+      
+      const nextMsg = messages[i + 1];
+      const nextDateStr = nextMsg ? new Date(nextMsg.created_at).toDateString() : null;
+      
+      if (dateStr !== nextDateStr) {
+        result.push({
+          isDateHeader: true,
+          id: `date-${dateStr}`,
+          dateText: formatChatDate(d)
+        } as any);
+      }
+    }
+    return result;
+  }, [messages]);
 
   // iOS Keyboard Gap Fix
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -116,7 +183,7 @@ function ChatContent() {
       .from('messages')
       .select('*')
       .eq('conversation_id', id)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (!error && data) {
       setMessages(data as Message[]);
@@ -131,7 +198,7 @@ function ChatContent() {
       }
     }
     setLoading(false);
-  }, [id]);
+  }, [id, user?.id]);
 
   useEffect(() => {
     fetchMeta();
@@ -148,8 +215,8 @@ function ChatContent() {
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${id}`,
       }, (payload) => {
-        setMessages((prev) => [...prev, payload.new as Message]);
-        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+        setMessages((prev) => [payload.new as Message, ...prev]);
+        setTimeout(() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true }), 100);
         
         // Mark as read if it's from the other user
         const newMsg = payload.new as Message;
@@ -199,7 +266,7 @@ function ChatContent() {
         await NotificationTriggers.onMessageSent(toUserId, user.id, id, body);
       }
 
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      setTimeout(() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true }), 100);
     } catch (e) {
       console.error('Send message error:', e);
       setInputText(body); // restore on failure
@@ -283,7 +350,7 @@ function ChatContent() {
         await NotificationTriggers.onMessageSent(toUserId, user.id, id, isVideo ? 'Sent a video 📹' : 'Sent an image 📸');
       }
 
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      setTimeout(() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true }), 100);
     } catch(e) {
       console.error('Upload media error:', e);
     } finally {
@@ -350,7 +417,17 @@ function ChatContent() {
     );
   };
 
-  const renderMessage = ({ item }: { item: Message }) => {
+  const renderMessage = ({ item }: { item: any }) => {
+    if (item.isDateHeader) {
+      return (
+        <View style={{ alignItems: 'center', marginVertical: 12 }}>
+          <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '500' }}>
+            {item.dateText}
+          </Text>
+        </View>
+      );
+    }
+
     // Hide message if deleted by current user
     if (item.deleted_by?.includes(user?.id || '')) {
       return null;
@@ -398,6 +475,7 @@ function ChatContent() {
               height={220}
               borderRadius={14}
               marginBottom={msgText ? 6 : 0}
+              isFocused={isFocused}
             />
           )}
           {!!msgText && (
@@ -454,7 +532,38 @@ function ChatContent() {
           <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>{title}</Text>
         </TouchableOpacity>
 
-        <View style={{ width: 40 }} />
+        <TouchableOpacity 
+          style={{ width: 40, alignItems: 'flex-end', justifyContent: 'center' }}
+          onPress={() => {
+            Alert.alert(
+              'Options',
+              '',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Report User', onPress: () => Alert.alert('Report', 'User reported successfully.') },
+                { text: 'Block User', style: 'destructive', onPress: async () => {
+                  const otherId = meta?.participant_ids?.find((pid: string) => pid !== user?.id);
+                  if (otherId && profile) {
+                    try {
+                      const blocked = profile.blocked_users || [];
+                      if (!blocked.includes(otherId)) {
+                        await updateProfile({ blocked_users: [...blocked, otherId] });
+                      }
+                      Alert.alert('Blocked', 'User blocked successfully.');
+                      router.replace('/(tabs)/messages');
+                    } catch (e) {
+                      console.error(e);
+                      Alert.alert('Error', 'Failed to block user.');
+                    }
+                  }
+                } },
+              ],
+              { cancelable: true }
+            );
+          }}
+        >
+          <Feather name="more-vertical" size={24} color={colors.text} />
+        </TouchableOpacity>
       </View>
 
       {/* Item context banner (for marketplace chats) */}
@@ -486,14 +595,14 @@ function ChatContent() {
         ) : (
           <FlatList
             ref={flatListRef}
-            data={messages}
+            data={messagesWithDates}
             keyExtractor={(item) => item.id}
             renderItem={renderMessage}
             contentContainerStyle={styles.msgListContent}
             showsVerticalScrollIndicator={false}
-            onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            inverted
             ListEmptyComponent={
-              <View style={styles.center}>
+              <View style={[styles.center, { transform: [{ scaleY: -1 }] }]}>
                 <Text style={[styles.emptyText, { color: colors.textMuted }]}>No messages yet. Say hi! 👋</Text>
               </View>
             }

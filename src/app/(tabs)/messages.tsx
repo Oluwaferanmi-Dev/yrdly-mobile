@@ -50,7 +50,7 @@ function timeLabel(ts: string) {
 // ── Main Component ────────────────────────────────────────────────
 export default function MessagesTab() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { colors } = useAppTheme();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,6 +171,7 @@ export default function MessagesTab() {
   const filtered = useMemo(() => {
     return conversations.filter((c) => {
       if (c.deleted_by && user && c.deleted_by.includes(user.id)) return false;
+      if (profile?.blocked_users && profile.blocked_users.includes(c.participantId)) return false;
 
       const tabOk =
         activeFilter === 'all' ||
@@ -183,7 +184,7 @@ export default function MessagesTab() {
         (c.lastMessage || '').toLowerCase().includes(q);
       return tabOk && searchOk;
     });
-  }, [conversations, activeFilter, searchQuery]);
+  }, [conversations, activeFilter, searchQuery, profile?.blocked_users, user]);
 
   useEffect(() => {
     fetchConversations();
@@ -257,7 +258,7 @@ export default function MessagesTab() {
     return (
       <Swipeable renderRightActions={renderRightActions} overshootRight={false}>
         <TouchableOpacity
-          style={[styles.convRow, { borderBottomColor: colors.borderLight }, unread && [styles.convRowUnread, { borderLeftColor: colors.tint }]]}
+          style={[styles.convRow, { borderBottomColor: colors.borderLight }]}
           onPress={() => router.push({ pathname: '/chat/[id]', params: { id: item.id } })}
           onLongPress={handleLongPress}
           activeOpacity={1}

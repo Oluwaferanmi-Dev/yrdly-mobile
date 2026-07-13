@@ -35,14 +35,17 @@ interface TxDetail {
   seller: { id: string; name: string; avatar_url: string | null } | null;
 }
 
-const STATUS_META: Record<EscrowStatus, { label: string; color: string; bg: string; icon: string }> = {
-  pending:   { label: 'Awaiting Payment', color: '#E65100', bg: '#FFF3E0', icon: 'clock' },
-  paid:      { label: 'Paid — Awaiting Handover', color: '#1565C0', bg: '#E3F2FD', icon: 'box' },
-  shipped:   { label: 'Item Sent / Handed Over', color: '#6A1B9A', bg: '#F3E5F5', icon: 'truck' },
-  delivered: { label: 'Delivered', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
-  completed: { label: 'Completed', color: '#2E7D32', bg: '#E8F5E9', icon: 'check-circle' },
-  disputed:  { label: 'Disputed', color: '#B71C1C', bg: '#FFEBEE', icon: 'alert-circle' },
-  cancelled: { label: 'Cancelled', color: '#757575', bg: '#F5F5F5', icon: 'x-circle' },
+const getStatusMeta = (status: EscrowStatus, isDarkMode: boolean, colors: any) => {
+  const meta: Record<EscrowStatus, { label: string; color: string; bg: string; icon: string }> = {
+    pending:   { label: 'Awaiting Payment', color: isDarkMode ? '#FFB74D' : '#E65100', bg: isDarkMode ? '#3E2723' : '#FFF3E0', icon: 'clock' },
+    paid:      { label: 'Paid — Awaiting Handover', color: colors.tint, bg: isDarkMode ? colors.inputBackground : '#E3F2FD', icon: 'box' },
+    shipped:   { label: 'Item Sent / Handed Over', color: isDarkMode ? '#CE93D8' : '#6A1B9A', bg: isDarkMode ? '#311B92' : '#F3E5F5', icon: 'truck' },
+    delivered: { label: 'Delivered', color: isDarkMode ? '#81C784' : '#2E7D32', bg: isDarkMode ? '#1B5E20' : '#E8F5E9', icon: 'check-circle' },
+    completed: { label: 'Completed', color: isDarkMode ? '#81C784' : '#2E7D32', bg: isDarkMode ? '#1B5E20' : '#E8F5E9', icon: 'check-circle' },
+    disputed:  { label: 'Disputed', color: isDarkMode ? '#E57373' : '#B71C1C', bg: isDarkMode ? '#3E2723' : '#FFEBEE', icon: 'alert-circle' },
+    cancelled: { label: 'Cancelled', color: isDarkMode ? '#E0E0E0' : '#757575', bg: isDarkMode ? '#424242' : '#F5F5F5', icon: 'x-circle' },
+  };
+  return meta[status];
 };
 
 const TIMELINE_STEPS: { status: EscrowStatus; label: string; tsKey: keyof TxDetail }[] = [
@@ -63,7 +66,7 @@ function fmt(iso: string | null): string {
 }
 
 export default function TransactionDetailScreen() {
-  const { colors } = useAppTheme();
+  const { colors, isDarkMode } = useAppTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
@@ -225,7 +228,7 @@ export default function TransactionDetailScreen() {
     );
   }
 
-  const meta = STATUS_META[tx.status];
+  const meta = getStatusMeta(tx.status, isDarkMode, colors);
   const currentStepIndex = STATUS_ORDER.indexOf(tx.status);
   const thumb = tx.item?.images?.[0];
 
@@ -393,13 +396,16 @@ export default function TransactionDetailScreen() {
 
         {canDispute && (
           <TouchableOpacity
-            style={styles.disputeAction}
+            style={[styles.disputeAction, {
+              backgroundColor: isDarkMode ? '#3E2723' : '#FFF5F5',
+              borderColor: isDarkMode ? '#E57373' : '#FFCDD2'
+            }]}
             onPress={() => router.push(`/transactions/${tx.id}/dispute` as any)}
             activeOpacity={0.8}
           >
-            <View style={styles.disputeAccent} />
-            <Feather name="alert-circle" size={16} color="#C62828" style={{ marginRight: 10 }} />
-            <Text style={styles.disputeActionText}>Open a Dispute</Text>
+            <View style={[styles.disputeAccent, { backgroundColor: isDarkMode ? '#E57373' : '#C62828' }]} />
+            <Feather name="alert-circle" size={16} color={isDarkMode ? '#E57373' : '#C62828'} style={{ marginRight: 10 }} />
+            <Text style={[styles.disputeActionText, { color: isDarkMode ? '#E57373' : '#C62828' }]}>Open a Dispute</Text>
           </TouchableOpacity>
         )}
 

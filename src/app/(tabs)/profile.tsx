@@ -121,26 +121,33 @@ export default function ProfileTab() {
 
         <View style={styles.actionRow}>
           <TouchableOpacity 
-            style={[styles.communityButton, { backgroundColor: colors.tint }]} 
+            style={[styles.actionButton, { backgroundColor: colors.tint + '1A', borderColor: colors.tint + '40', borderWidth: 1 }]} 
             onPress={() => router.push('/community')}
+            activeOpacity={0.7}
           >
-            <Feather name="users" size={20} color="#FFFFFF" />
-            <Text style={styles.communityButtonText}>Community</Text>
+            <View style={[styles.actionIconBg, { backgroundColor: colors.tint }]}>
+              <Feather name="users" size={16} color="#FFFFFF" />
+            </View>
+            <Text style={[styles.actionButtonText, { color: colors.tint }]}>Community</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.ticketsButton, { backgroundColor: colors.tint + '15' }]} 
+            style={[styles.actionButton, { backgroundColor: colors.tint + '1A', borderColor: colors.tint + '40', borderWidth: 1 }]} 
             onPress={() => router.push('/tickets')}
+            activeOpacity={0.7}
           >
-            <Ionicons name="ticket-outline" size={24} color={colors.tint} />
+            <View style={[styles.actionIconBg, { backgroundColor: colors.tint }]}>
+              <Ionicons name="ticket" size={16} color="#FFFFFF" />
+            </View>
+            <Text style={[styles.actionButtonText, { color: colors.tint }]}>Tickets</Text>
           </TouchableOpacity>
           
           {(profile?.role === 'admin' || profile?.is_admin) && (
             <TouchableOpacity 
-              style={[styles.ticketsButton, { backgroundColor: '#fee2e2' }]} 
+              style={[styles.actionButtonIconOnly, { backgroundColor: '#fee2e2', borderColor: '#fca5a5', borderWidth: 1 }]} 
               onPress={() => router.push('/(admin)/create-alert')}
             >
-              <Ionicons name="shield-half-outline" size={24} color="#ef4444" />
+              <Ionicons name="shield-checkmark" size={20} color="#ef4444" />
             </TouchableOpacity>
           )}
         </View>
@@ -153,7 +160,7 @@ export default function ProfileTab() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScreenHeader title="Profile" />
+      <ScreenHeader title="Profile" hideIcons />
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
@@ -205,24 +212,21 @@ const styles = StyleSheet.create({
   statItem: { alignItems: 'center' },
   statValue: { fontSize: 18, fontWeight: 'bold' },
   statLabel: { fontSize: 12, marginTop: 2 },
-  actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 12 },
-  communityButton: {
-    paddingHorizontal: 24, flexDirection: 'row', height: 32, borderRadius: 16,
-    justifyContent: 'center', alignItems: 'center', gap: 6,
+  actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 12, paddingHorizontal: 20 },
+  actionButton: {
+    flex: 1, flexDirection: 'row', height: 44, borderRadius: 22,
+    justifyContent: 'center', alignItems: 'center', gap: 8,
   },
-  communityButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 13 },
-  settingsButton: { 
-    position: 'absolute',
-    top: 0,
-    right: 20,
-    width: 32, 
-    height: 32, 
-    borderRadius: 16, 
-    justifyContent: 'center', 
-    alignItems: 'center',
-    zIndex: 10
+  actionIconBg: {
+    width: 28, height: 28, borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center',
   },
-  ticketsButton: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  actionButtonText: { fontWeight: '700', fontSize: 14 },
+  actionButtonIconOnly: {
+    width: 44, height: 44, borderRadius: 22,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  settingsButton: { },
   divider: { height: 1, width: '100%', marginTop: 24 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', paddingHorizontal: 16, paddingTop: 16 },
   emptyContainer: { padding: 40, alignItems: 'center' },

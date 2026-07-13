@@ -25,15 +25,19 @@ interface PostCardProps {
   isVisible?: boolean;
   onOpenImageViewer?: (images: { uri: string }[], index: number) => void;
 }
+import { AppState } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+
 const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted, setIsVideoMuted }: { post: Post, isVisible?: boolean, isVideoMuted: boolean, setIsVideoMuted: (muted: boolean) => void }) {
   const [isReady, setIsReady] = useState(false);
   const [progress, setProgress] = useState(0);
+  const isFocused = useIsFocused();
   
   const player = useVideoPlayer(post.video_url || '', player => {
     player.loop = true;
     player.muted = isVideoMuted;
     player.timeUpdateEventInterval = 0.05;
-    if (isVisible !== false) {
+    if (isVisible !== false && isFocused && AppState.currentState === 'active') {
       player.play();
     }
   });
@@ -51,14 +55,30 @@ const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted,
   }, [isVideoMuted, player]);
 
   useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (player) {
+        if (nextAppState === 'active' && isVisible !== false && isFocused) {
+          player.play();
+        } else {
+          player.pause();
+        }
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [player, isVisible, isFocused]);
+
+  useEffect(() => {
     if (player) {
-      if (isVisible === false) {
+      if (isVisible === false || !isFocused || AppState.currentState !== 'active') {
         player.pause();
       } else {
         player.play();
       }
     }
-  }, [isVisible, player]);
+  }, [isVisible, isFocused, player]);
 
   return (
     <>

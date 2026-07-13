@@ -10,6 +10,7 @@ import ImageViewing from 'react-native-image-viewing';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { Post } from '../../types';
@@ -19,13 +20,29 @@ import { ErrorBoundary } from '../../components/ErrorBoundary';
 
 const { width } = Dimensions.get('window');
 
+import { AppState } from 'react-native';
+
 const MarketVideo = React.memo(({ url, shouldPlay }: { url: string, shouldPlay: boolean }) => {
   const player = useVideoPlayer(url, player => {
     player.loop = true;
   });
 
   useEffect(() => {
-    if (shouldPlay) {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'active' && shouldPlay) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [shouldPlay, player]);
+
+  useEffect(() => {
+    if (shouldPlay && AppState.currentState === 'active') {
       player.play();
     } else {
       player.pause();
@@ -47,6 +64,7 @@ function MarketplaceDetailContent() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const isFocused = useIsFocused();
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
@@ -207,7 +225,7 @@ function MarketplaceDetailContent() {
               {mediaItems.map((media, i) => (
                 <View key={i} style={styles.mainImage}>
                   {media.type === 'video' ? (
-                    <MarketVideo url={media.url} shouldPlay={activeScrollIndex === i} />
+                    <MarketVideo url={media.url} shouldPlay={activeScrollIndex === i && isFocused} />
                   ) : (
                     <TouchableOpacity 
                       activeOpacity={0.9} 

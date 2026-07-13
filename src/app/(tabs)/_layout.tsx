@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { View, Platform, StyleSheet } from 'react-native';
+import { View, Platform, StyleSheet, Text } from 'react-native';
 import { Plus } from 'phosphor-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -7,7 +7,9 @@ import {
   HomeIcon, ExploreIcon, MessagesIcon, ProfileIcon
 } from '../../components/SvgIcons';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../hooks/use-supabase-auth';
 
 /** Wraps any tab icon with a spring scale animation on focus */
 function TabIconWrapper({ focused, children }: { focused: boolean; children: React.ReactNode }) {
@@ -30,6 +32,33 @@ const TAB_BAR_HEIGHT = 64;
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { colors, isDarkMode } = useAppTheme();
+  const { user } = useAuth();
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchUnread = async () => {
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_read', false)
+        .neq('sender_id', user.id);
+      
+      setUnreadMessages(count || 0);
+    };
+
+    fetchUnread();
+
+    const channel = supabase
+      .channel('messages_badge')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchUnread)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const tabBarHeight = TAB_BAR_HEIGHT + insets.bottom;
 
@@ -101,7 +130,14 @@ export default function TabLayout() {
             title: 'Messages',
             tabBarIcon: ({ color, focused }) => (
               <TabIconWrapper focused={focused}>
-                <MessagesIcon color={color} size={26} filled={focused} />
+                <View>
+                  <MessagesIcon color={color} size={26} filled={focused} />
+                  {unreadMessages > 0 && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{unreadMessages > 99 ? '99+' : unreadMessages}</Text>
+                    </View>
+                  )}
+                </View>
               </TabIconWrapper>
             ),
           }}
@@ -137,6 +173,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.45,
     shadowRadius: 10,
     elevation: 8,
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    backgroundColor: '#EF4444',
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#000',
+  },
+  badgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
 });
 

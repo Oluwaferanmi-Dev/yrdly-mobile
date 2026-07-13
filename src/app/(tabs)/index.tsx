@@ -25,7 +25,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { CommentsBottomSheet, CommentsBottomSheetRef } from '../../components/CommentsBottomSheet';
 import ImageViewing from 'react-native-image-viewing';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
-import { useScrollToTop } from '@react-navigation/native';
+import { useScrollToTop, useIsFocused } from '@react-navigation/native';
 import { AlertBanner } from '../../components/AlertBanner';
 import { AlertService, Alert } from '../../lib/alert-service';
 import * as SecureStore from 'expo-secure-store';
@@ -145,6 +145,7 @@ export default function HomeTab() {
   const { unreadCount } = useNotificationBadge();
   const flashListRef = useRef<any>(null);
   const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
+  const isFocused = useIsFocused();
   
   useScrollToTop(flashListRef);
   
@@ -344,7 +345,7 @@ export default function HomeTab() {
           <FeedItemWrapper index={index}>
             <PostCard 
               post={item} 
-              isVisible={activePostId === item.id}
+              isVisible={isFocused && activePostId === item.id}
               onPress={() => {
                 if (item.category === 'For Sale') {
                   router.push(`/marketplace/${item.id}`);

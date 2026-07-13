@@ -35,9 +35,20 @@ export default function PayoutSettingsScreen() {
     try {
       const { data } = await supabase
         .from('seller_accounts')
-        .select('account_name, account_number, bank_name, bank_code, verification_status')
+        .select('account_details, verification_status')
         .eq('user_id', user.id).eq('is_active', true).single();
-      if (data) setExisting(data);
+      if (data) {
+        const bankCode = data.account_details?.bank_code || data.account_details?.bankCode || '';
+        const matchedBank = BANKS.find(b => b.code === bankCode);
+        
+        setExisting({
+          account_name: data.account_details?.account_name || data.account_details?.accountName || '',
+          account_number: data.account_details?.account_number || data.account_details?.accountNumber || '',
+          bank_name: matchedBank?.name || data.account_details?.bank_name || 'Bank',
+          bank_code: bankCode,
+          verification_status: data.verification_status
+        });
+      }
     } catch { } finally { setLoading(false); }
   }, [user]);
 
