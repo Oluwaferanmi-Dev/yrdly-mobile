@@ -13,6 +13,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
+import { useFriendshipGlobal } from '../../hooks/use-friendship-global';
 
 interface UserProfile {
   id: string;
@@ -30,6 +31,7 @@ export default function OtherUserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user: currentUser } = useAuth();
   const { width: windowWidth } = useWindowDimensions();
+  const friendship = useFriendshipGlobal(id);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -228,10 +230,33 @@ export default function OtherUserProfileScreen() {
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.btnMessage, { backgroundColor: colors.tint + '15' }]} onPress={handleMessage}>
-                <Feather name="message-circle" size={18} color={colors.tint} />
-                <Text style={[styles.btnMessageText, { color: colors.tint }]}>Message</Text>
-              </TouchableOpacity>
+              {friendship.status === 'none' && (
+                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: colors.tint + '15' }]} onPress={friendship.addFriend} disabled={friendship.isLoading}>
+                  {friendship.isLoading ? <ActivityIndicator size="small" color={colors.tint} /> : <Feather name="user-plus" size={18} color={colors.tint} />}
+                  <Text style={[styles.btnMessageText, { color: colors.tint }]}>Add Friend</Text>
+                </TouchableOpacity>
+              )}
+
+              {friendship.status === 'request_sent' && (
+                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: colors.inputBackground }]} disabled>
+                  <Feather name="clock" size={18} color={colors.textSecondary} />
+                  <Text style={[styles.btnMessageText, { color: colors.textSecondary }]}>Requested</Text>
+                </TouchableOpacity>
+              )}
+
+              {friendship.status === 'request_received' && (
+                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: colors.tint }]} onPress={friendship.acceptRequest} disabled={friendship.isLoading}>
+                  {friendship.isLoading ? <ActivityIndicator size="small" color="#fff" /> : <Feather name="check" size={18} color="#fff" />}
+                  <Text style={[styles.btnMessageText, { color: '#fff' }]}>Accept</Text>
+                </TouchableOpacity>
+              )}
+
+              {friendship.status === 'friends' && (
+                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: colors.tint + '15' }]} onPress={handleMessage}>
+                  <Feather name="message-circle" size={18} color={colors.tint} />
+                  <Text style={[styles.btnMessageText, { color: colors.tint }]}>Message</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>
