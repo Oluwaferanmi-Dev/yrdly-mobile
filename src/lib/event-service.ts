@@ -50,8 +50,62 @@ export async function getEventById(id: string): Promise<Event | null> {
     .eq('id', id)
     .single();
 
-  if (error) return null;
-  return enrichEventTiers(data);
+  if (!error && data) {
+    return enrichEventTiers(data);
+  }
+
+  // Fallback to legacy posts table
+  const { data: postData, error: postError } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('id', id)
+    .eq('category', 'Event')
+    .single();
+
+  if (postError || !postData) return null;
+  return mapPostToEvent(postData);
+}
+
+export function mapPostToEvent(post: any): Event {
+  const priceText = post.price ? `₦${post.price}` : 'Free';
+  const desc = post.description || post.text || '';
+  const descriptionWithPrice = desc + (desc ? '\n\n' : '') + `Price: ${priceText} (Legacy Event)`;
+
+  return {
+    id: post.id,
+    organizer_id: post.user_id,
+    title: post.title || post.text || 'Untitled Event',
+    description: descriptionWithPrice,
+    category: 'Event',
+    cover_image_url: post.image_urls?.[0] || post.image_url || null,
+    location_address: post.event_location?.address || [post.ward, post.lga, post.state].filter(Boolean).join(', ') || null,
+    location_online: false,
+    online_link: null,
+    lat: post.event_location?.lat || null,
+    lng: post.event_location?.lng || null,
+    ward: post.ward || null,
+    lga: post.lga || null,
+    state: post.state || null,
+    start_time: post.event_date || post.timestamp,
+    end_time: null,
+    timezone: 'Africa/Lagos',
+    status: 'PUBLISHED',
+    visibility: 'PUBLIC',
+    payout_mode: 'INSTANT',
+    payout_released_at: null,
+    payment_subaccount_id: null,
+    published_at: post.timestamp,
+    scheduled_publish_at: null,
+    attendee_count: 0,
+    created_at: post.created_at || post.timestamp,
+    updated_at: post.updated_at || post.timestamp,
+    organizer: {
+      id: post.user_id,
+      name: post.author_name || 'Organizer',
+      avatar_url: post.author_image || undefined,
+    },
+    ticket_tiers: [],
+  };
 }
 
 export async function getOrganizerEvents(organizerId: string): Promise<Event[]> {

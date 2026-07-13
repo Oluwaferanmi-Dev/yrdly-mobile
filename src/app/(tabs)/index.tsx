@@ -349,15 +349,14 @@ export default function HomeTab() {
               onPress={() => {
                 if (item.category === 'For Sale') {
                   router.push(`/marketplace/${item.id}`);
-                } else if (item.category === 'Event' && item.event_link) {
-                  const cleanLink = item.event_link.split('?')[0];
-                  const parts = cleanLink.split('/');
-                  const eventId = parts.pop() || parts.pop();
-                  if (eventId) {
-                    router.push(`/events/${eventId}`);
-                  } else {
-                    router.push(`/posts/${item.id}`);
+                } else if (item.category === 'Event') {
+                  let eventId = item.id; // Fallback to post id for legacy events
+                  if (item.event_link) {
+                    const cleanLink = item.event_link.split('?')[0];
+                    const parts = cleanLink.split('/');
+                    eventId = parts.pop() || parts.pop() || item.id;
                   }
+                  router.push(`/events/${eventId}`);
                 } else {
                   router.push(`/posts/${item.id}`);
                 }
