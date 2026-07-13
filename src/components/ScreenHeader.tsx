@@ -6,7 +6,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { useNotificationBadge } from '../context/NotificationBadgeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export function ScreenHeader({ title, hideIcons }: { title: string; hideIcons?: boolean }) {
+export function ScreenHeader({ title, hideIcons, rightContent }: { title: string; hideIcons?: boolean; rightContent?: React.ReactNode }) {
   const router = useRouter();
   const { colors } = useAppTheme();
   const { unreadCount } = useNotificationBadge();
@@ -34,6 +34,7 @@ export function ScreenHeader({ title, hideIcons }: { title: string; hideIcons?: 
             </TouchableOpacity>
           </>
         )}
+        {rightContent}
       </View>
     </View>
   );

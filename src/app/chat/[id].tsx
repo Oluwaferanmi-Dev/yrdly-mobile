@@ -277,30 +277,17 @@ function ChatContent() {
 
   const pickMedia = async () => {
     if (sending || uploadingMedia) return;
-    
-    Alert.alert(
-      'Attach Media',
-      'Would you like to crop your media or send the original full size?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Crop Media', onPress: () => launchPicker(true) },
-        { text: 'Send Original', onPress: () => launchPicker(false) }
-      ]
-    );
-  };
-
-  const launchPicker = async (allowEditing: boolean) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images', 'videos'],
-        allowsEditing: allowEditing,
-        quality: 0.8,
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: false,
+        quality: 0.9,
       });
       if (!result.canceled) {
         uploadAndSendMedia(result.assets[0]);
       }
     } catch (e) {
-      console.log("ImagePicker error:", e);
+      console.log('ImagePicker error:', e);
     }
   };
 

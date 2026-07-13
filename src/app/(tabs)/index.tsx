@@ -350,7 +350,8 @@ export default function HomeTab() {
                 if (item.category === 'For Sale') {
                   router.push(`/marketplace/${item.id}`);
                 } else if (item.category === 'Event' && item.event_link) {
-                  const parts = item.event_link.split('/');
+                  const cleanLink = item.event_link.split('?')[0];
+                  const parts = cleanLink.split('/');
                   const eventId = parts.pop() || parts.pop();
                   if (eventId) {
                     router.push(`/events/${eventId}`);

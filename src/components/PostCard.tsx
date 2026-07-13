@@ -225,7 +225,9 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
     } else {
       lastTapRef.current = now;
       singleTapTimerRef.current = setTimeout(() => {
-        if (onOpenImageViewer) {
+        if ((post.category === 'For Sale' || post.category === 'Event') && onPress) {
+          onPress();
+        } else if (onOpenImageViewer) {
           onOpenImageViewer(urls.map(u => ({ uri: u })), index);
         }
       }, DOUBLE_PRESS_DELAY);

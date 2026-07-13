@@ -24,7 +24,7 @@ type PostCategory = 'General' | 'For Sale' | 'Event';
 LogBox.ignoreLogs([/VirtualizedLists should never be nested/]);
 
 export default function CreateTab() {
-  const { colors } = useAppTheme();
+  const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const { user, profile } = useAuth();
   const { width } = useWindowDimensions();
@@ -277,7 +277,7 @@ export default function CreateTab() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : 0}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]} keyboardShouldPersistTaps="handled">
           {/* Form Fields (Borderless) */}
           <View style={styles.formGroup}>
             {/* User Info & Category Header */}
@@ -432,7 +432,9 @@ export default function CreateTab() {
                       mode="datetime"
                       display="compact"
                       onChange={(e, d) => d && setEventDate(d)}
-                      themeVariant={colors.background === '#121212' ? 'dark' : 'light'}
+                      themeVariant={isDarkMode ? 'dark' : 'light'}
+                      textColor={colors.text}
+                      accentColor={colors.tint}
                     />
                   </View>
                 ) : (
@@ -588,7 +590,7 @@ const styles = StyleSheet.create({
   postSuccessBody: { fontSize: 13, textAlign: 'center', lineHeight: 19, maxWidth: 260 },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 120,
   },
   categoryBadge: {
     paddingHorizontal: 8,

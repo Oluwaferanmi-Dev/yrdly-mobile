@@ -70,7 +70,7 @@ export default function MessagesTab() {
 
       if (error || !data) return;
 
-      // Fetch unread counts
+      // Fetch unread counts for regular messages
       const { data: unreadData } = await supabase
         .from('messages')
         .select('conversation_id')
@@ -82,6 +82,22 @@ export default function MessagesTab() {
         acc[curr.conversation_id] = (acc[curr.conversation_id] || 0) + 1;
         return acc;
       }, {});
+      
+      // Check marketplace/briefcase chats for unread status
+      for (const conv of data) {
+        if (conv.type === 'marketplace' || conv.type === 'briefcase') {
+          const { data: msgs } = await supabase
+            .from('chat_messages')
+            .select('sender_id, metadata')
+            .eq('chat_id', conv.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+          if (msgs && msgs.sender_id !== user.id && !msgs.metadata?.isRead) {
+            unreadCounts[conv.id] = (unreadCounts[conv.id] || 0) + 1;
+          }
+        }
+      }
 
       // Transform raw DB rows into Conversation objects
       const transformed: Conversation[] = data.map((conv: any) => {

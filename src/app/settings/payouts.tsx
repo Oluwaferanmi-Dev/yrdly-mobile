@@ -59,7 +59,7 @@ export default function PayoutsScreen() {
         supabase
           .from('payout_requests')
           .select('id, amount, status, created_at, processed_at, bank_name, account_number')
-          .eq('user_id', user.id)
+          .eq('seller_id', user.id)
           .order('created_at', { ascending: false }),
       ]);
 
@@ -151,7 +151,7 @@ export default function PayoutsScreen() {
               {/* Balance card */}
               <View style={[styles.balanceCard, { backgroundColor: colors.card, borderColor: colors.borderLight, borderWidth: 1 }]}>
                 <View style={styles.balanceIconWrap}>
-                  <Feather name="dollar-sign" size={24} color={colors.tint} />
+                  <Text style={[styles.balanceIconText, { color: colors.tint }]}>₦</Text>
                 </View>
                 <Text style={[styles.balanceLabel, { color: colors.textMuted }]}>Available Balance</Text>
                 <Text style={[styles.balanceAmount, { color: colors.text }]}>{formatPrice(balance)}</Text>
@@ -201,6 +201,7 @@ const styles = StyleSheet.create({
     borderRadius: 24, padding: 24, marginBottom: 24, alignItems: 'center',
   },
   balanceIconWrap: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(130, 225, 87, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  balanceIconText: { fontSize: 26, fontWeight: '900' },
   balanceLabel: { fontSize: 14, fontWeight: '600', color: '#A6A6A6', marginBottom: 8 },
   balanceAmount: { fontSize: 40, fontWeight: '900', color: '#FFFFFF', marginBottom: 20 },
   withdrawBtn: {

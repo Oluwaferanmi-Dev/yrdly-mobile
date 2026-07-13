@@ -42,15 +42,19 @@ export default function CommunityScreen() {
         .neq('id', currentUser.id)
         .limit(50);
       
-      if (activeFilter) {
-        if (activeFilter.state) {
-          userQuery = userQuery.eq('location->>state', activeFilter.state);
+      // Use active filter or default to current user's location
+      const targetLocation = activeFilter || profile?.location;
+
+      if (targetLocation) {
+        if (targetLocation.state) {
+          userQuery = userQuery.eq('location->>state', targetLocation.state);
         }
-        if (activeFilter.lga) {
-          userQuery = userQuery.eq('location->>lga', activeFilter.lga);
+        if (targetLocation.lga) {
+          userQuery = userQuery.eq('location->>lga', targetLocation.lga);
         }
-        if (activeFilter.ward) {
-          userQuery = userQuery.eq('location->>ward', activeFilter.ward);
+        // Ward is too specific sometimes, but we include it if they really want tight filtering
+        if (targetLocation.ward) {
+          userQuery = userQuery.eq('location->>ward', targetLocation.ward);
         }
       }
 

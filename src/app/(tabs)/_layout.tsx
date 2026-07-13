@@ -39,13 +39,36 @@ export default function TabLayout() {
     if (!user) return;
     
     const fetchUnread = async () => {
-      const { count } = await supabase
+      const { count: msgCount } = await supabase
         .from('messages')
         .select('*', { count: 'exact', head: true })
         .eq('is_read', false)
         .neq('sender_id', user.id);
+        
+      let chatCount = 0;
+      const { data: convs } = await supabase
+        .from('conversations')
+        .select('id, type')
+        .contains('participant_ids', [user.id]);
+        
+      if (convs) {
+        for (const conv of convs) {
+          if (conv.type === 'marketplace' || conv.type === 'briefcase') {
+            const { data: msgs } = await supabase
+              .from('chat_messages')
+              .select('sender_id, metadata')
+              .eq('chat_id', conv.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .single();
+            if (msgs && msgs.sender_id !== user.id && !msgs.metadata?.isRead) {
+              chatCount++;
+            }
+          }
+        }
+      }
       
-      setUnreadMessages(count || 0);
+      setUnreadMessages((msgCount || 0) + chatCount);
     };
 
     fetchUnread();

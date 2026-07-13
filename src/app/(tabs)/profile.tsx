@@ -77,12 +77,6 @@ export default function ProfileTab() {
   const listHeader = useMemo(() => (
     <View style={[styles.headerContainer, { backgroundColor: colors.background, paddingTop: 10 }]}>
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.settingsButton}
-          onPress={() => router.push('/settings')}
-        >
-          <Feather name="settings" size={24} color={colors.text} />
-        </TouchableOpacity>
         <View style={[styles.avatarPlaceholder, { backgroundColor: colors.tint + '15' }]}>
           {avatarUri ? (
             <Image 
@@ -160,7 +154,15 @@ export default function ProfileTab() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScreenHeader title="Profile" hideIcons />
+      <ScreenHeader 
+        title="Profile" 
+        hideIcons 
+        rightContent={
+          <TouchableOpacity onPress={() => router.push('/settings')}>
+            <Feather name="settings" size={24} color={colors.text} />
+          </TouchableOpacity>
+        }
+      />
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
@@ -169,7 +171,22 @@ export default function ProfileTab() {
           <ProfilePostGridItem 
             post={item} 
             width={GRID_ITEM_WIDTH}
-            onPress={() => router.push(`/posts/${item.id}`)}
+            onPress={() => {
+              if (item.category === 'For Sale') {
+                router.push(`/marketplace/${item.id}`);
+              } else if (item.category === 'Event' && item.event_link) {
+                const cleanLink = item.event_link.split('?')[0];
+                const parts = cleanLink.split('/');
+                const eventId = parts.pop() || parts.pop();
+                if (eventId) {
+                  router.push(`/events/${eventId}`);
+                } else {
+                  router.push(`/posts/${item.id}`);
+                }
+              } else {
+                router.push(`/posts/${item.id}`);
+              }
+            }}
           />
         )}
         ListHeaderComponent={() => listHeader}

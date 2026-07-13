@@ -51,6 +51,7 @@ export default function TicketsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const ticketTranslateY = useSharedValue(200);
 
@@ -101,6 +102,32 @@ export default function TicketsScreen() {
   const displayedTickets = tickets.filter(t => 
     activeTab === 'active' ? !isTicketPast(t) : isTicketPast(t)
   );
+
+  const handleDeleteTicket = (ticketId: string) => {
+    Alert.alert(
+      'Delete Ticket',
+      'Remove this ticket from your history? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDeletingId(ticketId);
+            try {
+              await supabase.from('my_tickets').delete().eq('id', ticketId).eq('user_id', user!.id);
+              setTickets(prev => prev.filter(t => t.id !== ticketId));
+            } catch (e) {
+              console.error('Delete ticket error:', e);
+              Alert.alert('Error', 'Could not delete ticket.');
+            } finally {
+              setDeletingId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const renderTicket = ({ item }: { item: Ticket }) => {
     const event = item.event;
@@ -170,11 +197,26 @@ export default function TicketsScreen() {
           <View style={[styles.tearCircleBottom, { backgroundColor: colors.background }]} />
         </View>
 
-        {/* QR hint */}
-        <View style={styles.qrSection}>
-          <Feather name="maximize" size={40} color={colors.tint} />
-          <Text style={[styles.tapText, { color: colors.textMuted }]}>Tap to view</Text>
-        </View>
+        {/* QR hint / Delete for past */}
+        {activeTab === 'past' ? (
+          <TouchableOpacity
+            style={styles.qrSection}
+            onPress={() => handleDeleteTicket(item.id)}
+            disabled={deletingId === item.id}
+          >
+            {deletingId === item.id ? (
+              <ActivityIndicator size="small" color="#E53935" />
+            ) : (
+              <Feather name="trash-2" size={22} color="#E53935" />
+            )}
+            <Text style={[styles.tapText, { color: '#E53935' }]}>Delete</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.qrSection}>
+            <Feather name="maximize" size={40} color={colors.tint} />
+            <Text style={[styles.tapText, { color: colors.textMuted }]}>Tap to view</Text>
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
