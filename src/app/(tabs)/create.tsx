@@ -15,6 +15,7 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
+import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -84,6 +85,16 @@ export default function CreateTab() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [locationData, setLocationData] = useState<{address: string, lat: number, lng: number} | null>(null);
+
+  interface TicketTierInput {
+    id: string;
+    name: string;
+    price: string;
+    capacity: string;
+  }
+  const [ticketTiers, setTicketTiers] = useState<TicketTierInput[]>([
+    { id: '1', name: 'General Admission', price: '0', capacity: '' }
+  ]);
 
   const pickImage = async () => {
     if (images.length >= 5) {
@@ -249,15 +260,35 @@ export default function CreateTab() {
       // Add specific fields for category
       if (category === 'For Sale') {
         postData.price = price ? parseFloat(price) : 0;
+        const { error: insertError } = await supabase.from('posts').insert(postData);
+        if (insertError) throw insertError;
       } else if (category === 'Event') {
-        postData.event_date = eventDate.toISOString();
-        postData.event_location = locationData;
-        postData.price = price ? parseFloat(price) : 0;
+        const formattedTiers = ticketTiers.map(t => ({
+          name: t.name,
+          price: parseFloat(t.price) || 0,
+          capacity: t.capacity ? parseInt(t.capacity) : undefined,
+        }));
+        
+        await api.post('/api/events/create', {
+          title: title.trim() || 'Untitled Event',
+          description: text.trim() || '',
+          category: 'Event',
+          coverImageUrl: uploadedImageUrls[0] || null,
+          locationAddress: locationData?.address || profile?.location?.state || '',
+          lat: locationData?.lat,
+          lng: locationData?.lng,
+          ward: profile?.location?.ward,
+          lga: profile?.location?.lga,
+          state: profile?.location?.state,
+          startTime: eventDate.toISOString(),
+          timezone: 'Africa/Lagos',
+          publish: true,
+          ticketTiers: formattedTiers,
+        });
+      } else {
+        const { error: insertError } = await supabase.from('posts').insert(postData);
+        if (insertError) throw insertError;
       }
-
-      // 3. Insert into the posts table
-      const { error: insertError } = await supabase.from('posts').insert(postData);
-      if (insertError) throw insertError;
 
       // 4. Success — show animated overlay then navigate
       Keyboard.dismiss();
@@ -414,14 +445,78 @@ export default function CreateTab() {
                   </ScrollView>
                 </View>
 
-                <TextInput
-                  style={[styles.addonInput, { color: colors.text, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.borderLight, marginBottom: 12, paddingBottom: 12 }]}
-                  placeholder="Ticket Price (₦) - Leave empty if free"
-                  placeholderTextColor={colors.textMuted}
-                  value={price}
-                  onChangeText={setPrice}
-                  keyboardType="numeric"
-                />
+                {/* Ticket Tiers Section */}
+                <View style={styles.ticketTiersContainer}>
+                  <View style={styles.ticketTiersHeader}>
+                    <Text style={[styles.ticketTiersTitle, { color: colors.text }]}>Ticket Tiers</Text>
+                    <TouchableOpacity onPress={() => {
+                      setTicketTiers([...ticketTiers, { id: Math.random().toString(), name: 'New Tier', price: '', capacity: '' }]);
+                    }}>
+                      <Ionicons name="add-circle" size={24} color={colors.tint} />
+                    </TouchableOpacity>
+                  </View>
+                  
+                  {ticketTiers.map((tier, index) => (
+                    <View key={tier.id} style={[styles.ticketTierCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                        <TextInput
+                          style={[styles.tierNameInput, { color: colors.text }]}
+                          value={tier.name}
+                          onChangeText={(val) => {
+                            const newTiers = [...ticketTiers];
+                            newTiers[index].name = val;
+                            setTicketTiers(newTiers);
+                          }}
+                          placeholder="Tier Name (e.g. VIP)"
+                          placeholderTextColor={colors.textMuted}
+                        />
+                        {ticketTiers.length > 1 && (
+                          <TouchableOpacity onPress={() => {
+                            setTicketTiers(ticketTiers.filter((_, i) => i !== index));
+                          }}>
+                            <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                      <View style={{ flexDirection: 'row', gap: 12 }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.tierLabel, { color: colors.textMuted }]}>Price (₦)</Text>
+                          <TextInput
+                            style={[styles.tierInput, { color: colors.text, borderColor: colors.borderLight }]}
+                            value={tier.price}
+                            onChangeText={(val) => {
+                              const newTiers = [...ticketTiers];
+                              newTiers[index].price = val;
+                              setTicketTiers(newTiers);
+                            }}
+                            keyboardType="numeric"
+                            placeholder="0 for Free"
+                            placeholderTextColor={colors.textMuted}
+                          />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.tierLabel, { color: colors.textMuted }]}>Capacity (Optional)</Text>
+                          <TextInput
+                            style={[styles.tierInput, { color: colors.text, borderColor: colors.borderLight }]}
+                            value={tier.capacity}
+                            onChangeText={(val) => {
+                              const newTiers = [...ticketTiers];
+                              newTiers[index].capacity = val;
+                              setTicketTiers(newTiers);
+                            }}
+                            keyboardType="numeric"
+                            placeholder="Unlimited"
+                            placeholderTextColor={colors.textMuted}
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  ))}
+                  
+                  <Text style={[styles.tierHelperText, { color: colors.textMuted }]}>
+                    Paid tickets require a linked bank account in Payout Settings.
+                  </Text>
+                </View>
 
                 {/* Date & Time Pickers */}
                 {Platform.OS === 'ios' ? (
@@ -695,6 +790,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     borderRadius: 12,
+  },
+  tierHelperText: { fontSize: 12, marginTop: 8, textAlign: 'center' },
+  locationButton: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderRadius: 12, padding: 16,
+  },
+  ticketTiersContainer: {
+    marginTop: 16,
+  },
+  ticketTiersHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12,
+  },
+  ticketTiersTitle: { fontSize: 16, fontWeight: '700' },
+  ticketTierCard: {
+    borderWidth: 1, borderRadius: 12, padding: 16, marginBottom: 12,
+  },
+  tierNameInput: {
+    fontSize: 16, fontWeight: '600', flex: 1,
+  },
+  tierLabel: { fontSize: 12, marginBottom: 4, fontWeight: '500' },
+  tierInput: {
+    borderWidth: 1, borderRadius: 8, padding: 10, fontSize: 14,
   },
   actionRow: {
     flexDirection: 'row',
