@@ -135,6 +135,17 @@ export default function ProfileTab() {
             </View>
             <Text style={[styles.actionButtonText, { color: colors.tint }]}>Tickets</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.actionButton, { backgroundColor: colors.tint + '1A', borderColor: colors.tint + '40', borderWidth: 1 }]} 
+            onPress={() => router.push('/my-events' as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.actionIconBg, { backgroundColor: colors.tint }]}>
+              <Ionicons name="calendar" size={16} color="#FFFFFF" />
+            </View>
+            <Text style={[styles.actionButtonText, { color: colors.tint }]}>Events</Text>
+          </TouchableOpacity>
           
           {(profile?.role === 'admin' || profile?.is_admin) && (
             <TouchableOpacity 

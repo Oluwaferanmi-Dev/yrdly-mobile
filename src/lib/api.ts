@@ -33,7 +33,7 @@ export const api = {
       throw new Error(`API Error (${res.status}): Server returned non-JSON response. Ensure your WEB_APP_URL is correct.`);
     }
 
-    if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+    if (!res.ok) throw new Error(json.message ?? json.error ?? `Request failed (${res.status})`);
     return json as T;
   },
 
@@ -50,7 +50,7 @@ export const api = {
       throw new Error(`API Error (${res.status}): Server returned non-JSON response. Ensure your WEB_APP_URL is correct.`);
     }
 
-    if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+    if (!res.ok) throw new Error(json.message ?? json.error ?? `Request failed (${res.status})`);
     return json as T;
   },
 };
