@@ -122,7 +122,7 @@ export default function ProfileTab() {
             <View style={[styles.actionIconBg, { backgroundColor: colors.tint }]}>
               <Feather name="users" size={16} color="#FFFFFF" />
             </View>
-            <Text style={[styles.actionButtonText, { color: colors.tint }]}>Community</Text>
+            <Text style={[styles.actionButtonText, { color: colors.tint }]} numberOfLines={1} adjustsFontSizeToFit>Community</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -133,7 +133,7 @@ export default function ProfileTab() {
             <View style={[styles.actionIconBg, { backgroundColor: colors.tint }]}>
               <Ionicons name="ticket" size={16} color="#FFFFFF" />
             </View>
-            <Text style={[styles.actionButtonText, { color: colors.tint }]}>Tickets</Text>
+            <Text style={[styles.actionButtonText, { color: colors.tint }]} numberOfLines={1} adjustsFontSizeToFit>Tickets</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -144,7 +144,7 @@ export default function ProfileTab() {
             <View style={[styles.actionIconBg, { backgroundColor: colors.tint }]}>
               <Ionicons name="calendar" size={16} color="#FFFFFF" />
             </View>
-            <Text style={[styles.actionButtonText, { color: colors.tint }]}>Events</Text>
+            <Text style={[styles.actionButtonText, { color: colors.tint }]} numberOfLines={1} adjustsFontSizeToFit>Events</Text>
           </TouchableOpacity>
           
           {(profile?.role === 'admin' || profile?.is_admin) && (
@@ -240,16 +240,16 @@ const styles = StyleSheet.create({
   statItem: { alignItems: 'center' },
   statValue: { fontSize: 18, fontWeight: 'bold' },
   statLabel: { fontSize: 12, marginTop: 2 },
-  actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 12, paddingHorizontal: 20 },
+  actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 8, paddingHorizontal: 12 },
   actionButton: {
     flex: 1, flexDirection: 'row', height: 44, borderRadius: 22,
-    justifyContent: 'center', alignItems: 'center', gap: 8,
+    justifyContent: 'center', alignItems: 'center', gap: 4,
   },
   actionIconBg: {
     width: 28, height: 28, borderRadius: 14,
     justifyContent: 'center', alignItems: 'center',
   },
-  actionButtonText: { fontWeight: '700', fontSize: 14 },
+  actionButtonText: { fontWeight: '700', fontSize: 13, flexShrink: 1 },
   actionButtonIconOnly: {
     width: 44, height: 44, borderRadius: 22,
     justifyContent: 'center', alignItems: 'center',
