@@ -636,7 +636,15 @@ function ChatContent() {
 
       {/* Item context banner (for marketplace chats) */}
       {meta?.item_title && (
-        <View style={[styles.contextBanner, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]}>
+        <TouchableOpacity 
+          style={[styles.contextBanner, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]}
+          onPress={() => {
+            if (meta?.item_id) {
+              router.push(`/marketplace/${meta.item_id}`);
+            }
+          }}
+          activeOpacity={0.7}
+        >
           {meta.item_image && (
             <Image source={{ uri: meta.item_image }} style={[styles.contextImage, { backgroundColor: colors.inputBackground }]} contentFit="cover" />
           )}
@@ -648,7 +656,7 @@ function ChatContent() {
               </Text>
             )}
           </View>
-        </View>
+        </TouchableOpacity>
       )}
 
       <KeyboardAvoidingView 
@@ -660,6 +668,10 @@ function ChatContent() {
           <View style={styles.center}>
             <ActivityIndicator size="large" color={colors.tint} />
           </View>
+        ) : messagesWithDates.length === 0 ? (
+          <View style={styles.center}>
+            <Text style={[styles.emptyText, { color: colors.textMuted }]}>No messages yet. Say hi! 👋</Text>
+          </View>
         ) : (
           <FlatList
             ref={flatListRef}
@@ -669,11 +681,6 @@ function ChatContent() {
             contentContainerStyle={styles.msgListContent}
             showsVerticalScrollIndicator={false}
             inverted
-            ListEmptyComponent={
-              <View style={[styles.center, { transform: [{ scaleY: -1 }] }]}>
-                <Text style={[styles.emptyText, { color: colors.textMuted }]}>No messages yet. Say hi! 👋</Text>
-              </View>
-            }
           />
         )}
 

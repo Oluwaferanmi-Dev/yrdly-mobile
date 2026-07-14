@@ -264,14 +264,18 @@ export default function OtherUserProfileScreen() {
         <View style={styles.feedSection}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: '100%' }}>
             {posts.length > 0 ? (
-              posts.map(post => (
-                <ProfilePostGridItem 
-                  key={post.id} 
-                  post={post} 
-                  width={windowWidth / 3}
-                  onPress={() => router.push(`/posts/${post.id}`)}
-                />
-              ))
+              posts.map(post => {
+                const TARGET_TILE_WIDTH = 120;
+                const numColumns = Math.max(3, Math.floor(windowWidth / TARGET_TILE_WIDTH));
+                return (
+                  <ProfilePostGridItem 
+                    key={post.id} 
+                    post={post} 
+                    width={windowWidth / numColumns}
+                    onPress={() => router.push(`/posts/${post.id}`)}
+                  />
+                );
+              })
             ) : (
               <View style={[styles.emptyState, { width: '100%' }]}>
                 <Feather name="image" size={40} color={colors.border} />

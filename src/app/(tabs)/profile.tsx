@@ -21,7 +21,9 @@ export default function ProfileTab() {
   const router = useRouter();
   const { colors } = useAppTheme();
   const { width: windowWidth } = useWindowDimensions();
-  const GRID_ITEM_WIDTH = windowWidth / 3;
+  const TARGET_TILE_WIDTH = 120;
+  const numColumns = Math.max(3, Math.floor(windowWidth / TARGET_TILE_WIDTH));
+  const GRID_ITEM_WIDTH = windowWidth / numColumns;
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
@@ -175,9 +177,10 @@ export default function ProfileTab() {
         }
       />
       <FlatList
+        key={numColumns}
         data={posts}
         keyExtractor={(item) => item.id}
-        numColumns={3}
+        numColumns={numColumns}
         renderItem={({ item }) => (
           <ProfilePostGridItem 
             post={item} 
