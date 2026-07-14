@@ -27,6 +27,7 @@ import ImageViewing from 'react-native-image-viewing';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 import { useScrollToTop, useIsFocused } from '@react-navigation/native';
 import { AlertBanner } from '../../components/AlertBanner';
+import { PendingFriendRequestsBanner } from '../../components/PendingFriendRequestsBanner';
 import { AlertService, Alert } from '../../lib/alert-service';
 import * as SecureStore from 'expo-secure-store';
 
@@ -461,6 +462,7 @@ export default function HomeTab() {
                 )}
               </TouchableOpacity>
             )}
+            <PendingFriendRequestsBanner />
             <QuickPostBox />
           </View>
         }

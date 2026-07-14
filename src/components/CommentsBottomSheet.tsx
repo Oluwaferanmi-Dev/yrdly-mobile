@@ -26,7 +26,7 @@ import { CommentInput, CommentInputRef } from './CommentInput';
 
 export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBottomSheetProps>(({ postId }, ref) => {
   const { colors } = useAppTheme();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const insets = useSafeAreaInsets();
   
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -72,11 +72,14 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
   }, [post, postId]);
 
   const userAvatarSource = useMemo(() => {
+    if (profile?.avatar_url) {
+      return StorageService.getOptimizedImageUrl(profile.avatar_url, 100) || profile.avatar_url;
+    }
     if (user?.user_metadata?.avatar_url) {
-      return StorageService.getOptimizedImageUrl(user.user_metadata.avatar_url, 100) || '';
+      return StorageService.getOptimizedImageUrl(user.user_metadata.avatar_url, 100) || user.user_metadata.avatar_url;
     }
     return '';
-  }, [user?.user_metadata?.avatar_url]);
+  }, [profile?.avatar_url, user?.user_metadata?.avatar_url]);
 
   const fetchPost = useCallback(async () => {
     if (!postId) return;
@@ -101,10 +104,23 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       .order('timestamp', { ascending: true });
 
     if (!error && data) {
-      setComments(data);
+      if (user?.id) {
+        const commentIds = data.map(c => c.id);
+        const { data: likesData } = await supabase
+          .from('comment_likes')
+          .select('comment_id')
+          .eq('user_id', user.id)
+          .in('comment_id', commentIds);
+          
+        const likedSet = new Set(likesData?.map(l => l.comment_id) || []);
+        const enriched = data.map(c => ({ ...c, is_liked: likedSet.has(c.id) }));
+        setComments(enriched);
+      } else {
+        setComments(data);
+      }
     }
     setLoading(false);
-  }, [postId]);
+  }, [postId, user?.id]);
 
   useEffect(() => {
     if (!postId) {
@@ -142,8 +158,8 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       const payload = {
         post_id: postId,
         user_id: user.id,
-        author_name: user.user_metadata?.name || user.email || 'Anonymous',
-        author_image: user.user_metadata?.avatar_url || null,
+        author_name: profile?.name || user.user_metadata?.name || user.email || 'Anonymous',
+        author_image: profile?.avatar_url || user.user_metadata?.avatar_url || null,
         text: text.trim(),
         timestamp: new Date().toISOString(),
         like_count: 0,
@@ -169,6 +185,30 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       throw e;
     }
   };
+
+  const handleLikeComment = useCallback(async (item: CommentType) => {
+    if (!user) return;
+    const isLiked = item.is_liked;
+    const newCount = Math.max(0, (item.like_count || 0) + (isLiked ? -1 : 1));
+
+    setComments(prev => prev.map(c => {
+      if (c.id === item.id) {
+        return { ...c, is_liked: !isLiked, like_count: newCount };
+      }
+      return c;
+    }));
+
+    try {
+      if (isLiked) {
+        await supabase.from('comment_likes').delete().match({ comment_id: item.id, user_id: user.id });
+      } else {
+        await supabase.from('comment_likes').insert({ comment_id: item.id, user_id: user.id });
+      }
+      await supabase.from('comments').update({ like_count: newCount }).eq('id', item.id);
+    } catch (e) {
+      console.error('Like error:', e);
+    }
+  }, [user]);
 
   const commentTree = useMemo(() => {
     const rootComments = comments.filter(c => !c.parent_id);
@@ -196,10 +236,11 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
         item={item} 
         currentUserId={user?.id}
         onReply={handleReply} 
+        onLike={handleLikeComment}
         onDelete={handleDeleteComment}
       />
     );
-  }, [handleReply, handleDeleteComment, user?.id]);
+  }, [handleReply, handleLikeComment, handleDeleteComment, user?.id]);
 
   const renderFooter = useCallback(
     (props: any) => (
@@ -216,7 +257,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
           <CommentInput
             ref={inputRef}
             userAvatarSource={userAvatarSource}
-            userInitial={(user?.user_metadata?.name || user?.email || '?').charAt(0).toUpperCase()}
+            userInitial={(profile?.name || user?.user_metadata?.name || user?.email || '?').charAt(0).toUpperCase()}
             replyingTo={replyingTo}
             onClearReply={() => setReplyingTo(null)}
             onSubmit={handleSendComment}

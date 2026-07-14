@@ -20,6 +20,7 @@ export interface CommentType {
     name: string;
     avatar_url: string;
   };
+  is_liked?: boolean;
 }
 
 interface CommentItemProps {
@@ -99,7 +100,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
         </View>
       </View>
       <TouchableOpacity style={styles.heartIcon} onPress={() => onLike?.(item)}>
-        <Ionicons name="heart-outline" size={isReply ? 14 : 16} color={colors.textMuted} />
+        <Ionicons 
+          name={item.is_liked ? "heart" : "heart-outline"} 
+          size={isReply ? 14 : 16} 
+          color={item.is_liked ? "#EF4444" : colors.textMuted} 
+        />
       </TouchableOpacity>
       </TouchableOpacity>
       

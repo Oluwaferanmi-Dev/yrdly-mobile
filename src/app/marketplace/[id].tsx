@@ -115,26 +115,20 @@ function MarketplaceDetailContent() {
         return;
       }
 
-      // 2. Create a new marketplace conversation
-      const imageUrl = post.image_urls?.[0] || post.image_url || null;
-      const { data: newConv, error: newError } = await supabase
-        .from('conversations')
-        .insert({
+      // 2. Route to chat/new with parameters
+      const imageUrl = post.image_urls?.[0] || post.image_url || '';
+      router.push({ 
+        pathname: '/chat/[id]', 
+        params: { 
+          id: 'new',
           type: 'marketplace',
-          participant_ids: [user.id, post.user_id],
+          participant_id: post.user_id,
           item_id: post.id,
           item_title: post.title || post.text || 'Listing',
           item_image: imageUrl,
-          item_price: post.price ?? null,
-          last_message_text: '',
-          updated_at: new Date().toISOString(),
-        })
-        .select('id')
-        .single();
-
-      if (newConv) {
-        router.push({ pathname: '/chat/[id]', params: { id: newConv.id } });
-      }
+          item_price: post.price ?? ''
+        } 
+      });
     } catch (e) {
       console.error('Error starting chat', e);
     }

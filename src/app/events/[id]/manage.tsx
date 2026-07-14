@@ -26,6 +26,7 @@ interface EventDetail {
   image_urls: string[] | null;
   price: number | null;
   event_date: string | null;
+  status?: string;
 }
 
 export default function ManageEventScreen() {
@@ -46,7 +47,7 @@ export default function ManageEventScreen() {
       // Fetch event
       const { data: ev, error: evErr } = await supabase
         .from('posts')
-        .select('id, title, event_date, user_id, image_url, image_urls, price')
+        .select('id, title, event_date, user_id, image_url, image_urls, price, status')
         .eq('id', id)
         .single();
       if (evErr) throw evErr;
@@ -101,9 +102,8 @@ export default function ManageEventScreen() {
                 .from('posts')
                 .update({ status: 'cancelled' })
                 .eq('id', id);
-              Alert.alert('Event Cancelled', 'The event has been cancelled.', [
-                { text: 'OK', onPress: () => router.back() },
-              ]);
+              Alert.alert('Event Cancelled', 'The event has been cancelled.');
+              setEvent(prev => prev ? { ...prev, status: 'cancelled' } : prev);
             } catch {
               Alert.alert('Error', 'Failed to cancel event. Please try again.');
             }
@@ -137,6 +137,31 @@ export default function ManageEventScreen() {
     );
   };
 
+  const handleArchiveEvent = () => {
+    Alert.alert(
+      'Archive Event?',
+      'This will archive the event. It will no longer appear in the public feed, but you can still view its analytics.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Archive',
+          onPress: async () => {
+            try {
+              await supabase
+                .from('posts')
+                .update({ status: 'archived' })
+                .eq('id', id);
+              Alert.alert('Event Archived', 'The event has been archived.');
+              setEvent(prev => prev ? { ...prev, status: 'archived' } : prev);
+            } catch {
+              Alert.alert('Error', 'Failed to archive event.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
@@ -149,6 +174,10 @@ export default function ManageEventScreen() {
   const eventDate = event?.event_date
     ? new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     : 'Date TBD';
+
+  const isPastEvent = event?.event_date
+    ? new Date(event.event_date).getTime() < Date.now()
+    : false;
 
   const renderTicket = ({ item }: { item: Ticket }) => {
     const isCheckedIn = item.status === 'checked_in';
@@ -253,15 +282,26 @@ export default function ManageEventScreen() {
         }
         ListFooterComponent={
           <View>
-            <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelEvent}>
-              <Feather name="x-circle" size={18} color="#B71C1C" style={{ marginRight: 8 }} />
-              <Text style={styles.cancelBtnText}>Cancel This Event</Text>
-            </TouchableOpacity>
+            {isPastEvent && event?.status !== 'archived' && (
+              <TouchableOpacity style={styles.archiveBtn} onPress={handleArchiveEvent}>
+                <Feather name="archive" size={18} color="#FFF" style={{ marginRight: 8 }} />
+                <Text style={styles.archiveBtnText}>Archive Event</Text>
+              </TouchableOpacity>
+            )}
+
+            {totalSold > 0 && !isPastEvent && event?.status !== 'cancelled' && (
+              <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelEvent}>
+                <Feather name="x-circle" size={18} color="#B71C1C" style={{ marginRight: 8 }} />
+                <Text style={styles.cancelBtnText}>Cancel This Event</Text>
+              </TouchableOpacity>
+            )}
             
-            <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteEvent}>
-              <Feather name="trash-2" size={18} color="#FFF" style={{ marginRight: 8 }} />
-              <Text style={styles.deleteBtnText}>Delete Event</Text>
-            </TouchableOpacity>
+            {totalSold === 0 && (
+              <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteEvent}>
+                <Feather name="trash-2" size={18} color="#FFF" style={{ marginRight: 8 }} />
+                <Text style={styles.deleteBtnText}>Delete Event</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -343,6 +383,12 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#FFCDD2', backgroundColor: '#FFEBEE',
   },
   cancelBtnText: { fontSize: 14, fontWeight: '700', color: '#B71C1C' },
+  archiveBtn: {
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    marginHorizontal: 16, marginTop: 16, paddingVertical: 14, borderRadius: 12,
+    backgroundColor: '#1976D2',
+  },
+  archiveBtnText: { fontSize: 14, fontWeight: '700', color: '#FFF' },
   deleteBtn: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
     margin: 16, paddingVertical: 14, borderRadius: 12,

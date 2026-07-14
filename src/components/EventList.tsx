@@ -54,7 +54,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         if (post.event_date) {
           return new Date(post.event_date).getTime() >= Date.now();
         }
-        return true;
+        return false;
       });
       setEvents(validEvents);
     } catch (error) {
@@ -104,7 +104,15 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       renderItem={({ item }) => (
         <EventCard 
           event={item} 
-          onPress={() => router.push(`/events/${item.id}`)}
+          onPress={() => {
+            let eventId = item.id;
+            if (item.event_link) {
+              const cleanLink = item.event_link.split('?')[0];
+              const parts = cleanLink.split('/');
+              eventId = parts.pop() || parts.pop() || item.id;
+            }
+            router.push(`/events/${eventId}`);
+          }}
         />
       )}
       contentContainerStyle={styles.listContent}

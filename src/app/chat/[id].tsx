@@ -83,7 +83,8 @@ const ChatVideo = React.memo(({ url, width, height, borderRadius, marginBottom, 
 function ChatContent() {
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams();
+  const id = params.id as string;
   const { user, profile, updateProfile } = useAuth();
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
@@ -156,6 +157,29 @@ function ChatContent() {
 
   const fetchMeta = useCallback(async () => {
     if (!id || !user) return;
+    if (id === 'new') {
+      const { type, participant_id, item_id, item_title, item_image, item_price } = params;
+      setMeta({
+        id: 'new',
+        type: type as any,
+        participant_ids: [user.id, participant_id as string],
+        item_id: item_id as string,
+        item_title: item_title as string,
+        item_image: item_image as string,
+        item_price: item_price ? Number(item_price) : undefined,
+      });
+      if (participant_id) {
+        const { data: u } = await supabase
+          .from('users')
+          .select('name, avatar_url')
+          .eq('id', participant_id)
+          .single();
+        if (u) setOtherUser(u);
+      }
+      setLoading(false);
+      return;
+    }
+
     const { data } = await supabase
       .from('conversations')
       .select('*')
@@ -174,10 +198,10 @@ function ChatContent() {
         if (u) setOtherUser(u);
       }
     }
-  }, [id, user]);
+  }, [id, user, params]);
 
   const fetchMessages = useCallback(async () => {
-    if (!id) return;
+    if (!id || id === 'new') return;
     
     const { data, error } = await supabase
       .from('messages')
@@ -205,7 +229,7 @@ function ChatContent() {
   }, [fetchMeta]);
 
   useEffect(() => {
-    if (!meta) return;
+    if (!meta || id === 'new') return;
 
     fetchMessages();
 
@@ -243,27 +267,54 @@ function ChatContent() {
     setInputText('');
 
     try {
+      let currentConvId = id;
+      if (id === 'new') {
+        const { type, participant_id, item_id, item_title, item_image, item_price } = params;
+        const { data: newConv, error: newError } = await supabase
+          .from('conversations')
+          .insert({
+            type,
+            participant_ids: [user.id, participant_id],
+            item_id: item_id || null,
+            item_title: item_title || null,
+            item_image: item_image || null,
+            item_price: item_price ? Number(item_price) : null,
+            last_message_text: body,
+            updated_at: new Date().toISOString(),
+          })
+          .select('id')
+          .single();
+        if (newError) throw newError;
+        currentConvId = newConv.id;
+      }
+
       const payload: Record<string, unknown> = {
         sender_id: user.id,
         created_at: new Date().toISOString(),
         text: body,
-        conversation_id: id,
+        conversation_id: currentConvId,
       };
 
       const { error } = await supabase.from('messages').insert(payload);
       if (error) throw error;
 
-      // Update conversation's last_message
-      await supabase.from('conversations').update({
-        last_message_text: body,
-        updated_at: new Date().toISOString(),
-      }).eq('id', id);
+      if (id !== 'new') {
+        await supabase.from('conversations').update({
+          last_message_text: body,
+          updated_at: new Date().toISOString(),
+        }).eq('id', currentConvId);
+      }
 
       // Trigger notification
       const toUserId = meta?.participant_ids?.find((pid: string) => pid !== user.id);
       if (toUserId) {
         const { NotificationTriggers } = await import('../../lib/notification-triggers');
-        await NotificationTriggers.onMessageSent(toUserId, user.id, id, body);
+        await NotificationTriggers.onMessageSent(toUserId, user.id, currentConvId, body);
+      }
+
+      if (id === 'new') {
+        router.replace({ pathname: '/chat/[id]', params: { id: currentConvId } });
+        return;
       }
 
       setTimeout(() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true }), 100);
@@ -313,11 +364,34 @@ function ChatContent() {
       
       const { data: { publicUrl } } = supabase.storage.from(bucketName).getPublicUrl(filename);
       
+      let currentConvId = id;
+      const mediaText = isVideo ? 'Sent a video 📹' : 'Sent an image 📸';
+
+      if (id === 'new') {
+        const { type, participant_id, item_id, item_title, item_image, item_price } = params;
+        const { data: newConv, error: newError } = await supabase
+          .from('conversations')
+          .insert({
+            type,
+            participant_ids: [user.id, participant_id],
+            item_id: item_id || null,
+            item_title: item_title || null,
+            item_image: item_image || null,
+            item_price: item_price ? Number(item_price) : null,
+            last_message_text: mediaText,
+            updated_at: new Date().toISOString(),
+          })
+          .select('id')
+          .single();
+        if (newError) throw newError;
+        currentConvId = newConv.id;
+      }
+
       const payload: Record<string, unknown> = {
         sender_id: user.id,
         created_at: new Date().toISOString(),
         text: '',
-        conversation_id: id,
+        conversation_id: currentConvId,
         media_url: publicUrl,
         media_type: isVideo ? 'video' : 'image',
       };
@@ -325,16 +399,23 @@ function ChatContent() {
       const { error } = await supabase.from('messages').insert(payload);
       if (error) throw error;
       
-      await supabase.from('conversations').update({
-        last_message_text: isVideo ? 'Sent a video 📹' : 'Sent an image 📸',
-        updated_at: new Date().toISOString(),
-      }).eq('id', id);
+      if (id !== 'new') {
+        await supabase.from('conversations').update({
+          last_message_text: mediaText,
+          updated_at: new Date().toISOString(),
+        }).eq('id', currentConvId);
+      }
 
       // Trigger notification
       const toUserId = meta?.participant_ids?.find((pid: string) => pid !== user.id);
       if (toUserId) {
         const { NotificationTriggers } = await import('../../lib/notification-triggers');
-        await NotificationTriggers.onMessageSent(toUserId, user.id, id, isVideo ? 'Sent a video 📹' : 'Sent an image 📸');
+        await NotificationTriggers.onMessageSent(toUserId, user.id, currentConvId, mediaText);
+      }
+
+      if (id === 'new') {
+        router.replace({ pathname: '/chat/[id]', params: { id: currentConvId } });
+        return;
       }
 
       setTimeout(() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true }), 100);
