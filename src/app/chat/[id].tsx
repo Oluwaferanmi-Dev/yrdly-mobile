@@ -37,6 +37,7 @@ interface ConversationMeta {
   id: string;
   type: 'friend' | 'marketplace' | 'briefcase';
   participant_ids: string[];
+  item_id?: string;
   item_title?: string;
   item_image?: string;
   item_price?: number;

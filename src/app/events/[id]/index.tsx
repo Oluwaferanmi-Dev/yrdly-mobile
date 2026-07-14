@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, ActivityIndicator, Dimensions, Alert, Modal, TextInput
+  TouchableOpacity, ActivityIndicator, Dimensions, Alert, Modal, TextInput, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
@@ -43,6 +43,7 @@ export default function EventDetailScreen() {
   const [attendeeEmail, setAttendeeEmail] = useState('');
   const [attendeePhone, setAttendeePhone] = useState('');
   const [purchasing, setPurchasing] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   // Ticket success overlay
   const [ticketSuccess, setTicketSuccess] = useState(false);
@@ -75,6 +76,7 @@ export default function EventDetailScreen() {
     setTimeout(() => {
       setTicketSuccess(false);
       setSelectedTier(null);
+      setQuantity(1);
       fetchEvent();
     }, 220);
   }
@@ -108,6 +110,7 @@ export default function EventDetailScreen() {
     setPurchasing(true);
     try {
       const callbackUrl = Linking.createURL('payment-verify');
+      const tierName = selectedTier.name;
       const res = await api.post<any>('/api/events/tickets/purchase', {
         event_id: event.id,
         tier_id: selectedTier.id,
@@ -115,10 +118,12 @@ export default function EventDetailScreen() {
         attendee_email: attendeeEmail,
         attendee_phone: attendeePhone,
         callbackUrl,
+        quantity,
       });
 
       if (selectedTier.price === 0) {
-        showTicketSuccess(selectedTier.name);
+        setSelectedTier(null);
+        setTimeout(() => showTicketSuccess(tierName), 100);
       } else {
         const browserResult = await WebBrowser.openAuthSessionAsync(res.paymentLink, callbackUrl);
         if (browserResult.type === 'success' && browserResult.url) {
@@ -127,7 +132,8 @@ export default function EventDetailScreen() {
           if (status === 'cancelled') {
             Alert.alert('Cancelled', 'Payment was cancelled.');
           } else {
-            showTicketSuccess(selectedTier.name);
+            setSelectedTier(null);
+            setTimeout(() => showTicketSuccess(tierName), 100);
           }
         }
       }
@@ -282,19 +288,33 @@ export default function EventDetailScreen() {
 
       {/* Ticket Purchase Modal */}
       <Modal visible={!!selectedTier} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>Get Tickets</Text>
-              <TouchableOpacity onPress={() => setSelectedTier(null)}>
+              <TouchableOpacity onPress={() => { setSelectedTier(null); setQuantity(1); }}>
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
             
             {selectedTier && (
               <View style={[styles.modalTierSummary, { backgroundColor: colors.inputBackground }]}>
-                <Text style={[styles.modalTierName, { color: colors.text }]}>{selectedTier.name}</Text>
-                <Text style={[styles.modalTierPrice, { color: colors.tint }]}>{selectedTier.price === 0 ? 'FREE' : formatPrice(selectedTier.price)}</Text>
+                <View>
+                  <Text style={[styles.modalTierName, { color: colors.text }]}>{selectedTier.name}</Text>
+                  <Text style={[styles.modalTierPrice, { color: colors.tint }]}>{selectedTier.price === 0 ? 'FREE' : formatPrice(selectedTier.price * quantity)}</Text>
+                </View>
+                <View style={styles.quantityContainer}>
+                  <TouchableOpacity onPress={() => setQuantity(q => Math.max(1, q - 1))} style={[styles.quantityBtn, { backgroundColor: colors.borderLight }]}>
+                    <Ionicons name="remove" size={20} color={colors.text} />
+                  </TouchableOpacity>
+                  <Text style={[styles.quantityText, { color: colors.text }]}>{quantity}</Text>
+                  <TouchableOpacity onPress={() => setQuantity(q => Math.min(10, q + 1))} style={[styles.quantityBtn, { backgroundColor: colors.borderLight }]}>
+                    <Ionicons name="add" size={20} color={colors.text} />
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
 
@@ -337,12 +357,12 @@ export default function EventDetailScreen() {
                 <ActivityIndicator color="#FFF" />
               ) : (
                 <Text style={styles.purchaseBtnText}>
-                  {selectedTier?.price === 0 ? 'Register Now' : 'Proceed to Payment'}
+                  {selectedTier?.price === 0 ? 'Register Now' : `Pay ${formatPrice((selectedTier?.price || 0) * quantity)}`}
                 </Text>
               )}
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {isGalleryVisible && imageUrls.length > 0 && (
@@ -368,7 +388,7 @@ export default function EventDetailScreen() {
               style={styles.successLottie}
               source={{ uri: 'https://lottie.host/3acad958-cd8e-424a-a1c9-58e8bff45d87/XvFdYxtUDF.json' }}
             />
-            <Animated.View style={[{ alignItems: 'center', paddingHorizontal: 24 }, successContentStyle]}>
+            <Animated.View style={[{ alignItems: 'center', paddingHorizontal: 32, width: '100%' }, successContentStyle]}>
               <Text style={[styles.successTitle, { color: colors.text }]}>You're In! 🎟️</Text>
               <Text style={[styles.successTier, { color: colors.tint }]}>{successTierName}</Text>
               <Text style={[styles.successBody, { color: colors.textMuted }]}>
@@ -430,9 +450,12 @@ const styles = StyleSheet.create({
   modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '80%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   modalTitle: { fontSize: 20, fontWeight: 'bold' },
-  modalTierSummary: { padding: 16, borderRadius: 12, flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
+  modalTierSummary: { padding: 16, borderRadius: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   modalTierName: { fontSize: 16, fontWeight: '600' },
   modalTierPrice: { fontSize: 16, fontWeight: 'bold' },
+  quantityContainer: { flexDirection: 'row', alignItems: 'center' },
+  quantityBtn: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  quantityText: { fontSize: 16, fontWeight: 'bold', marginHorizontal: 16 },
   modalForm: { marginBottom: 24 },
   inputLabel: { fontSize: 14, fontWeight: '500', marginBottom: 8 },
   input: { padding: 16, borderRadius: 12, marginBottom: 16, fontSize: 16 },
