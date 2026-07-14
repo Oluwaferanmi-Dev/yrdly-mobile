@@ -19,6 +19,9 @@ expo-env.d.ts
 *.mobileprovision
 google-services.json
 GoogleService-Info.plist
+upload-key.jks
+upload_cert.pem
+.env.keystore
 
 # Debug / build artifacts
 ts-errors.txt
