@@ -149,7 +149,7 @@ export default function CommunityScreen() {
     );
   };
 
-  const ListHeader = () => (
+  const listHeader = (
     <View style={styles.listHeader}>
       {requests.length > 0 && (
         <View style={styles.section}>
@@ -201,7 +201,7 @@ export default function CommunityScreen() {
           data={users}
           keyExtractor={item => item.id}
           renderItem={renderUser}
-          ListHeaderComponent={ListHeader}
+          ListHeaderComponent={listHeader}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
