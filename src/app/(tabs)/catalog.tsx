@@ -8,8 +8,8 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenHeader } from '../../components/ScreenHeader';
 
-type TabType = 'Marketplace' | 'Events' | 'Businesses';
-const TABS: TabType[] = ['Marketplace', 'Events', 'Businesses'];
+type TabType = 'Marketplace' | 'Events';
+const TABS: TabType[] = ['Marketplace', 'Events'];
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function CatalogTab() {
@@ -99,9 +99,7 @@ export default function CatalogTab() {
           <View style={{ width: SCREEN_WIDTH }}>
             <EventList searchQuery={searchQuery} sortOption={sortOption} />
           </View>
-          <View style={{ width: SCREEN_WIDTH }}>
-            <BusinessComingSoon />
-          </View>
+
         </ScrollView>
       </View>
 

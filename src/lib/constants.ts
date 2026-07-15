@@ -57,13 +57,7 @@ export const FILE_CONSTANTS = {
   ALLOWED_VIDEO_TYPES: ['video/mp4', 'video/webm', 'video/quicktime'],
 };
 
-// Community Stats Fallback
-export const STATS_FALLBACK = {
-  TOTAL_USERS: 500,
-  LOCAL_USERS: 25,
-  ACTIVE_TODAY: 42,
-  TOTAL_POSTS: 234,
-};
+
 
 // Error Messages
 export const ERROR_MESSAGES = {
