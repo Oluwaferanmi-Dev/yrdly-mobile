@@ -222,9 +222,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const result = await AuthService.signUp(email, password, name);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (result.error || !session) {
+        setLoading(false);
+      }
       return result;
-    } finally {
+    } catch (e) {
       setLoading(false);
+      throw e;
     }
   };
 
@@ -232,9 +237,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const result = await AuthService.signIn(email, password);
+      if (result.error) {
+        setLoading(false);
+      }
       return result;
-    } finally {
+    } catch (e) {
       setLoading(false);
+      throw e;
     }
   };
 
@@ -242,9 +251,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const result = await AuthService.signInWithGoogle();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (result.error || !session) {
+        setLoading(false);
+      }
       return result;
-    } finally {
+    } catch (e) {
       setLoading(false);
+      throw e;
     }
   };
 
@@ -252,9 +266,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const result = await AuthService.signInWithApple();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (result.error || !session) {
+        setLoading(false);
+      }
       return result;
-    } finally {
+    } catch (e) {
       setLoading(false);
+      throw e;
     }
   };
 
@@ -266,11 +285,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         posthog.reset();
       }
       const result = await AuthService.signOut();
-      setUser(null);
-      setProfile(null);
+      if (result.error) {
+        setLoading(false);
+      } else {
+        setUser(null);
+        setProfile(null);
+      }
       return result;
-    } finally {
+    } catch (e) {
       setLoading(false);
+      throw e;
     }
   };
 
