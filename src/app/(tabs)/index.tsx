@@ -33,23 +33,32 @@ import * as SecureStore from 'expo-secure-store';
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList as any) as any;
 
-/** Staggered entrance for each feed item — only animates on first mount */
-const FeedItemWrapper = memo(({ index, children }: { index: number; children: React.ReactNode }) => {
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(18);
-
-  useEffect(() => {
-    const delay = Math.min(index, 6) * 60; // stagger first 6, cap rest
-    opacity.value = withDelay(delay, withTiming(1, { duration: 350 }));
-    translateY.value = withDelay(delay, withSpring(0, { damping: 20, stiffness: 150 }));
-  }, []);
-
-  const style = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  return <Animated.View style={style}>{children}</Animated.View>;
+const FeedPostItem = memo(({ 
+  item, 
+  isVisible, 
+  onPress, 
+  onComment, 
+  onOpenImageViewer 
+}: { 
+  item: Post; 
+  isVisible: boolean; 
+  onPress: (item: Post) => void; 
+  onComment: (item: Post) => void; 
+  onOpenImageViewer: (images: { uri: string }[], index: number) => void; 
+}) => {
+  return (
+    <PostCard 
+      post={item} 
+      isVisible={isVisible}
+      onPress={() => onPress(item)}
+      onComment={() => onComment(item)}
+      onOpenImageViewer={onOpenImageViewer}
+    />
+  );
+}, (prevProps, nextProps) => {
+  return prevProps.item.id === nextProps.item.id && 
+         prevProps.isVisible === nextProps.isVisible &&
+         prevProps.item === nextProps.item;
 });
 
 const QuickPostBox = memo(() => {
@@ -151,6 +160,45 @@ export default function HomeTab() {
   useScrollToTop(flashListRef);
   
   const HEADER_HEIGHT = Platform.OS === 'ios' ? 44 + insets.top : 56 + insets.top;
+
+  const handlePostPress = useCallback((item: Post) => {
+    if (item.category === 'For Sale') {
+      router.push(`/marketplace/${item.id}`);
+    } else if (item.category === 'Event') {
+      let eventId = item.id; // Fallback to post id for legacy events
+      if (item.event_link) {
+        const cleanLink = item.event_link.split('?')[0];
+        const parts = cleanLink.split('/');
+        eventId = parts.pop() || parts.pop() || item.id;
+      }
+      router.push(`/events/${eventId}`);
+    } else {
+      router.push(`/posts/${item.id}`);
+    }
+  }, [router]);
+
+  const handleCommentPress = useCallback((item: Post) => {
+    setActiveCommentPostId(item.id);
+    bottomSheetRef.current?.present();
+  }, []);
+
+  const handleOpenImageViewer = useCallback((images: { uri: string }[], index: number) => {
+    setViewerImages(images);
+    setViewerIndex(index);
+    setViewerVisible(true);
+  }, []);
+
+  const renderItem = useCallback(({ item }: { item: Post }) => {
+    return (
+      <FeedPostItem 
+        item={item}
+        isVisible={isFocused && activePostId === item.id}
+        onPress={handlePostPress}
+        onComment={handleCommentPress}
+        onOpenImageViewer={handleOpenImageViewer}
+      />
+    );
+  }, [isFocused, activePostId, handlePostPress, handleCommentPress, handleOpenImageViewer]);
 
   const scrollY = useSharedValue(0);
   const lastScrollY = useSharedValue(0);
@@ -351,38 +399,8 @@ export default function HomeTab() {
         estimatedItemSize={400}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        renderItem={({ item, index }: { item: Post; index: number }) => (
-          <FeedItemWrapper index={index}>
-            <PostCard 
-              post={item} 
-              isVisible={isFocused && activePostId === item.id}
-              onPress={() => {
-                if (item.category === 'For Sale') {
-                  router.push(`/marketplace/${item.id}`);
-                } else if (item.category === 'Event') {
-                  let eventId = item.id; // Fallback to post id for legacy events
-                  if (item.event_link) {
-                    const cleanLink = item.event_link.split('?')[0];
-                    const parts = cleanLink.split('/');
-                    eventId = parts.pop() || parts.pop() || item.id;
-                  }
-                  router.push(`/events/${eventId}`);
-                } else {
-                  router.push(`/posts/${item.id}`);
-                }
-              }}
-              onComment={() => {
-                setActiveCommentPostId(item.id);
-                bottomSheetRef.current?.present();
-              }}
-              onOpenImageViewer={(images, index) => {
-                setViewerImages(images);
-                setViewerIndex(index);
-                setViewerVisible(true);
-              }}
-            />
-          </FeedItemWrapper>
-        )}
+        getItemType={(item: Post) => item.category || 'General'}
+        renderItem={renderItem}
         refreshControl={
           <RefreshControl 
             refreshing={refreshing} 

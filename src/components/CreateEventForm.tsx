@@ -82,14 +82,6 @@ function TicketCard({ tier, idx, onChange, onRemove, colors }: any) {
                 keyboardType="numeric" placeholder="Unlimited" placeholderTextColor={colors.textMuted} />
             </View>
           </View>
-          <TouchableOpacity style={tk.removeBtn} onPress={() =>
-            Alert.alert('Remove Ticket','Remove this ticket type?',[
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Remove', style: 'destructive', onPress: onRemove }
-            ])}>
-            <Ionicons name="trash-outline" size={14} color="#ef4444" />
-            <Text style={tk.removeTxt}>Remove ticket</Text>
-          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -174,13 +166,21 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
             <Text style={[s.hint, { color: colors.textMuted }]}>JPG, PNG or WebP. Max 10MB</Text>
           </TouchableOpacity>
         ) : (
-          <View style={s.coverPreview}>
-            <Image source={{ uri: values.images[0].thumbnailUri || values.images[0].uri }}
-              style={s.coverImg} contentFit="cover" transition={200} />
-            <TouchableOpacity style={s.coverRemove} onPress={() => onRemovePhoto(0)}>
-              <Ionicons name="close-circle" size={26} color="#fff" />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }} contentContainerStyle={{ gap: 8 }}>
+            {values.images.map((img, i) => (
+              <View key={i} style={s.coverPreview}>
+                <Image source={{ uri: img.thumbnailUri || img.uri }}
+                  style={s.coverImg} contentFit="cover" transition={200} />
+                <TouchableOpacity style={s.coverRemove} onPress={() => onRemovePhoto(i)}>
+                  <Ionicons name="close-circle" size={26} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            ))}
+            <TouchableOpacity onPress={onAddPhoto} style={[s.coverEmpty, { borderColor: colors.tint, width: 100, height: 100 }]}>
+              <Ionicons name="add" size={24} color={colors.textMuted} />
+              <Text style={[{ color: colors.textMuted, fontSize: 12, marginTop: 4 }]}>Add more</Text>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
         )}
 
 
@@ -394,7 +394,7 @@ const s = StyleSheet.create({
   charCount: { fontSize: 11, textAlign: 'right', marginTop: 6 },
   coverEmpty: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: 16, height: 160, justifyContent: 'center', alignItems: 'center', gap: 8, marginVertical: 10 },
   coverEmptyLabel: { fontSize: 15, fontWeight: '700' },
-  coverPreview: { height: 180, borderRadius: 14, overflow: 'hidden', marginVertical: 10, position: 'relative' },
+  coverPreview: { width: 240, height: 180, borderRadius: 14, overflow: 'hidden', marginVertical: 10, position: 'relative' },
   coverImg: { width: '100%', height: '100%' },
   coverRemove: { position: 'absolute', top: 8, right: 8 },
   mediaRow: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12, marginTop: 4, gap: 4 },

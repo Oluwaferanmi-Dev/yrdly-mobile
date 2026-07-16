@@ -197,8 +197,11 @@ export default function CreateTab() {
     }
   };
 
+  const isSubmittingRef = useRef(false);
+
   // ── Submit post to Supabase ───────────────────────────────────────
   const handleSubmit = async () => {
+    if (isSubmittingRef.current) return;
     Keyboard.dismiss();
     if (!user) {
       Alert.alert('Not signed in', 'You must be logged in to create a post.');
@@ -213,6 +216,7 @@ export default function CreateTab() {
       return;
     }
 
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
     try {
       // 1. Upload media (if any) and collect public URLs
@@ -291,6 +295,7 @@ export default function CreateTab() {
           category: 'Event',
           subCategory: eventCategory || null,
           coverImageUrl: uploadedImageUrls[0] || null,
+          imageUrls: uploadedImageUrls,
           locationAddress: locationData?.address || profile?.location?.state || '',
           lat: locationData?.lat,
           lng: locationData?.lng,
@@ -314,6 +319,7 @@ export default function CreateTab() {
       console.error('Post submit error:', e);
       Alert.alert('Error', e?.message || 'Something went wrong. Please try again.');
     } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
   };

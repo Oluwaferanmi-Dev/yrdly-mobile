@@ -9,6 +9,7 @@ import { PostCard } from '../../components/PostCard';
 import { PostSkeleton } from '../../components/Skeleton';
 import { Post } from '../../types';
 import { useRouter, useFocusEffect } from 'expo-router';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,8 +32,26 @@ export default function ProfileTab() {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
-  const fetchUserPosts = useCallback(async () => {
+  const fetchUserPosts = useCallback(async (isRefresh = false) => {
     if (!user) return;
+    
+    const cacheFile = FileSystem.documentDirectory + `yrdly_profile_cache_${user.id}.json`;
+    
+    try {
+      if (!isRefresh) {
+        const fileInfo = await FileSystem.getInfoAsync(cacheFile);
+        if (fileInfo.exists) {
+          const cachedData = await FileSystem.readAsStringAsync(cacheFile);
+          if (cachedData) {
+            const parsed = JSON.parse(cachedData);
+            setPosts(parsed.posts || []);
+            setFollowersCount(parsed.followers || 0);
+            setFollowingCount(parsed.following || 0);
+          }
+        }
+      }
+    } catch (e) {}
+
     try {
       const { data, error } = await supabase
         .from('posts')
@@ -50,6 +69,14 @@ export default function ProfileTab() {
       ]);
       setFollowersCount(fers || 0);
       setFollowingCount(fing || 0);
+      
+      // Save to cache
+      FileSystem.writeAsStringAsync(cacheFile, JSON.stringify({
+        posts: data,
+        followers: fers || 0,
+        following: fing || 0
+      })).catch(() => {});
+      
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -71,7 +98,7 @@ export default function ProfileTab() {
   const onRefresh = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setRefreshing(true);
-    fetchUserPosts();
+    fetchUserPosts(true);
   }, [fetchUserPosts]);
 
   const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;

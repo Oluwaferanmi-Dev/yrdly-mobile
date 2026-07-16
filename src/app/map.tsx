@@ -20,7 +20,7 @@ const PEEK = 110;
 
 type FilterType = 'all' | 'friends' | 'businesses' | 'events';
 type MapMarker = { id: string; type: 'friend'|'business'|'event'; lat: number; lng: number; title: string; subtitle?: string; targetId: string; avatar_url?: string };
-type ActivityItem = { id: string; kind: 'post'|'market'|'event'|'biz'; title: string; subtitle: string; image?: string; time: string; meta?: string; route: string };
+type ActivityItem = { id: string; kind: 'post'|'market'|'event'|'biz'; title: string; subtitle: string; image?: string; time: string; meta?: string; route: string; lat?: number; lng?: number; };
 
 const FILTERS: { key: FilterType; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
   { key: 'all', label: 'All', icon: 'apps', color: '#82DB7E' },
@@ -38,12 +38,31 @@ const DARK_STYLE = [
   { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#0d1a0f' }] },
 ];
 
-function timeAgo(d: string) {
-  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+function formatTimeOrDate(d: string) {
+  const diff = Date.now() - new Date(d).getTime();
+  if (diff < 0) {
+    // Future date (e.g. event start time)
+    const date = new Date(d);
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+  const m = Math.floor(diff / 60000);
   if (m < 60) return `${m}m ago`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
+}
+
+function getDistanceStr(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const km = R * c;
+  if (km < 1) return `${Math.round(km * 1000)}m away`;
+  return `${km.toFixed(1)}km away`;
 }
 
 function FriendMarker({ avatar_url }: { avatar_url?: string }) {
@@ -158,15 +177,15 @@ export default function MapScreen() {
     const items: ActivityItem[] = [];
     const state = (profile?.location as any)?.state;
     const [{ data: posts }, { data: mkt }, { data: evts }, { data: bizs }] = await Promise.all([
-      supabase.from('posts').select('id,title,content,created_at,users!posts_author_id_fkey(name,avatar_url)').not('category','in','("For Sale","Event")').order('created_at',{ascending:false}).limit(3),
-      supabase.from('posts').select('id,title,price,created_at,images').eq('category','For Sale').eq('is_sold',false).order('created_at',{ascending:false}).limit(2),
-      supabase.from('events').select('id,title,start_time,location_address,attendee_count,cover_image_url').eq('status','PUBLISHED').gte('start_time',new Date().toISOString()).order('start_time',{ascending:true}).limit(3),
-      supabase.from('businesses').select('id,name,category,description,image_urls,created_at').order('created_at',{ascending:false}).limit(2),
+      supabase.from('posts').select('id,title,content,created_at,users!posts_user_id_fkey(name,avatar_url)').not('category','in','("For Sale","Event")').order('created_at',{ascending:false}).limit(3),
+      supabase.from('posts').select('id,title,price,created_at,images').eq('category','For Sale').or('is_sold.eq.false,is_sold.is.null').order('created_at',{ascending:false}).limit(2),
+      supabase.from('events').select('id,title,start_time,location_address,attendee_count,cover_image_url,lat,lng').eq('status','PUBLISHED').gte('start_time',new Date().toISOString()).order('start_time',{ascending:true}).limit(3),
+      supabase.from('businesses').select('id,name,category,description,image_urls,created_at,location').order('created_at',{ascending:false}).limit(2),
     ]);
-    (posts||[]).forEach((p:any) => items.push({ id:`p-${p.id}`, kind:'post', title:`${p.users?.name||'Someone'} posted nearby`, subtitle: (p.content||p.title||'').slice(0,80), time: timeAgo(p.created_at), image: p.users?.avatar_url, route:`/posts/${p.id}` }));
-    (mkt||[]).forEach((p:any) => items.push({ id:`m-${p.id}`, kind:'market', title: p.title, subtitle:'For sale', meta: p.price ? `₦${Number(p.price).toLocaleString()}` : '', time: timeAgo(p.created_at), image: p.images?.[0], route:`/marketplace/${p.id}` }));
-    (evts||[]).forEach((e:any) => items.push({ id:`e-${e.id}`, kind:'event', title: e.title, subtitle:`${e.location_address||''}`, meta: e.attendee_count ? `${e.attendee_count} going` : '', time: timeAgo(e.start_time), image: e.cover_image_url, route:`/events/${e.id}` }));
-    (bizs||[]).forEach((b:any) => items.push({ id:`b-${b.id}`, kind:'biz', title:`${b.name}`, subtitle: b.description?.slice(0,60)||b.category||'', time: timeAgo(b.created_at), image: b.image_urls?.[0], route:`/business/${b.id}` }));
+    (posts||[]).forEach((p:any) => items.push({ id:`p-${p.id}`, kind:'post', title:`${p.users?.name||'Someone'} posted nearby`, subtitle: (p.content||p.title||'').slice(0,80), time: formatTimeOrDate(p.created_at), image: p.users?.avatar_url, route:`/posts/${p.id}` }));
+    (mkt||[]).forEach((p:any) => items.push({ id:`m-${p.id}`, kind:'market', title: p.title, subtitle:'For sale', meta: p.price ? `₦${Number(p.price).toLocaleString()}` : '', time: formatTimeOrDate(p.created_at), image: p.images?.[0], route:`/marketplace/${p.id}` }));
+    (evts||[]).forEach((e:any) => items.push({ id:`e-${e.id}`, kind:'event', title: e.title, subtitle:`${e.location_address||''}`, meta: e.attendee_count ? `${e.attendee_count} going` : '', time: formatTimeOrDate(e.start_time), image: e.cover_image_url, route:`/events/${e.id}`, lat: parseFloat(e.lat), lng: parseFloat(e.lng) }));
+    (bizs||[]).forEach((b:any) => items.push({ id:`b-${b.id}`, kind:'biz', title:`${b.name}`, subtitle: b.description?.slice(0,60)||b.category||'', time: formatTimeOrDate(b.created_at), image: b.image_urls?.[0], route:`/business/${b.id}`, lat: parseFloat(b.location?.lat ?? b.location?.geopoint?.latitude), lng: parseFloat(b.location?.lng ?? b.location?.geopoint?.longitude) }));
     items.sort(() => Math.random() - 0.5);
     setActivity(items.slice(0,8));
   };
@@ -244,6 +263,9 @@ export default function MapScreen() {
       {/* ── Top overlays ── */}
       <View style={[s.topWrap, { paddingTop: insets.top + 8 }]}>
         <View style={s.searchRow}>
+          <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={24} color="#fff" />
+          </TouchableOpacity>
           <View style={s.searchBox}>
             <Feather name="search" size={16} color="#8a9bb0" style={{ marginRight:8 }} />
             <TextInput
@@ -313,7 +335,7 @@ export default function MapScreen() {
           <View style={s.handleBar} />
           <View style={s.sheetTitleRow}>
             <Text style={s.sheetTitle}>Nearby Activity</Text>
-            <TouchableOpacity onPress={() => router.push('/home' as any)}>
+            <TouchableOpacity onPress={() => router.push('/' as any)}>
               <Text style={s.seeAll}>See all  ›</Text>
             </TouchableOpacity>
           </View>
@@ -323,23 +345,30 @@ export default function MapScreen() {
           data={activity} keyExtractor={a => a.id}
           scrollEnabled showsVerticalScrollIndicator={false}
           style={{ flex:1 }}
-          renderItem={({ item:a }) => (
-            <TouchableOpacity style={s.actRow} onPress={() => router.push(a.route as any)}>
-              <View style={[s.actImg, { backgroundColor: a.kind==='event'?'rgba(245,158,11,0.15)':a.kind==='biz'?'rgba(34,197,94,0.15)':'rgba(130,219,126,0.1)' }]}>
-                {a.image
-                  ? <Image source={{ uri:a.image }} style={s.actImgInner} contentFit="cover" />
-                  : <Ionicons name={a.kind==='event'?'calendar-outline':a.kind==='market'?'bag-outline':a.kind==='biz'?'storefront-outline':'person-circle-outline'} size={24} color={a.kind==='event'?'#F59E0B':a.kind==='biz'?'#22c55e':'#82DB7E'} />}
-              </View>
-              <View style={{ flex:1 }}>
-                <Text style={s.actTitle} numberOfLines={1}>{a.title}</Text>
-                <Text style={s.actSub} numberOfLines={1}>{a.subtitle}</Text>
-              </View>
-              <View style={{ alignItems:'flex-end' }}>
-                <Text style={s.actTime}>{a.time}</Text>
-                {a.meta ? <Text style={[s.actMeta, { color: a.kind==='market'?'#82DB7E':'#8B5CF6' }]}>{a.meta}</Text> : null}
-              </View>
-            </TouchableOpacity>
-          )}
+          renderItem={({ item:a }) => {
+            let distStr = '';
+            if (loc && a.lat && a.lng && !isNaN(a.lat) && !isNaN(a.lng)) {
+              distStr = getDistanceStr(loc.coords.latitude, loc.coords.longitude, a.lat, a.lng);
+            }
+            return (
+              <TouchableOpacity style={s.actRow} onPress={() => router.push(a.route as any)}>
+                <View style={[s.actImg, { backgroundColor: a.kind==='event'?'rgba(245,158,11,0.15)':a.kind==='biz'?'rgba(34,197,94,0.15)':'rgba(130,219,126,0.1)' }]}>
+                  {a.image
+                    ? <Image source={{ uri:a.image }} style={s.actImgInner} contentFit="cover" />
+                    : <Ionicons name={a.kind==='event'?'calendar-outline':a.kind==='market'?'bag-outline':a.kind==='biz'?'storefront-outline':'person-circle-outline'} size={24} color={a.kind==='event'?'#F59E0B':a.kind==='biz'?'#22c55e':'#82DB7E'} />}
+                </View>
+                <View style={{ flex:1 }}>
+                  <Text style={s.actTitle} numberOfLines={1}>{a.title}</Text>
+                  <Text style={s.actSub} numberOfLines={1}>{a.subtitle}</Text>
+                  {distStr ? <Text style={s.actDist}>{distStr}</Text> : null}
+                </View>
+                <View style={{ alignItems:'flex-end' }}>
+                  <Text style={s.actTime}>{a.time}</Text>
+                  {a.meta ? <Text style={[s.actMeta, { color: a.kind==='market'?'#82DB7E':'#8B5CF6' }]}>{a.meta}</Text> : null}
+                </View>
+              </TouchableOpacity>
+            );
+          }}
         />
       </Animated.View>
     </View>
@@ -352,6 +381,7 @@ const s = StyleSheet.create({
   searchRow: { flexDirection:'row', paddingHorizontal:16, gap:10 },
   searchBox: { flex:1, flexDirection:'row', alignItems:'center', backgroundColor:'rgba(13,17,23,0.92)', borderRadius:28, paddingHorizontal:14, height:46, borderWidth:1, borderColor:'rgba(255,255,255,0.08)' },
   searchInput: { flex:1, color:'#fff', fontSize:14 },
+  backBtn: { width:46, height:46, borderRadius:23, backgroundColor:'rgba(13,17,23,0.92)', alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'rgba(255,255,255,0.08)' },
   nearBtn: { flexDirection:'row', alignItems:'center', backgroundColor:'rgba(13,17,23,0.92)', borderRadius:28, paddingHorizontal:14, height:46, borderWidth:1, borderColor:'rgba(130,219,126,0.3)' },
   nearTxt: { color:'#82DB7E', fontWeight:'700', fontSize:13 },
   chip: { flexDirection:'row', alignItems:'center', paddingHorizontal:14, paddingVertical:8, borderRadius:20, backgroundColor:'rgba(13,17,23,0.88)', borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
@@ -377,6 +407,7 @@ const s = StyleSheet.create({
   actImgInner: { width:48, height:48 },
   actTitle: { color:'#fff', fontWeight:'700', fontSize:14, marginBottom:2 },
   actSub: { color:'#8a9bb0', fontSize:12 },
+  actDist: { color:'#82DB7E', fontSize:11, marginTop:2, fontWeight:'500' },
   actTime: { color:'#8a9bb0', fontSize:11 },
   actMeta: { fontSize:13, fontWeight:'700', marginTop:2 },
 });

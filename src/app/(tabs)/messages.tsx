@@ -8,6 +8,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -59,8 +60,21 @@ export default function MessagesTab() {
   const [refreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsets();
 
-  const fetchConversations = async () => {
+  const fetchConversations = async (isRefresh = false) => {
     if (!user) return;
+    
+    const cacheFile = FileSystem.documentDirectory + `yrdly_messages_cache_${user.id}.json`;
+    
+    try {
+      if (!isRefresh) {
+        const fileInfo = await FileSystem.getInfoAsync(cacheFile);
+        if (fileInfo.exists) {
+          const cachedData = await FileSystem.readAsStringAsync(cacheFile);
+          if (cachedData) setConversations(JSON.parse(cachedData) as Conversation[]);
+        }
+      }
+    } catch (e) {}
+
     try {
       const { data, error } = await supabase
         .from('conversations')
@@ -149,6 +163,9 @@ export default function MessagesTab() {
 
       setConversations(transformed);
 
+      // Save to cache before resolving users (basic data available immediately)
+      FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(transformed)).catch(() => {});
+
       // Resolve participant names/avatars for friend & marketplace convos
       const otherIds = transformed
         .filter((c) => c.type !== 'briefcase')
@@ -162,13 +179,16 @@ export default function MessagesTab() {
           .in('id', otherIds);
 
         if (usersData) {
-          setConversations((prev) =>
-            prev.map((c) => {
+          setConversations((prev) => {
+            const resolved = prev.map((c) => {
               if (c.type === 'briefcase') return c;
               const u = usersData.find((u: any) => u.id === c.participantId);
               return u ? { ...c, participantName: u.name || 'Unknown', participantAvatar: u.avatar_url } : c;
-            })
-          );
+            });
+            // Update cache with resolved names
+            FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(resolved)).catch(() => {});
+            return resolved;
+          });
         }
       }
     } catch (e) {
@@ -180,7 +200,7 @@ export default function MessagesTab() {
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    await fetchConversations();
+    await fetchConversations(true);
     setRefreshing(false);
   }, [user]);
 
@@ -213,11 +233,13 @@ export default function MessagesTab() {
       const suffix = Math.random().toString(36).substring(7);
       chConv = supabase
         .channel(`conversations-mobile-${user.id}-${suffix}`)
+        // @ts-ignore
         .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, fetchConversations)
         .subscribe();
         
       chMsg = supabase
         .channel(`messages-mobile-${user.id}-${suffix}`)
+        // @ts-ignore
         .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchConversations)
         .subscribe();
     } catch (e) {

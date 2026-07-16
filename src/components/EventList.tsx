@@ -11,6 +11,7 @@ import { supabase } from '../lib/supabase';
 import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useRouter, useFocusEffect } from 'expo-router';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
 
@@ -58,6 +59,20 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
 
   const fetchEvents = useCallback(async (isRefresh = false) => {
     if (!isRefresh) setLoading(true);
+    
+    const filterString = `${activeFilter?.state || ''}_${activeFilter?.lga || ''}_${activeFilter?.ward || ''}_${category}_${searchQuery}_${sortOption}`;
+    const cacheFile = FileSystem.documentDirectory + `yrdly_events_cache_${filterString.replace(/\W/g, '_')}.json`;
+    
+    try {
+      if (!isRefresh) {
+        const fileInfo = await FileSystem.getInfoAsync(cacheFile);
+        if (fileInfo.exists) {
+          const cachedData = await FileSystem.readAsStringAsync(cacheFile);
+          if (cachedData) setEvents(JSON.parse(cachedData) as Post[]);
+        }
+      }
+    } catch (e) {}
+
     try {
       let query = supabase
         .from('posts')
@@ -81,6 +96,11 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         p.event_date ? new Date(p.event_date).getTime() >= Date.now() : false
       );
       setEvents(valid);
+      
+      // Save to cache
+      if (valid.length > 0) {
+        FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(valid)).catch(() => {});
+      }
     } catch (e) { console.error('Error fetching events:', e); }
     finally { if (!isRefresh) setLoading(false); }
   }, [searchQuery, sortOption, activeFilter, category]);

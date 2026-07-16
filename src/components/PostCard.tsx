@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image as RNImage, FlatList, Share, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image as RNImage, FlatList, Share, Platform, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Image } from 'expo-image';
@@ -147,12 +147,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
 
-  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    if (viewableItems.length > 0) {
-      setActiveImageIndex(viewableItems[0].index || 0);
-    }
-  }).current;
-  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+  // Removed viewabilityConfig as we use ScrollView onScroll instead
 
   const lastTapRef = useRef(0);
   const singleTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -394,16 +389,19 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       {/* Images */}
       {urls.length > 0 && (
         <View style={{ position: 'relative' }}>
-          <FlatList
-            data={urls}
+          <ScrollView
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={viewabilityConfig}
-            keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item, index }) => (
+            scrollEventThrottle={16}
+            onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+              const slide = Math.round(e.nativeEvent.contentOffset.x / imageDisplayWidth);
+              if (slide !== activeImageIndex) setActiveImageIndex(slide);
+            }}
+          >
+            {urls.map((item, index) => (
               <TouchableOpacity 
+                key={index.toString()}
                 activeOpacity={0.95}
                 onPress={() => handleImageTap(index)}
                 style={[styles.imageContainer, { backgroundColor: colors.borderLight, width: imageDisplayWidth, aspectRatio: 4/5 }]}
@@ -414,8 +412,8 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
                   <Ionicons name="heart" size={100} color="#fff" style={styles.heartShadow} />
                 </Animated.View>
               </TouchableOpacity>
-            )}
-          />
+            ))}
+          </ScrollView>
           {urls.length > 1 && (
             <View style={styles.paginationDots}>
               {urls.map((_, i) => (

@@ -8,6 +8,7 @@ import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
+import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -61,6 +62,20 @@ export default function CatalogTab() {
   // ─── Data fetching ───────────────────────────────────────────
   const fetchItems = useCallback(async (isRefresh = false) => {
     if (!isRefresh) setLoading(true);
+    
+    const filterString = `${activeFilter?.state || ''}_${activeFilter?.lga || ''}_${activeFilter?.ward || ''}_${category}_${search}_${sort}`;
+    const cacheFile = FileSystem.documentDirectory + `yrdly_marketplace_cache_${filterString.replace(/\W/g, '_')}.json`;
+    
+    try {
+      if (!isRefresh) {
+        const fileInfo = await FileSystem.getInfoAsync(cacheFile);
+        if (fileInfo.exists) {
+          const cachedData = await FileSystem.readAsStringAsync(cacheFile);
+          if (cachedData) setItems(JSON.parse(cachedData) as Post[]);
+        }
+      }
+    } catch (e) {}
+
     try {
       let q = supabase
         .from('posts')
@@ -80,7 +95,13 @@ export default function CatalogTab() {
 
       const { data, error } = await q.limit(40);
       if (error) throw error;
+      
       setItems((data as Post[]) || []);
+      
+      // Save to cache
+      if (data) {
+        FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(data)).catch(() => {});
+      }
     } catch (e) { console.error(e); }
     finally { if (!isRefresh) setLoading(false); }
   }, [search, sort, category, activeFilter]);
