@@ -19,6 +19,7 @@ import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { ForSaleForm, type ForSaleFormValues, type PostImage as FSPostImage } from '../../components/ForSaleForm';
 
 type PostCategory = 'General' | 'For Sale' | 'Event';
 
@@ -38,6 +39,9 @@ export default function CreateTab() {
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [price, setPrice] = useState('');
+  const [subCategory, setSubCategory] = useState('');
+  const [condition, setCondition] = useState('');
+  const [negotiable, setNegotiable] = useState(false);
   interface PostImage {
     uri: string;
     width: number;
@@ -67,6 +71,9 @@ export default function CreateTab() {
       setTitle('');
       setText('');
       setPrice('');
+      setSubCategory('');
+      setCondition('');
+      setNegotiable(false);
       setImages([]);
       setLocationData(null);
       setEventDate(new Date());
@@ -260,6 +267,9 @@ export default function CreateTab() {
       // Add specific fields for category
       if (category === 'For Sale') {
         postData.price = price ? parseFloat(price) : 0;
+        postData.sub_category = subCategory || null;
+        postData.condition = condition || null;
+        postData.negotiable = negotiable;
         const { error: insertError } = await supabase.from('posts').insert(postData);
         if (insertError) throw insertError;
       } else if (category === 'Event') {
@@ -300,14 +310,47 @@ export default function CreateTab() {
       setIsSubmitting(false);
     }
   };
+  // ── ForSale form values bridge ─────────────────────────────────────────
+  const forSaleValues: ForSaleFormValues = {
+    title, text, price, subCategory, condition, negotiable,
+    images: images as FSPostImage[],
+  };
+  const handleForSaleChange = (patch: Partial<ForSaleFormValues>) => {
+    if (patch.title !== undefined) setTitle(patch.title);
+    if (patch.text !== undefined) setText(patch.text);
+    if (patch.price !== undefined) setPrice(patch.price);
+    if (patch.subCategory !== undefined) setSubCategory(patch.subCategory);
+    if (patch.condition !== undefined) setCondition(patch.condition);
+    if (patch.negotiable !== undefined) setNegotiable(patch.negotiable);
+    if (patch.images !== undefined) setImages(patch.images as typeof images);
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScreenHeader title="Create Post" />
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
+      <ScreenHeader title={category === 'For Sale' ? 'Sell an Item' : 'Create Post'} />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : 0}
       >
+        {/* ── PREMIUM FOR SALE FLOW ── */}
+        {category === 'For Sale' ? (
+          <ScrollView
+            contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 32 }]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <ForSaleForm
+              values={forSaleValues}
+              onChange={handleForSaleChange}
+              onAddPhoto={pickImage}
+              onRemovePhoto={index => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); removeImage(index); }}
+              profile={profile}
+              isSubmitting={isSubmitting}
+              onSubmit={handleSubmit}
+            />
+          </ScrollView>
+        ) : (
         <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]} keyboardShouldPersistTaps="handled">
           {/* Form Fields (Borderless) */}
           <View style={styles.formGroup}>
@@ -377,31 +420,13 @@ export default function CreateTab() {
 
             <TextInput
               style={[styles.inputBody, { color: colors.text }]}
-              placeholder={category === 'General' ? "What's going on?" : "Describe it..."}
+              placeholder="What's going on?"
               placeholderTextColor={colors.textMuted}
               value={text}
               onChangeText={setText}
               multiline
               textAlignVertical="top"
             />
-
-            {/* Conditional Fields (Sleek Add-on Cards) */}
-            {category === 'For Sale' && (
-              <View style={[styles.addonCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-                <View style={styles.addonHeader}>
-                  <Ionicons name="pricetag" size={16} color={colors.tint} />
-                  <Text style={[styles.addonTitle, { color: colors.text }]}>Set Price</Text>
-                </View>
-                <TextInput
-                  style={[styles.addonInput, { color: colors.text }]}
-                  placeholder="e.g. 5000 (₦)"
-                  placeholderTextColor={colors.textMuted}
-                  value={price}
-                  onChangeText={setPrice}
-                  keyboardType="numeric"
-                />
-              </View>
-            )}
 
             {category === 'Event' && (
               <View style={[styles.addonCard, { backgroundColor: colors.card, borderColor: colors.borderLight, zIndex: 10 }]}>
@@ -637,6 +662,7 @@ export default function CreateTab() {
           </TouchableOpacity>
           
         </ScrollView>
+        )}
       </KeyboardAvoidingView>
 
       {/* ── Post Success Overlay ──────────────── */}

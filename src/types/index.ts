@@ -104,6 +104,9 @@ export interface Post {
   attendees?: string[];
   price?: number;
   condition?: string;
+  sub_category?: string;
+  negotiable?: boolean;
+  view_count?: number;
   is_sold?: boolean;
   liked_by: string[];
   created_at?: string;
