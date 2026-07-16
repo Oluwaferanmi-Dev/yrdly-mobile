@@ -267,6 +267,9 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       if (newIsLiked) {
         const { NotificationTriggers } = await import('../lib/notification-triggers');
         await NotificationTriggers.onPostLiked(post.id, currentUser.id);
+      } else {
+        const { NotificationTriggers } = await import('../lib/notification-triggers');
+        await NotificationTriggers.onPostUnliked(post.id, currentUser.id);
       }
     } catch (e) {
       console.error('Error liking post:', e);
