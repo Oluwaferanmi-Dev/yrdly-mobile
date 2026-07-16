@@ -1,380 +1,394 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Dimensions, ActivityIndicator} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import {
+  View, Text, StyleSheet, TouchableOpacity, TextInput, Animated,
+  PanResponder, FlatList, Dimensions, ActivityIndicator, Linking, Platform,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MapView, { Marker, Region } from 'react-native-maps';
+import { Image } from 'expo-image';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
-import { User, Business, Post } from '../types';
 import { useAppTheme } from '../context/ThemeContext';
 import { useAuth } from '../hooks/use-supabase-auth';
+import Supercluster from 'supercluster';
 
 const { width, height } = Dimensions.get('window');
+const SHEET_H = height * 0.62;
+const PEEK = 110;
+
+type FilterType = 'all' | 'friends' | 'businesses' | 'events';
+type MapMarker = { id: string; type: 'friend'|'business'|'event'; lat: number; lng: number; title: string; subtitle?: string; targetId: string; avatar_url?: string };
+type ActivityItem = { id: string; kind: 'post'|'market'|'event'|'biz'; title: string; subtitle: string; image?: string; time: string; meta?: string; route: string };
+
+const FILTERS: { key: FilterType; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
+  { key: 'all', label: 'All', icon: 'apps', color: '#82DB7E' },
+  { key: 'friends', label: 'Friends', icon: 'people', color: '#8B5CF6' },
+  { key: 'businesses', label: 'Businesses', icon: 'storefront', color: '#22c55e' },
+  { key: 'events', label: 'Events', icon: 'calendar', color: '#F59E0B' },
+];
+
+const DARK_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8a9bb0' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0d1117' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1a2332' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d2236' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#0d1a0f' }] },
+];
+
+function timeAgo(d: string) {
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+function FriendMarker({ avatar_url }: { avatar_url?: string }) {
+  return (
+    <View style={ms.fMarker}>
+      <View style={ms.fRing}>
+        {avatar_url
+          ? <Image source={{ uri: avatar_url }} style={ms.fAvatar} />
+          : <View style={ms.fFallback}><Ionicons name="person" size={16} color="#fff" /></View>}
+      </View>
+      <View style={[ms.dot, { backgroundColor: '#8B5CF6' }]} />
+    </View>
+  );
+}
+
+function IconMarker({ icon, color, bg }: { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string }) {
+  return (
+    <View style={ms.iMarker}>
+      <View style={[ms.iBox, { backgroundColor: bg }]}>
+        <Ionicons name={icon} size={18} color={color} />
+      </View>
+      <View style={[ms.dot, { backgroundColor: color }]} />
+    </View>
+  );
+}
+
+function ClusterBubble({ count }: { count: number }) {
+  return (
+    <View style={ms.cluster}>
+      <Text style={ms.clusterTxt}>{count}</Text>
+    </View>
+  );
+}
 
 export default function MapScreen() {
-  const { colors } = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
-  const { user } = useAuth();
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  
-  const [users, setUsers] = useState<User[]>([]);
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [events, setEvents] = useState<Post[]>([]);
-  const [friends, setFriends] = useState<User[]>([]);
+  const { user, profile } = useAuth();
+  const mapRef = useRef<MapView>(null);
+
+  const [loc, setLoc] = useState<Location.LocationObject | null>(null);
+  const [region, setRegion] = useState<Region | null>(null);
+  const [allMarkers, setAllMarkers] = useState<MapMarker[]>([]);
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterType>('all');
+  const [search, setSearch] = useState('');
+
+  const sc = useMemo(() => new Supercluster({ radius: 50, maxZoom: 16 }), []);
+  const panY = useRef(new Animated.Value(SHEET_H - PEEK)).current;
+  const lastY = useRef(SHEET_H - PEEK);
+
+  const panResponder = useMemo(() => PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 6,
+    onPanResponderMove: (_, g) => {
+      panY.setValue(Math.max(0, Math.min(SHEET_H - PEEK, lastY.current + g.dy)));
+    },
+    onPanResponderRelease: (_, g) => {
+      const cur = lastY.current + g.dy;
+      const snap = g.vy < -0.5 || cur < SHEET_H * 0.35 ? 0
+        : g.vy > 0.5 || cur > SHEET_H * 0.65 ? SHEET_H - PEEK
+        : SHEET_H * 0.42;
+      lastY.current = snap;
+      Animated.spring(panY, { toValue: snap, useNativeDriver: true, tension: 65, friction: 12 }).start();
+    },
+  }), []);
+
+  const getDirections = (lat: number, lng: number, label?: string) => {
+    const url = Platform.OS === 'ios' ? `maps://?daddr=${lat},${lng}&dirflg=d` : `google.navigation:q=${lat},${lng}`;
+    const fb = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    Linking.canOpenURL(url).then(ok => Linking.openURL(ok ? url : fb));
+  };
 
   useEffect(() => {
     (async () => {
-      // 1. Request Permissions & Get Current Location
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        setLoading(false);
-        return;
-      }
-
-      let currentLoc = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-      setLocation(currentLoc);
-
-      // 2. Fetch Users & Businesses with Location Data
-      await fetchMapData();
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') { setLoading(false); return; }
+      const l = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      setLoc(l);
+      setRegion({ latitude: l.coords.latitude, longitude: l.coords.longitude, latitudeDelta: 0.0922, longitudeDelta: 0.0421 });
+      await Promise.all([fetchMarkers(), fetchActivity()]);
     })();
   }, [user]);
 
-  const fetchMapData = async () => {
-    try {
-      // Fetch users with recent location updates
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .not('currentLocation', 'is', null)
-        .limit(50);
-        
-      if (!userError && userData) {
-        setUsers(userData as User[]);
-      }
-
-      // Fetch businesses
-      const { data: bizData, error: bizError } = await supabase
-        .from('businesses')
-        .select('*')
-        .not('map-pin', 'is', null)
-        .limit(50);
-
-      if (!bizError && bizData) {
-        setBusinesses(bizData as Business[]);
-      }
-
-      // Fetch Events
-      const { data: eventData, error: eventError } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('category', 'Event')
-        .limit(50);
-
-      if (!eventError && eventData) {
-        setEvents(eventData as Post[]);
-      }
-
-      // Fetch Friends
-      if (user) {
-        const { data: me } = await supabase.from('users').select('friends').eq('id', user.id).single();
-        const friendIds = me?.friends || [];
-        if (friendIds.length > 0) {
-          const { data: friendsData } = await supabase
-            .from('users')
-            .select('*')
-            .in('id', friendIds)
-            .not('currentLocation', 'is', null);
-          if (friendsData) {
-            setFriends(friendsData as User[]);
-          }
-        }
-      }
-
-    } catch (e) {
-      console.error('Map Data Fetch Error', e);
-    } finally {
-      setLoading(false);
+  const fetchMarkers = async () => {
+    const found: MapMarker[] = [];
+    if (user?.id) {
+      const { data: frds } = await supabase.rpc('get_friends_locations', { user_id: user.id });
+      (frds || []).forEach((f: any) => {
+        const lat = parseFloat(f.location?.lat ?? f.location?.geopoint?.latitude);
+        const lng = parseFloat(f.location?.lng ?? f.location?.geopoint?.longitude);
+        if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `friend-${f.friend_id}`, type: 'friend', lat, lng, title: f.friend_name, subtitle: 'Friend', targetId: f.friend_id, avatar_url: f.friend_avatar_url });
+      });
     }
+    const { data: bizs } = await supabase.from('businesses').select('id,name,category,location').not('location','is',null).limit(50);
+    (bizs || []).forEach((b: any) => {
+      const lat = parseFloat(b.location?.lat ?? b.location?.geopoint?.latitude);
+      const lng = parseFloat(b.location?.lng ?? b.location?.geopoint?.longitude);
+      if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `biz-${b.id}`, type: 'business', lat, lng, title: b.name, subtitle: b.category, targetId: b.id });
+    });
+    const { data: evts } = await supabase.from('events').select('id,title,lat,lng,location_address').eq('status','PUBLISHED').not('lat','is',null).not('lng','is',null).limit(50);
+    (evts || []).forEach((e: any) => {
+      const lat = parseFloat(e.lat); const lng = parseFloat(e.lng);
+      if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `evt-${e.id}`, type: 'event', lat, lng, title: e.title || 'Event', subtitle: e.location_address, targetId: e.id });
+    });
+    setAllMarkers(found);
+    setLoading(false);
   };
 
-  if (loading) {
-    return (
-      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
-        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Locating you...</Text>
-      </View>
-    );
-  }
-
-  // Fallback to a default location (e.g. Lagos) if location permission is denied
-  const initialRegion = {
-    latitude: location?.coords.latitude || 6.5244,
-    longitude: location?.coords.longitude || 3.3792,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
+  const fetchActivity = async () => {
+    const items: ActivityItem[] = [];
+    const state = (profile?.location as any)?.state;
+    const [{ data: posts }, { data: mkt }, { data: evts }, { data: bizs }] = await Promise.all([
+      supabase.from('posts').select('id,title,content,created_at,users!posts_author_id_fkey(name,avatar_url)').not('category','in','("For Sale","Event")').order('created_at',{ascending:false}).limit(3),
+      supabase.from('posts').select('id,title,price,created_at,images').eq('category','For Sale').eq('is_sold',false).order('created_at',{ascending:false}).limit(2),
+      supabase.from('events').select('id,title,start_time,location_address,attendee_count,cover_image_url').eq('status','PUBLISHED').gte('start_time',new Date().toISOString()).order('start_time',{ascending:true}).limit(3),
+      supabase.from('businesses').select('id,name,category,description,image_urls,created_at').order('created_at',{ascending:false}).limit(2),
+    ]);
+    (posts||[]).forEach((p:any) => items.push({ id:`p-${p.id}`, kind:'post', title:`${p.users?.name||'Someone'} posted nearby`, subtitle: (p.content||p.title||'').slice(0,80), time: timeAgo(p.created_at), image: p.users?.avatar_url, route:`/posts/${p.id}` }));
+    (mkt||[]).forEach((p:any) => items.push({ id:`m-${p.id}`, kind:'market', title: p.title, subtitle:'For sale', meta: p.price ? `₦${Number(p.price).toLocaleString()}` : '', time: timeAgo(p.created_at), image: p.images?.[0], route:`/marketplace/${p.id}` }));
+    (evts||[]).forEach((e:any) => items.push({ id:`e-${e.id}`, kind:'event', title: e.title, subtitle:`${e.location_address||''}`, meta: e.attendee_count ? `${e.attendee_count} going` : '', time: timeAgo(e.start_time), image: e.cover_image_url, route:`/events/${e.id}` }));
+    (bizs||[]).forEach((b:any) => items.push({ id:`b-${b.id}`, kind:'biz', title:`${b.name}`, subtitle: b.description?.slice(0,60)||b.category||'', time: timeAgo(b.created_at), image: b.image_urls?.[0], route:`/business/${b.id}` }));
+    items.sort(() => Math.random() - 0.5);
+    setActivity(items.slice(0,8));
   };
+
+  const visibleMarkers = useMemo(() => {
+    const byFilter = filter === 'all' ? allMarkers : allMarkers.filter(m => {
+      if (filter === 'friends') return m.type === 'friend';
+      if (filter === 'businesses') return m.type === 'business';
+      if (filter === 'events') return m.type === 'event';
+      return true;
+    });
+    if (!search.trim()) return byFilter;
+    const q = search.toLowerCase();
+    return byFilter.filter(m => m.title.toLowerCase().includes(q) || (m.subtitle||'').toLowerCase().includes(q));
+  }, [allMarkers, filter, search]);
+
+  useEffect(() => {
+    sc.load(visibleMarkers.map(m => ({ type:'Feature' as const, properties:{ cluster:false, ...m }, geometry:{ type:'Point' as const, coordinates:[m.lng, m.lat] } })));
+  }, [visibleMarkers, sc]);
+
+  const clusters = useMemo(() => {
+    if (!region) return [];
+    const { latitude:lat, longitude:lng, latitudeDelta:ld, longitudeDelta:lnd } = region;
+    const z = Math.min(Math.max(Math.round(Math.log(360/ld)/Math.LN2),0),20);
+    return sc.getClusters([lng-lnd/2, lat-ld/2, lng+lnd/2, lat+ld/2], z);
+  }, [region, sc, visibleMarkers]);
+
+  const areaName = (profile?.location as any)?.lga || (profile?.location as any)?.state || 'Your Area';
+  const bizCount = allMarkers.filter(m => m.type === 'business').length;
+  const evtCount = allMarkers.filter(m => m.type === 'event').length;
+
+  const locateMe = () => {
+    if (!loc) return;
+    mapRef.current?.animateToRegion({ latitude: loc.coords.latitude, longitude: loc.coords.longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 600);
+  };
+
+  if (loading) return (
+    <View style={[s.fill, { backgroundColor: '#0B0D0B', justifyContent:'center', alignItems:'center' }]}>
+      <ActivityIndicator size="large" color="#82DB7E" />
+      <Text style={{ color:'#82DB7E', marginTop:12, fontWeight:'600' }}>Locating you...</Text>
+    </View>
+  );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Yrdly Map</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      {errorMsg ? (
-        <View style={styles.errorContainer}>
-          <Text style={[styles.errorText, { color: colors.text }]}>{errorMsg}</Text>
-          <Text style={[styles.subErrorText, { color: colors.textSecondary }]}>Please enable location services in your settings to view the map correctly.</Text>
-        </View>
-      ) : null}
-
-      <MapView 
-        style={styles.map} 
-        initialRegion={initialRegion}
-        showsUserLocation={true}
-        showsMyLocationButton={true}
-        showsBuildings={true}
-        pitchEnabled={true}
+    <View style={s.fill}>
+      <MapView
+        ref={mapRef}
+        style={StyleSheet.absoluteFillObject}
+        initialRegion={region || { latitude:6.5244, longitude:3.3792, latitudeDelta:0.0922, longitudeDelta:0.0421 }}
+        showsUserLocation showsMyLocationButton={false} showsBuildings pitchEnabled
+        customMapStyle={Platform.OS === 'android' ? DARK_STYLE : undefined}
+        onRegionChangeComplete={setRegion}
       >
-        {/* Render Users */}
-        {users.map(u => {
-          // Skip if user is in friends list (they will be rendered as friends)
-          if (friends.some(f => f.id === u.id)) return null;
-          if (!u.currentLocation) return null;
-          const lat = parseFloat(u.currentLocation.lat as any);
-          const lng = parseFloat(u.currentLocation.lng as any);
-          if (isNaN(lat) || isNaN(lng)) return null;
-
-          return (
-            <Marker
-              key={`user-${u.id}`}
-              coordinate={{
-                latitude: lat,
-                longitude: lng
-              }}
-              pinColor="blue" // Blue for users
-            >
-              <Callout onPress={() => router.push(`/profile/${u.id}`)}>
-                <View style={styles.calloutContainer}>
-                  <Text style={[styles.calloutTitle, { color: colors.text }]}>{u.name}</Text>
-                  <Text style={[styles.calloutSub, { color: colors.textMuted }]}>Tap to view profile</Text>
-                </View>
-              </Callout>
+        {clusters.map((c, i) => {
+          const [lng, lat] = c.geometry.coordinates;
+          const { cluster: isC, point_count, ...p } = c.properties as any;
+          if (isC) return (
+            <Marker key={`cl-${c.id??i}`} coordinate={{ latitude:lat, longitude:lng }}
+              onPress={() => { const z = sc.getClusterExpansionZoom(c.id as number); const d = 360/Math.pow(2,z); mapRef.current?.animateToRegion({ latitude:lat, longitude:lng, latitudeDelta:d, longitudeDelta:d }, 400); }}>
+              <ClusterBubble count={point_count} />
             </Marker>
           );
-        })}
-
-        {/* Render Friends */}
-        {friends.map(friend => {
-          if (!friend.currentLocation) return null;
-          const lat = parseFloat(friend.currentLocation.lat as any);
-          const lng = parseFloat(friend.currentLocation.lng as any);
-          if (isNaN(lat) || isNaN(lng)) return null;
-
+          const m = p as MapMarker;
           return (
-            <Marker
-              key={`friend-${friend.id}`}
-              coordinate={{
-                latitude: lat,
-                longitude: lng
-              }}
-              pinColor="violet" // Purple for friends
-            >
-              <Callout onPress={() => router.push(`/profile/${friend.id}`)}>
-                <View style={styles.calloutContainer}>
-                  <Text style={[styles.calloutTitle, { color: colors.text }]}>{friend.name} (Friend)</Text>
-                  <Text style={[styles.calloutSub, { color: colors.textMuted }]}>Tap to view profile</Text>
-                </View>
-              </Callout>
-            </Marker>
-          );
-        })}
-
-        {/* Render Businesses */}
-        {businesses.map(biz => {
-          const loc = biz.location as any;
-          if (!loc) return null;
-          
-          const lat = parseFloat(loc.lat || loc.geopoint?.latitude);
-          const lng = parseFloat(loc.lng || loc.geopoint?.longitude);
-          if (isNaN(lat) || isNaN(lng)) return null;
-
-          return (
-            <Marker
-              key={`biz-${biz.id}`}
-              coordinate={{
-                latitude: lat,
-                longitude: lng
-              }}
-              pinColor="green" // Green for businesses
-            >
-              <Callout>
-                <View style={styles.calloutContainer}>
-                  <Text style={[styles.calloutTitle, { color: colors.text }]}>{biz.name}</Text>
-                  <Text style={[styles.calloutSub, { color: colors.textMuted }]}>{biz.category}</Text>
-                </View>
-              </Callout>
-            </Marker>
-          );
-        })}
-
-        {/* Render Events */}
-        {events.map(event => {
-          const loc = (event.event_location as any) || (event as any).location;
-          if (!loc) return null;
-          
-          const lat = parseFloat(loc.lat || loc.geopoint?.latitude);
-          const lng = parseFloat(loc.lng || loc.geopoint?.longitude);
-          if (isNaN(lat) || isNaN(lng)) return null;
-
-          return (
-            <Marker
-              key={`evt-${event.id}`}
-              coordinate={{
-                latitude: lat,
-                longitude: lng
-              }}
-              pinColor="orange" // Orange for events
-            >
-              <Callout onPress={() => router.push(`/events/${event.id}`)}>
-                <View style={styles.calloutContainer}>
-                  <Text style={[styles.calloutTitle, { color: colors.text }]}>{event.title || 'Event'}</Text>
-                  <Text style={[styles.calloutSub, { color: colors.textMuted }]}>Tap to view event</Text>
-                </View>
-              </Callout>
+            <Marker key={m.id} coordinate={{ latitude:m.lat, longitude:m.lng }} tracksViewChanges={false}
+              onPress={() => m.type==='friend' ? router.push(`/profile/${m.targetId}`) : m.type==='event' ? router.push(`/events/${m.targetId}`) : null}>
+              {m.type==='friend' ? <FriendMarker avatar_url={m.avatar_url} />
+                : m.type==='business' ? <IconMarker icon="storefront-outline" color="#22c55e" bg="rgba(34,197,94,0.15)" />
+                : <IconMarker icon="calendar-outline" color="#F59E0B" bg="rgba(245,158,11,0.15)" />}
             </Marker>
           );
         })}
       </MapView>
 
-      {/* Floating Legend */}
-      <View style={[styles.legendContainer, { backgroundColor: colors.card }]}>
-        <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: '#0ea5e9' }]} />
-          <Text style={[styles.legendText, { color: colors.text }]}>Users</Text>
+      {/* ── Top overlays ── */}
+      <View style={[s.topWrap, { paddingTop: insets.top + 8 }]}>
+        <View style={s.searchRow}>
+          <View style={s.searchBox}>
+            <Feather name="search" size={16} color="#8a9bb0" style={{ marginRight:8 }} />
+            <TextInput
+              style={s.searchInput}
+              placeholder="Search streets, estates, businesses..."
+              placeholderTextColor="#8a9bb0"
+              value={search}
+              onChangeText={setSearch}
+            />
+          </View>
+          <TouchableOpacity style={s.nearBtn} onPress={locateMe}>
+            <Ionicons name="location" size={14} color="#82DB7E" style={{ marginRight:4 }} />
+            <Text style={s.nearTxt}>Near Me</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: '#8B5CF6' }]} />
-          <Text style={[styles.legendText, { color: colors.text }]}>Friends</Text>
-        </View>
-        <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: colors.tint }]} />
-          <Text style={[styles.legendText, { color: colors.text }]}>Businesses</Text>
-        </View>
-        <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: '#F59E0B' }]} />
-          <Text style={[styles.legendText, { color: colors.text }]}>Events</Text>
-        </View>
+
+        <FlatList
+          horizontal showsHorizontalScrollIndicator={false}
+          data={FILTERS} keyExtractor={f => f.key}
+          contentContainerStyle={{ paddingHorizontal:16, gap:8, paddingTop:10 }}
+          renderItem={({ item:f }) => {
+            const active = filter === f.key;
+            return (
+              <TouchableOpacity
+                style={[s.chip, active && { backgroundColor: f.color }]}
+                onPress={() => setFilter(f.key)}>
+                <Ionicons name={f.icon} size={14} color={active ? '#0B0D0B' : f.color} style={{ marginRight:5 }} />
+                <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : '#ccc' }]}>{f.label}</Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
       </View>
-    </SafeAreaView>
+
+      {/* ── Estate card ── */}
+      <View style={[s.estateCard, { bottom: PEEK + 24 }]}>
+        <View style={s.estateRow}>
+          <Ionicons name="location" size={14} color="#82DB7E" />
+          <Text style={s.estateName}>{areaName}</Text>
+        </View>
+        <Text style={s.estateMeta}>{bizCount} businesses  •  {evtCount} events nearby</Text>
+        <TouchableOpacity style={s.communityBtn} onPress={() => router.push('/community' as any)}>
+          <Text style={s.communityTxt}>View Community</Text>
+          <Ionicons name="chevron-forward" size={14} color="#0B0D0B" />
+        </TouchableOpacity>
+      </View>
+
+      {/* ── FABs ── */}
+      <View style={[s.fabs, { bottom: PEEK + 24 }]}>
+        <TouchableOpacity style={s.fab} onPress={locateMe}>
+          <Ionicons name="locate" size={18} color="#222" />
+          <Text style={s.fabTxt}>Locate me</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[s.fab, s.fabGreen]} onPress={() => router.push('/create' as any)}>
+          <Ionicons name="add" size={20} color="#0B0D0B" />
+          <Text style={[s.fabTxt, { color:'#0B0D0B' }]}>Create Post</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.fab} onPress={() => loc && getDirections(loc.coords.latitude, loc.coords.longitude)}>
+          <Ionicons name="navigate" size={18} color="#222" />
+          <Text style={s.fabTxt}>Directions</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ── Bottom Sheet ── */}
+      <Animated.View style={[s.sheet, { transform:[{ translateY: panY }] }]}>
+        <View style={s.sheetHandle} {...panResponder.panHandlers}>
+          <View style={s.handleBar} />
+          <View style={s.sheetTitleRow}>
+            <Text style={s.sheetTitle}>Nearby Activity</Text>
+            <TouchableOpacity onPress={() => router.push('/home' as any)}>
+              <Text style={s.seeAll}>See all  ›</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <FlatList
+          data={activity} keyExtractor={a => a.id}
+          scrollEnabled showsVerticalScrollIndicator={false}
+          style={{ flex:1 }}
+          renderItem={({ item:a }) => (
+            <TouchableOpacity style={s.actRow} onPress={() => router.push(a.route as any)}>
+              <View style={[s.actImg, { backgroundColor: a.kind==='event'?'rgba(245,158,11,0.15)':a.kind==='biz'?'rgba(34,197,94,0.15)':'rgba(130,219,126,0.1)' }]}>
+                {a.image
+                  ? <Image source={{ uri:a.image }} style={s.actImgInner} contentFit="cover" />
+                  : <Ionicons name={a.kind==='event'?'calendar-outline':a.kind==='market'?'bag-outline':a.kind==='biz'?'storefront-outline':'person-circle-outline'} size={24} color={a.kind==='event'?'#F59E0B':a.kind==='biz'?'#22c55e':'#82DB7E'} />}
+              </View>
+              <View style={{ flex:1 }}>
+                <Text style={s.actTitle} numberOfLines={1}>{a.title}</Text>
+                <Text style={s.actSub} numberOfLines={1}>{a.subtitle}</Text>
+              </View>
+              <View style={{ alignItems:'flex-end' }}>
+                <Text style={s.actTime}>{a.time}</Text>
+                {a.meta ? <Text style={[s.actMeta, { color: a.kind==='market'?'#82DB7E':'#8B5CF6' }]}>{a.meta}</Text> : null}
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      </Animated.View>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 16,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    zIndex: 10,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  errorContainer: {
-    position: 'absolute',
-    top: 110,
-    left: 16,
-    right: 16,
-    backgroundColor: '#FFEBEE',
-    padding: 16,
-    borderRadius: 8,
-    zIndex: 20,
-    borderWidth: 1,
-    borderColor: '#FFCDD2',
-  },
-  errorText: {
-    color: '#D32F2F',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  subErrorText: {
-    color: '#D32F2F',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  map: {
-    width: width,
-    height: height,
-  },
-  calloutContainer: {
-    width: 150,
-    padding: 8,
-  },
-  calloutTitle: {
-    fontWeight: 'bold',
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  calloutSub: {
-    fontSize: 12,
-  },
-  legendContainer: {
-    position: 'absolute',
-    bottom: 40,
-    left: 16,
-    padding: 12,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  legendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 4,
-  },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  legendText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
+const s = StyleSheet.create({
+  fill: { flex:1, backgroundColor:'#0B0D0B' },
+  topWrap: { position:'absolute', top:0, left:0, right:0 },
+  searchRow: { flexDirection:'row', paddingHorizontal:16, gap:10 },
+  searchBox: { flex:1, flexDirection:'row', alignItems:'center', backgroundColor:'rgba(13,17,23,0.92)', borderRadius:28, paddingHorizontal:14, height:46, borderWidth:1, borderColor:'rgba(255,255,255,0.08)' },
+  searchInput: { flex:1, color:'#fff', fontSize:14 },
+  nearBtn: { flexDirection:'row', alignItems:'center', backgroundColor:'rgba(13,17,23,0.92)', borderRadius:28, paddingHorizontal:14, height:46, borderWidth:1, borderColor:'rgba(130,219,126,0.3)' },
+  nearTxt: { color:'#82DB7E', fontWeight:'700', fontSize:13 },
+  chip: { flexDirection:'row', alignItems:'center', paddingHorizontal:14, paddingVertical:8, borderRadius:20, backgroundColor:'rgba(13,17,23,0.88)', borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
+  chipTxt: { fontSize:13, fontWeight:'600' },
+  estateCard: { position:'absolute', left:16, width:220, backgroundColor:'rgba(13,17,23,0.94)', borderRadius:20, padding:14, borderWidth:1, borderColor:'rgba(255,255,255,0.08)' },
+  estateRow: { flexDirection:'row', alignItems:'center', gap:4, marginBottom:4 },
+  estateName: { color:'#fff', fontWeight:'800', fontSize:15 },
+  estateMeta: { color:'#8a9bb0', fontSize:11, marginBottom:10 },
+  communityBtn: { flexDirection:'row', alignItems:'center', justifyContent:'center', backgroundColor:'#82DB7E', borderRadius:12, paddingVertical:8, gap:4 },
+  communityTxt: { color:'#0B0D0B', fontWeight:'800', fontSize:13 },
+  fabs: { position:'absolute', right:16, gap:10 },
+  fab: { flexDirection:'row', alignItems:'center', backgroundColor:'rgba(13,17,23,0.94)', borderRadius:28, paddingHorizontal:14, paddingVertical:10, gap:6, borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
+  fabGreen: { backgroundColor:'#82DB7E', borderColor:'#82DB7E' },
+  fabTxt: { color:'#ccc', fontWeight:'700', fontSize:13 },
+  sheet: { position:'absolute', bottom:0, left:0, right:0, height:SHEET_H, backgroundColor:'#0f1410', borderTopLeftRadius:28, borderTopRightRadius:28, borderWidth:1, borderColor:'rgba(255,255,255,0.08)' },
+  sheetHandle: { paddingTop:10, paddingHorizontal:16, paddingBottom:4 },
+  handleBar: { width:40, height:4, borderRadius:2, backgroundColor:'rgba(255,255,255,0.2)', alignSelf:'center', marginBottom:12 },
+  sheetTitleRow: { flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginBottom:4 },
+  sheetTitle: { color:'#fff', fontWeight:'800', fontSize:17 },
+  seeAll: { color:'#82DB7E', fontWeight:'700', fontSize:13 },
+  actRow: { flexDirection:'row', alignItems:'center', paddingHorizontal:16, paddingVertical:12, gap:12, borderBottomWidth:1, borderBottomColor:'rgba(255,255,255,0.05)' },
+  actImg: { width:48, height:48, borderRadius:14, alignItems:'center', justifyContent:'center', overflow:'hidden' },
+  actImgInner: { width:48, height:48 },
+  actTitle: { color:'#fff', fontWeight:'700', fontSize:14, marginBottom:2 },
+  actSub: { color:'#8a9bb0', fontSize:12 },
+  actTime: { color:'#8a9bb0', fontSize:11 },
+  actMeta: { fontSize:13, fontWeight:'700', marginTop:2 },
+});
+
+const ms = StyleSheet.create({
+  fMarker: { alignItems:'center' },
+  fRing: { width:44, height:44, borderRadius:22, borderWidth:2.5, borderColor:'#8B5CF6', overflow:'hidden', backgroundColor:'#1a1a2e' },
+  fAvatar: { width:40, height:40, borderRadius:20 },
+  fFallback: { flex:1, alignItems:'center', justifyContent:'center' },
+  iMarker: { alignItems:'center' },
+  iBox: { width:40, height:40, borderRadius:12, alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
+  dot: { width:8, height:8, borderRadius:4, marginTop:2 },
+  cluster: { width:44, height:44, borderRadius:22, backgroundColor:'#82DB7E', alignItems:'center', justifyContent:'center', borderWidth:3, borderColor:'#fff' },
+  clusterTxt: { color:'#0B0D0B', fontWeight:'900', fontSize:15 },
 });

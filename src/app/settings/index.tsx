@@ -22,12 +22,15 @@ export default function SettingsScreen() {
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || user?.user_metadata?.avatar_url || '');
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [shareLocation, setShareLocation] = useState<boolean>((profile as any)?.shareLocation ?? false);
+  const [savingLocation, setSavingLocation] = useState(false);
 
   useEffect(() => {
     if (profile) {
       setName(profile.name || '');
       setBio(profile.bio || '');
       setAvatarUrl(profile.avatar_url || '');
+      setShareLocation((profile as any).shareLocation ?? false);
     }
   }, [profile]);
 
@@ -98,6 +101,20 @@ export default function SettingsScreen() {
       Alert.alert('Upload Failed', 'There was an error uploading your image.');
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+  const handleShareLocationToggle = async (value: boolean) => {
+    setShareLocation(value);
+    if (!user) return;
+    setSavingLocation(true);
+    try {
+      await AuthService.updateUserProfile(user.id, { shareLocation: value } as any);
+    } catch (e) {
+      console.error(e);
+      setShareLocation(!value); // revert on error
+    } finally {
+      setSavingLocation(false);
     }
   };
 
@@ -235,6 +252,28 @@ export default function SettingsScreen() {
               <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
             </TouchableOpacity>
           ))}
+        </View>
+
+        {/* Privacy */}
+        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>PRIVACY</Text>
+        <View style={[styles.glassCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View style={[styles.navRow, styles.navRowBorder, { borderBottomColor: colors.borderLight }]}>
+            <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
+              <Ionicons name="location-outline" size={24} color={colors.tint} />
+            </View>
+            <View style={styles.navTextWrap}>
+              <Text style={[styles.navLabel, { color: colors.text }]}>Share Location with Friends</Text>
+              <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>Let mutual friends see you on the map</Text>
+            </View>
+            <Switch
+              value={shareLocation}
+              onValueChange={handleShareLocationToggle}
+              disabled={savingLocation}
+              trackColor={{ false: '#353534', true: colors.tint }}
+              thumbColor={'#FFFFFF'}
+              ios_backgroundColor="#353534"
+            />
+          </View>
         </View>
 
         {/* Preferences */}
