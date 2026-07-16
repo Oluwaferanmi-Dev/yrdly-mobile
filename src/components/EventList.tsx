@@ -144,6 +144,146 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
     );
   }
 
+  const ListHeader = useCallback(() => (
+    <>
+      {/* ── Category chips ── */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipsScroll} contentContainerStyle={s.chipsContent}>
+        {EVENT_CATEGORIES.map(cat => {
+          const active = category === cat.key;
+          return (
+            <TouchableOpacity
+              key={cat.key} onPress={() => setCategory(active ? '' : cat.key)}
+              style={[s.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
+              <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : colors.textMuted} style={{ marginRight: 4 }} />
+              <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* ── Upcoming Events featured carousel ── */}
+      {featured.length > 0 && (
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <Text style={[s.sectionTitle, { color: colors.text }]}>Upcoming Events</Text>
+            <TouchableOpacity onPress={() => listRef.current?.scrollToOffset({ offset: 650, animated: true })}>
+              <Text style={[s.seeAll, { color: colors.tint }]}>See all  ›</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView
+            ref={featuredRef}
+            horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+            style={{ width: width - 32 }}
+            onMomentumScrollEnd={e => setFeaturedIdx(Math.round(e.nativeEvent.contentOffset.x / (width - 32)))}
+          >
+            {featured.map(item => {
+              const imgUrl = item.image_urls?.[0] || item.image_url;
+              const d = item.event_date ? new Date(item.event_date) : null;
+              const location = typeof item.event_location === 'string' ? item.event_location : (item.event_location as any)?.address || '';
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  activeOpacity={0.93}
+                  onPress={() => navigateToEvent(item)}
+                  style={[s.heroCard, { width: width - 32 }]}
+                >
+                  {imgUrl
+                    ? <Image source={{ uri: imgUrl }} style={StyleSheet.absoluteFillObject} contentFit="cover" transition={300} />
+                    : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#0d1a0d' }]} />}
+                  <View style={s.heroOverlay} />
+                  <View style={s.featBadge}>
+                    <Ionicons name="star-outline" size={10} color="#82DB7E" style={{ marginRight: 4 }} />
+                    <Text style={s.featBadgeTxt}>Featured Event</Text>
+                  </View>
+                  <View style={s.heroInfo}>
+                    <Text style={s.heroTitle} numberOfLines={2}>{item.title || item.text}</Text>
+                    {item.text && item.title && (
+                      <Text style={s.heroTagline}>{item.text.toUpperCase()}</Text>
+                    )}
+                    {d && (
+                      <View style={s.heroMetaRow}>
+                        <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.7)" />
+                        <Text style={s.heroMeta}>
+                          {d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} at {d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                      </View>
+                    )}
+                    {!!location && (
+                      <View style={s.heroMetaRow}>
+                        <Ionicons name="location-outline" size={13} color="rgba(255,255,255,0.7)" />
+                        <Text style={s.heroMeta} numberOfLines={1}>{location}</Text>
+                      </View>
+                    )}
+                    <View style={s.heroFooter}>
+                      <View style={s.attendeeAvatars}>
+                        {(item.attendees?.length || 0) > 0 && (
+                          <>
+                            <Ionicons name="people" size={14} color="rgba(255,255,255,0.8)" style={{ marginRight: 4 }} />
+                            <Text style={s.aCount}>{item.attendees?.length} attending</Text>
+                          </>
+                        )}
+                      </View>
+                      <TouchableOpacity style={s.heroCTA} onPress={() => navigateToEvent(item)}>
+                        <Text style={s.heroCTATxt}>View Tickets</Text>
+                        <Ionicons name="chevron-forward" size={14} color="#0B0D0B" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+          {featured.length > 1 && (
+            <View style={s.dots}>
+              {featured.map((_, i) => (
+                <View key={i} style={[s.dot, { backgroundColor: i === featuredIdx ? colors.tint : colors.borderLight }]} />
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* ── More Events For You (horizontal) ── */}
+      {horizontal.length > 0 && (
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <Text style={[s.sectionTitle, { color: colors.text }]}>More Events For You</Text>
+            <TouchableOpacity onPress={() => listRef.current?.scrollToOffset({ offset: 650, animated: true })}>
+              <Text style={[s.seeAll, { color: colors.tint }]}>See all  ›</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
+            {horizontal.map(item => (
+              <EventCardCompact key={item.id} event={item} onPress={() => navigateToEvent(item)} />
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* ── Can't find your event? ── */}
+      <TouchableOpacity
+        style={[s.createBanner, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+        onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
+        <View style={[s.createIcon, { backgroundColor: 'rgba(130,219,126,0.1)' }]}>
+          <Ionicons name="calendar-outline" size={24} color={colors.tint} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[s.createTitle, { color: colors.text }]}>Can't find your event?</Text>
+          <Text style={[s.createSub, { color: colors.textMuted }]}>Create and share events with your community.</Text>
+        </View>
+        <TouchableOpacity style={[s.createCTA, { backgroundColor: colors.tint }]} onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
+          <Text style={s.createCTATxt}>Create Event</Text>
+          <Ionicons name="add-circle-outline" size={14} color="#0B0D0B" style={{ marginLeft: 4 }} />
+        </TouchableOpacity>
+      </TouchableOpacity>
+
+      {rest.length > 0 && (
+        <Text style={[s.sectionTitle, { color: colors.text, paddingHorizontal: 16, marginBottom: 8 }]}>All Events</Text>
+      )}
+    </>
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [featured, horizontal, rest, featuredIdx, category, colors]);
+
   return (
     <FlatList
       data={rest}
@@ -155,153 +295,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       renderItem={({ item }) => (
         <EventCard event={item} onPress={() => navigateToEvent(item)} />
       )}
-      ListHeaderComponent={() => (
-        <>
-          {/* ── Category chips ── */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipsScroll} contentContainerStyle={s.chipsContent}>
-            {EVENT_CATEGORIES.map(cat => {
-              const active = category === cat.key;
-              return (
-                <TouchableOpacity
-                  key={cat.key} onPress={() => setCategory(active ? '' : cat.key)}
-                  style={[s.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
-                  <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : colors.textMuted} style={{ marginRight: 4 }} />
-                  <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-
-          {/* ── Upcoming Events featured carousel ── */}
-          {featured.length > 0 && (
-            <View style={s.section}>
-              <View style={s.sectionHeader}>
-                <Text style={[s.sectionTitle, { color: colors.text }]}>Upcoming Events</Text>
-                <TouchableOpacity onPress={() => listRef.current?.scrollToOffset({ offset: 650, animated: true })}>
-                  <Text style={[s.seeAll, { color: colors.tint }]}>See all  ›</Text>
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView
-                ref={featuredRef}
-                horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-                style={{ width: width - 32 }}
-                onMomentumScrollEnd={e => setFeaturedIdx(Math.round(e.nativeEvent.contentOffset.x / (width - 32)))}
-              >
-                {featured.map(item => {
-                  const imgUrl = item.image_urls?.[0] || item.image_url;
-                  const d = item.event_date ? new Date(item.event_date) : null;
-                  const location = typeof item.event_location === 'string' ? item.event_location : (item.event_location as any)?.address || '';
-                  return (
-                    <TouchableOpacity
-                      key={item.id}
-                      activeOpacity={0.93}
-                      onPress={() => navigateToEvent(item)}
-                      style={[s.heroCard, { width: width - 32 }]}
-                    >
-                      {imgUrl
-                        ? <Image source={{ uri: imgUrl }} style={StyleSheet.absoluteFillObject} contentFit="cover" transition={300} />
-                        : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#0d1a0d' }]} />}
-                      <View style={s.heroOverlay} />
-
-                      {/* Featured badge */}
-                      <View style={s.featBadge}>
-                        <Ionicons name="star-outline" size={10} color="#82DB7E" style={{ marginRight: 4 }} />
-                        <Text style={s.featBadgeTxt}>Featured Event</Text>
-                      </View>
-
-                      {/* Info overlay */}
-                      <View style={s.heroInfo}>
-                        <Text style={s.heroTitle} numberOfLines={2}>{item.title || item.text}</Text>
-                        {item.text && item.title && (
-                          <Text style={s.heroTagline}>{item.text.toUpperCase()}</Text>
-                        )}
-                        {d && (
-                          <View style={s.heroMetaRow}>
-                            <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.7)" />
-                            <Text style={s.heroMeta}>
-                              {d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} at {d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                            </Text>
-                          </View>
-                        )}
-                        {!!location && (
-                          <View style={s.heroMetaRow}>
-                            <Ionicons name="location-outline" size={13} color="rgba(255,255,255,0.7)" />
-                            <Text style={s.heroMeta} numberOfLines={1}>{location}</Text>
-                          </View>
-                        )}
-                        {/* Attendee row */}
-                        <View style={s.heroFooter}>
-                          <View style={s.attendeeAvatars}>
-                            {(item.attendees?.length || 0) > 0 && (
-                              <>
-                                <Ionicons name="people" size={14} color="rgba(255,255,255,0.8)" style={{ marginRight: 4 }} />
-                                <Text style={s.aCount}>{item.attendees?.length} attending</Text>
-                              </>
-                            )}
-                          </View>
-                          <TouchableOpacity style={s.heroCTA} onPress={() => navigateToEvent(item)}>
-                            <Text style={s.heroCTATxt}>View Tickets</Text>
-                            <Ionicons name="chevron-forward" size={14} color="#0B0D0B" />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-
-              {/* Dots */}
-              {featured.length > 1 && (
-                <View style={s.dots}>
-                  {featured.map((_, i) => (
-                    <View key={i} style={[s.dot, { backgroundColor: i === featuredIdx ? colors.tint : colors.borderLight }]} />
-                  ))}
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* ── More Events For You (horizontal) ── */}
-          {horizontal.length > 0 && (
-            <View style={s.section}>
-              <View style={s.sectionHeader}>
-                <Text style={[s.sectionTitle, { color: colors.text }]}>More Events For You</Text>
-                <TouchableOpacity onPress={() => listRef.current?.scrollToOffset({ offset: 650, animated: true })}>
-                  <Text style={[s.seeAll, { color: colors.tint }]}>See all  ›</Text>
-                </TouchableOpacity>
-              </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
-                {horizontal.map(item => (
-                  <EventCardCompact key={item.id} event={item} onPress={() => navigateToEvent(item)} />
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-          {/* ── Can't find your event? ── */}
-          <TouchableOpacity
-            style={[s.createBanner, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
-            onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
-            <View style={[s.createIcon, { backgroundColor: 'rgba(130,219,126,0.1)' }]}>
-              <Ionicons name="calendar-outline" size={24} color={colors.tint} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[s.createTitle, { color: colors.text }]}>Can't find your event?</Text>
-              <Text style={[s.createSub, { color: colors.textMuted }]}>Create and share events with your community.</Text>
-            </View>
-            <TouchableOpacity style={[s.createCTA, { backgroundColor: colors.tint }]} onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
-              <Text style={s.createCTATxt}>Create Event</Text>
-              <Ionicons name="add-circle-outline" size={14} color="#0B0D0B" style={{ marginLeft: 4 }} />
-            </TouchableOpacity>
-          </TouchableOpacity>
-
-          {/* Rest header */}
-          {rest.length > 0 && (
-            <Text style={[s.sectionTitle, { color: colors.text, paddingHorizontal: 16, marginBottom: 8 }]}>All Events</Text>
-          )}
-        </>
-      )}
+      ListHeaderComponent={ListHeader}
       ListEmptyComponent={rest.length === 0 && events.length > 0 ? null : null}
     />
   );

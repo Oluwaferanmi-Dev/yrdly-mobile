@@ -112,6 +112,7 @@ function RootNavigationGuard() {
       <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
       <Stack.Screen name="(onboarding)" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+      <Stack.Screen name="new-post" options={{ presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
     </Stack>
   );
 }

@@ -65,20 +65,20 @@ function getDistanceStr(lat1: number, lon1: number, lat2: number, lon2: number) 
   return `${km.toFixed(1)}km away`;
 }
 
-function FriendMarker({ avatar_url }: { avatar_url?: string }) {
+const FriendMarker = React.memo(function FriendMarker({ avatar_url }: { avatar_url?: string }) {
   return (
     <View style={ms.fMarker}>
       <View style={ms.fRing}>
         {avatar_url
-          ? <Image source={{ uri: avatar_url }} style={ms.fAvatar} />
+          ? <Image source={{ uri: avatar_url }} style={ms.fAvatar} recyclingKey={avatar_url} />
           : <View style={ms.fFallback}><Ionicons name="person" size={16} color="#fff" /></View>}
       </View>
       <View style={[ms.dot, { backgroundColor: '#8B5CF6' }]} />
     </View>
   );
-}
+});
 
-function IconMarker({ icon, color, bg }: { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string }) {
+const IconMarker = React.memo(function IconMarker({ icon, color, bg }: { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string }) {
   return (
     <View style={ms.iMarker}>
       <View style={[ms.iBox, { backgroundColor: bg }]}>
@@ -87,15 +87,15 @@ function IconMarker({ icon, color, bg }: { icon: keyof typeof Ionicons.glyphMap;
       <View style={[ms.dot, { backgroundColor: color }]} />
     </View>
   );
-}
+});
 
-function ClusterBubble({ count }: { count: number }) {
+const ClusterBubble = React.memo(function ClusterBubble({ count }: { count: number }) {
   return (
     <View style={ms.cluster}>
       <Text style={ms.clusterTxt}>{count}</Text>
     </View>
   );
-}
+});
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
@@ -236,11 +236,12 @@ export default function MapScreen() {
         ref={mapRef}
         style={StyleSheet.absoluteFillObject}
         initialRegion={region || { latitude:6.5244, longitude:3.3792, latitudeDelta:0.0922, longitudeDelta:0.0421 }}
-        showsUserLocation showsMyLocationButton={false} showsBuildings pitchEnabled
+        showsUserLocation showsMyLocationButton={false} showsBuildings={false} pitchEnabled={false}
+        moveOnMarkerPress={false}
         customMapStyle={Platform.OS === 'android' ? DARK_STYLE : undefined}
         onRegionChangeComplete={(newRegion) => {
           if (regionTimeout.current) clearTimeout(regionTimeout.current);
-          regionTimeout.current = setTimeout(() => setRegion(newRegion), 150);
+          regionTimeout.current = setTimeout(() => setRegion(newRegion), 300);
         }}
       >
         {clusters.map((c, i) => {

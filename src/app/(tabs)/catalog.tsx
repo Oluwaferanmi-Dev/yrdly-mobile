@@ -216,7 +216,7 @@ export default function CatalogTab() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
           columnWrapperStyle={{ justifyContent: 'space-between' }}
           contentContainerStyle={s.listContent}
-          ListHeaderComponent={() => (
+          ListHeaderComponent={useCallback(() => (
             <>
               {/* Category chips */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 8 }}>
@@ -255,11 +255,9 @@ export default function CatalogTab() {
                             ? <Image source={{ uri: imgUrl }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
                             : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#1a2210' }]} />}
                           <View style={s.featuredOverlay} />
-                          {/* Badge */}
                           <View style={s.featuredBadge}>
                             <Text style={s.featuredBadgeTxt}>🔥 Featured Near You</Text>
                           </View>
-                          {/* Info */}
                           <View style={s.featuredInfo}>
                             <Text style={s.featuredTitle} numberOfLines={1}>{item.title || item.text}</Text>
                             {item.condition && <Text style={s.featuredCond}>{item.condition}</Text>}
@@ -279,7 +277,6 @@ export default function CatalogTab() {
                       );
                     })}
                   </ScrollView>
-                  {/* Dots */}
                   {featured.length > 1 && (
                     <View style={s.dots}>
                       {featured.map((_, i) => (
@@ -309,7 +306,8 @@ export default function CatalogTab() {
                 </View>
               )}
             </>
-          )}
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+          ), [featured, featuredIdx, category, colors, loading, items.length])}
           renderItem={({ item }) => (
             <MarketplaceItemCard
               item={item}

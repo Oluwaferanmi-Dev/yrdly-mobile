@@ -81,6 +81,44 @@ export default function EventDetailScreen() {
     }, 220);
   }
 
+  function getDirections() {
+    if (!event || event.location_online) return;
+    const address = event.location_address || [event.ward, event.lga, event.state].filter(Boolean).join(', ');
+    const lat = (event as any).location_lat;
+    const lng = (event as any).location_lng;
+
+    const encoded = encodeURIComponent(address || '');
+    const mapsUrl = Platform.OS === 'ios'
+      ? (lat && lng ? `maps://?daddr=${lat},${lng}&dirflg=d` : `maps://?daddr=${encoded}&dirflg=d`)
+      : (lat && lng ? `google.navigation:q=${lat},${lng}` : `google.navigation:q=${encoded}`);
+    const googleFallback = lat && lng
+      ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${encoded}`;
+
+    Alert.alert(
+      'Get Directions',
+      `Navigate to ${address || 'the venue'}?`,
+      [
+        {
+          text: 'Open in Yrdly Map',
+          onPress: () => router.push({ pathname: '/map', params: lat && lng ? { focusLat: lat, focusLng: lng } : {} } as any),
+        },
+        {
+          text: Platform.OS === 'ios' ? 'Open in Apple Maps' : 'Open in Google Maps',
+          onPress: async () => {
+            const canOpen = await Linking.canOpenURL(mapsUrl);
+            if (canOpen) {
+              Linking.openURL(mapsUrl);
+            } else {
+              Linking.openURL(googleFallback);
+            }
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  }
+
   const fetchEvent = useCallback(async () => {
     if (!id) return;
     const data = await getEventById(id as string);
@@ -225,12 +263,19 @@ export default function EventDetailScreen() {
               <Ionicons name="time" size={20} color={colors.tint} />
               <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>{formattedTime}</Text>
             </View>
-            <View style={styles.dateTimeRow}>
+            <TouchableOpacity
+              style={styles.dateTimeRow}
+              onPress={event.location_online ? undefined : getDirections}
+              activeOpacity={event.location_online ? 1 : 0.7}
+            >
               <Ionicons name={event.location_online ? "globe" : "location"} size={20} color={colors.tint} />
-              <Text style={[styles.dateTimeText, { color: colors.textSecondary }]}>
+              <Text style={[styles.dateTimeText, { color: event.location_online ? colors.textSecondary : colors.tint, flex: 1 }]}>
                 {event.location_online ? 'Online Event' : (event.location_address || [event.ward, event.lga, event.state].filter(Boolean).join(', ') || 'TBA')}
               </Text>
-            </View>
+              {!event.location_online && (
+                <Ionicons name="chevron-forward" size={16} color={colors.tint} />
+              )}
+            </TouchableOpacity>
           </View>
 
           <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
