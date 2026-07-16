@@ -347,20 +347,25 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         {!!post.title && (
           <Text style={[styles.title, { color: colors.text }]}>{post.title}</Text>
         )}
-        {!!post.text && (
-          <View>
-            <Text style={[styles.bodyText, { color: colors.textSecondary }]} numberOfLines={isExpanded ? undefined : 3}>
-              {post.text}
-            </Text>
-            {post.text.length > 120 && (
-              <TouchableOpacity onPress={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} style={{ marginTop: 4 }}>
-                <Text style={{ color: colors.tint, fontWeight: '600' }}>
-                  {isExpanded ? 'Show less' : 'Read more'}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
+        {!!post.text && (() => {
+          const maxLength = 180;
+          const shouldTruncate = post.text.length > maxLength;
+          const displayText = isExpanded || !shouldTruncate ? post.text : post.text.slice(0, maxLength) + "…";
+          return (
+            <View>
+              <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+                {displayText}
+              </Text>
+              {shouldTruncate && (
+                <TouchableOpacity onPress={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} style={{ marginTop: 4 }}>
+                  <Text style={{ color: colors.tint, fontWeight: '600' }}>
+                    {isExpanded ? 'Show less' : 'Read more'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          );
+        })()}
       </View>
 
       {/* Video */}
