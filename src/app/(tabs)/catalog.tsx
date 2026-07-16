@@ -361,7 +361,7 @@ const s = StyleSheet.create({
   chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
   chipTxt: { fontSize: 12, fontWeight: '600' },
   featuredCard: { height: 220, borderRadius: 24, overflow: 'hidden', marginRight: 0 },
-  featuredOverlay: { ...StyleSheet.absoluteFillObject, background: 'transparent', backgroundColor: 'rgba(0,0,0,0.45)' },
+  featuredOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
   featuredBadge: { position: 'absolute', top: 14, left: 14, backgroundColor: 'rgba(130,219,126,0.2)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(130,219,126,0.35)' },
   featuredBadgeTxt: { color: '#82DB7E', fontSize: 11, fontWeight: '800' },
   featuredInfo: { position: 'absolute', bottom: 60, left: 16, right: 110 },

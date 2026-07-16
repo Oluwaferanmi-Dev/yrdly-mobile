@@ -378,9 +378,9 @@ export default function NotificationsScreen() {
         </View>
       ) : (
         <FlashList
+          {...({ estimatedItemSize: 80 } as any)}
           data={filteredNotifications}
-          keyExtractor={(item) => item.id}
-          estimatedItemSize={80}
+          keyExtractor={(item: any) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}

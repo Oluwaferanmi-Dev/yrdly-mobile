@@ -198,9 +198,9 @@ export default function CommunityScreen() {
         </View>
       ) : (
         <FlashList
+          {...({ estimatedItemSize: 60 } as any)}
           data={users}
-          keyExtractor={item => item.id}
-          estimatedItemSize={60}
+          keyExtractor={(item: any) => item.id}
           renderItem={renderUser}
           ListHeaderComponent={listHeader}
           contentContainerStyle={styles.listContent}

@@ -202,7 +202,7 @@ export default function OtherUserProfileScreen() {
               </View>
               <TouchableOpacity 
                 style={styles.statItem}
-                onPress={() => router.push(`/network/${profile.id}?mode=followers`)}
+                onPress={() => router.push(`/network/${profile.id}?mode=followers` as any)}
                 activeOpacity={0.7}
               >
                 <Text style={[styles.statValue, { color: colors.text }]}>{followersCount}</Text>
@@ -210,7 +210,7 @@ export default function OtherUserProfileScreen() {
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.statItem}
-                onPress={() => router.push(`/network/${profile.id}?mode=following`)}
+                onPress={() => router.push(`/network/${profile.id}?mode=following` as any)}
                 activeOpacity={0.7}
               >
                 <Text style={[styles.statValue, { color: colors.text }]}>{followingCount}</Text>

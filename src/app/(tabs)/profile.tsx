@@ -107,7 +107,7 @@ export default function ProfileTab() {
           </View>
           <TouchableOpacity 
             style={styles.statItem} 
-            onPress={() => router.push(`/network/${user?.id}?mode=followers`)}
+            onPress={() => router.push(`/network/${user?.id}?mode=followers` as any)}
             activeOpacity={0.7}
           >
             <Text style={[styles.statValue, { color: colors.text }]}>{followersCount}</Text>
@@ -115,7 +115,7 @@ export default function ProfileTab() {
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.statItem}
-            onPress={() => router.push(`/network/${user?.id}?mode=following`)}
+            onPress={() => router.push(`/network/${user?.id}?mode=following` as any)}
             activeOpacity={0.7}
           >
             <Text style={[styles.statValue, { color: colors.text }]}>{followingCount}</Text>
