@@ -247,14 +247,14 @@ export default function MapScreen() {
           const [lng, lat] = c.geometry.coordinates;
           const { cluster: isC, point_count, ...p } = c.properties as any;
           if (isC) return (
-            <Marker key={`cl-${c.id??i}`} coordinate={{ latitude:lat, longitude:lng }} tracksViewChanges={false}
+            <Marker key={`cl-${c.id??i}`} coordinate={{ latitude:lat, longitude:lng }}
               onPress={() => { const z = sc.getClusterExpansionZoom(c.id as number); const d = 360/Math.pow(2,z); mapRef.current?.animateToRegion({ latitude:lat, longitude:lng, latitudeDelta:d, longitudeDelta:d }, 400); }}>
               <ClusterBubble count={point_count} />
             </Marker>
           );
           const m = p as MapMarker;
           return (
-            <Marker key={m.id} coordinate={{ latitude:m.lat, longitude:m.lng }} tracksViewChanges={false}
+            <Marker key={m.id} coordinate={{ latitude:m.lat, longitude:m.lng }}
               onPress={() => m.type==='friend' ? router.push(`/profile/${m.targetId}`) : m.type==='event' ? router.push(`/events/${m.targetId}`) : null}>
               {m.type==='friend' ? <FriendMarker avatar_url={m.avatar_url} />
                 : m.type==='business' ? <IconMarker icon="storefront-outline" color="#22c55e" bg="rgba(34,197,94,0.15)" />
@@ -339,9 +339,6 @@ export default function MapScreen() {
           <View style={s.handleBar} />
           <View style={s.sheetTitleRow}>
             <Text style={s.sheetTitle}>Nearby Activity</Text>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Text style={s.seeAll}>See all  ›</Text>
-            </TouchableOpacity>
           </View>
         </View>
 

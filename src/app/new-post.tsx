@@ -12,7 +12,7 @@ import { decode } from 'base64-arraybuffer';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { useHeaderHeight } from '@react-navigation/elements';
+// Removed useHeaderHeight to prevent crash in headerless stack
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { api } from '../lib/api';
@@ -32,8 +32,8 @@ export default function CreateTab() {
   const router = useRouter();
   const { user, profile } = useAuth();
   const { width } = useWindowDimensions();
-  const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + 50; // Fallback for KeyboardAvoidingView
   const params = useLocalSearchParams<{ category?: string }>();
   const [category, setCategory] = useState<PostCategory>((params.category as PostCategory) || 'General');
   const categories: PostCategory[] = ['General', 'For Sale', 'Event'];
