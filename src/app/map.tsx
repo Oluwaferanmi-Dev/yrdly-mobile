@@ -243,7 +243,7 @@ export default function MapScreen() {
           const [lng, lat] = c.geometry.coordinates;
           const { cluster: isC, point_count, ...p } = c.properties as any;
           if (isC) return (
-            <Marker key={`cl-${c.id??i}`} coordinate={{ latitude:lat, longitude:lng }}
+            <Marker key={`cl-${c.id??i}`} coordinate={{ latitude:lat, longitude:lng }} tracksViewChanges={false}
               onPress={() => { const z = sc.getClusterExpansionZoom(c.id as number); const d = 360/Math.pow(2,z); mapRef.current?.animateToRegion({ latitude:lat, longitude:lng, latitudeDelta:d, longitudeDelta:d }, 400); }}>
               <ClusterBubble count={point_count} />
             </Marker>
@@ -335,7 +335,7 @@ export default function MapScreen() {
           <View style={s.handleBar} />
           <View style={s.sheetTitleRow}>
             <Text style={s.sheetTitle}>Nearby Activity</Text>
-            <TouchableOpacity onPress={() => router.push('/' as any)}>
+            <TouchableOpacity onPress={() => router.replace('/(tabs)' as any)}>
               <Text style={s.seeAll}>See all  ›</Text>
             </TouchableOpacity>
           </View>

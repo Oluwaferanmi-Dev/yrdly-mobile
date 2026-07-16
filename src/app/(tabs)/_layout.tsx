@@ -146,6 +146,12 @@ export default function TabLayout() {
               </View>
             ),
           }}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              router.push('/create');
+            },
+          }}
         />
         <Tabs.Screen
           name="messages"

@@ -137,11 +137,13 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
   const [likesCount, setLikesCount] = useState(post.liked_by?.length || 0);
   const [isLiked, setIsLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
+  const [shareCount, setShareCount] = useState(post.share_count || 0);
 
   // Sync state when post prop changes (crucial for FlashList cell recycling)
   useEffect(() => {
     setLikesCount(post.liked_by?.length || 0);
     setIsLiked(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
+    setShareCount(post.share_count || 0);
   }, [post.liked_by, currentUser]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -291,6 +293,11 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         },
         { dialogTitle: 'Share post' }
       );
+      
+      // Increment share count locally and in db
+      setShareCount(prev => prev + 1);
+      supabase.rpc('increment_post_share', { post_id: post.id }).catch(() => {});
+      
       if (onShare) onShare();
     } catch (error) {
       console.error('Error sharing post:', error);
@@ -465,6 +472,9 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             onPress={(e) => { e.stopPropagation(); handleShare(); }}
           >
             <Ionicons name="share-social-outline" size={20} color={colors.textSecondary} />
+            <Text style={[styles.actionText, { color: colors.textSecondary }]}>
+              {shareCount > 0 ? shareCount : ''}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

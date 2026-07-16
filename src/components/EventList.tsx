@@ -43,6 +43,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
   const [category, setCategory] = useState('');
   const [featuredIdx, setFeaturedIdx] = useState(0);
   const featuredRef = useRef<ScrollView>(null);
+  const listRef = useRef<FlatList>(null);
 
   const getEventId = (item: Post) => {
     if (item.event_link) {
@@ -135,7 +136,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         </Text>
         <TouchableOpacity
           style={[s.createBtn, { backgroundColor: colors.tint }]}
-          onPress={() => router.push('/create' as any)}>
+          onPress={() => router.push({ pathname: '/create', params: { category: 'Event' } } as any)}>
           <Ionicons name="add-circle-outline" size={16} color="#0B0D0B" style={{ marginRight: 6 }} />
           <Text style={s.createBtnTxt}>Create Event</Text>
         </TouchableOpacity>
@@ -147,6 +148,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
     <FlatList
       data={rest}
       keyExtractor={i => `rest-${i.id}`}
+      ref={listRef}
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
       contentContainerStyle={s.listContent}
@@ -161,7 +163,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
               const active = category === cat.key;
               return (
                 <TouchableOpacity
-                  key={cat.key} onPress={() => setCategory(cat.key)}
+                  key={cat.key} onPress={() => setCategory(active ? '' : cat.key)}
                   style={[s.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
                   <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : colors.textMuted} style={{ marginRight: 4 }} />
                   <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat.label}</Text>
@@ -175,7 +177,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
             <View style={s.section}>
               <View style={s.sectionHeader}>
                 <Text style={[s.sectionTitle, { color: colors.text }]}>Upcoming Events</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => listRef.current?.scrollToOffset({ offset: 650, animated: true })}>
                   <Text style={[s.seeAll, { color: colors.tint }]}>See all  ›</Text>
                 </TouchableOpacity>
               </View>
@@ -265,7 +267,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
             <View style={s.section}>
               <View style={s.sectionHeader}>
                 <Text style={[s.sectionTitle, { color: colors.text }]}>More Events For You</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => listRef.current?.scrollToOffset({ offset: 650, animated: true })}>
                   <Text style={[s.seeAll, { color: colors.tint }]}>See all  ›</Text>
                 </TouchableOpacity>
               </View>
@@ -280,7 +282,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
           {/* ── Can't find your event? ── */}
           <TouchableOpacity
             style={[s.createBanner, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
-            onPress={() => router.push('/create' as any)}>
+            onPress={() => router.push({ pathname: '/create', params: { category: 'Event' } } as any)}>
             <View style={[s.createIcon, { backgroundColor: 'rgba(130,219,126,0.1)' }]}>
               <Ionicons name="calendar-outline" size={24} color={colors.tint} />
             </View>
@@ -288,7 +290,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
               <Text style={[s.createTitle, { color: colors.text }]}>Can't find your event?</Text>
               <Text style={[s.createSub, { color: colors.textMuted }]}>Create and share events with your community.</Text>
             </View>
-            <TouchableOpacity style={[s.createCTA, { backgroundColor: colors.tint }]} onPress={() => router.push('/create' as any)}>
+            <TouchableOpacity style={[s.createCTA, { backgroundColor: colors.tint }]} onPress={() => router.push({ pathname: '/create', params: { category: 'Event' } } as any)}>
               <Text style={s.createCTATxt}>Create Event</Text>
               <Ionicons name="add-circle-outline" size={14} color="#0B0D0B" style={{ marginLeft: 4 }} />
             </TouchableOpacity>

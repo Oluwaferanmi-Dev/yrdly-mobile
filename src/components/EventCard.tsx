@@ -169,6 +169,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
   const router = useRouter();
   const isOwner = user?.id === event.user_id;
   const [saved, setSaved] = useState(false);
+  const [shareCount, setShareCount] = useState(event.share_count || 0);
   const heartScale = useRef(new Animated.Value(1)).current;
   const pressScale = useRef(new Animated.Value(1)).current;
 
@@ -188,6 +189,8 @@ export function EventCard({ event, onPress }: EventCardProps) {
   const handleShare = async () => {
     try {
       await Share.share({ message: `Check out "${event.title || 'this event'}" on Yrdly!`, url: `https://app.yrdly.ng/events/${event.id}` });
+      setShareCount(prev => prev + 1);
+      supabase.rpc('increment_post_share', { post_id: event.id }).catch(() => {});
     } catch {}
   };
 
@@ -232,6 +235,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
             </TouchableOpacity>
             <TouchableOpacity style={f.actionBtn} onPress={handleShare}>
               <Ionicons name="share-social-outline" size={17} color="#fff" />
+              {shareCount > 0 && <Text style={{ color: '#fff', fontSize: 12, marginLeft: 4, fontWeight: 'bold' }}>{shareCount}</Text>}
             </TouchableOpacity>
           </View>
         </View>

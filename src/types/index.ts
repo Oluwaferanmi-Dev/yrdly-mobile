@@ -109,6 +109,7 @@ export interface Post {
   view_count?: number;
   is_sold?: boolean;
   liked_by: string[];
+  share_count?: number;
   created_at?: string;
   updated_at?: string;
   user?: {
