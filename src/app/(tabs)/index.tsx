@@ -79,7 +79,7 @@ const QuickPostBox = memo(() => {
       </View>
       <TouchableOpacity 
         style={{ flex: 1, height: 36, justifyContent: 'center' }}
-        onPress={() => router.push('/create')}
+        onPress={() => router.push('/new-post')}
         activeOpacity={0.7}
       >
         <Text style={{ color: colors.textSecondary, fontSize: 15 }} numberOfLines={1} ellipsizeMode="tail">What's happening, neighbour?</Text>
@@ -88,14 +88,14 @@ const QuickPostBox = memo(() => {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <TouchableOpacity 
           style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: isDarkMode ? '#333' : '#F0F0F0', justifyContent: 'center', alignItems: 'center' }}
-          onPress={() => router.push('/create')}
+          onPress={() => router.push('/new-post')}
         >
           <Feather name="image" size={18} color={colors.textSecondary} />
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }}
-          onPress={() => router.push('/create')}
+          onPress={() => router.push('/new-post')}
         >
           <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>Post</Text>
         </TouchableOpacity>
@@ -114,7 +114,7 @@ const QuickPostBox = memo(() => {
   return (
     <TouchableOpacity 
       activeOpacity={0.9} 
-      onPress={() => router.push('/create')}
+      onPress={() => router.push('/new-post')}
       style={{ overflow: 'hidden', marginHorizontal: 16, marginTop: 12, marginBottom: 8, borderRadius: 24 }}
     >
       {isLiquidGlassSupported ? (

@@ -266,13 +266,13 @@ export function EventCard({ event, onPress }: EventCardProps) {
           {/* Attendee avatars + price + CTA */}
           <View style={f.footer}>
             <View style={f.attendees}>
-              {[0, 1, 2].map(i => (
-                <View key={i} style={[f.aAvatar, { backgroundColor: colors.tint, marginLeft: i > 0 ? -8 : 0, zIndex: 3 - i }]}>
-                  <Ionicons name="person" size={10} color="#0B0D0B" />
-                </View>
-              ))}
               {(event.attendees?.length || 0) > 0 && (
-                <Text style={[f.attendeesTxt, { color: colors.textMuted }]}>+{event.attendees?.length}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="people" size={14} color={colors.textMuted} style={{ marginRight: 4 }} />
+                  <Text style={[f.attendeesTxt, { color: colors.textMuted }]}>
+                    {event.attendees?.length} attending
+                  </Text>
+                </View>
               )}
             </View>
 

@@ -149,7 +149,7 @@ export default function TabLayout() {
           listeners={{
             tabPress: (e) => {
               e.preventDefault();
-              router.push('/create');
+              router.push('/new-post');
             },
           }}
         />

@@ -136,7 +136,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         </Text>
         <TouchableOpacity
           style={[s.createBtn, { backgroundColor: colors.tint }]}
-          onPress={() => router.push({ pathname: '/create', params: { category: 'Event' } } as any)}>
+          onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
           <Ionicons name="add-circle-outline" size={16} color="#0B0D0B" style={{ marginRight: 6 }} />
           <Text style={s.createBtnTxt}>Create Event</Text>
         </TouchableOpacity>
@@ -233,12 +233,12 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
                         {/* Attendee row */}
                         <View style={s.heroFooter}>
                           <View style={s.attendeeAvatars}>
-                            {[0, 1, 2].map(i => (
-                              <View key={i} style={[s.aAvatar, { marginLeft: i > 0 ? -8 : 0, zIndex: 3 - i, backgroundColor: '#82DB7E' }]}>
-                                <Ionicons name="person" size={10} color="#0B0D0B" />
-                              </View>
-                            ))}
-                            <Text style={s.aCount}>+{Math.floor(Math.random() * 40) + 10}</Text>
+                            {(item.attendees?.length || 0) > 0 && (
+                              <>
+                                <Ionicons name="people" size={14} color="rgba(255,255,255,0.8)" style={{ marginRight: 4 }} />
+                                <Text style={s.aCount}>{item.attendees?.length} attending</Text>
+                              </>
+                            )}
                           </View>
                           <TouchableOpacity style={s.heroCTA} onPress={() => navigateToEvent(item)}>
                             <Text style={s.heroCTATxt}>View Tickets</Text>
@@ -282,7 +282,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
           {/* ── Can't find your event? ── */}
           <TouchableOpacity
             style={[s.createBanner, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
-            onPress={() => router.push({ pathname: '/create', params: { category: 'Event' } } as any)}>
+            onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
             <View style={[s.createIcon, { backgroundColor: 'rgba(130,219,126,0.1)' }]}>
               <Ionicons name="calendar-outline" size={24} color={colors.tint} />
             </View>
@@ -290,7 +290,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
               <Text style={[s.createTitle, { color: colors.text }]}>Can't find your event?</Text>
               <Text style={[s.createSub, { color: colors.textMuted }]}>Create and share events with your community.</Text>
             </View>
-            <TouchableOpacity style={[s.createCTA, { backgroundColor: colors.tint }]} onPress={() => router.push({ pathname: '/create', params: { category: 'Event' } } as any)}>
+            <TouchableOpacity style={[s.createCTA, { backgroundColor: colors.tint }]} onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
               <Text style={s.createCTATxt}>Create Event</Text>
               <Ionicons name="add-circle-outline" size={14} color="#0B0D0B" style={{ marginLeft: 4 }} />
             </TouchableOpacity>

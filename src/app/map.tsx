@@ -111,6 +111,7 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
+  const regionTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const sc = useMemo(() => new Supercluster({ radius: 50, maxZoom: 16 }), []);
   const panY = useRef(new Animated.Value(SHEET_H - PEEK)).current;
@@ -237,7 +238,10 @@ export default function MapScreen() {
         initialRegion={region || { latitude:6.5244, longitude:3.3792, latitudeDelta:0.0922, longitudeDelta:0.0421 }}
         showsUserLocation showsMyLocationButton={false} showsBuildings pitchEnabled
         customMapStyle={Platform.OS === 'android' ? DARK_STYLE : undefined}
-        onRegionChangeComplete={setRegion}
+        onRegionChangeComplete={(newRegion) => {
+          if (regionTimeout.current) clearTimeout(regionTimeout.current);
+          regionTimeout.current = setTimeout(() => setRegion(newRegion), 150);
+        }}
       >
         {clusters.map((c, i) => {
           const [lng, lat] = c.geometry.coordinates;
@@ -319,7 +323,7 @@ export default function MapScreen() {
           <Ionicons name="locate" size={18} color="#222" />
           <Text style={s.fabTxt}>Locate me</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[s.fab, s.fabGreen]} onPress={() => router.push('/create' as any)}>
+        <TouchableOpacity style={[s.fab, s.fabGreen]} onPress={() => router.push('/new-post' as any)}>
           <Ionicons name="add" size={20} color="#0B0D0B" />
           <Text style={[s.fabTxt, { color:'#0B0D0B' }]}>Create Post</Text>
         </TouchableOpacity>
@@ -335,7 +339,7 @@ export default function MapScreen() {
           <View style={s.handleBar} />
           <View style={s.sheetTitleRow}>
             <Text style={s.sheetTitle}>Nearby Activity</Text>
-            <TouchableOpacity onPress={() => router.replace('/(tabs)' as any)}>
+            <TouchableOpacity onPress={() => router.back()}>
               <Text style={s.seeAll}>See all  ›</Text>
             </TouchableOpacity>
           </View>
