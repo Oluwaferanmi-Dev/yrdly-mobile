@@ -283,7 +283,7 @@ export default function HomeTab() {
     }
   }, []);
 
-  if (loading && !refreshing) {
+  if (loading && posts.length === 0 && !refreshing) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Animated.View style={headerAnimatedStyle}>

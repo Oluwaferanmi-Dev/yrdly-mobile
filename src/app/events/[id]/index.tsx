@@ -282,6 +282,38 @@ export default function EventDetailScreen() {
             <Text style={{ color: colors.textSecondary }}>No tickets available.</Text>
           )}
 
+          {isOwner && (
+            <TouchableOpacity 
+              style={[styles.deleteEventBtn, { backgroundColor: '#FF3B30' }]}
+              onPress={() => {
+                Alert.alert(
+                  'Delete Event',
+                  'Are you sure you want to delete this event? This action cannot be undone.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { 
+                      text: 'Delete', 
+                      style: 'destructive', 
+                      onPress: async () => {
+                        try {
+                          await supabase.from('events').delete().eq('id', event.id);
+                          // Also clean up any associated post
+                          await supabase.from('posts').delete().ilike('event_link', `%events/${event.id}%`);
+                          router.back();
+                        } catch (e) {
+                          Alert.alert('Error', 'Failed to delete event.');
+                        }
+                      } 
+                    }
+                  ]
+                );
+              }}
+            >
+              <Ionicons name="trash-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Delete Event</Text>
+            </TouchableOpacity>
+          )}
+
           <View style={{ height: 40 }} />
         </View>
       </Animated.ScrollView>
@@ -391,7 +423,7 @@ export default function EventDetailScreen() {
             <Animated.View style={[{ alignItems: 'center', paddingHorizontal: 32, width: '100%' }, successContentStyle]}>
               <Text style={[styles.successTitle, { color: colors.text }]}>You're In! 🎟️</Text>
               <Text style={[styles.successTier, { color: colors.tint }]}>{successTierName}</Text>
-              <Text style={[styles.successBody, { color: colors.textMuted }]}>
+              <Text style={[styles.successBody, { color: colors.textSecondary }]}>
                 Your ticket has been confirmed. Check the Tickets tab to view it.
               </Text>
               <TouchableOpacity
@@ -402,7 +434,7 @@ export default function EventDetailScreen() {
                 <Text style={styles.successBtnText}>View My Ticket</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.successSecondary} onPress={dismissTicketSuccess}>
-                <Text style={[styles.successSecondaryText, { color: colors.textMuted }]}>Back to Event</Text>
+                <Text style={[styles.successSecondaryText, { color: colors.textSecondary }]}>Back to Event</Text>
               </TouchableOpacity>
             </Animated.View>
             <View style={{ height: 24 }} />
@@ -444,8 +476,16 @@ const styles = StyleSheet.create({
   tierName: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
   tierDesc: { fontSize: 14, marginBottom: 8 },
   tierPrice: { fontSize: 16, fontWeight: '600' },
-  tierBuyButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
-  tierBuyText: { color: '#FFF', fontWeight: 'bold' },
+  tierBuyButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, justifyContent: 'center' },
+  tierBuyText: { color: '#FFF', fontWeight: 'bold', fontSize: 13 },
+  deleteEventBtn: {
+    marginTop: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '80%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },

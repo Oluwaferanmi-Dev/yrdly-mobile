@@ -79,7 +79,7 @@ export default function CatalogTab() {
     try {
       let q = supabase
         .from('posts')
-        .select('*, user:users!posts_user_id_fkey(id,name,avatar_url,is_verified)')
+        .select('*, user:users!posts_user_id_fkey(id,name,avatar_url)')
         .eq('category', 'For Sale')
         .or('is_sold.eq.false,is_sold.is.null');
 
@@ -209,7 +209,7 @@ export default function CatalogTab() {
       {/* ── Marketplace content ── */}
       {activeTab === 'Marketplace' && (
         <FlatList
-          data={loading ? [] : nearby}
+          data={loading && items.length === 0 ? [] : nearby}
           keyExtractor={i => i.id}
           numColumns={2}
           showsVerticalScrollIndicator={false}
@@ -295,7 +295,7 @@ export default function CatalogTab() {
                 <Text style={[s.nearbyTitle, { color: colors.text }]}>Nearby Listings</Text>
               </View>
 
-              {loading && (
+              {loading && items.length === 0 && (
                 <View style={s.skeletonGrid}>
                   {[1, 2, 3, 4].map(k => (
                     <View key={k} style={[s.skeletonCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>

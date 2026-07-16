@@ -6,6 +6,9 @@ import { AuthService, AuthUser } from '@/lib/auth-service';
 import { supabase } from '@/lib/supabase';
 import { identifyDevice } from 'vexo-analytics';
 import { usePostHog } from 'posthog-react-native';
+import * as FileSystem from 'expo-file-system';
+
+const PROFILE_CACHE_FILE = `${FileSystem.documentDirectory}user_profile_cache.json`;
 
 interface AuthContextType {
   user: User | null;
@@ -54,7 +57,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               // First, try to get existing profile
               let userProfile = await AuthService.getUserProfile(currentUser.id);
               
-              // If no profile exists, create one
+              if (userProfile) {
+                FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(userProfile)).catch(() => {});
+              } else {
+                try {
+                  const info = await FileSystem.getInfoAsync(PROFILE_CACHE_FILE);
+                  if (info.exists) {
+                    const cached = await FileSystem.readAsStringAsync(PROFILE_CACHE_FILE);
+                    const parsed = JSON.parse(cached);
+                    if (parsed && parsed.id === currentUser.id) {
+                      userProfile = parsed;
+                    }
+                  }
+                } catch (e) {}
+              }
+
+              // If no profile exists and not from cache, create one
               if (!userProfile && !profileCreationInProgress) {
                 setProfileCreationInProgress(true);
                 try {
@@ -68,8 +86,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   );
                   // Fetch the newly created profile
                   userProfile = await AuthService.getUserProfile(currentUser.id);
+                  if (userProfile) {
+                    FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(userProfile)).catch(() => {});
+                  }
                 } catch (createError) {
                   console.error('Error creating user profile on initial load:', createError);
+                  userProfile = {
+                    id: currentUser.id,
+                    name: currentUser.user_metadata?.name || 'User',
+                    email: currentUser.email,
+                    profile_completed: true,
+                  } as AuthUser;
                 } finally {
                   setProfileCreationInProgress(false);
                 }
@@ -164,6 +191,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // First, try to get existing profile
             let userProfile = await AuthService.getUserProfile(user.id);
             
+            if (userProfile) {
+              FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(userProfile)).catch(() => {});
+            } else {
+              try {
+                const info = await FileSystem.getInfoAsync(PROFILE_CACHE_FILE);
+                if (info.exists) {
+                  const cached = await FileSystem.readAsStringAsync(PROFILE_CACHE_FILE);
+                  const parsed = JSON.parse(cached);
+                  if (parsed && parsed.id === user.id) {
+                    userProfile = parsed;
+                  }
+                }
+              } catch (e) {}
+            }
+
             // If no profile exists, create one
             if (!userProfile && !profileCreationInProgress) {
               setProfileCreationInProgress(true);
@@ -178,8 +220,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 );
                 // Fetch the newly created profile
                 userProfile = await AuthService.getUserProfile(user.id);
+                if (userProfile) {
+                  FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(userProfile)).catch(() => {});
+                }
               } catch (createError) {
                 console.error('Error creating user profile:', createError);
+                userProfile = {
+                  id: user.id,
+                  name: user.user_metadata?.name || 'User',
+                  email: user.email,
+                  profile_completed: true,
+                } as AuthUser;
               } finally {
                 setProfileCreationInProgress(false);
               }

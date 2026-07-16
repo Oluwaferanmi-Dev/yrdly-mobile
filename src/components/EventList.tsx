@@ -117,7 +117,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
   const horizontal = events.slice(3, 9);   // "More Events For You"
   const rest = events.slice(9);            // Full cards list
 
-  if (loading) {
+  if (loading && events.length === 0) {
     return (
       <View style={{ flex: 1, paddingTop: 16 }}>
         <Skeleton width={width - 32} height={220} style={{ marginHorizontal: 16, borderRadius: 24, marginBottom: 16 }} />

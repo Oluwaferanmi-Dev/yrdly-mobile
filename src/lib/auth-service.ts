@@ -177,17 +177,17 @@ export class AuthService {
   // Get current user
   static async getCurrentUser(): Promise<User | null> {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const { data: { session }, error } = await supabase.auth.getSession();
       if (error) {
         if (error.message !== 'Auth session missing!') {
-          console.error('Get current user error:', error);
+          console.error('Get current session error:', error);
         }
         return null;
       }
-      return user;
+      return session?.user ?? null;
     } catch (error: any) {
       if (error.message !== 'Auth session missing!') {
-        console.error('Get current user error:', error);
+        console.error('Get current session error:', error);
       }
       return null;
     }
