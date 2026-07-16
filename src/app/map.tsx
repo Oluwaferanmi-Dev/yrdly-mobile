@@ -154,9 +154,9 @@ export default function MapScreen() {
     if (user?.id) {
       const { data: frds } = await supabase.rpc('get_friends_locations', { user_id: user.id });
       (frds || []).forEach((f: any) => {
-        const lat = parseFloat(f.location?.lat ?? f.location?.geopoint?.latitude);
-        const lng = parseFloat(f.location?.lng ?? f.location?.geopoint?.longitude);
-        if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `friend-${f.friend_id}`, type: 'friend', lat, lng, title: f.friend_name, subtitle: 'Friend', targetId: f.friend_id, avatar_url: f.friend_avatar_url });
+        const lat = parseFloat(f.current_location?.lat ?? f.current_location?.geopoint?.latitude);
+        const lng = parseFloat(f.current_location?.lng ?? f.current_location?.geopoint?.longitude);
+        if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `friend-${f.id}`, type: 'friend', lat, lng, title: f.name, subtitle: 'Friend', targetId: f.id, avatar_url: f.avatar_url });
       });
     }
     const { data: bizs } = await supabase.from('businesses').select('id,name,category,location').not('location','is',null).limit(50);
