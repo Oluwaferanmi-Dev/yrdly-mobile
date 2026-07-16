@@ -230,6 +230,15 @@ function ChatContent() {
   }, [fetchMeta]);
 
   useEffect(() => {
+    if (!id || id === 'new' || !user || !isFocused) return;
+    supabase.from('notifications').delete()
+      .eq('user_id', user.id)
+      .eq('type', 'message')
+      .eq('related_id', id)
+      .then();
+  }, [id, user, isFocused]);
+
+  useEffect(() => {
     if (!meta || id === 'new') return;
 
     fetchMessages();
@@ -247,6 +256,11 @@ function ChatContent() {
         const newMsg = payload.new as Message;
         if (newMsg.sender_id !== user?.id && !newMsg.is_read) {
           supabase.from('messages').update({ is_read: true }).eq('id', newMsg.id).then();
+          supabase.from('notifications').delete()
+            .eq('user_id', user?.id)
+            .eq('type', 'message')
+            .eq('related_id', id)
+            .then();
         }
       })
       .on('postgres_changes', {
@@ -395,6 +409,8 @@ function ChatContent() {
         conversation_id: currentConvId,
         media_url: publicUrl,
         media_type: isVideo ? 'video' : 'image',
+        image_url: !isVideo ? publicUrl : null,
+        video_url: isVideo ? publicUrl : null,
       };
 
       const { error } = await supabase.from('messages').insert(payload);
@@ -504,7 +520,9 @@ function ChatContent() {
 
     const isMine = item.sender_id === user?.id;
     const msgText = item.text || item.content || '';
-    const hasMedia = !!item.media_url;
+    const imgUrl = item.media_type === 'image' ? item.media_url : item.image_url;
+    const vidUrl = item.media_type === 'video' ? item.media_url : item.video_url;
+    const hasMedia = !!imgUrl || !!vidUrl;
 
     return (
       <View style={[styles.msgRow, isMine ? styles.msgRowRight : styles.msgRowLeft]}>
@@ -519,11 +537,11 @@ function ChatContent() {
             hasMedia && msgText && { paddingHorizontal: 4, paddingVertical: 4, paddingBottom: 6 }
           ]}
         >
-          {item.media_url && item.media_type === 'image' && (
-            <TouchableOpacity onPress={() => openViewer(item.media_url!)}>
+          {imgUrl && (
+            <TouchableOpacity onPress={() => openViewer(imgUrl)}>
               <View style={{ position: 'relative' }}>
                 <Image 
-                  source={{ uri: item.media_url }} 
+                  source={{ uri: imgUrl }} 
                   style={[{ width: 240, height: 300, borderRadius: 16, marginBottom: msgText ? 6 : 0 }, (!isMine && !msgText) && { backgroundColor: 'transparent' }]} 
                   contentFit="contain" 
                 />
@@ -537,9 +555,9 @@ function ChatContent() {
               </View>
             </TouchableOpacity>
           )}
-          {item.media_url && item.media_type === 'video' && (
+          {vidUrl && (
             <ChatVideo
-              url={item.media_url}
+              url={vidUrl}
               width={220}
               height={220}
               borderRadius={14}

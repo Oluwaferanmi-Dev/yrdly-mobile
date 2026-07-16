@@ -200,14 +200,22 @@ export default function OtherUserProfileScreen() {
                 <Text style={[styles.statValue, { color: colors.text }]}>{posts.length}</Text>
                 <Text style={[styles.statLabel, { color: colors.textMuted }]}>Posts</Text>
               </View>
-              <View style={styles.statItem}>
+              <TouchableOpacity 
+                style={styles.statItem}
+                onPress={() => router.push(`/network/${profile.id}?mode=followers`)}
+                activeOpacity={0.7}
+              >
                 <Text style={[styles.statValue, { color: colors.text }]}>{followersCount}</Text>
                 <Text style={[styles.statLabel, { color: colors.textMuted }]}>Followers</Text>
-              </View>
-              <View style={styles.statItem}>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.statItem}
+                onPress={() => router.push(`/network/${profile.id}?mode=following`)}
+                activeOpacity={0.7}
+              >
                 <Text style={[styles.statValue, { color: colors.text }]}>{followingCount}</Text>
                 <Text style={[styles.statLabel, { color: colors.textMuted }]}>Following</Text>
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -245,10 +253,26 @@ export default function OtherUserProfileScreen() {
               )}
 
               {friendship.status === 'request_received' && (
-                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: colors.tint }]} onPress={friendship.acceptRequest} disabled={friendship.isLoading}>
-                  {friendship.isLoading ? <ActivityIndicator size="small" color="#fff" /> : <Feather name="check" size={18} color="#fff" />}
-                  <Text style={[styles.btnMessageText, { color: '#fff' }]}>Accept</Text>
-                </TouchableOpacity>
+                <View style={{ flex: 1, flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity
+                    style={[styles.btnMessage, { backgroundColor: colors.tint, flex: 1 }]}
+                    onPress={friendship.acceptRequest}
+                    disabled={friendship.isLoading}
+                  >
+                    {friendship.isLoading
+                      ? <ActivityIndicator size="small" color="#fff" />
+                      : <Feather name="check" size={18} color="#fff" />}
+                    <Text style={[styles.btnMessageText, { color: '#fff' }]}>Accept</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.btnMessage, { backgroundColor: colors.inputBackground, flex: 1 }]}
+                    onPress={friendship.declineRequest}
+                    disabled={friendship.isLoading}
+                  >
+                    <Feather name="x" size={18} color={colors.textSecondary} />
+                    <Text style={[styles.btnMessageText, { color: colors.textSecondary }]}>Decline</Text>
+                  </TouchableOpacity>
+                </View>
               )}
 
               {friendship.status === 'friends' && (

@@ -105,14 +105,22 @@ export default function ProfileTab() {
             <Text style={[styles.statValue, { color: colors.text }]}>{posts.length}</Text>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>Posts</Text>
           </View>
-          <View style={styles.statItem}>
+          <TouchableOpacity 
+            style={styles.statItem} 
+            onPress={() => router.push(`/network/${user?.id}?mode=followers`)}
+            activeOpacity={0.7}
+          >
             <Text style={[styles.statValue, { color: colors.text }]}>{followersCount}</Text>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>Followers</Text>
-          </View>
-          <View style={styles.statItem}>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.statItem}
+            onPress={() => router.push(`/network/${user?.id}?mode=following`)}
+            activeOpacity={0.7}
+          >
             <Text style={[styles.statValue, { color: colors.text }]}>{followingCount}</Text>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>Following</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.actionRow}>
@@ -243,18 +251,18 @@ const styles = StyleSheet.create({
   statItem: { alignItems: 'center' },
   statValue: { fontSize: 18, fontWeight: 'bold' },
   statLabel: { fontSize: 12, marginTop: 2 },
-  actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 8, paddingHorizontal: 12 },
+  actionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', gap: 10, paddingHorizontal: 16, marginTop: 4 },
   actionButton: {
-    flex: 1, flexDirection: 'row', height: 44, borderRadius: 22,
-    justifyContent: 'center', alignItems: 'center', gap: 4,
+    flex: 1, flexDirection: 'row', height: 50, borderRadius: 25,
+    justifyContent: 'center', alignItems: 'center', gap: 6, paddingHorizontal: 6,
   },
   actionIconBg: {
-    width: 28, height: 28, borderRadius: 14,
+    width: 32, height: 32, borderRadius: 16,
     justifyContent: 'center', alignItems: 'center',
   },
-  actionButtonText: { fontWeight: '700', fontSize: 13, flexShrink: 1 },
+  actionButtonText: { fontWeight: '700', fontSize: 14, flexShrink: 1 },
   actionButtonIconOnly: {
-    width: 44, height: 44, borderRadius: 22,
+    width: 50, height: 50, borderRadius: 25,
     justifyContent: 'center', alignItems: 'center',
   },
   settingsButton: { },

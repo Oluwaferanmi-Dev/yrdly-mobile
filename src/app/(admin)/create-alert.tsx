@@ -6,10 +6,12 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { AlertService } from '../../lib/alert-service';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import { useAppTheme } from '../../context/ThemeContext';
 
 export default function CreateAlertScreen() {
   const router = useRouter();
   const { profile } = useAuth();
+  const { colors } = useAppTheme();
   
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState<'amber' | 'missing_person' | 'community_safety'>('amber');
@@ -55,7 +57,7 @@ export default function CreateAlertScreen() {
   // If user is not admin, they shouldn't even be here, but let's be safe
   if (profile?.role !== 'admin' && !profile?.is_admin) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
         <Text style={styles.errorText}>Unauthorized Access</Text>
       </View>
     );
@@ -103,87 +105,90 @@ export default function CreateAlertScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#111827" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Create Alert</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Create Alert</Text>
         <View style={{ width: 24 }} />
       </View>
 
-      <Text style={styles.label}>Alert Type</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>Alert Type</Text>
       <View style={styles.typeSelector}>
         <TouchableOpacity 
-          style={[styles.typeButton, type === 'amber' && styles.typeButtonActive]}
+          style={[styles.typeButton, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }, type === 'amber' && styles.typeButtonActive]}
           onPress={() => setType('amber')}
         >
-          <Text style={[styles.typeText, type === 'amber' && styles.typeTextActive]}>Amber / Child</Text>
+          <Text style={[styles.typeText, { color: colors.textSecondary }, type === 'amber' && styles.typeTextActive]}>Amber / Child</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.typeButton, type === 'missing_person' && styles.typeButtonActive]}
+          style={[styles.typeButton, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }, type === 'missing_person' && styles.typeButtonActive]}
           onPress={() => setType('missing_person')}
         >
-          <Text style={[styles.typeText, type === 'missing_person' && styles.typeTextActive]}>Missing Person</Text>
+          <Text style={[styles.typeText, { color: colors.textSecondary }, type === 'missing_person' && styles.typeTextActive]}>Missing Person</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.typeButton, type === 'community_safety' && styles.typeButtonActive]}
+          style={[styles.typeButton, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }, type === 'community_safety' && styles.typeButtonActive]}
           onPress={() => setType('community_safety')}
         >
-          <Text style={[styles.typeText, type === 'community_safety' && styles.typeTextActive]}>Safety</Text>
+          <Text style={[styles.typeText, { color: colors.textSecondary }, type === 'community_safety' && styles.typeTextActive]}>Safety</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.label}>Alert Duration</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>Alert Duration</Text>
       <View style={styles.typeSelector}>
         <TouchableOpacity 
-          style={[styles.typeButton, duration === '24h' && styles.typeButtonActive]}
+          style={[styles.typeButton, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }, duration === '24h' && styles.typeButtonActive]}
           onPress={() => setDuration('24h')}
         >
-          <Text style={[styles.typeText, duration === '24h' && styles.typeTextActive]}>24 Hours</Text>
+          <Text style={[styles.typeText, { color: colors.textSecondary }, duration === '24h' && styles.typeTextActive]}>24 Hours</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.typeButton, duration === '48h' && styles.typeButtonActive]}
+          style={[styles.typeButton, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }, duration === '48h' && styles.typeButtonActive]}
           onPress={() => setDuration('48h')}
         >
-          <Text style={[styles.typeText, duration === '48h' && styles.typeTextActive]}>48 Hours</Text>
+          <Text style={[styles.typeText, { color: colors.textSecondary }, duration === '48h' && styles.typeTextActive]}>48 Hours</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.typeButton, duration === '7d' && styles.typeButtonActive]}
+          style={[styles.typeButton, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }, duration === '7d' && styles.typeButtonActive]}
           onPress={() => setDuration('7d')}
         >
-          <Text style={[styles.typeText, duration === '7d' && styles.typeTextActive]}>7 Days</Text>
+          <Text style={[styles.typeText, { color: colors.textSecondary }, duration === '7d' && styles.typeTextActive]}>7 Days</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.label}>Alert Title</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>Alert Title</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight, color: colors.text }]}
         placeholder="e.g., Missing 9yo in Shomolu"
+        placeholderTextColor={colors.textMuted}
         value={title}
         onChangeText={setTitle}
       />
 
-      <Text style={styles.label}>Description</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>Description</Text>
       <TextInput
-        style={[styles.input, styles.textArea]}
+        style={[styles.input, styles.textArea, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight, color: colors.text }]}
         placeholder="Provide all known details..."
+        placeholderTextColor={colors.textMuted}
         multiline
         numberOfLines={4}
         value={description}
         onChangeText={setDescription}
       />
 
-      <Text style={styles.label}>Radius (km)</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>Radius (km)</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight, color: colors.text }]}
         placeholder="50"
+        placeholderTextColor={colors.textMuted}
         keyboardType="numeric"
         value={radiusKm}
         onChangeText={setRadiusKm}
       />
 
-      <Text style={styles.label}>Location</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>Location</Text>
       <View style={styles.mapContainer}>
         <MapView
           style={styles.map}
@@ -233,7 +238,6 @@ export default function CreateAlertScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
   },
   content: {
     padding: 20,

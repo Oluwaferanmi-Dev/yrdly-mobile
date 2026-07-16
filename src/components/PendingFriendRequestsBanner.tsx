@@ -1,11 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import { useFriendshipGlobal } from '../hooks/use-friendship-global';
+
+// Per-row component so each can call useFriendshipGlobal independently
+function FriendRequestRow({ req, colors, router }: {
+  req: any;
+  colors: any;
+  router: ReturnType<typeof useRouter>;
+}) {
+  const friendship = useFriendshipGlobal(req.from_user_id);
+
+  return (
+    <View style={styles.requestRow}>
+      <TouchableOpacity
+        style={styles.userInfo}
+        onPress={() => router.push(`/profile/${req.from_user_id}`)}
+      >
+        {req.user?.avatar_url ? (
+          <Image source={{ uri: req.user.avatar_url }} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatar, styles.fallbackAvatar, { backgroundColor: colors.tint }]}>
+            <Text style={styles.fallbackText}>
+              {req.user?.name ? req.user.name.charAt(0).toUpperCase() : '?'}
+            </Text>
+          </View>
+        )}
+        <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
+          {req.user?.name || 'Unknown'}
+        </Text>
+      </TouchableOpacity>
+
+      <View style={styles.actionBtns}>
+        <TouchableOpacity
+          style={[styles.btn, { backgroundColor: colors.tint }]}
+          onPress={friendship.acceptRequest}
+          disabled={friendship.isLoading}
+        >
+          {friendship.isLoading
+            ? <ActivityIndicator size="small" color="#fff" />
+            : <Feather name="check" size={14} color="#fff" />}
+          <Text style={styles.btnText}>Accept</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.btn, { backgroundColor: colors.inputBackground, borderWidth: 1, borderColor: colors.borderLight }]}
+          onPress={friendship.declineRequest}
+          disabled={friendship.isLoading}
+        >
+          <Feather name="x" size={14} color={colors.textSecondary} />
+          <Text style={[styles.btnText, { color: colors.textSecondary }]}>Decline</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
 
 export function PendingFriendRequestsBanner() {
   const { user } = useAuth();
@@ -79,31 +132,7 @@ export function PendingFriendRequestsBanner() {
       </View>
       
       {requests.slice(0, 2).map((req) => (
-        <View key={req.id} style={styles.requestRow}>
-          <TouchableOpacity 
-            style={styles.userInfo} 
-            onPress={() => router.push(`/profile/${req.from_user_id}`)}
-          >
-            {req.user?.avatar_url ? (
-              <Image source={{ uri: req.user.avatar_url }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, styles.fallbackAvatar, { backgroundColor: colors.tint }]}>
-                <Text style={styles.fallbackText}>
-                  {req.user?.name ? req.user.name.charAt(0).toUpperCase() : '?'}
-                </Text>
-              </View>
-            )}
-            <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
-              {req.user?.name || 'Unknown'}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.btn, { backgroundColor: colors.tint }]}
-            onPress={() => router.push('/notifications')}
-          >
-            <Text style={styles.btnText}>View</Text>
-          </TouchableOpacity>
-        </View>
+        <FriendRequestRow key={req.id} req={req} colors={colors} router={router} />
       ))}
       
       {requests.length > 2 && (
@@ -163,14 +192,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
   },
+  actionBtns: {
+    flexDirection: 'row',
+    gap: 6,
+  },
   btn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 16,
   },
   btnText: {
     color: '#FFF',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   viewAllWrapper: {
@@ -185,3 +221,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
