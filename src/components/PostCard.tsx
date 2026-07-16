@@ -282,12 +282,20 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   const handleShare = async () => {
     try {
       const shareUrl = `https://app.yrdly.ng/posts/${post.id}`;
+      const title = post.title || (post.text ? post.text.substring(0, 60) : 'Check this post out');
       
-      const shareOptions = Platform.OS === 'ios'
-        ? { url: shareUrl }
-        : { message: shareUrl };
-      
-      await Share.share(shareOptions);
+      // Include URL in message body so WhatsApp and other apps render it
+      // as a tappable deep link on both iOS and Android
+      await Share.share(
+        {
+          message: Platform.OS === 'android'
+            ? `${title}\n${shareUrl}`
+            : title,
+          url: shareUrl,   // iOS-only field, ignored on Android
+          title: 'YRDLY Post',
+        },
+        { dialogTitle: 'Share post' }
+      );
       if (onShare) onShare();
     } catch (error) {
       console.error('Error sharing post:', error);

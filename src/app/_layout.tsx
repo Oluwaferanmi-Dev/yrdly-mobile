@@ -67,18 +67,24 @@ function RootNavigationGuard() {
     // Auth state resolved — dismiss the splash screen
     SplashScreen.hideAsync().catch(() => {});
 
-
     const inAuth = segments[0] === '(auth)' || (segments[0] as string) === 'auth';
     const inOnboarding = segments[0] === '(onboarding)';
 
+    // These segments are valid deep-link destinations — never redirect away from them
+    const DEEP_LINK_SEGMENTS = ['posts', 'events', 'marketplace', 'profile', 'chat'];
+    const inDeepLink = DEEP_LINK_SEGMENTS.includes(segments[0] as string);
+
     if (!user) {
-      // Not signed in → always go to login
+      // Not signed in → always go to login (deep links will resume after auth if needed)
       if (!inAuth) router.replace('/(auth)/login');
       return;
     }
 
     // Signed in — wait for profile to load
     if (!profile) return;
+
+    // If we're on a deep-linked content route, leave it alone
+    if (inDeepLink) return;
 
     // Signed in and profile loaded — check onboarding state
     const needsProfile = !profile.profile_completed;
