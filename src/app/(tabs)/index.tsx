@@ -340,6 +340,7 @@ export default function HomeTab() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         keyExtractor={(item: Post) => item.id}
+        estimatedItemSize={400}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         renderItem={({ item, index }: { item: Post; index: number }) => (
