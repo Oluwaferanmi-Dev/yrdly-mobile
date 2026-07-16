@@ -51,6 +51,10 @@ interface ForSaleFormProps {
   profile?: { name?: string; avatar_url?: string; location?: { ward?: string; lga?: string; state?: string } } | null;
   isSubmitting: boolean;
   onSubmit: () => void;
+  showCategoryMenu?: boolean;
+  onCategoryChange?: () => void;
+  categories?: string[];
+  onSelectCategory?: (cat: string) => void;
 }
 
 // ── Animated segmented control ────────────────────────────────────────────────
@@ -189,7 +193,7 @@ function PhotoGallery({ images, onAdd, onRemove, colors }: {
 }
 
 // ── Main ForSaleForm ──────────────────────────────────────────────────────────
-export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profile, isSubmitting, onSubmit }: ForSaleFormProps) {
+export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profile, isSubmitting, onSubmit, showCategoryMenu, onCategoryChange, categories, onSelectCategory }: ForSaleFormProps) {
   const { colors } = useAppTheme();
 
   const locationLabel = profile?.location
@@ -218,10 +222,23 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Text style={[s.sellerName, { color: colors.text }]}>{profile?.name || 'You'}</Text>
-            <View style={[s.forSalePill, { backgroundColor: colors.tint + '20', borderColor: colors.tint + '60' }]}>
-              <Ionicons name="pricetag-outline" size={10} color={colors.tint} />
-              <Text style={[s.forSaleLabel, { color: colors.tint }]}>For Sale</Text>
-              <Ionicons name="chevron-down" size={10} color={colors.tint} />
+            <View style={{ position: 'relative', zIndex: 50 }}>
+              <TouchableOpacity
+                style={[s.forSalePill, { backgroundColor: colors.tint + '20', borderColor: colors.tint + '60' }]}
+                onPress={onCategoryChange}>
+                <Ionicons name="pricetag-outline" size={10} color={colors.tint} />
+                <Text style={[s.forSaleLabel, { color: colors.tint }]}>For Sale</Text>
+                <Ionicons name="chevron-down" size={10} color={colors.tint} />
+              </TouchableOpacity>
+              {showCategoryMenu && categories && onSelectCategory && (
+                <View style={[s.menu, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                  {categories.map(cat => (
+                    <TouchableOpacity key={cat} style={s.menuItem} onPress={() => onSelectCategory(cat)}>
+                      <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
@@ -385,6 +402,8 @@ const s = StyleSheet.create({
   sellerName: { fontSize: 16, fontWeight: '800' },
   forSalePill: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
   forSaleLabel: { fontSize: 11, fontWeight: '800' },
+  menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
+  menuItem: { paddingVertical: 10, paddingHorizontal: 16 },
   sellerLocation: { fontSize: 12 },
   fieldHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
   fieldLabel: { fontSize: 14, fontWeight: '700' },

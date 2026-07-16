@@ -66,7 +66,7 @@ export default function CatalogTab() {
         .from('posts')
         .select('*, user:users!posts_user_id_fkey(id,name,avatar_url,is_verified)')
         .eq('category', 'For Sale')
-        .eq('is_sold', false);
+        .or('is_sold.eq.false,is_sold.is.null');
 
       if (activeFilter?.state) q = q.eq('state', activeFilter.state);
       if (activeFilter?.lga)   q = q.eq('lga', activeFilter.lga);
@@ -272,9 +272,6 @@ export default function CatalogTab() {
               {/* Nearby header */}
               <View style={s.nearbyHeader}>
                 <Text style={[s.nearbyTitle, { color: colors.text }]}>Nearby Listings</Text>
-                <TouchableOpacity onPress={() => router.push('/home' as any)}>
-                  <Text style={[s.seeAll, { color: colors.tint }]}>See all  ›</Text>
-                </TouchableOpacity>
               </View>
 
               {loading && (

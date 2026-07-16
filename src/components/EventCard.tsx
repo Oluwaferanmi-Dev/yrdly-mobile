@@ -146,7 +146,9 @@ export function EventCardCompact({ event, onPress }: EventCardProps) {
                   ? <Image source={{ uri: event.author_image }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
                   : <Text style={c.avatarTxt}>{(event.author_name || 'E').charAt(0)}</Text>}
               </View>
-              <Text style={[c.attendees, { color: colors.textMuted }]}>+{Math.floor(Math.random() * 30) + 5}</Text>
+              {(event.attendees?.length || 0) > 0 && (
+                <Text style={[c.attendees, { color: colors.textMuted }]}>+{event.attendees?.length}</Text>
+              )}
             </View>
             <TouchableOpacity
               style={[c.ctaBtn, { backgroundColor: isOwner ? 'transparent' : colors.tint, borderWidth: isOwner ? 1 : 0, borderColor: colors.tint }]}
@@ -265,7 +267,9 @@ export function EventCard({ event, onPress }: EventCardProps) {
                   <Ionicons name="person" size={10} color="#0B0D0B" />
                 </View>
               ))}
-              <Text style={[f.attendeesTxt, { color: colors.textMuted }]}>+{Math.floor(Math.random() * 40) + 5}</Text>
+              {(event.attendees?.length || 0) > 0 && (
+                <Text style={[f.attendeesTxt, { color: colors.textMuted }]}>+{event.attendees?.length}</Text>
+              )}
             </View>
 
             <View style={f.priceWrap}>

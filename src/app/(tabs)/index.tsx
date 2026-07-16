@@ -6,7 +6,7 @@ import { PostCard } from '../../components/PostCard';
 import { PostSkeleton } from '../../components/Skeleton';
 import { supabase } from '../../lib/supabase';
 import { Post } from '../../types';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useLocation } from '../../context/LocationContext';
 import { LocationChip } from '../../components/LocationChip';
@@ -211,11 +211,19 @@ export default function HomeTab() {
     setRefreshing(false);
   }, [refreshPosts, fetchAlerts]);
 
+  const params = useLocalSearchParams<{ scrollToTop?: string }>();
+
   useFocusEffect(
     useCallback(() => {
       refreshPosts();
       fetchAlerts();
-    }, [refreshPosts, fetchAlerts])
+      if (params.scrollToTop === 'true' && flashListRef.current) {
+        setTimeout(() => {
+          flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
+        }, 100);
+        router.setParams({ scrollToTop: undefined });
+      }
+    }, [refreshPosts, fetchAlerts, params.scrollToTop])
   );
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 }).current;

@@ -46,6 +46,7 @@ export default function CreateTab() {
   const [negotiable, setNegotiable] = useState(false);
   const [eventCategory, setEventCategory] = useState('');
   const [isTicketed, setIsTicketed] = useState(true);
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   interface PostImage {
     uri: string;
     width: number;
@@ -87,7 +88,7 @@ export default function CreateTab() {
       successSheetY.value = 300;
       successContentOp.value = 0;
       
-      router.replace('/(tabs)/' as any);
+      router.navigate({ pathname: '/(tabs)/', params: { scrollToTop: 'true' } } as any);
     }, 2200);
   }
 
@@ -266,6 +267,7 @@ export default function CreateTab() {
         liked_by: [],
         comment_count: 0,
         is_sold: false,
+        visibility: category === 'General' ? visibility : 'public',
       };
 
       // Add specific fields for category
@@ -340,12 +342,13 @@ export default function CreateTab() {
 
   // General form bridge
   const generalFormValues: GeneralPostFormValues = {
-    title, text, images: images as GeneralPostImage[],
+    title, text, images: images as GeneralPostImage[], visibility,
   };
   const handleGeneralFormChange = (patch: Partial<GeneralPostFormValues>) => {
     if (patch.title !== undefined) setTitle(patch.title);
     if (patch.text !== undefined) setText(patch.text);
     if (patch.images !== undefined) setImages(patch.images as any);
+    if (patch.visibility !== undefined) setVisibility(patch.visibility);
   };
 
   const handleForSaleChange = (patch: Partial<ForSaleFormValues>) => {
@@ -381,6 +384,14 @@ export default function CreateTab() {
               profile={profile}
               isSubmitting={isSubmitting}
               onSubmit={handleSubmit}
+              showCategoryMenu={showCategoryMenu}
+              onCategoryChange={() => setShowCategoryMenu(!showCategoryMenu)}
+              categories={categories}
+              onSelectCategory={(cat) => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setCategory(cat as any);
+                setShowCategoryMenu(false);
+              }}
             />
           </ScrollView>
         ) : category === 'Event' ? (
@@ -398,6 +409,14 @@ export default function CreateTab() {
               isDarkMode={isDarkMode}
               isSubmitting={isSubmitting}
               onSubmit={handleSubmit}
+              showCategoryMenu={showCategoryMenu}
+              onCategoryChange={() => setShowCategoryMenu(!showCategoryMenu)}
+              categories={categories}
+              onSelectCategory={(cat) => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setCategory(cat as any);
+                setShowCategoryMenu(false);
+              }}
             />
           </ScrollView>
         ) : (

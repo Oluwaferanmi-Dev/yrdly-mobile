@@ -19,6 +19,7 @@ export interface GeneralPostFormValues {
   text: string;
   title: string;
   images: GeneralPostImage[];
+  visibility: 'public' | 'private';
 }
 
 interface Props {
@@ -94,8 +95,8 @@ export function GeneralPostForm({
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}>
             {!!locLabel && <Text style={[s.sub, { color: colors.textMuted }]}>{locLabel}</Text>}
             {!!locLabel && <Text style={[s.sub, { color: colors.textMuted }]}>·</Text>}
-            <Ionicons name="globe-outline" size={11} color={colors.tint} />
-            <Text style={[s.sub, { color: colors.tint }]}>Public</Text>
+            <Ionicons name={values.visibility === 'private' ? 'lock-closed-outline' : 'globe-outline'} size={11} color={colors.tint} />
+            <Text style={[s.sub, { color: colors.tint }]}>{values.visibility === 'private' ? 'Private' : 'Public'}</Text>
           </View>
         </View>
       </View>
@@ -112,11 +113,7 @@ export function GeneralPostForm({
           maxLength={2000}
         />
         <View style={[s.composerFooter, { borderTopColor: colors.borderLight }]}>
-          <TouchableOpacity style={[s.pollBtn, { borderColor: colors.tint + '60' }]}>
-            <Ionicons name="stats-chart-outline" size={13} color={colors.tint} />
-            <Text style={[s.pollTxt, { color: colors.tint }]}>Add poll</Text>
-          </TouchableOpacity>
-          <Text style={[s.charCount, { color: colors.textMuted }]}>{values.text.length}/2000</Text>
+          <Text style={[s.charCount, { color: colors.textMuted, flex: 1, textAlign: 'right' }]}>{values.text.length}/2000</Text>
         </View>
       </View>
 
@@ -124,11 +121,9 @@ export function GeneralPostForm({
       <View style={[s.toolbarCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
         {([
           ['image-outline', 'Photo'],
-          ['videocam-outline', 'Video'],
-          ['location-outline', 'Location'],
         ] as [string, string][]).map(([icon, label]) => (
           <TouchableOpacity key={label} style={s.toolBtn}
-            onPress={label !== 'Location' ? onAddPhoto : undefined}>
+            onPress={label === 'Photo' ? onAddPhoto : undefined}>
             <View style={[s.toolIcon, { borderColor: label === 'Photo' ? colors.tint : colors.borderLight, backgroundColor: label === 'Photo' ? colors.tint + '15' : 'transparent' }]}>
               <Ionicons name={icon as any} size={22} color={label === 'Photo' ? colors.tint : colors.textMuted} />
             </View>
@@ -137,20 +132,10 @@ export function GeneralPostForm({
         ))}
       </View>
 
-      {/* ── Add Location row ── */}
-      <TouchableOpacity style={[s.rowCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-        <Ionicons name="location-outline" size={20} color={colors.tint} />
-        <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={[s.rowTitle, { color: colors.text }]}>Add Location</Text>
-          <Text style={[s.rowSub, { color: colors.textMuted }]}>Help others find your post</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
-      </TouchableOpacity>
-
       {/* ── Image preview ── */}
       {values.images.length > 0 && (
-        <View style={s.imgGrid}>
-          {values.images.slice(0, 2).map((img, i) => (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }} contentContainerStyle={{ gap: 8 }}>
+          {values.images.map((img, i) => (
             <View key={i} style={s.imgWrap}>
               <Image source={{ uri: img.thumbnailUri || img.uri }} style={s.img} contentFit="cover" transition={200} />
               <TouchableOpacity style={s.imgRemove} onPress={() => onRemovePhoto(i)}>
@@ -164,23 +149,28 @@ export function GeneralPostForm({
             <Ionicons name="add" size={24} color={colors.textMuted} />
             <Text style={[s.addMoreTxt, { color: colors.textMuted }]}>Add more</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       )}
 
       {/* ── Visibility row ── */}
-      <View style={[s.rowCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <TouchableOpacity 
+        style={[s.rowCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+        onPress={() => onChange({ visibility: values.visibility === 'private' ? 'public' : 'private' })}
+      >
         <View style={[s.visIcon, { borderColor: colors.tint }]}>
-          <Ionicons name="globe-outline" size={18} color={colors.tint} />
+          <Ionicons name={values.visibility === 'private' ? 'lock-closed-outline' : 'globe-outline'} size={18} color={colors.tint} />
         </View>
         <View style={{ flex: 1, marginLeft: 12 }}>
           <Text style={[s.rowTitle, { color: colors.text }]}>Who can see this?</Text>
-          <Text style={[s.rowSub, { color: colors.textMuted }]}>Anyone on Yrdly</Text>
+          <Text style={[s.rowSub, { color: colors.textMuted }]}>
+            {values.visibility === 'private' ? 'Only your friends' : 'Anyone on Yrdly'}
+          </Text>
         </View>
         <View style={[s.visPill, { borderColor: colors.tint }]}>
-          <Text style={[s.visPillTxt, { color: colors.tint }]}>Public</Text>
-          <Ionicons name="chevron-down" size={12} color={colors.tint} />
+          <Text style={[s.visPillTxt, { color: colors.tint }]}>{values.visibility === 'private' ? 'Private' : 'Public'}</Text>
+          <Ionicons name="swap-vertical" size={12} color={colors.tint} />
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* ── Post button ── */}
       <Animated.View style={[{ transform: [{ scale: pressScale }] }, s.submitWrap]}>

@@ -34,6 +34,10 @@ interface Props {
   isDarkMode: boolean;
   isSubmitting: boolean;
   onSubmit: () => void;
+  showCategoryMenu?: boolean;
+  onCategoryChange?: () => void;
+  categories?: string[];
+  onSelectCategory?: (cat: string) => void;
 }
 
 // Collapsible ticket card
@@ -92,7 +96,7 @@ function TicketCard({ tier, idx, onChange, onRemove, colors }: any) {
   );
 }
 
-export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, profile, isDarkMode, isSubmitting, onSubmit }: Props) {
+export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, profile, isDarkMode, isSubmitting, onSubmit, showCategoryMenu, onCategoryChange, categories, onSelectCategory }: Props) {
   const { colors } = useAppTheme();
   const [showDate, setShowDate] = useState(false);
   const [showTime, setShowTime] = useState(false);
@@ -123,11 +127,24 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Text style={[s.hostName, { color: colors.text }]}>{profile?.name || 'You'}</Text>
-              <View style={[s.pill, { backgroundColor: colors.tint + '20', borderColor: colors.tint + '50' }]}>
+            <View style={{ position: 'relative', zIndex: 50 }}>
+              <TouchableOpacity 
+                style={[s.pill, { backgroundColor: colors.tint + '20', borderColor: colors.tint + '50' }]}
+                onPress={onCategoryChange}>
                 <Ionicons name="calendar-outline" size={10} color={colors.tint} />
                 <Text style={[s.pillTxt, { color: colors.tint }]}>Event</Text>
                 <Ionicons name="chevron-down" size={10} color={colors.tint} />
-              </View>
+              </TouchableOpacity>
+              {showCategoryMenu && categories && onSelectCategory && (
+                <View style={[s.menu, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                  {categories.map(cat => (
+                    <TouchableOpacity key={cat} style={s.menuItem} onPress={() => onSelectCategory(cat)}>
+                      <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}>
               <Text style={[s.hostSub, { color: colors.textMuted }]}>{locFromProfile}</Text>
@@ -166,14 +183,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
           </View>
         )}
 
-        <View style={[s.mediaRow, { borderTopColor: colors.borderLight }]}>
-          {[['image-outline','Photos'],['videocam-outline','Video'],['location-outline','Location'],['calendar-outline','Date & Time']].map(([icon, label]) => (
-            <TouchableOpacity key={label} style={s.mediaBtn} onPress={label === 'Photos' || label === 'Video' ? onAddPhoto : undefined}>
-              <Ionicons name={icon as any} size={14} color={colors.textMuted} />
-              <Text style={[s.mediaBtnTxt, { color: colors.textMuted }]}>{label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+
       </View>
 
       {/* Title */}
@@ -378,6 +388,8 @@ const s = StyleSheet.create({
   pillTxt: { fontSize: 11, fontWeight: '800' },
   fieldLabel: { fontSize: 14, fontWeight: '700' },
   hint: { fontSize: 12 },
+  menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
+  menuItem: { paddingVertical: 10, paddingHorizontal: 16 },
   req: { color: '#ef4444', fontWeight: '700' },
   charCount: { fontSize: 11, textAlign: 'right', marginTop: 6 },
   coverEmpty: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: 16, height: 160, justifyContent: 'center', alignItems: 'center', gap: 8, marginVertical: 10 },
