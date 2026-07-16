@@ -20,6 +20,8 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { ForSaleForm, type ForSaleFormValues, type PostImage as FSPostImage } from '../../components/ForSaleForm';
+import { CreateEventForm, type CreateEventFormValues, type TicketTierInput as CETicketTier } from '../../components/CreateEventForm';
+import { GeneralPostForm, type GeneralPostFormValues, type GeneralPostImage } from '../../components/GeneralPostForm';
 
 type PostCategory = 'General' | 'For Sale' | 'Event';
 
@@ -42,6 +44,8 @@ export default function CreateTab() {
   const [subCategory, setSubCategory] = useState('');
   const [condition, setCondition] = useState('');
   const [negotiable, setNegotiable] = useState(false);
+  const [eventCategory, setEventCategory] = useState('');
+  const [isTicketed, setIsTicketed] = useState(true);
   interface PostImage {
     uri: string;
     width: number;
@@ -283,6 +287,7 @@ export default function CreateTab() {
           title: title.trim() || 'Untitled Event',
           description: text.trim() || '',
           category: 'Event',
+          subCategory: eventCategory || null,
           coverImageUrl: uploadedImageUrls[0] || null,
           locationAddress: locationData?.address || profile?.location?.state || '',
           lat: locationData?.lat,
@@ -315,6 +320,34 @@ export default function CreateTab() {
     title, text, price, subCategory, condition, negotiable,
     images: images as FSPostImage[],
   };
+  // Event form bridge
+  const eventFormValues: CreateEventFormValues = {
+    title, text, images: images as any,
+    eventDate, locationData,
+    ticketTiers: ticketTiers as CETicketTier[],
+    eventCategory, isTicketed,
+  };
+  const handleEventFormChange = (patch: Partial<CreateEventFormValues>) => {
+    if (patch.title !== undefined) setTitle(patch.title);
+    if (patch.text !== undefined) setText(patch.text);
+    if (patch.images !== undefined) setImages(patch.images as any);
+    if (patch.eventDate !== undefined) setEventDate(patch.eventDate);
+    if (patch.locationData !== undefined) setLocationData(patch.locationData);
+    if (patch.ticketTiers !== undefined) setTicketTiers(patch.ticketTiers as any);
+    if (patch.eventCategory !== undefined) setEventCategory(patch.eventCategory);
+    if (patch.isTicketed !== undefined) setIsTicketed(patch.isTicketed);
+  };
+
+  // General form bridge
+  const generalFormValues: GeneralPostFormValues = {
+    title, text, images: images as GeneralPostImage[],
+  };
+  const handleGeneralFormChange = (patch: Partial<GeneralPostFormValues>) => {
+    if (patch.title !== undefined) setTitle(patch.title);
+    if (patch.text !== undefined) setText(patch.text);
+    if (patch.images !== undefined) setImages(patch.images as any);
+  };
+
   const handleForSaleChange = (patch: Partial<ForSaleFormValues>) => {
     if (patch.title !== undefined) setTitle(patch.title);
     if (patch.text !== undefined) setText(patch.text);
@@ -327,7 +360,7 @@ export default function CreateTab() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScreenHeader title={category === 'For Sale' ? 'Sell an Item' : 'Create Post'} />
+      <ScreenHeader title={category === 'For Sale' ? 'Sell an Item' : category === 'Event' ? 'Create Event' : 'Create Post'} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -350,318 +383,47 @@ export default function CreateTab() {
               onSubmit={handleSubmit}
             />
           </ScrollView>
-        ) : (
-        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]} keyboardShouldPersistTaps="handled">
-          {/* Form Fields (Borderless) */}
-          <View style={styles.formGroup}>
-            {/* User Info & Category Header */}
-            <View style={[styles.authorHeader, { zIndex: 50 }]}>
-              {profile?.avatar_url ? (
-                <Image source={{ uri: profile.avatar_url }} style={styles.authorAvatar} contentFit="cover" />
-              ) : (
-                <View style={[styles.authorAvatar, styles.avatarFallback, { backgroundColor: colors.tint }]}>
-                  <Text style={styles.avatarFallbackText}>
-                    {profile?.name ? profile.name.charAt(0).toUpperCase() : '?'}
-                  </Text>
-                </View>
-              )}
-              
-              <View style={[styles.authorInfo, { zIndex: 50 }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', zIndex: 50 }}>
-                  <Text style={[styles.authorName, { color: colors.text }]}>{profile?.name || 'Anonymous'}</Text>
-                  
-                  {/* Category Dropdown Badge */}
-                  <View style={{ zIndex: 50 }}>
-                    <TouchableOpacity 
-                      style={[styles.categoryBadge, { backgroundColor: colors.tint + '15' }]} 
-                      onPress={() => setShowCategoryMenu(!showCategoryMenu)}
-                    >
-                      <Text style={[styles.categoryBadgeText, { color: colors.tint }]}>{category}</Text>
-                      <Ionicons name="chevron-down" size={12} color={colors.tint} style={{ marginLeft: 4 }} />
-                    </TouchableOpacity>
-
-                    {showCategoryMenu && (
-                      <View style={[styles.categoryMenu, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-                        {categories.map((cat) => (
-                          <TouchableOpacity 
-                            key={cat} 
-                            style={styles.categoryMenuItem} 
-                            onPress={() => { 
-                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                              setCategory(cat); 
-                              setShowCategoryMenu(false); 
-                            }}
-                          >
-                            <Text style={{ color: colors.text, fontWeight: category === cat ? 'bold' : 'normal', fontSize: 14 }}>
-                              {cat}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                </View>
-
-                {profile?.location && (profile.location.ward || profile.location.lga || profile.location.state) && (
-                  <Text style={[styles.authorLocation, { color: colors.textMuted }]}>
-                    {[profile.location.ward, profile.location.lga || profile.location.state].filter(Boolean).join(', ')}
-                  </Text>
-                )}
-              </View>
-            </View>
-
-            <TextInput
-              style={[styles.inputTitle, { color: colors.text }]}
-              placeholder="Give it a title (optional)"
-              placeholderTextColor={colors.textMuted}
-              value={title}
-              onChangeText={setTitle}
-            />
-
-            <TextInput
-              style={[styles.inputBody, { color: colors.text }]}
-              placeholder="What's going on?"
-              placeholderTextColor={colors.textMuted}
-              value={text}
-              onChangeText={setText}
-              multiline
-              textAlignVertical="top"
-            />
-
-            {category === 'Event' && (
-              <View style={[styles.addonCard, { backgroundColor: colors.card, borderColor: colors.borderLight, zIndex: 10 }]}>
-                <View style={styles.addonHeader}>
-                  <Ionicons name="calendar" size={16} color={colors.tint} />
-                  <Text style={[styles.addonTitle, { color: colors.text }]}>Event Details</Text>
-                </View>
-
-                {/* Location Autocomplete */}
-                <View style={{ zIndex: 10, marginTop: 8 }}>
-                  <ScrollView horizontal scrollEnabled={false} style={{ width: '100%' }} contentContainerStyle={{ width: '100%' }} keyboardShouldPersistTaps="handled">
-                    <View style={{ width: '100%', minHeight: 44, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.borderLight, marginBottom: 12 }}>
-                      <GooglePlacesAutocomplete
-                        placeholder="Location / Address"
-                        fetchDetails={true}
-                        onPress={(data, details = null) => {
-                          if (details?.geometry?.location) {
-                            setLocationData({
-                              address: data.description,
-                              lat: details.geometry.location.lat,
-                              lng: details.geometry.location.lng,
-                            });
-                          }
-                        }}
-                        query={{
-                          key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
-                          language: 'en',
-                        }}
-                        styles={{
-                          textInput: [styles.addonInput, { color: colors.text, margin: 0, padding: 0, backgroundColor: 'transparent', minHeight: 40 }],
-                          textInputContainer: { backgroundColor: 'transparent', borderTopWidth: 0, borderBottomWidth: 0 },
-                          row: { backgroundColor: colors.background },
-                          description: { color: colors.text },
-                          listView: { backgroundColor: colors.background, elevation: 4, zIndex: 100 },
-                        }}
-                        textInputProps={{
-                          placeholderTextColor: colors.textMuted,
-                        }}
-                      />
-                    </View>
-                  </ScrollView>
-                </View>
-
-                {/* Ticket Tiers Section */}
-                <View style={styles.ticketTiersContainer}>
-                  <View style={styles.ticketTiersHeader}>
-                    <Text style={[styles.ticketTiersTitle, { color: colors.text }]}>Ticket Tiers</Text>
-                    <TouchableOpacity onPress={() => {
-                      setTicketTiers([...ticketTiers, { id: Math.random().toString(), name: 'New Tier', price: '', capacity: '' }]);
-                    }}>
-                      <Ionicons name="add-circle" size={24} color={colors.tint} />
-                    </TouchableOpacity>
-                  </View>
-                  
-                  {ticketTiers.map((tier, index) => (
-                    <View key={tier.id} style={[styles.ticketTierCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                        <TextInput
-                          style={[styles.tierNameInput, { color: colors.text }]}
-                          value={tier.name}
-                          onChangeText={(val) => {
-                            const newTiers = [...ticketTiers];
-                            newTiers[index].name = val;
-                            setTicketTiers(newTiers);
-                          }}
-                          placeholder="Tier Name (e.g. VIP)"
-                          placeholderTextColor={colors.textMuted}
-                        />
-                        {ticketTiers.length > 1 && (
-                          <TouchableOpacity onPress={() => {
-                            setTicketTiers(ticketTiers.filter((_, i) => i !== index));
-                          }}>
-                            <Ionicons name="trash-outline" size={20} color="#FF3B30" />
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                      <View style={{ flexDirection: 'row', gap: 12 }}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.tierLabel, { color: colors.textMuted }]}>Price (₦)</Text>
-                          <TextInput
-                            style={[styles.tierInput, { color: colors.text, borderColor: colors.borderLight }]}
-                            value={tier.price}
-                            onChangeText={(val) => {
-                              const newTiers = [...ticketTiers];
-                              newTiers[index].price = val;
-                              setTicketTiers(newTiers);
-                            }}
-                            keyboardType="numeric"
-                            placeholder="0 for Free"
-                            placeholderTextColor={colors.textMuted}
-                          />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.tierLabel, { color: colors.textMuted }]}>Capacity (Optional)</Text>
-                          <TextInput
-                            style={[styles.tierInput, { color: colors.text, borderColor: colors.borderLight }]}
-                            value={tier.capacity}
-                            onChangeText={(val) => {
-                              const newTiers = [...ticketTiers];
-                              newTiers[index].capacity = val;
-                              setTicketTiers(newTiers);
-                            }}
-                            keyboardType="numeric"
-                            placeholder="Unlimited"
-                            placeholderTextColor={colors.textMuted}
-                          />
-                        </View>
-                      </View>
-                    </View>
-                  ))}
-                  
-                  <Text style={[styles.tierHelperText, { color: colors.textMuted }]}>
-                    Paid tickets require a linked bank account in Payout Settings.
-                  </Text>
-                </View>
-
-                {/* Date & Time Pickers */}
-                {Platform.OS === 'ios' ? (
-                  <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 8 }}>
-                    <Text style={{ color: colors.textSecondary, fontWeight: '500', fontSize: 14 }}>Date & Time:</Text>
-                    <DateTimePicker
-                      value={eventDate}
-                      mode="datetime"
-                      display="compact"
-                      onChange={(e, d) => d && setEventDate(d)}
-                      themeVariant={isDarkMode ? 'dark' : 'light'}
-                      textColor={colors.text}
-                      accentColor={colors.tint}
-                    />
-                  </View>
-                ) : (
-                  <View style={{ flexDirection: 'row', gap: 12, marginBottom: 8 }}>
-                    <TouchableOpacity style={[styles.addonDateButton, { backgroundColor: colors.inputBackground }]} onPress={() => setShowDatePicker(true)}>
-                      <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
-                      <Text style={{ color: colors.text, marginLeft: 8, fontSize: 14 }}>
-                        {eventDate.toLocaleDateString()}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.addonDateButton, { backgroundColor: colors.inputBackground }]} onPress={() => setShowTimePicker(true)}>
-                      <Ionicons name="time-outline" size={18} color={colors.textSecondary} />
-                      <Text style={{ color: colors.text, marginLeft: 8, fontSize: 14 }}>
-                        {eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-
-                {Platform.OS === 'android' && showDatePicker && (
-                  <DateTimePicker
-                    value={eventDate}
-                    mode="date"
-                    display="default"
-                    onChange={(event, selectedDate) => {
-                      setShowDatePicker(false);
-                      if (selectedDate) {
-                        const newDate = new Date(eventDate);
-                        newDate.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-                        setEventDate(newDate);
-                      }
-                    }}
-                  />
-                )}
-                {Platform.OS === 'android' && showTimePicker && (
-                  <DateTimePicker
-                    value={eventDate}
-                    mode="time"
-                    display="default"
-                    onChange={(event, selectedDate) => {
-                      setShowTimePicker(false);
-                      if (selectedDate) {
-                        const newDate = new Date(eventDate);
-                        newDate.setHours(selectedDate.getHours(), selectedDate.getMinutes());
-                        setEventDate(newDate);
-                      }
-                    }}
-                  />
-                )}
-              </View>
-            )}
-
-            {/* Action Row */}
-            <View style={[styles.actionRow, { borderTopColor: colors.borderLight }]}>
-              <TouchableOpacity style={styles.actionIconButton} onPress={pickImage}>
-                <Ionicons name="image-outline" size={24} color={colors.tint} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionIconButton} onPress={() => setCategory(category === 'For Sale' ? 'General' : 'For Sale')}>
-                <Ionicons name="pricetag-outline" size={24} color={category === 'For Sale' ? colors.tint : colors.textMuted} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionIconButton} onPress={() => setCategory(category === 'Event' ? 'General' : 'Event')}>
-                <Ionicons name="calendar-outline" size={24} color={category === 'Event' ? colors.tint : colors.textMuted} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Selected Images Preview */}
-            {images.length > 0 && (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageList}>
-                {images.map((img, index) => (
-                  <View key={index} style={styles.imageWrapper}>
-                    <Image source={{ uri: img.thumbnailUri || img.uri }} style={[styles.previewImage, { borderColor: colors.borderLight }]} contentFit="cover" />
-                    {img.type === 'video' && (
-                      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' }}>
-                        <Ionicons name="play-circle" size={36} color="rgba(255,255,255,0.9)" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.5, shadowRadius: 4 }} />
-                      </View>
-                    )}
-                    <TouchableOpacity style={[styles.removeIconBtn, { backgroundColor: colors.card }]} onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      removeImage(index);
-                    }}>
-                      <Ionicons name="close-circle" size={24} color={colors.textMuted} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-                {images.length < 5 && (
-                  <TouchableOpacity style={[styles.addImageBtn, { borderColor: colors.borderLight }]} onPress={pickImage}>
-                    <Ionicons name="add" size={28} color={colors.textMuted} />
-                  </TouchableOpacity>
-                )}
-              </ScrollView>
-            )}
-          </View>
-
-          {/* Submit Button */}
-          <TouchableOpacity 
-            style={[styles.submitButton, { backgroundColor: colors.tint, shadowColor: colors.tint }, isSubmitting && styles.submitButtonDisabled]} 
-            onPress={handleSubmit}
-            disabled={isSubmitting}
+        ) : category === 'Event' ? (
+          <ScrollView
+            contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 32 }]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            {isSubmitting ? (
-              <ActivityIndicator color="#FFF" />
-            ) : (
-              <Text style={styles.submitButtonText}>Post to Yrdly</Text>
-            )}
-          </TouchableOpacity>
-          
-        </ScrollView>
+            <CreateEventForm
+              values={eventFormValues}
+              onChange={handleEventFormChange}
+              onAddPhoto={pickImage}
+              onRemovePhoto={index => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); removeImage(index); }}
+              profile={profile}
+              isDarkMode={isDarkMode}
+              isSubmitting={isSubmitting}
+              onSubmit={handleSubmit}
+            />
+          </ScrollView>
+        ) : (
+          <ScrollView
+            contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 32 }]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <GeneralPostForm
+              values={generalFormValues}
+              onChange={handleGeneralFormChange}
+              onAddPhoto={pickImage}
+              onRemovePhoto={index => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); removeImage(index); }}
+              profile={profile}
+              isSubmitting={isSubmitting}
+              onSubmit={handleSubmit}
+              showCategoryMenu={showCategoryMenu}
+              onCategoryChange={() => setShowCategoryMenu(!showCategoryMenu)}
+              categories={categories}
+              onSelectCategory={(cat) => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setCategory(cat as any);
+                setShowCategoryMenu(false);
+              }}
+            />
+          </ScrollView>
         )}
       </KeyboardAvoidingView>
 
