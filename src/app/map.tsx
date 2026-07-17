@@ -157,19 +157,18 @@ export default function MapScreen() {
   const fetchMarkers = async () => {
     const found: MapMarker[] = [];
     if (user?.id) {
-      // Fetch friends directly since RPC doesn't exist
-      const { data: friendLinks } = await supabase
-        .from('friends')
-        .select('user_id, friend_id')
-        .eq('status', 'accepted')
-        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`);
+      // Fetch friends array from the users table
+      const { data: me } = await supabase
+        .from('users')
+        .select('friends')
+        .eq('id', user.id)
+        .single();
         
-      if (friendLinks && friendLinks.length > 0) {
-        const friendIds = friendLinks.map((f: any) => f.user_id === user.id ? f.friend_id : f.user_id);
+      if (me?.friends && me.friends.length > 0) {
         const { data: frds } = await supabase
           .from('users')
           .select('id, name, avatar_url, current_location')
-          .in('id', friendIds)
+          .in('id', me.friends)
           .not('current_location', 'is', null);
           
         (frds || []).forEach((f: any) => {

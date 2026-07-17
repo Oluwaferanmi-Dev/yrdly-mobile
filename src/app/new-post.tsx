@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, useWindowDimensions, LogBox, Modal, Keyboard } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withDelay } from 'react-native-reanimated';
-import LottieView from 'lottie-react-native';
+
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -89,7 +89,7 @@ export default function CreateTab() {
       successSheetY.value = 300;
       successContentOp.value = 0;
       
-      router.navigate({ pathname: '/(tabs)/', params: { scrollToTop: 'true' } } as any);
+      router.navigate({ pathname: '/(tabs)', params: { scrollToTop: 'true' } } as any);
     }, 2200);
   }
 
@@ -272,7 +272,6 @@ export default function CreateTab() {
         liked_by: [],
         comment_count: 0,
         is_sold: false,
-        visibility: category === 'General' ? visibility : 'public',
       };
 
       // Add specific fields for category

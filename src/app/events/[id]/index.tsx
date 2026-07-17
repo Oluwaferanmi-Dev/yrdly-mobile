@@ -99,10 +99,6 @@ export default function EventDetailScreen() {
       `Navigate to ${address || 'the venue'}?`,
       [
         {
-          text: 'Open in Yrdly Map',
-          onPress: () => router.push({ pathname: '/map', params: lat && lng ? { focusLat: lat, focusLng: lng } : {} } as any),
-        },
-        {
           text: Platform.OS === 'ios' ? 'Open in Apple Maps' : 'Open in Google Maps',
           onPress: async () => {
             const canOpen = await Linking.canOpenURL(mapsUrl);
