@@ -8,7 +8,6 @@ import Animated, {
   useAnimatedScrollHandler, useSharedValue, useAnimatedStyle,
   interpolate, Extrapolation, withSpring, withTiming, withDelay,
 } from 'react-native-reanimated';
-import LottieView from 'lottie-react-native';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import ImageViewing from 'react-native-image-viewing';
@@ -272,10 +271,17 @@ export default function EventDetailScreen() {
               <Text style={[styles.dateTimeText, { color: event.location_online ? colors.textSecondary : colors.tint, flex: 1 }]}>
                 {event.location_online ? 'Online Event' : (event.location_address || [event.ward, event.lga, event.state].filter(Boolean).join(', ') || 'TBA')}
               </Text>
-              {!event.location_online && (
-                <Ionicons name="chevron-forward" size={16} color={colors.tint} />
-              )}
             </TouchableOpacity>
+
+            {!event.location_online && (
+              <TouchableOpacity
+                style={[styles.directionsBtn, { backgroundColor: colors.tint + '15' }]}
+                onPress={getDirections}
+              >
+                <Ionicons name="navigate" size={18} color={colors.tint} />
+                <Text style={[styles.directionsTxt, { color: colors.tint }]}>Get Directions</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
@@ -459,12 +465,9 @@ export default function EventDetailScreen() {
           <View style={styles.successBackdrop} />
           <Animated.View style={[styles.successSheet, { backgroundColor: colors.card }, successSheetStyle]}>
             <View style={styles.successHandleBar} />
-            <LottieView
-              autoPlay
-              loop={false}
-              style={styles.successLottie}
-              source={{ uri: 'https://lottie.host/3acad958-cd8e-424a-a1c9-58e8bff45d87/XvFdYxtUDF.json' }}
-            />
+            <View style={{ alignItems: 'center', marginVertical: 20 }}>
+              <Ionicons name="checkmark-circle" size={100} color="#82DB7E" />
+            </View>
             <Animated.View style={[{ alignItems: 'center', paddingHorizontal: 32, width: '100%' }, successContentStyle]}>
               <Text style={[styles.successTitle, { color: colors.text }]}>You're In! 🎟️</Text>
               <Text style={[styles.successTier, { color: colors.tint }]}>{successTierName}</Text>
@@ -574,5 +577,7 @@ const styles = StyleSheet.create({
   successBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
   successSecondary: { height: 40, justifyContent: 'center', alignItems: 'center' },
   successSecondaryText: { fontSize: 14, fontWeight: '600' },
+  directionsBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 8, marginTop: 12 },
+  directionsTxt: { fontSize: 14, fontWeight: '600', marginLeft: 6 },
 });
 

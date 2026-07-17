@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, Animated,
-  PanResponder, FlatList, Dimensions, ActivityIndicator, Linking, Platform,
+  PanResponder, FlatList, Dimensions, ActivityIndicator, Linking, Platform, Image
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, Region } from 'react-native-maps';
-import { Image } from 'expo-image';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -70,7 +69,7 @@ const FriendMarker = React.memo(function FriendMarker({ avatar_url }: { avatar_u
     <View style={ms.fMarker}>
       <View style={ms.fRing}>
         {avatar_url
-          ? <Image source={{ uri: avatar_url }} style={ms.fAvatar} recyclingKey={avatar_url} />
+          ? <Image source={{ uri: avatar_url }} style={ms.fAvatar} />
           : <View style={ms.fFallback}><Ionicons name="person" size={16} color="#fff" /></View>}
       </View>
       <View style={[ms.dot, { backgroundColor: '#8B5CF6' }]} />
@@ -111,7 +110,7 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
-  const regionTimeout = useRef<NodeJS.Timeout | null>(null);
+  const regionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sc = useMemo(() => new Supercluster({ radius: 50, maxZoom: 16 }), []);
   const panY = useRef(new Animated.Value(SHEET_H - PEEK)).current;
@@ -145,6 +144,12 @@ export default function MapScreen() {
       const l = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       setLoc(l);
       setRegion({ latitude: l.coords.latitude, longitude: l.coords.longitude, latitudeDelta: 0.0922, longitudeDelta: 0.0421 });
+      if (user?.id) {
+        supabase.from('users').update({ 
+          current_location: { lat: l.coords.latitude, lng: l.coords.longitude }, 
+          location_updated_at: new Date().toISOString() 
+        }).eq('id', user.id).then();
+      }
       await Promise.all([fetchMarkers(), fetchActivity()]);
     })();
   }, [user]);
@@ -152,12 +157,27 @@ export default function MapScreen() {
   const fetchMarkers = async () => {
     const found: MapMarker[] = [];
     if (user?.id) {
-      const { data: frds } = await supabase.rpc('get_friends_locations', { user_id: user.id });
-      (frds || []).forEach((f: any) => {
-        const lat = parseFloat(f.current_location?.lat ?? f.current_location?.geopoint?.latitude);
-        const lng = parseFloat(f.current_location?.lng ?? f.current_location?.geopoint?.longitude);
-        if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `friend-${f.id}`, type: 'friend', lat, lng, title: f.name, subtitle: 'Friend', targetId: f.id, avatar_url: f.avatar_url });
-      });
+      // Fetch friends directly since RPC doesn't exist
+      const { data: friendLinks } = await supabase
+        .from('friends')
+        .select('user_id, friend_id')
+        .eq('status', 'accepted')
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`);
+        
+      if (friendLinks && friendLinks.length > 0) {
+        const friendIds = friendLinks.map((f: any) => f.user_id === user.id ? f.friend_id : f.user_id);
+        const { data: frds } = await supabase
+          .from('users')
+          .select('id, name, avatar_url, current_location')
+          .in('id', friendIds)
+          .not('current_location', 'is', null);
+          
+        (frds || []).forEach((f: any) => {
+          const lat = parseFloat(f.current_location?.lat ?? f.current_location?.geopoint?.latitude);
+          const lng = parseFloat(f.current_location?.lng ?? f.current_location?.geopoint?.longitude);
+          if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `friend-${f.id}`, type: 'friend', lat, lng, title: f.name, subtitle: 'Friend', targetId: f.id, avatar_url: f.avatar_url });
+        });
+      }
     }
     const { data: bizs } = await supabase.from('businesses').select('id,name,category,location').not('location','is',null).limit(50);
     (bizs || []).forEach((b: any) => {
@@ -165,10 +185,15 @@ export default function MapScreen() {
       const lng = parseFloat(b.location?.lng ?? b.location?.geopoint?.longitude);
       if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `biz-${b.id}`, type: 'business', lat, lng, title: b.name, subtitle: b.category, targetId: b.id });
     });
-    const { data: evts } = await supabase.from('events').select('id,title,lat,lng,location_address').eq('status','PUBLISHED').not('lat','is',null).not('lng','is',null).limit(50);
+    const { data: evts } = await supabase.from('posts')
+      .select('id,title,event_location')
+      .eq('category','Event')
+      .not('event_location','is',null)
+      .limit(50);
     (evts || []).forEach((e: any) => {
-      const lat = parseFloat(e.lat); const lng = parseFloat(e.lng);
-      if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `evt-${e.id}`, type: 'event', lat, lng, title: e.title || 'Event', subtitle: e.location_address, targetId: e.id });
+      const lat = parseFloat(e.event_location?.lat ?? e.event_location?.geopoint?.latitude); 
+      const lng = parseFloat(e.event_location?.lng ?? e.event_location?.geopoint?.longitude);
+      if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `evt-${e.id}`, type: 'event', lat, lng, title: e.title || 'Event', subtitle: e.event_location?.address || '', targetId: e.id });
     });
     setAllMarkers(found);
     setLoading(false);
@@ -180,12 +205,12 @@ export default function MapScreen() {
     const [{ data: posts }, { data: mkt }, { data: evts }, { data: bizs }] = await Promise.all([
       supabase.from('posts').select('id,title,content,created_at,users!posts_user_id_fkey(name,avatar_url)').not('category','in','("For Sale","Event")').order('created_at',{ascending:false}).limit(3),
       supabase.from('posts').select('id,title,price,created_at,images').eq('category','For Sale').or('is_sold.eq.false,is_sold.is.null').order('created_at',{ascending:false}).limit(2),
-      supabase.from('events').select('id,title,start_time,location_address,attendee_count,cover_image_url,lat,lng').eq('status','PUBLISHED').gte('start_time',new Date().toISOString()).order('start_time',{ascending:true}).limit(3),
+      supabase.from('posts').select('id,title,event_date,event_location,attendees,images').eq('category','Event').order('created_at',{ascending:false}).limit(3),
       supabase.from('businesses').select('id,name,category,description,image_urls,created_at,location').order('created_at',{ascending:false}).limit(2),
     ]);
     (posts||[]).forEach((p:any) => items.push({ id:`p-${p.id}`, kind:'post', title:`${p.users?.name||'Someone'} posted nearby`, subtitle: (p.content||p.title||'').slice(0,80), time: formatTimeOrDate(p.created_at), image: p.users?.avatar_url, route:`/posts/${p.id}` }));
     (mkt||[]).forEach((p:any) => items.push({ id:`m-${p.id}`, kind:'market', title: p.title, subtitle:'For sale', meta: p.price ? `₦${Number(p.price).toLocaleString()}` : '', time: formatTimeOrDate(p.created_at), image: p.images?.[0], route:`/marketplace/${p.id}` }));
-    (evts||[]).forEach((e:any) => items.push({ id:`e-${e.id}`, kind:'event', title: e.title, subtitle:`${e.location_address||''}`, meta: e.attendee_count ? `${e.attendee_count} going` : '', time: formatTimeOrDate(e.start_time), image: e.cover_image_url, route:`/events/${e.id}`, lat: parseFloat(e.lat), lng: parseFloat(e.lng) }));
+    (evts||[]).forEach((e:any) => items.push({ id:`e-${e.id}`, kind:'event', title: e.title, subtitle:`${e.event_location?.address||''}`, meta: e.attendees?.length ? `${e.attendees.length} going` : '', time: formatTimeOrDate(e.event_date), image: e.images?.[0], route:`/events/${e.id}`, lat: parseFloat(e.event_location?.lat ?? e.event_location?.geopoint?.latitude), lng: parseFloat(e.event_location?.lng ?? e.event_location?.geopoint?.longitude) }));
     (bizs||[]).forEach((b:any) => items.push({ id:`b-${b.id}`, kind:'biz', title:`${b.name}`, subtitle: b.description?.slice(0,60)||b.category||'', time: formatTimeOrDate(b.created_at), image: b.image_urls?.[0], route:`/business/${b.id}`, lat: parseFloat(b.location?.lat ?? b.location?.geopoint?.latitude), lng: parseFloat(b.location?.lng ?? b.location?.geopoint?.longitude) }));
     items.sort(() => Math.random() - 0.5);
     setActivity(items.slice(0,8));
@@ -356,7 +381,7 @@ export default function MapScreen() {
               <TouchableOpacity style={s.actRow} onPress={() => router.push(a.route as any)}>
                 <View style={[s.actImg, { backgroundColor: a.kind==='event'?'rgba(245,158,11,0.15)':a.kind==='biz'?'rgba(34,197,94,0.15)':'rgba(130,219,126,0.1)' }]}>
                   {a.image
-                    ? <Image source={{ uri:a.image }} style={s.actImgInner} contentFit="cover" />
+                    ? <Image source={{ uri:a.image }} style={s.actImgInner} resizeMode="cover" />
                     : <Ionicons name={a.kind==='event'?'calendar-outline':a.kind==='market'?'bag-outline':a.kind==='biz'?'storefront-outline':'person-circle-outline'} size={24} color={a.kind==='event'?'#F59E0B':a.kind==='biz'?'#22c55e':'#82DB7E'} />}
                 </View>
                 <View style={{ flex:1 }}>
@@ -403,7 +428,6 @@ const s = StyleSheet.create({
   handleBar: { width:40, height:4, borderRadius:2, backgroundColor:'rgba(255,255,255,0.2)', alignSelf:'center', marginBottom:12 },
   sheetTitleRow: { flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginBottom:4 },
   sheetTitle: { color:'#fff', fontWeight:'800', fontSize:17 },
-  seeAll: { color:'#82DB7E', fontWeight:'700', fontSize:13 },
   actRow: { flexDirection:'row', alignItems:'center', paddingHorizontal:16, paddingVertical:12, gap:12, borderBottomWidth:1, borderBottomColor:'rgba(255,255,255,0.05)' },
   actImg: { width:48, height:48, borderRadius:14, alignItems:'center', justifyContent:'center', overflow:'hidden' },
   actImgInner: { width:48, height:48 },

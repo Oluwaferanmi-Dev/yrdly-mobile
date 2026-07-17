@@ -296,7 +296,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       
       // Increment share count locally and in db
       setShareCount(prev => prev + 1);
-      supabase.rpc('increment_post_share', { post_id: post.id }).catch(() => {});
+      supabase.rpc('increment_post_share', { post_id: post.id }).then(() => {}, () => {});
       
       if (onShare) onShare();
     } catch (error) {

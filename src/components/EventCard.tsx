@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { StorageService } from '../lib/storage-service';
 import { useRouter } from 'expo-router';
+import { supabase } from '../lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -190,7 +191,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
     try {
       await Share.share({ message: `Check out "${event.title || 'this event'}" on Yrdly!`, url: `https://app.yrdly.ng/events/${event.id}` });
       setShareCount(prev => prev + 1);
-      supabase.rpc('increment_post_share', { post_id: event.id }).catch(() => {});
+      await supabase.rpc('increment_post_share', { post_id: event.id });
     } catch {}
   };
 

@@ -6,7 +6,7 @@ import { AuthService, AuthUser } from '@/lib/auth-service';
 import { supabase } from '@/lib/supabase';
 import { identifyDevice } from 'vexo-analytics';
 import { usePostHog } from 'posthog-react-native';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const PROFILE_CACHE_FILE = `${FileSystem.documentDirectory}user_profile_cache.json`;
 

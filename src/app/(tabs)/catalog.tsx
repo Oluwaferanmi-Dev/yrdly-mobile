@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity, Modal,
   TouchableWithoutFeedback, ScrollView, Dimensions, Animated, FlatList,
@@ -146,6 +146,100 @@ export default function CatalogTab() {
   const featured = items.slice(0, 3);
   const nearby = items.slice(3);
 
+
+
+  const listHeaderElement = useMemo(() => (
+    <>
+      {/* Category chips */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 8 }}>
+        {CATEGORIES.map(cat => {
+          const active = category === cat.key;
+          return (
+            <TouchableOpacity
+              key={cat.key}
+              onPress={() => setCategory(cat.key)}
+              style={[s.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
+              <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : colors.textMuted} style={{ marginRight: 4 }} />
+              <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* Featured carousel */}
+      {featured.length > 0 && (
+        <View style={{ marginBottom: 24 }}>
+          <ScrollView
+            ref={featuredScrollRef}
+            horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={e => setFeaturedIdx(Math.round(e.nativeEvent.contentOffset.x / (width - 32)))}
+            style={{ width: width - 32 }}
+          >
+            {featured.map(item => {
+              const imgUrl = item.image_urls?.[0] || item.image_url;
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  activeOpacity={0.92}
+                  onPress={() => router.push(`/marketplace/${item.id}` as any)}
+                  style={[s.featuredCard, { width: width - 32 }]}>
+                  {imgUrl
+                    ? <Image source={{ uri: imgUrl }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
+                    : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#1a2210' }]} />}
+                  <View style={s.featuredOverlay} />
+                  <View style={s.featuredBadge}>
+                    <Text style={s.featuredBadgeTxt}>🔥 Featured Near You</Text>
+                  </View>
+                  <View style={s.featuredInfo}>
+                    <Text style={s.featuredTitle} numberOfLines={1}>{item.title || item.text}</Text>
+                    {item.condition && <Text style={s.featuredCond}>{item.condition}</Text>}
+                    <Text style={s.featuredPrice}>{item.price === 0 ? 'FREE' : formatPrice(item.price || 0)}</Text>
+                    {item.lga && (
+                      <View style={s.featuredLoc}>
+                        <Ionicons name="location-outline" size={12} color="#aaa" />
+                        <Text style={s.featuredLocTxt}>{item.lga}</Text>
+                      </View>
+                    )}
+                  </View>
+                  <TouchableOpacity style={s.featuredCTA} onPress={() => router.push(`/marketplace/${item.id}` as any)}>
+                    <Text style={s.featuredCTATxt}>View Listing</Text>
+                    <Ionicons name="chevron-forward" size={14} color="#0B0D0B" />
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+          {featured.length > 1 && (
+            <View style={s.dots}>
+              {featured.map((_, i) => (
+                <View key={i} style={[s.dot, { backgroundColor: i === featuredIdx ? colors.tint : colors.borderLight }]} />
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Nearby header */}
+      <View style={s.nearbyHeader}>
+        <Text style={[s.nearbyTitle, { color: colors.text }]}>Nearby Listings</Text>
+      </View>
+
+      {loading && items.length === 0 && (
+        <View style={s.skeletonGrid}>
+          {[1, 2, 3, 4].map(k => (
+            <View key={k} style={[s.skeletonCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+              <Skeleton width="100%" height={150} />
+              <View style={{ padding: 10 }}>
+                <Skeleton width="80%" height={12} style={{ marginBottom: 6 }} />
+                <Skeleton width="50%" height={18} />
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+    </>
+  ), [featured, featuredIdx, category, colors, loading, items.length, width, router]);
+
   const cardBg = isDarkMode ? 'rgba(13,17,23,0.94)' : 'rgba(255,255,255,0.96)';
 
   return (
@@ -216,98 +310,7 @@ export default function CatalogTab() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
           columnWrapperStyle={{ justifyContent: 'space-between' }}
           contentContainerStyle={s.listContent}
-          ListHeaderComponent={useCallback(() => (
-            <>
-              {/* Category chips */}
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 8 }}>
-                {CATEGORIES.map(cat => {
-                  const active = category === cat.key;
-                  return (
-                    <TouchableOpacity
-                      key={cat.key}
-                      onPress={() => setCategory(cat.key)}
-                      style={[s.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
-                      <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : colors.textMuted} style={{ marginRight: 4 }} />
-                      <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat.label}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-
-              {/* Featured carousel */}
-              {featured.length > 0 && (
-                <View style={{ marginBottom: 24 }}>
-                  <ScrollView
-                    ref={featuredScrollRef}
-                    horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-                    onMomentumScrollEnd={e => setFeaturedIdx(Math.round(e.nativeEvent.contentOffset.x / (width - 32)))}
-                    style={{ width: width - 32 }}
-                  >
-                    {featured.map(item => {
-                      const imgUrl = item.image_urls?.[0] || item.image_url;
-                      return (
-                        <TouchableOpacity
-                          key={item.id}
-                          activeOpacity={0.92}
-                          onPress={() => router.push(`/marketplace/${item.id}` as any)}
-                          style={[s.featuredCard, { width: width - 32 }]}>
-                          {imgUrl
-                            ? <Image source={{ uri: imgUrl }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
-                            : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#1a2210' }]} />}
-                          <View style={s.featuredOverlay} />
-                          <View style={s.featuredBadge}>
-                            <Text style={s.featuredBadgeTxt}>🔥 Featured Near You</Text>
-                          </View>
-                          <View style={s.featuredInfo}>
-                            <Text style={s.featuredTitle} numberOfLines={1}>{item.title || item.text}</Text>
-                            {item.condition && <Text style={s.featuredCond}>{item.condition}</Text>}
-                            <Text style={s.featuredPrice}>{item.price === 0 ? 'FREE' : formatPrice(item.price || 0)}</Text>
-                            {item.lga && (
-                              <View style={s.featuredLoc}>
-                                <Ionicons name="location-outline" size={12} color="#aaa" />
-                                <Text style={s.featuredLocTxt}>{item.lga}</Text>
-                              </View>
-                            )}
-                          </View>
-                          <TouchableOpacity style={s.featuredCTA} onPress={() => router.push(`/marketplace/${item.id}` as any)}>
-                            <Text style={s.featuredCTATxt}>View Listing</Text>
-                            <Ionicons name="chevron-forward" size={14} color="#0B0D0B" />
-                          </TouchableOpacity>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
-                  {featured.length > 1 && (
-                    <View style={s.dots}>
-                      {featured.map((_, i) => (
-                        <View key={i} style={[s.dot, { backgroundColor: i === featuredIdx ? colors.tint : colors.borderLight }]} />
-                      ))}
-                    </View>
-                  )}
-                </View>
-              )}
-
-              {/* Nearby header */}
-              <View style={s.nearbyHeader}>
-                <Text style={[s.nearbyTitle, { color: colors.text }]}>Nearby Listings</Text>
-              </View>
-
-              {loading && items.length === 0 && (
-                <View style={s.skeletonGrid}>
-                  {[1, 2, 3, 4].map(k => (
-                    <View key={k} style={[s.skeletonCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-                      <Skeleton width="100%" height={150} />
-                      <View style={{ padding: 10 }}>
-                        <Skeleton width="80%" height={12} style={{ marginBottom: 6 }} />
-                        <Skeleton width="50%" height={18} />
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </>
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-          ), [featured, featuredIdx, category, colors, loading, items.length])}
+          ListHeaderComponent={listHeaderElement}
           renderItem={({ item }) => (
             <MarketplaceItemCard
               item={item}

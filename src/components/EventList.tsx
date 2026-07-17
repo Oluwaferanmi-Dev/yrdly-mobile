@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
   View, StyleSheet, FlatList, Text, RefreshControl, ScrollView,
-  TouchableOpacity, Dimensions, Animated,
+  TouchableOpacity, Dimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,7 +9,6 @@ import { EventCard, EventCardCompact } from './EventCard';
 import { Skeleton, PostSkeleton } from './Skeleton';
 import { supabase } from '../lib/supabase';
 import { Post } from '../types';
-import { formatPrice } from '../lib/utils';
 import { useRouter, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useAppTheme } from '../context/ThemeContext';
@@ -60,10 +59,8 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
 
   const fetchEvents = useCallback(async (isRefresh = false) => {
     if (!isRefresh) setLoading(true);
-    
     const filterString = `${activeFilter?.state || ''}_${activeFilter?.lga || ''}_${activeFilter?.ward || ''}_${category}_${searchQuery}_${sortOption}`;
     const cacheFile = FileSystem.documentDirectory + `yrdly_events_cache_${filterString.replace(/\W/g, '_')}.json`;
-    
     try {
       if (!isRefresh) {
         const fileInfo = await FileSystem.getInfoAsync(cacheFile);
@@ -73,38 +70,26 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         }
       }
     } catch (e) {}
-
     try {
       let query = supabase
         .from('posts')
-        .select('*')
-        .eq('category', 'Event');
-
-      if (activeFilter?.state) query = query.eq('state', activeFilter.state);
-      if (activeFilter?.lga) query = query.eq('lga', activeFilter.lga);
+        .select('*, users!posts_user_id_fkey(name, avatar_url), attendees:post_attendees(user_id)')
+        .eq('category', 'Event')
+        .order('created_at', { ascending: false })
+        .limit(30);
       if (activeFilter?.ward) query = query.eq('ward', activeFilter.ward);
-      if (category) query = query.ilike('sub_category', `%${category}%`);
-      if (searchQuery) query = query.or(`title.ilike.%${searchQuery}%,text.ilike.%${searchQuery}%`);
-
-      if (sortOption === 'price_asc') query = query.order('price', { ascending: true });
-      else if (sortOption === 'price_desc') query = query.order('price', { ascending: false });
-      else query = query.order('event_date', { ascending: true });
-
-      const { data, error } = await query.limit(30);
-      if (error) throw error;
-
-      const valid = ((data as Post[]) || []).filter(p =>
-        p.event_date ? new Date(p.event_date).getTime() >= Date.now() : false
-      );
-      setEvents(valid);
-      
-      // Save to cache
-      if (valid.length > 0) {
-        FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(valid)).catch(() => {});
+      else if (activeFilter?.lga) query = query.eq('lga', activeFilter.lga);
+      else if (activeFilter?.state) query = query.eq('state', activeFilter.state);
+      if (category) query = query.eq('event_category', category);
+      if (searchQuery) query = query.ilike('title', `%${searchQuery}%`);
+      const { data } = await query;
+      if (data) {
+        setEvents(data as Post[]);
+        try { await FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(data)); } catch (e) {}
       }
-    } catch (e) { console.error('Error fetching events:', e); }
-    finally { if (!isRefresh) setLoading(false); }
-  }, [searchQuery, sortOption, activeFilter, category]);
+    } catch (e) {}
+    setLoading(false);
+  }, [activeFilter, category, searchQuery, sortOption]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -114,39 +99,13 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
 
   useFocusEffect(useCallback(() => { fetchEvents(); }, [fetchEvents]));
 
-  const featured = events.slice(0, 3);     // Hero carousel
-  const horizontal = events.slice(3, 9);   // "More Events For You"
-  const rest = events.slice(9);            // Full cards list
+  const featured = events.slice(0, 3);
+  const horizontal = events.slice(3, 9);
+  const rest = events.slice(9);
 
-  if (loading && events.length === 0) {
-    return (
-      <View style={{ flex: 1, paddingTop: 16 }}>
-        <Skeleton width={width - 32} height={220} style={{ marginHorizontal: 16, borderRadius: 24, marginBottom: 16 }} />
-        <PostSkeleton /><PostSkeleton />
-      </View>
-    );
-  }
-
-  if (events.length === 0) {
-    return (
-      <View style={s.empty}>
-        <Ionicons name="calendar-outline" size={52} color={colors.textMuted} style={{ opacity: 0.35, marginBottom: 14 }} />
-        <Text style={[s.emptyTxt, { color: colors.textMuted }]}>
-          {searchQuery ? `No events found for "${searchQuery}"` : 'No upcoming events in your area'}
-        </Text>
-        <TouchableOpacity
-          style={[s.createBtn, { backgroundColor: colors.tint }]}
-          onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
-          <Ionicons name="add-circle-outline" size={16} color="#0B0D0B" style={{ marginRight: 6 }} />
-          <Text style={s.createBtnTxt}>Create Event</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  const ListHeader = useCallback(() => (
+  // ── ListHeader MUST be defined before any conditional returns ──
+  const listHeaderElement = useMemo(() => (
     <>
-      {/* ── Category chips ── */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipsScroll} contentContainerStyle={s.chipsContent}>
         {EVENT_CATEGORIES.map(cat => {
           const active = category === cat.key;
@@ -161,14 +120,10 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         })}
       </ScrollView>
 
-      {/* ── Upcoming Events featured carousel ── */}
       {featured.length > 0 && (
         <View style={s.section}>
           <View style={s.sectionHeader}>
             <Text style={[s.sectionTitle, { color: colors.text }]}>Upcoming Events</Text>
-            <TouchableOpacity onPress={() => listRef.current?.scrollToOffset({ offset: 650, animated: true })}>
-              <Text style={[s.seeAll, { color: colors.tint }]}>See all  ›</Text>
-            </TouchableOpacity>
           </View>
           <ScrollView
             ref={featuredRef}
@@ -179,11 +134,12 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
             {featured.map(item => {
               const imgUrl = item.image_urls?.[0] || item.image_url;
               const d = item.event_date ? new Date(item.event_date) : null;
-              const location = typeof item.event_location === 'string' ? item.event_location : (item.event_location as any)?.address || '';
+              const location = typeof item.event_location === 'string'
+                ? item.event_location
+                : (item.event_location as any)?.address || '';
               return (
                 <TouchableOpacity
-                  key={item.id}
-                  activeOpacity={0.93}
+                  key={item.id} activeOpacity={0.93}
                   onPress={() => navigateToEvent(item)}
                   style={[s.heroCard, { width: width - 32 }]}
                 >
@@ -197,9 +153,6 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
                   </View>
                   <View style={s.heroInfo}>
                     <Text style={s.heroTitle} numberOfLines={2}>{item.title || item.text}</Text>
-                    {item.text && item.title && (
-                      <Text style={s.heroTagline}>{item.text.toUpperCase()}</Text>
-                    )}
                     {d && (
                       <View style={s.heroMetaRow}>
                         <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.7)" />
@@ -243,14 +196,10 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         </View>
       )}
 
-      {/* ── More Events For You (horizontal) ── */}
       {horizontal.length > 0 && (
         <View style={s.section}>
           <View style={s.sectionHeader}>
             <Text style={[s.sectionTitle, { color: colors.text }]}>More Events For You</Text>
-            <TouchableOpacity onPress={() => listRef.current?.scrollToOffset({ offset: 650, animated: true })}>
-              <Text style={[s.seeAll, { color: colors.tint }]}>See all  ›</Text>
-            </TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
             {horizontal.map(item => (
@@ -260,7 +209,6 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         </View>
       )}
 
-      {/* ── Can't find your event? ── */}
       <TouchableOpacity
         style={[s.createBanner, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
         onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
@@ -284,6 +232,33 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
   // eslint-disable-next-line react-hooks/exhaustive-deps
   ), [featured, horizontal, rest, featuredIdx, category, colors]);
 
+  // ── Conditional returns AFTER all hooks ──
+  if (loading && events.length === 0) {
+    return (
+      <View style={{ flex: 1, paddingTop: 16 }}>
+        <Skeleton width={width - 32} height={220} style={{ marginHorizontal: 16, borderRadius: 24, marginBottom: 16 }} />
+        <PostSkeleton /><PostSkeleton />
+      </View>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <View style={s.empty}>
+        <Ionicons name="calendar-outline" size={52} color={colors.textMuted} style={{ opacity: 0.35, marginBottom: 14 }} />
+        <Text style={[s.emptyTxt, { color: colors.textMuted }]}>
+          {searchQuery ? `No events found for "${searchQuery}"` : 'No upcoming events in your area'}
+        </Text>
+        <TouchableOpacity
+          style={[s.createBtn, { backgroundColor: colors.tint }]}
+          onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
+          <Ionicons name="add-circle-outline" size={16} color="#0B0D0B" style={{ marginRight: 6 }} />
+          <Text style={s.createBtnTxt}>Create Event</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <FlatList
       data={rest}
@@ -295,8 +270,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       renderItem={({ item }) => (
         <EventCard event={item} onPress={() => navigateToEvent(item)} />
       )}
-      ListHeaderComponent={ListHeader}
-      ListEmptyComponent={rest.length === 0 && events.length > 0 ? null : null}
+      ListHeaderComponent={listHeaderElement}
     />
   );
 }
@@ -317,12 +291,10 @@ const s = StyleSheet.create({
   featBadgeTxt: { color: '#82DB7E', fontSize: 11, fontWeight: '800' },
   heroInfo: { position: 'absolute', bottom: 16, left: 16, right: 16 },
   heroTitle: { color: '#fff', fontSize: 22, fontWeight: '900', marginBottom: 4, lineHeight: 26 },
-  heroTagline: { color: '#82DB7E', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 10 },
   heroMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
   heroMeta: { color: 'rgba(255,255,255,0.8)', fontSize: 12, flex: 1 },
   heroFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 },
   attendeeAvatars: { flexDirection: 'row', alignItems: 'center' },
-  aAvatar: { width: 26, height: 26, borderRadius: 13, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'rgba(0,0,0,0.6)' },
   aCount: { color: 'rgba(255,255,255,0.7)', fontSize: 11, marginLeft: 6 },
   heroCTA: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#82DB7E', paddingHorizontal: 16, paddingVertical: 9, borderRadius: 20, gap: 4 },
   heroCTATxt: { color: '#0B0D0B', fontWeight: '800', fontSize: 13 },

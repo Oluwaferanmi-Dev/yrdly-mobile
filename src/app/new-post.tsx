@@ -459,12 +459,9 @@ export default function CreateTab() {
           <View style={styles.postSuccessBackdrop} />
           <Animated.View style={[styles.postSuccessSheet, { backgroundColor: colors.card, paddingBottom: insets.bottom + 90 }, successSheetStyle]}>
             <View style={styles.postSuccessHandle} />
-            <LottieView
-              autoPlay
-              loop={false}
-              style={{ width: 160, height: 160 }}
-              source={{ uri: 'https://lottie.host/3acad958-cd8e-424a-a1c9-58e8bff45d87/XvFdYxtUDF.json' }}
-            />
+            <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.tint + '20', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <Ionicons name="checkmark-circle" size={80} color={colors.tint} />
+            </View>
             <Animated.View style={[{ alignItems: 'center', paddingHorizontal: 32 }, successContentStyle]}>
               <Text style={[styles.postSuccessTitle, { color: colors.text }]}>Posted! 🎉</Text>
               <Text style={[styles.postSuccessBody, { color: colors.textMuted }]}>

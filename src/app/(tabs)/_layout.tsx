@@ -27,9 +27,12 @@ function TabIconWrapper({ focused, children }: { focused: boolean; children: Rea
 }
 
 
+import { useRouter } from 'expo-router';
+
 const TAB_BAR_HEIGHT = 64;
 
 export default function TabLayout() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors, isDarkMode } = useAppTheme();
   const { user } = useAuth();
@@ -149,7 +152,7 @@ export default function TabLayout() {
           listeners={{
             tabPress: (e) => {
               e.preventDefault();
-              router.push('/new-post');
+              router.push('/new-post' as any);
             },
           }}
         />
