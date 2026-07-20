@@ -9,7 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { decode } from 'base64-arraybuffer';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, router as staticRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 // Removed useHeaderHeight to prevent crash in headerless stack
@@ -88,8 +88,13 @@ export default function CreateTab() {
       successOverlayOp.value = 0;
       successSheetY.value = 300;
       successContentOp.value = 0;
-      
-      router.navigate({ pathname: '/(tabs)', params: { scrollToTop: 'true' } } as any);
+
+      // Dismiss the modal then replace to home — avoids leaving a stale
+      // modal screen in the stack which causes an ErrorBoundary flash.
+      try {
+        staticRouter.dismissAll();
+      } catch (_) {}
+      staticRouter.replace('/(tabs)' as any);
     }, 2200);
   }
 
@@ -283,9 +288,10 @@ export default function CreateTab() {
         const { error: insertError } = await supabase.from('posts').insert(postData);
         if (insertError) throw insertError;
       } else if (category === 'Event') {
+        // Ensure prices are always valid numbers (never NaN)
         const formattedTiers = ticketTiers.map(t => ({
           name: t.name,
-          price: parseFloat(t.price) || 0,
+          price: Math.max(0, parseFloat(t.price) || 0),
           capacity: t.capacity ? parseInt(t.capacity) : undefined,
         }));
         
@@ -317,7 +323,19 @@ export default function CreateTab() {
       showPostSuccess();
     } catch (e: any) {
       console.error('Post submit error:', e);
-      Alert.alert('Error', e?.message || 'Something went wrong. Please try again.');
+      // Handle payout account required error specifically
+      if (e?.message?.includes('Link your bank account') || e?.message?.includes('PAYOUT_ACCOUNT_REQUIRED')) {
+        Alert.alert(
+          'Bank Account Required',
+          'Paid events require a verified bank account. Go to Settings → Bank Account to link yours.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => router.push('/settings/payout-settings' as any) },
+          ]
+        );
+      } else {
+        Alert.alert('Error', e?.message || 'Something went wrong. Please try again.');
+      }
     } finally {
       isSubmittingRef.current = false;
       setIsSubmitting(false);

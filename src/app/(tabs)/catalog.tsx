@@ -250,16 +250,6 @@ export default function CatalogTab() {
           <Text style={[s.title, { color: colors.text }]}>Explore</Text>
           <Text style={[s.subtitle, { color: colors.textMuted }]}>Discover, buy and sell around you. 💚</Text>
         </View>
-        <View style={s.headerActions}>
-          <TouchableOpacity style={[s.iconBtn, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
-            onPress={() => router.push('/map' as any)}>
-            <Ionicons name="location-outline" size={20} color={colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity style={[s.iconBtn, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
-            onPress={() => router.push('/notifications' as any)}>
-            <Ionicons name="notifications-outline" size={20} color={colors.text} />
-          </TouchableOpacity>
-        </View>
       </View>
 
       {/* ── Search + Filter ── */}

@@ -107,13 +107,15 @@ function RootNavigationGuard() {
   }, [user, profile, loading, segments, router]);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
-      <Stack.Screen name="(onboarding)" options={{ animation: 'slide_from_right' }} />
-      <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-      <Stack.Screen name="new-post" options={{ presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
-    </Stack>
+    <ErrorBoundary>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
+        <Stack.Screen name="(onboarding)" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+        <Stack.Screen name="new-post" options={{ presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
+      </Stack>
+    </ErrorBoundary>
   );
 }
 
@@ -124,7 +126,6 @@ export default function Layout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PostHogProvider apiKey={process.env.EXPO_PUBLIC_POSTHOG_KEY!} options={{ host: process.env.EXPO_PUBLIC_POSTHOG_HOST }}>
         <KeyboardProvider>
-        <ErrorBoundary>
           <ThemeProvider>
             <BottomSheetModalProvider>
               <AuthProvider>
@@ -141,8 +142,7 @@ export default function Layout() {
               </AuthProvider>
             </BottomSheetModalProvider>
           </ThemeProvider>
-        </ErrorBoundary>
-      </KeyboardProvider>
+        </KeyboardProvider>
       </PostHogProvider>
     </GestureHandlerRootView>
   );
