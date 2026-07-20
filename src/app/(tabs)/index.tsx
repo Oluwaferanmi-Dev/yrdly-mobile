@@ -156,6 +156,18 @@ export default function HomeTab() {
   const flashListRef = useRef<any>(null);
   const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
   const isFocused = useIsFocused();
+  const initialLoadDone = useRef(false);
+
+  useEffect(() => {
+    if (!loading && !initialLoadDone.current && posts.length > 0) {
+      initialLoadDone.current = true;
+      setTimeout(() => {
+        if (flashListRef.current && scrollY.value < 400) {
+          flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
+        }
+      }, 200);
+    }
+  }, [loading, posts.length]);
   
   useScrollToTop(flashListRef);
   

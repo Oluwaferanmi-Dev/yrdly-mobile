@@ -66,7 +66,10 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         const fileInfo = await FileSystem.getInfoAsync(cacheFile);
         if (fileInfo.exists) {
           const cachedData = await FileSystem.readAsStringAsync(cacheFile);
-          if (cachedData) setEvents(JSON.parse(cachedData) as Post[]);
+          if (cachedData) {
+            // We deleted all legacy events from posts, so ignore cached events here
+            setEvents([]);
+          }
         }
       }
     } catch (e) {}

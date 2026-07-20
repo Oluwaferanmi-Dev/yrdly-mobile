@@ -38,7 +38,10 @@ export const usePosts = (filter?: LocationFilter | null) => {
       if (fileInfo.exists) {
         const cachedData = await FileSystem.readAsStringAsync(cacheFile);
         if (cachedData) {
-          setPosts(JSON.parse(cachedData) as Post[]);
+          const parsedCache = JSON.parse(cachedData) as Post[];
+          // Filter out cached events to prevent zombie events from rendering while DB is fresh
+          const filteredCache = parsedCache.filter(p => p.category !== 'Event');
+          setPosts(filteredCache);
         }
       }
     } catch (e) {
@@ -97,6 +100,9 @@ export const usePosts = (filter?: LocationFilter | null) => {
       ]);
 
       if (postsRes.error || eventsRes.error) {
+        console.error('Fetch errors:', { postsError: postsRes.error, eventsError: eventsRes.error });
+        // Instead of returning early, we'll wipe the cache to prevent zombie data
+        FileSystem.writeAsStringAsync(cacheFile, JSON.stringify([])).catch(() => {});
         setLoading(false);
         return;
       }

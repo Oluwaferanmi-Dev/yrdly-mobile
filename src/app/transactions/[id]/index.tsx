@@ -250,13 +250,13 @@ export default function TransactionDetailScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Status banner */}
-        <Animated.View style={[styles.statusBanner, { backgroundColor: meta.bg, borderColor: meta.color + '30' }, bannerStyle]}>
-          <View style={[styles.statusIconCircle, { backgroundColor: meta.color + '20' }]}>
+        <Animated.View style={[styles.statusBanner, { backgroundColor: 'transparent', borderColor: meta.color + '50' }, bannerStyle]}>
+          <View style={[styles.statusIconCircle, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
             <Feather name={meta.icon as any} size={20} color={meta.color} />
           </View>
           <View style={styles.statusTextGroup}>
             <Text style={[styles.statusLabel, { color: meta.color }]}>{meta.label}</Text>
-            <Text style={[styles.statusSub, { color: meta.color + 'AA' }]}>Transaction #{tx.id.slice(0, 8).toUpperCase()}</Text>
+            <Text style={[styles.statusSub, { color: colors.textMuted }]}>Transaction #{tx.id.slice(0, 8).toUpperCase()}</Text>
           </View>
         </Animated.View>
 
@@ -396,16 +396,12 @@ export default function TransactionDetailScreen() {
 
         {canDispute && (
           <TouchableOpacity
-            style={[styles.disputeAction, {
-              backgroundColor: isDarkMode ? '#3E2723' : '#FFF5F5',
-              borderColor: isDarkMode ? '#E57373' : '#FFCDD2'
-            }]}
+            style={[styles.disputeAction, { backgroundColor: isDarkMode ? 'rgba(229, 115, 115, 0.1)' : 'rgba(211, 47, 47, 0.08)', borderColor: 'transparent' }]}
             onPress={() => router.push(`/transactions/${tx.id}/dispute` as any)}
             activeOpacity={0.8}
           >
-            <View style={[styles.disputeAccent, { backgroundColor: isDarkMode ? '#E57373' : '#C62828' }]} />
-            <Feather name="alert-circle" size={16} color={isDarkMode ? '#E57373' : '#C62828'} style={{ marginRight: 10 }} />
-            <Text style={[styles.disputeActionText, { color: isDarkMode ? '#E57373' : '#C62828' }]}>Open a Dispute</Text>
+            <Feather name="alert-triangle" size={18} color={isDarkMode ? '#E57373' : '#D32F2F'} style={{ marginRight: 8 }} />
+            <Text style={[styles.disputeActionText, { color: isDarkMode ? '#E57373' : '#D32F2F' }]}>Report an Issue / Dispute</Text>
           </TouchableOpacity>
         )}
 
@@ -506,17 +502,11 @@ const styles = StyleSheet.create({
   },
   primaryActionText: { fontSize: 16, fontWeight: '800' },
   disputeAction: {
-    flexDirection: 'row', height: 52, borderRadius: 14,
-    alignItems: 'center', paddingHorizontal: 20,
-    backgroundColor: '#FFF5F5', marginBottom: 12,
-    borderWidth: 1, borderColor: '#FFCDD2',
-    overflow: 'hidden',
+    flexDirection: 'row', height: 48, borderRadius: 24,
+    justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1.5, marginBottom: 12,
   },
-  disputeAccent: {
-    position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
-    backgroundColor: '#C62828', borderRadius: 2,
-  },
-  disputeActionText: { fontSize: 15, fontWeight: '700', color: '#C62828', flex: 1 },
+  disputeActionText: { fontSize: 15, fontWeight: '700' },
   reviewAction: {
     flexDirection: 'row', height: 48, borderRadius: 24,
     justifyContent: 'center', alignItems: 'center',

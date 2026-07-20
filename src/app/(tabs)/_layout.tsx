@@ -35,27 +35,49 @@ export default function TabLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors, isDarkMode } = useAppTheme();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
     if (!user) return;
     
     const fetchUnread = async () => {
-      const { count: msgCount } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_read', false)
-        .neq('sender_id', user.id);
-        
-      let chatCount = 0;
+      let unreadTotal = 0;
+      
       const { data: convs } = await supabase
         .from('conversations')
-        .select('id, type')
+        .select('id, type, deleted_by, participant_ids')
         .contains('participant_ids', [user.id]);
         
       if (convs) {
-        for (const conv of convs) {
+        // Filter out deleted and blocked conversations
+        const activeConvs = convs.filter(c => {
+          if (c.deleted_by && c.deleted_by.includes(user.id)) return false;
+          const otherId = c.participant_ids?.find((id: string) => id !== user.id);
+          if (profile?.blocked_users && otherId && profile.blocked_users.includes(otherId)) return false;
+          return true;
+        });
+        
+        const friendConvIds = activeConvs
+          .filter(c => c.type !== 'marketplace' && c.type !== 'briefcase')
+          .map(c => c.id);
+          
+        if (friendConvIds.length > 0) {
+          const { data: unreadData } = await supabase
+            .from('messages')
+            .select('conversation_id')
+            .eq('is_read', false)
+            .neq('sender_id', user.id)
+            .in('conversation_id', friendConvIds);
+            
+          if (unreadData) {
+            const uniqueUnreadConvs = new Set(unreadData.map(m => m.conversation_id));
+            unreadTotal += uniqueUnreadConvs.size;
+          }
+        }
+        
+        // Count marketplace/briefcase messages
+        for (const conv of activeConvs) {
           if (conv.type === 'marketplace' || conv.type === 'briefcase') {
             const { data: msgs } = await supabase
               .from('chat_messages')
@@ -65,13 +87,13 @@ export default function TabLayout() {
               .limit(1)
               .single();
             if (msgs && msgs.sender_id !== user.id && !msgs.metadata?.isRead) {
-              chatCount++;
+              unreadTotal++;
             }
           }
         }
       }
       
-      setUnreadMessages((msgCount || 0) + chatCount);
+      setUnreadMessages(unreadTotal);
     };
 
     fetchUnread();
@@ -79,12 +101,13 @@ export default function TabLayout() {
     const channel = supabase
       .channel('messages_badge')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchUnread)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, fetchUnread)
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, profile?.blocked_users]);
 
   const tabBarHeight = TAB_BAR_HEIGHT + insets.bottom;
 

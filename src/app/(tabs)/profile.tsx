@@ -44,7 +44,12 @@ export default function ProfileTab() {
           const cachedData = await FileSystem.readAsStringAsync(cacheFile);
           if (cachedData) {
             const parsed = JSON.parse(cachedData);
-            setPosts(parsed.posts || []);
+            if (parsed.posts) {
+              const nonEvents = parsed.posts.filter((p: any) => p.category !== 'Event');
+              setPosts(nonEvents);
+            } else {
+              setPosts([]);
+            }
             setFollowersCount(parsed.followers || 0);
             setFollowingCount(parsed.following || 0);
           }

@@ -116,9 +116,9 @@ export default function TransactionsScreen() {
           <Text style={[styles.txCounterparty, { color: colors.textMuted }]}>
             {tab === 'purchases' ? 'From' : 'To'} {counterparty?.name ?? 'User'}
           </Text>
-          <View style={[styles.statusBadge, { backgroundColor: meta.bg }]}>
+          <View style={[styles.statusBadge, { borderColor: meta.dot + '50' }]}>
             <View style={[styles.statusDot, { backgroundColor: meta.dot }]} />
-            <Text style={[styles.statusText, { color: meta.color }]}>{meta.label}</Text>
+            <Text style={[styles.statusText, { color: meta.dot }]}>{meta.label}</Text>
           </View>
         </View>
 
@@ -231,7 +231,8 @@ const styles = StyleSheet.create({
   txCounterparty: { fontSize: 13, marginBottom: 8, color: '#A6A6A6' },
   statusBadge: {
     flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start',
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12,
+    borderWidth: 1, backgroundColor: 'transparent',
   },
   statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
   statusText: { fontSize: 11, fontWeight: '700' },
