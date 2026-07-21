@@ -423,7 +423,7 @@ export default function CreateTab() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScreenHeader title={category === 'For Sale' ? 'Sell an Item' : category === 'Event' ? 'Create Event' : 'Create Post'} />
+      <ScreenHeader title={category === 'For Sale' ? 'Sell an Item' : category === 'Event' ? 'Create Event' : 'Create Post'} hideIcons />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
