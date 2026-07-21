@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, ActivityIndicator, Dimensions, Alert, Modal, TextInput, KeyboardAvoidingView, Platform
+  TouchableOpacity, ActivityIndicator, Dimensions, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
@@ -14,7 +14,8 @@ import ImageViewing from 'react-native-image-viewing';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
+import * as ExpoLinking from 'expo-linking';
+import * as Location from 'expo-location';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { Event, TicketTier } from '../../../types/events';
@@ -80,37 +81,66 @@ export default function EventDetailScreen() {
     }, 220);
   }
 
-  function getDirections() {
+  async function getDirections() {
     if (!event || event.location_online) return;
+    const lat = event.lat;
+    const lng = event.lng;
     const address = event.location_address || [event.ward, event.lga, event.state].filter(Boolean).join(', ');
-    const lat = (event as any).location_lat;
-    const lng = (event as any).location_lng;
-
     const encoded = encodeURIComponent(address || '');
-    const mapsUrl = Platform.OS === 'ios'
-      ? (lat && lng ? `maps://?daddr=${lat},${lng}&dirflg=d` : `maps://?daddr=${encoded}&dirflg=d`)
-      : (lat && lng ? `google.navigation:q=${lat},${lng}` : `google.navigation:q=${encoded}`);
-    const googleFallback = lat && lng
-      ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
-      : `https://www.google.com/maps/dir/?api=1&destination=${encoded}`;
+
+    // Try to get user's current location for the origin
+    let originParam = '';
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        originParam = `${loc.coords.latitude},${loc.coords.longitude}`;
+      }
+    } catch (_) {}
+
+    const destCoord = lat && lng ? `${lat},${lng}` : encoded;
+    const destLabel = encodeURIComponent(address || 'Venue');
+
+    // Build URLs with origin for turn-by-turn navigation
+    const appleMapsUrl = lat && lng
+      ? `maps://?saddr=${originParam}&daddr=${lat},${lng}&dirflg=d`
+      : `maps://?saddr=${originParam}&daddr=${encoded}&dirflg=d`;
+
+    const googleMapsUrl = lat && lng
+      ? `comgooglemaps://?saddr=${originParam}&daddr=${lat},${lng}&directionsmode=driving`
+      : `comgooglemaps://?saddr=${originParam}&daddr=${encoded}&directionsmode=driving`;
+
+    const googleMapsWeb = `https://www.google.com/maps/dir/?api=1${originParam ? `&origin=${originParam}` : ''}&destination=${destCoord}&travelmode=driving`;
+
+    const hasGoogleMaps = await Linking.canOpenURL('comgooglemaps://');
+
+    const buttons: any[] = [
+      {
+        text: '🍎 Apple Maps',
+        onPress: () => {
+          Linking.openURL(appleMapsUrl).catch(() => Linking.openURL(googleMapsWeb));
+        },
+      },
+    ];
+
+    if (hasGoogleMaps) {
+      buttons.push({
+        text: '🗺️ Google Maps',
+        onPress: () => Linking.openURL(googleMapsUrl).catch(() => Linking.openURL(googleMapsWeb)),
+      });
+    } else {
+      buttons.push({
+        text: '🗺️ Google Maps (web)',
+        onPress: () => ExpoLinking.openURL(googleMapsWeb),
+      });
+    }
+
+    buttons.push({ text: 'Cancel', style: 'cancel' as const });
 
     Alert.alert(
       'Get Directions',
       `Navigate to ${address || 'the venue'}?`,
-      [
-        {
-          text: Platform.OS === 'ios' ? 'Open in Apple Maps' : 'Open in Google Maps',
-          onPress: async () => {
-            const canOpen = await Linking.canOpenURL(mapsUrl);
-            if (canOpen) {
-              Linking.openURL(mapsUrl);
-            } else {
-              Linking.openURL(googleFallback);
-            }
-          },
-        },
-        { text: 'Cancel', style: 'cancel' },
-      ]
+      buttons
     );
   }
 

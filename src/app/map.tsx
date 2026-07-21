@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, Animated,
-  PanResponder, FlatList, Dimensions, ActivityIndicator, Linking, Platform, Image
+  PanResponder, FlatList, Dimensions, ActivityIndicator, Linking, Platform, Image, Alert
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, Region } from 'react-native-maps';
@@ -131,10 +131,19 @@ export default function MapScreen() {
     },
   }), []);
 
-  const getDirections = (lat: number, lng: number, label?: string) => {
-    const url = Platform.OS === 'ios' ? `maps://?daddr=${lat},${lng}&dirflg=d` : `google.navigation:q=${lat},${lng}`;
-    const fb = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    Linking.canOpenURL(url).then(ok => Linking.openURL(ok ? url : fb));
+  const getDirections = (destLat: number, destLng: number, _label?: string) => {
+    const appleMapsUrl = `maps://?saddr=${loc?.coords.latitude ?? ''},${loc?.coords.longitude ?? ''}&daddr=${destLat},${destLng}&dirflg=d`;
+    const googleMapsUrl = `comgooglemaps://?saddr=${loc?.coords.latitude ?? ''},${loc?.coords.longitude ?? ''}&daddr=${destLat},${destLng}&directionsmode=driving`;
+    const googleMapsWeb = `https://www.google.com/maps/dir/?api=1${loc ? `&origin=${loc.coords.latitude},${loc.coords.longitude}` : ''}&destination=${destLat},${destLng}&travelmode=driving`;
+
+    Linking.canOpenURL('comgooglemaps://').then(hasGoogle => {
+      const buttons: any[] = [
+        { text: '🍎 Apple Maps', onPress: () => Linking.openURL(appleMapsUrl).catch(() => Linking.openURL(googleMapsWeb)) },
+        { text: hasGoogle ? '🗺️ Google Maps' : '🗺️ Google Maps (web)', onPress: () => Linking.openURL(hasGoogle ? googleMapsUrl : googleMapsWeb) },
+        { text: 'Cancel', style: 'cancel' },
+      ];
+      Alert.alert('Open in Maps', 'Choose your navigation app:', buttons);
+    });
   };
 
   useEffect(() => {
@@ -150,20 +159,14 @@ export default function MapScreen() {
           location_updated_at: new Date().toISOString() 
         }).eq('id', user.id).then();
       }
-      await Promise.all([fetchMarkers(), fetchActivity()]);
+      await Promise.all([fetchMarkers(), fetchActivity(l)]);
     })();
   }, [user]);
 
   const fetchMarkers = async () => {
     const found: MapMarker[] = [];
     if (user?.id) {
-      // Fetch friends array from the users table
-      const { data: me } = await supabase
-        .from('users')
-        .select('friends')
-        .eq('id', user.id)
-        .single();
-        
+      const { data: me } = await supabase.from('users').select('friends').eq('id', user.id).single();
       if (me?.friends && me.friends.length > 0) {
         const { data: frds } = await supabase
           .from('users')
@@ -171,7 +174,6 @@ export default function MapScreen() {
           .in('id', me.friends)
           .neq('share_location', false)
           .not('current_location', 'is', null);
-          
         (frds || []).forEach((f: any) => {
           const lat = parseFloat(f.current_location?.lat ?? f.current_location?.geopoint?.latitude);
           const lng = parseFloat(f.current_location?.lng ?? f.current_location?.geopoint?.longitude);
@@ -179,41 +181,81 @@ export default function MapScreen() {
         });
       }
     }
+    // Businesses
     const { data: bizs } = await supabase.from('businesses').select('id,name,category,location').not('location','is',null).limit(50);
     (bizs || []).forEach((b: any) => {
       const lat = parseFloat(b.location?.lat ?? b.location?.geopoint?.latitude);
       const lng = parseFloat(b.location?.lng ?? b.location?.geopoint?.longitude);
       if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `biz-${b.id}`, type: 'business', lat, lng, title: b.name, subtitle: b.category, targetId: b.id });
     });
-    const { data: evts } = await supabase.from('posts')
+    // Events from posts table (legacy)
+    const { data: postEvts } = await supabase.from('posts')
       .select('id,title,event_location')
       .eq('category','Event')
       .not('event_location','is',null)
-      .limit(50);
-    (evts || []).forEach((e: any) => {
-      const lat = parseFloat(e.event_location?.lat ?? e.event_location?.geopoint?.latitude); 
+      .limit(30);
+    (postEvts || []).forEach((e: any) => {
+      const lat = parseFloat(e.event_location?.lat ?? e.event_location?.geopoint?.latitude);
       const lng = parseFloat(e.event_location?.lng ?? e.event_location?.geopoint?.longitude);
       if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `evt-${e.id}`, type: 'event', lat, lng, title: e.title || 'Event', subtitle: e.event_location?.address || '', targetId: e.id });
+    });
+    // Events from events table (new system)
+    const { data: newEvts } = await supabase.from('events')
+      .select('id,title,location_address,lat,lng')
+      .eq('status','PUBLISHED')
+      .not('lat','is',null)
+      .not('lng','is',null)
+      .limit(50);
+    (newEvts || []).forEach((e: any) => {
+      const lat = parseFloat(e.lat);
+      const lng = parseFloat(e.lng);
+      if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `nevt-${e.id}`, type: 'event', lat, lng, title: e.title || 'Event', subtitle: e.location_address || '', targetId: e.id });
     });
     setAllMarkers(found);
     setLoading(false);
   };
 
-  const fetchActivity = async () => {
+  const fetchActivity = async (userLoc?: Location.LocationObject) => {
     const items: ActivityItem[] = [];
-    const state = (profile?.location as any)?.state;
-    const [{ data: posts }, { data: mkt }, { data: evts }, { data: bizs }] = await Promise.all([
-      supabase.from('posts').select('id,title,content,created_at,users!posts_user_id_fkey(name,avatar_url)').not('category','in','("For Sale","Event")').order('created_at',{ascending:false}).limit(3),
-      supabase.from('posts').select('id,title,price,created_at,images').eq('category','For Sale').or('is_sold.eq.false,is_sold.is.null').order('created_at',{ascending:false}).limit(2),
-      supabase.from('posts').select('id,title,event_date,event_location,attendees,images').eq('category','Event').order('created_at',{ascending:false}).limit(3),
-      supabase.from('businesses').select('id,name,category,description,image_urls,created_at,location').order('created_at',{ascending:false}).limit(2),
+    const [{ data: mkt }, { data: postEvts }, { data: newEvts }, { data: bizs }] = await Promise.all([
+      supabase.from('posts').select('id,title,price,created_at,images,event_location').eq('category','For Sale').or('is_sold.eq.false,is_sold.is.null').order('created_at',{ascending:false}).limit(10),
+      supabase.from('posts').select('id,title,event_date,event_location,attendees,images').eq('category','Event').gte('event_date', new Date().toISOString()).order('event_date',{ascending:true}).limit(5),
+      supabase.from('events').select('id,title,start_time,location_address,lat,lng,cover_image_url,attendee_count').eq('status','PUBLISHED').gte('start_time', new Date().toISOString()).order('start_time',{ascending:true}).limit(10),
+      supabase.from('businesses').select('id,name,category,description,image_urls,created_at,location').order('created_at',{ascending:false}).limit(5),
     ]);
-    (posts||[]).forEach((p:any) => items.push({ id:`p-${p.id}`, kind:'post', title:`${p.users?.name||'Someone'} posted nearby`, subtitle: (p.content||p.title||'').slice(0,80), time: formatTimeOrDate(p.created_at), image: p.users?.avatar_url, route:`/posts/${p.id}` }));
-    (mkt||[]).forEach((p:any) => items.push({ id:`m-${p.id}`, kind:'market', title: p.title, subtitle:'For sale', meta: p.price ? `₦${Number(p.price).toLocaleString()}` : '', time: formatTimeOrDate(p.created_at), image: p.images?.[0], route:`/marketplace/${p.id}` }));
-    (evts||[]).forEach((e:any) => items.push({ id:`e-${e.id}`, kind:'event', title: e.title, subtitle:`${e.event_location?.address||''}`, meta: e.attendees?.length ? `${e.attendees.length} going` : '', time: formatTimeOrDate(e.event_date), image: e.images?.[0], route:`/events/${e.id}`, lat: parseFloat(e.event_location?.lat ?? e.event_location?.geopoint?.latitude), lng: parseFloat(e.event_location?.lng ?? e.event_location?.geopoint?.longitude) }));
-    (bizs||[]).forEach((b:any) => items.push({ id:`b-${b.id}`, kind:'biz', title:`${b.name}`, subtitle: b.description?.slice(0,60)||b.category||'', time: formatTimeOrDate(b.created_at), image: b.image_urls?.[0], route:`/business/${b.id}`, lat: parseFloat(b.location?.lat ?? b.location?.geopoint?.latitude), lng: parseFloat(b.location?.lng ?? b.location?.geopoint?.longitude) }));
-    items.sort(() => Math.random() - 0.5);
-    setActivity(items.slice(0,8));
+
+    (mkt||[]).forEach((p:any) => {
+      const lat = parseFloat(p.event_location?.lat ?? p.event_location?.geopoint?.latitude);
+      const lng = parseFloat(p.event_location?.lng ?? p.event_location?.geopoint?.longitude);
+      items.push({ id:`m-${p.id}`, kind:'market', title: p.title, subtitle:'For sale', meta: p.price ? `₦${Number(p.price).toLocaleString()}` : '', time: formatTimeOrDate(p.created_at), image: p.images?.[0], route:`/marketplace/${p.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
+    });
+    (postEvts||[]).forEach((e:any) => {
+      const lat = parseFloat(e.event_location?.lat ?? e.event_location?.geopoint?.latitude);
+      const lng = parseFloat(e.event_location?.lng ?? e.event_location?.geopoint?.longitude);
+      items.push({ id:`e-${e.id}`, kind:'event', title: e.title, subtitle:`${e.event_location?.address||''}`, meta: e.attendees?.length ? `${e.attendees.length} going` : '', time: formatTimeOrDate(e.event_date), image: e.images?.[0], route:`/events/${e.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
+    });
+    (newEvts||[]).forEach((e:any) => {
+      const lat = parseFloat(e.lat);
+      const lng = parseFloat(e.lng);
+      items.push({ id:`ne-${e.id}`, kind:'event', title: e.title, subtitle: e.location_address || 'At venue', meta: e.attendee_count ? `${e.attendee_count} going` : '', time: formatTimeOrDate(e.start_time), image: e.cover_image_url, route:`/events/${e.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
+    });
+    (bizs||[]).forEach((b:any) => {
+      const lat = parseFloat(b.location?.lat ?? b.location?.geopoint?.latitude);
+      const lng = parseFloat(b.location?.lng ?? b.location?.geopoint?.longitude);
+      items.push({ id:`b-${b.id}`, kind:'biz', title:`${b.name}`, subtitle: b.description?.slice(0,60)||b.category||'', time: formatTimeOrDate(b.created_at), image: b.image_urls?.[0], route:`/business/${b.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
+    });
+
+    // Sort by proximity if we have user location, otherwise by recency
+    if (userLoc) {
+      const uLat = userLoc.coords.latitude;
+      const uLng = userLoc.coords.longitude;
+      items.sort((a, b) => {
+        const aDist = (a.lat && a.lng) ? Math.hypot(a.lat - uLat, a.lng - uLng) : Infinity;
+        const bDist = (b.lat && b.lng) ? Math.hypot(b.lat - uLat, b.lng - uLng) : Infinity;
+        return aDist - bDist;
+      });
+    }
+    setActivity(items.slice(0, 10));
   };
 
   const visibleMarkers = useMemo(() => {
@@ -345,17 +387,9 @@ export default function MapScreen() {
 
       {/* ── FABs ── */}
       <View style={[s.fabs, { bottom: PEEK + 24 }]}>
-        <TouchableOpacity style={s.fab} onPress={locateMe}>
-          <Ionicons name="locate" size={18} color="#222" />
-          <Text style={s.fabTxt}>Locate me</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={[s.fab, s.fabGreen]} onPress={() => router.push('/new-post' as any)}>
           <Ionicons name="add" size={20} color="#0B0D0B" />
           <Text style={[s.fabTxt, { color:'#0B0D0B' }]}>Create Post</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={s.fab} onPress={() => loc && getDirections(loc.coords.latitude, loc.coords.longitude)}>
-          <Ionicons name="navigate" size={18} color="#222" />
-          <Text style={s.fabTxt}>Directions</Text>
         </TouchableOpacity>
       </View>
 
