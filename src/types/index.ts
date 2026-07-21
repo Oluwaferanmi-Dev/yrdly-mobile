@@ -152,7 +152,7 @@ export interface User {
   friends?: string[];
   blockedUsers?: string[];
   interests?: string[];
-  shareLocation?: boolean;
+  share_location?: boolean;
   currentLocation?: {
     lat: number;
     lng: number;

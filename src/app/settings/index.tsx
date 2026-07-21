@@ -22,7 +22,7 @@ export default function SettingsScreen() {
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || user?.user_metadata?.avatar_url || '');
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [shareLocation, setShareLocation] = useState<boolean>((profile as any)?.share_location ?? false);
+  const [shareLocation, setShareLocation] = useState<boolean>(profile?.share_location ?? false);
   const [savingLocation, setSavingLocation] = useState(false);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function SettingsScreen() {
       setName(profile.name || '');
       setBio(profile.bio || '');
       setAvatarUrl(profile.avatar_url || '');
-      setShareLocation((profile as any).share_location ?? false);
+      setShareLocation(profile.share_location ?? false);
     }
   }, [profile]);
 
@@ -109,7 +109,7 @@ export default function SettingsScreen() {
     if (!user) return;
     setSavingLocation(true);
     try {
-      await AuthService.updateUserProfile(user.id, { share_location: value } as any);
+      await AuthService.updateUserProfile(user.id, { share_location: value });
     } catch (e) {
       console.error(e);
       setShareLocation(!value); // revert on error

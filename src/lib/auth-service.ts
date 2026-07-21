@@ -22,7 +22,7 @@ export interface AuthUser {
   friends?: string[];
   blocked_users?: string[];
   interests?: string[];
-  shareLocation?: boolean;
+  share_location?: boolean;
   notification_settings?: {
     friendRequests: boolean;
     messages: boolean;

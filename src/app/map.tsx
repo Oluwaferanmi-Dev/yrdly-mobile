@@ -169,6 +169,7 @@ export default function MapScreen() {
           .from('users')
           .select('id, name, avatar_url, current_location')
           .in('id', me.friends)
+          .neq('share_location', false)
           .not('current_location', 'is', null);
           
         (frds || []).forEach((f: any) => {
