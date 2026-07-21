@@ -158,7 +158,7 @@ export default function EventDetailScreen() {
         setSelectedTier(null);
         setTimeout(() => showTicketSuccess(tierName), 100);
       } else {
-        const browserResult = await WebBrowser.openAuthSessionAsync(res.paymentLink, callbackUrl);
+        const browserResult = await WebBrowser.openAuthSessionAsync(res.payment_link, callbackUrl);
         if (browserResult.type === 'success' && browserResult.url) {
           const urlObj = new URL(browserResult.url);
           const status = urlObj.searchParams.get('status');

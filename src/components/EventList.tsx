@@ -60,37 +60,81 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
   const fetchEvents = useCallback(async (isRefresh = false) => {
     if (!isRefresh) setLoading(true);
     const filterString = `${activeFilter?.state || ''}_${activeFilter?.lga || ''}_${activeFilter?.ward || ''}_${category}_${searchQuery}_${sortOption}`;
-    const cacheFile = FileSystem.documentDirectory + `yrdly_events_cache_${filterString.replace(/\W/g, '_')}.json`;
+    const cacheFile = FileSystem.documentDirectory + `yrdly_events_cache_v2_${filterString.replace(/\W/g, '_')}.json`;
     try {
       if (!isRefresh) {
         const fileInfo = await FileSystem.getInfoAsync(cacheFile);
         if (fileInfo.exists) {
           const cachedData = await FileSystem.readAsStringAsync(cacheFile);
-          if (cachedData) {
-            // We deleted all legacy events from posts, so ignore cached events here
-            setEvents([]);
-          }
+          if (cachedData) setEvents(JSON.parse(cachedData));
         }
       }
     } catch (e) {}
     try {
-      let query = supabase
+      // ── Legacy events from posts table ──
+      let postsQuery = supabase
         .from('posts')
         .select('*, users!posts_user_id_fkey(name, avatar_url), attendees:post_attendees(user_id)')
         .eq('category', 'Event')
         .order('created_at', { ascending: false })
         .limit(30);
-      if (activeFilter?.ward) query = query.eq('ward', activeFilter.ward);
-      else if (activeFilter?.lga) query = query.eq('lga', activeFilter.lga);
-      else if (activeFilter?.state) query = query.eq('state', activeFilter.state);
-      if (category) query = query.eq('event_category', category);
-      if (searchQuery) query = query.ilike('title', `%${searchQuery}%`);
-      const { data } = await query;
-      if (data) {
-        setEvents(data as Post[]);
-        try { await FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(data)); } catch (e) {}
-      }
-    } catch (e) {}
+      if (activeFilter?.ward) postsQuery = postsQuery.eq('ward', activeFilter.ward);
+      else if (activeFilter?.lga) postsQuery = postsQuery.eq('lga', activeFilter.lga);
+      else if (activeFilter?.state) postsQuery = postsQuery.eq('state', activeFilter.state);
+      if (category) postsQuery = postsQuery.eq('event_category', category);
+      if (searchQuery) postsQuery = postsQuery.ilike('title', `%${searchQuery}%`);
+
+      // ── New events from events table ──
+      let eventsQuery = supabase
+        .from('events')
+        .select(`*, organizer:users!events_organizer_id_fkey(id, name, avatar_url)`)
+        .eq('status', 'PUBLISHED')
+        .order('created_at', { ascending: false })
+        .limit(30);
+      if (activeFilter?.ward) eventsQuery = eventsQuery.eq('ward', activeFilter.ward);
+      else if (activeFilter?.lga) eventsQuery = eventsQuery.eq('lga', activeFilter.lga);
+      else if (activeFilter?.state) eventsQuery = eventsQuery.eq('state', activeFilter.state);
+      if (searchQuery) eventsQuery = eventsQuery.ilike('title', `%${searchQuery}%`);
+
+      const [postsRes, eventsRes] = await Promise.all([postsQuery, eventsQuery]);
+
+      const legacyEvents = (postsRes.data || []) as Post[];
+
+      // Map events table rows to Post shape
+      const newEvents: Post[] = (eventsRes.data || []).map((e: any): Post => ({
+        id: e.id,
+        user_id: e.organizer_id,
+        author_name: e.organizer?.name || 'Unknown',
+        author_image: e.organizer?.avatar_url || '',
+        text: e.description || '',
+        description: e.description || '',
+        title: e.title,
+        image_urls: e.cover_image_url ? [e.cover_image_url] : [],
+        image_url: e.cover_image_url || undefined,
+        timestamp: e.created_at,
+        created_at: e.created_at,
+        comment_count: 0,
+        category: 'Event',
+        state: e.state,
+        lga: e.lga,
+        ward: e.ward,
+        event_date: e.start_time,
+        event_time: e.start_time,
+        event_location: { address: e.location_address || (e.location_online ? 'Online' : 'TBA') },
+        liked_by: [],
+        attendees: [],
+        user: e.organizer,
+      }));
+
+      // Merge & deduplicate by id, sort newest first
+      const seen = new Set<string>();
+      const merged = [...legacyEvents, ...newEvents]
+        .filter(ev => { if (seen.has(ev.id)) return false; seen.add(ev.id); return true; })
+        .sort((a, b) => new Date(b.created_at || b.timestamp || 0).getTime() - new Date(a.created_at || a.timestamp || 0).getTime());
+
+      setEvents(merged);
+      try { await FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(merged)); } catch (_) {}
+    } catch (e) { console.error('EventList fetchEvents error:', e); }
     setLoading(false);
   }, [activeFilter, category, searchQuery, sortOption]);
 
