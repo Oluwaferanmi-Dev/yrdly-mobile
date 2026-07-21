@@ -9,6 +9,7 @@ import { useAuth } from '../../../hooks/use-supabase-auth';
 import { usePosts } from '../../../hooks/use-posts';
 import { useAppTheme } from '../../../context/ThemeContext';
 import { Post } from '../../../types';
+import { api } from '../../../lib/api';
 
 export default function EditMarketplaceItemScreen() {
   const { colors } = useAppTheme();
@@ -62,10 +63,42 @@ export default function EditMarketplaceItemScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
+      const parsedPrice = price ? parseFloat(price) : 0;
+
+      if (parsedPrice > 0) {
+        try {
+          const { account } = await api.get('/api/seller/setup-account');
+          if (!account || !account.isVerified) {
+            Alert.alert(
+              'Bank Account Required',
+              'Marketplace items with a price require a verified bank account. Go to Settings → Bank Account to link yours.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Open Settings', onPress: () => router.push('/settings/payout-settings' as any) },
+              ]
+            );
+            setIsSubmitting(false);
+            return;
+          }
+        } catch (e) {
+          console.warn('Bank account verification failed', e);
+          Alert.alert(
+            'Bank Account Required',
+            'Marketplace items with a price require a verified bank account. Go to Settings → Bank Account to link yours.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Open Settings', onPress: () => router.push('/settings/payout-settings' as any) },
+            ]
+          );
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const updateData = {
         title: title.trim(),
         text: text.trim(),
-        price: price ? parseFloat(price) : 0,
+        price: parsedPrice,
       };
 
       const { error } = await supabase

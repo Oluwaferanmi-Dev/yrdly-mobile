@@ -58,37 +58,19 @@ export default function TabLayout() {
           return true;
         });
         
-        const friendConvIds = activeConvs
-          .filter(c => c.type !== 'marketplace' && c.type !== 'briefcase')
-          .map(c => c.id);
+        const activeConvIds = activeConvs.map(c => c.id);
           
-        if (friendConvIds.length > 0) {
+        if (activeConvIds.length > 0) {
           const { data: unreadData } = await supabase
             .from('messages')
             .select('conversation_id')
             .eq('is_read', false)
             .neq('sender_id', user.id)
-            .in('conversation_id', friendConvIds);
+            .in('conversation_id', activeConvIds);
             
           if (unreadData) {
             const uniqueUnreadConvs = new Set(unreadData.map(m => m.conversation_id));
             unreadTotal += uniqueUnreadConvs.size;
-          }
-        }
-        
-        // Count marketplace/briefcase messages
-        for (const conv of activeConvs) {
-          if (conv.type === 'marketplace' || conv.type === 'briefcase') {
-            const { data: msgs } = await supabase
-              .from('chat_messages')
-              .select('sender_id, metadata')
-              .eq('chat_id', conv.id)
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .single();
-            if (msgs && msgs.sender_id !== user.id && !msgs.metadata?.isRead) {
-              unreadTotal++;
-            }
           }
         }
       }

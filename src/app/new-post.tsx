@@ -225,6 +225,42 @@ export default function CreateTab() {
     isSubmittingRef.current = true;
     setIsSubmitting(true);
     try {
+      // 0. Verify bank account for paid events and marketplace items
+      const isPaidItem = category === 'For Sale' && parseFloat(price) > 0;
+      const isPaidEvent = category === 'Event' && isTicketed && ticketTiers.some(t => parseFloat(t.price) > 0);
+      
+      if (isPaidItem || isPaidEvent) {
+        try {
+          const { account } = await api.get('/api/seller/setup-account');
+          if (!account || !account.isVerified) {
+            Alert.alert(
+              'Bank Account Required',
+              'Paid events and marketplace items require a verified bank account. Go to Settings → Bank Account to link yours.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Open Settings', onPress: () => router.push('/settings/payout-settings' as any) },
+              ]
+            );
+            setIsSubmitting(false);
+            isSubmittingRef.current = false;
+            return;
+          }
+        } catch (e) {
+          console.warn('Bank account verification failed', e);
+          Alert.alert(
+            'Bank Account Required',
+            'Paid events and marketplace items require a verified bank account. Go to Settings → Bank Account to link yours.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Open Settings', onPress: () => router.push('/settings/payout-settings' as any) },
+            ]
+          );
+          setIsSubmitting(false);
+          isSubmittingRef.current = false;
+          return;
+        }
+      }
+
       // 1. Upload media (if any) and collect public URLs
       let uploadedImageUrls: string[] = [];
       let videoUrl: string | null = null;

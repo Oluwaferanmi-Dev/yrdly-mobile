@@ -20,6 +20,8 @@ import { Skeleton } from '../../components/Skeleton';
 import { Post } from '../../types';
 import { formatPrice } from '../../lib/utils';
 import { StorageService } from '../../lib/storage-service';
+import { MapIcon, NotificationsIcon } from '../../components/SvgIcons';
+import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 
 const { width } = Dimensions.get('window');
 type TabType = 'Marketplace' | 'Events' | 'Businesses';
@@ -42,6 +44,7 @@ export default function CatalogTab() {
   const router = useRouter();
   const { user } = useAuth();
   const { activeFilter } = useLocation();
+  const { unreadCount } = useNotificationBadge();
 
   const [activeTab, setActiveTab] = useState<TabType>('Marketplace');
   const [search, setSearch] = useState('');
@@ -250,6 +253,34 @@ export default function CatalogTab() {
           <Text style={[s.title, { color: colors.text }]}>Explore</Text>
           <Text style={[s.subtitle, { color: colors.textMuted }]}>Discover, buy and sell around you. 💚</Text>
         </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map' as any)}>
+            <MapIcon size={24} color={colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ position: 'relative' }}>
+            <NotificationsIcon size={24} color={colors.text} />
+            {unreadCount > 0 && (
+              <View style={{
+                position: 'absolute',
+                right: -4,
+                top: -4,
+                backgroundColor: '#EF4444',
+                borderRadius: 10,
+                minWidth: 18,
+                height: 18,
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingHorizontal: 4,
+                borderWidth: 1.5,
+                borderColor: colors.background
+              }}>
+                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* ── Search + Filter ── */}
@@ -353,7 +384,7 @@ export default function CatalogTab() {
 
 const s = StyleSheet.create({
   root: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14 },
   title: { fontSize: 32, fontWeight: '900', letterSpacing: -0.5 },
   subtitle: { fontSize: 13, marginTop: 2 },
   headerActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
