@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 import { AuthService, AuthUser } from '@/lib/auth-service';
 import { supabase } from '@/lib/supabase';
 import { identifyDevice } from 'vexo-analytics';
@@ -14,7 +14,7 @@ interface AuthContextType {
   user: User | null;
   profile: AuthUser | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string) => Promise<{ user: User | null; error: any }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ user: User | null; session: Session | null; error: any }>;
   signIn: (email: string, password: string) => Promise<{ user: User | null; error: any }>;
   signInWithGoogle: () => Promise<{ data: any; error: any }>;
   signInWithApple: () => Promise<{ data: any; error: any }>;

@@ -35,13 +35,14 @@ export default function Login() {
       const { error: signInError } = await signIn(email, password);
       if (signInError) setError(signInError.message);
     } else {
-      const { error: signUpError } = await signUp(email, password, name);
+      const { error: signUpError, session } = await signUp(email, password, name);
       if (signUpError) {
         setError(signUpError.message);
-      } else {
-        // Supabase sent OTP — navigate to verification screen
+      } else if (!session) {
+        // Supabase sent OTP (email confirmation is enabled) — navigate to verification screen
         router.push({ pathname: '/(auth)/verify-otp', params: { email } } as any);
       }
+      // If session exists, email confirmation is disabled/verified, and the RootNavigationGuard will automatically route us away.
     }
   };
 
