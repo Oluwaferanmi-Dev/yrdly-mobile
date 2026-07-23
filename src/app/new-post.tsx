@@ -16,6 +16,7 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { api } from '../lib/api';
+import { parseSafePrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { ScreenHeader } from '../components/ScreenHeader';
@@ -226,8 +227,8 @@ export default function CreateTab() {
     setIsSubmitting(true);
     try {
       // 0. Verify bank account for paid events and marketplace items
-      const isPaidItem = category === 'For Sale' && parseFloat(price) > 0;
-      const isPaidEvent = category === 'Event' && isTicketed && ticketTiers.some(t => parseFloat(t.price) > 0);
+      const isPaidItem = category === 'For Sale' && parseSafePrice(price) > 0;
+      const isPaidEvent = category === 'Event' && isTicketed && ticketTiers.some(t => parseSafePrice(t.price) > 0);
       
       if (isPaidItem || isPaidEvent) {
         try {
@@ -317,7 +318,7 @@ export default function CreateTab() {
 
       // Add specific fields for category
       if (category === 'For Sale') {
-        postData.price = price ? parseFloat(price) : 0;
+        postData.price = parseSafePrice(price);
         postData.sub_category = subCategory || null;
         postData.condition = condition || null;
         postData.negotiable = negotiable;
@@ -327,7 +328,7 @@ export default function CreateTab() {
         // Ensure prices are always valid numbers (never NaN)
         const formattedTiers = ticketTiers.map(t => ({
           name: t.name,
-          price: Math.max(0, parseFloat(t.price) || 0),
+          price: parseSafePrice(t.price),
           capacity: t.capacity ? parseInt(t.capacity) : undefined,
         }));
         

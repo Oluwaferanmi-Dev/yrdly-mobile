@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { usePosts } from '../../../hooks/use-posts';
+import { parseSafePrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
 import { Post } from '../../../types';
 import { api } from '../../../lib/api';
@@ -63,7 +64,7 @@ export default function EditMarketplaceItemScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      const parsedPrice = price ? parseFloat(price) : 0;
+      const parsedPrice = parseSafePrice(price);
 
       if (parsedPrice > 0) {
         try {

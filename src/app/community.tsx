@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -9,6 +9,8 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
+import { SectionHeader } from '../components/SectionHeader';
+import { DiscoverUserCard } from '../components/DiscoverUserCard';
 
 type Tab = 'friends' | 'discover';
 
@@ -20,9 +22,17 @@ export default function CommunityScreen() {
 
   const [activeTab, setActiveTab] = useState<Tab>('friends');
   const [searchQuery, setSearchQuery] = useState('');
-  const [users, setUsers] = useState<any[]>([]);
+  
+  // Friends State
   const [friends, setFriends] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
+  
+  // Discover State
+  const [activeFilterTab, setActiveFilterTab] = useState<'all' | 'neighbors' | 'mutuals' | 'sellers'>('all');
+  const [neighbors, setNeighbors] = useState<any[]>([]);
+  const [mutuals, setMutuals] = useState<any[]>([]);
+  const [sellers, setSellers] = useState<any[]>([]);
+  
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState<string | null>(null);
 
@@ -59,23 +69,63 @@ export default function CommunityScreen() {
       setFriends(friendList);
 
       // ── Community discovery ────────────────────────────────────
+      const targetLocation = activeFilter || profile?.location;
+      
       let userQuery = supabase
         .from('users')
-        .select('id, name, avatar_url')
+        .select('id, name, avatar_url, location, friends, discoverable')
         .neq('id', currentUser.id)
-        .limit(50);
+        .limit(100);
 
-      const targetLocation = activeFilter || profile?.location;
       if (targetLocation) {
         if (targetLocation.state) userQuery = userQuery.eq('location->>state', targetLocation.state);
-        if (targetLocation.lga)   userQuery = userQuery.eq('location->>lga',   targetLocation.lga);
-        if (targetLocation.ward)  userQuery = userQuery.eq('location->>ward',  targetLocation.ward);
       }
       if (searchQuery) userQuery = userQuery.ilike('name', `%${searchQuery}%`);
 
-      const { data: userData } = await userQuery;
+      const { data: userData, error: userError } = await userQuery;
+      if (userError) console.error('Error fetching users:', userError);
+
       const blocked = profile?.blocked_users || [];
-      setUsers((userData || []).filter(u => !blocked.includes(u.id)));
+      const myFriends = profile?.friends || [];
+      
+      // Filter out blocked, existing friends, and non-discoverable
+      const discoveredUsers = (userData || [])
+        .filter(u => !blocked.includes(u.id))
+        .filter(u => !myFriends.includes(u.id))
+        .filter(u => u.discoverable !== false); // Backward compatible if column doesn't exist
+
+      // 1. Neighbors (Location matches exactly)
+      const nearbyUsers = discoveredUsers.filter(u => {
+        if (!targetLocation?.lga) return true; // If no specific LGA selected, show all in state
+        return u.location?.lga === targetLocation.lga;
+      });
+      setNeighbors(nearbyUsers);
+
+      // 2. Mutuals (Shared friends)
+      const mutualUsers = discoveredUsers.filter(u => {
+        const theirFriends = u.friends || [];
+        return theirFriends.some((fid: string) => myFriends.includes(fid));
+      });
+      setMutuals(mutualUsers);
+
+      // 3. Sellers (Active For Sale posts in area)
+      let activeSellers: any[] = [];
+      if (targetLocation?.state) {
+        const { data: postData } = await supabase
+          .from('posts')
+          .select('user_id')
+          .eq('category', 'For Sale')
+          .eq('is_sold', false)
+          .eq('state', targetLocation.state)
+          .limit(100);
+          
+        if (postData) {
+          const sellerIds = Array.from(new Set(postData.map(p => p.user_id)));
+          activeSellers = discoveredUsers.filter(u => sellerIds.includes(u.id));
+        }
+      }
+      setSellers(activeSellers);
+
     } catch (e) {
       console.error(e);
     } finally {
@@ -188,20 +238,11 @@ export default function CommunityScreen() {
   };
 
   const renderDiscoverUser = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={[styles.userCard, { borderBottomColor: colors.borderLight }]}
+    <DiscoverUserCard
+      user={item}
+      context="neighbor"
       onPress={() => router.push(`/profile/${item.id}`)}
-    >
-      <View style={[styles.avatarSmall, { backgroundColor: colors.tint + '30' }]}>
-        {item.avatar_url ? (
-          <Image source={{ uri: item.avatar_url }} style={styles.avatarImage} />
-        ) : (
-          <Text style={[styles.avatarTextSmall, { color: colors.tint }]}>{item.name ? item.name.charAt(0).toUpperCase() : '?'}</Text>
-        )}
-      </View>
-      <Text style={[styles.userNameSmall, { color: colors.text }]}>{item.name || 'Anonymous'}</Text>
-      <Feather name="chevron-right" size={20} color={colors.textMuted} />
-    </TouchableOpacity>
+    />
   );
 
   // ── Friends tab header: pending requests ─────────────────────
@@ -227,10 +268,9 @@ export default function CommunityScreen() {
     </Text>
   );
 
-  // ── Discover tab header: search ───────────────────────────────
+  // ── Discover tab header: search & chips ──────────────────────
   const discoverHeader = (
-    <View style={[styles.section, { paddingHorizontal: 16 }]}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>Discover Neighbors</Text>
+    <View style={[styles.section, { paddingHorizontal: 16, marginBottom: 8 }]}>
       <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground }]}>
         <Feather name="search" size={20} color={colors.textSecondary} />
         <TextInput
@@ -242,8 +282,101 @@ export default function CommunityScreen() {
           returnKeyType="search"
         />
       </View>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsRow}>
+        {(['all', 'neighbors', 'mutuals', 'sellers'] as const).map(tab => (
+          <TouchableOpacity
+            key={tab}
+            style={[
+              styles.filterChip,
+              activeFilterTab === tab ? { backgroundColor: colors.tint } : { backgroundColor: colors.card, borderColor: colors.borderLight, borderWidth: 1 }
+            ]}
+            onPress={() => setActiveFilterTab(tab)}
+          >
+            <Text style={[
+              styles.filterChipText,
+              activeFilterTab === tab ? { color: '#0B0D0B' } : { color: colors.textSecondary }
+            ]}>
+              {tab === 'all' ? 'All' : tab === 'neighbors' ? 'Neighbors' : tab === 'mutuals' ? 'Mutual Friends' : 'Active Sellers'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
+
+  const renderDiscoverSections = () => {
+    return (
+      <FlatList
+        data={[{ key: 'dummy' }]} // We render sections manually in ListHeaderComponent
+        keyExtractor={item => item.key}
+        renderItem={() => null}
+        ListHeaderComponent={
+          <>
+            {discoverHeader}
+            
+            {/* Mutuals Section */}
+            {(activeFilterTab === 'all' || activeFilterTab === 'mutuals') && mutuals.length > 0 && (
+              <View style={styles.listSection}>
+                <SectionHeader title="Suggested for You" emoji="🤝" count={mutuals.length} />
+                {mutuals.map(user => (
+                  <DiscoverUserCard
+                    key={user.id}
+                    user={user}
+                    context="mutual"
+                    mutualCount={user.friends?.filter((fid: string) => profile?.friends?.includes(fid)).length || 1}
+                    onPress={() => router.push(`/profile/${user.id}`)}
+                  />
+                ))}
+              </View>
+            )}
+
+            {/* Sellers Section */}
+            {(activeFilterTab === 'all' || activeFilterTab === 'sellers') && sellers.length > 0 && (
+              <View style={styles.listSection}>
+                <SectionHeader title="Active Sellers Near You" emoji="🛍️" count={sellers.length} />
+                {sellers.map(user => (
+                  <DiscoverUserCard
+                    key={user.id}
+                    user={user}
+                    context="seller"
+                    onPress={() => router.push(`/profile/${user.id}`)}
+                  />
+                ))}
+              </View>
+            )}
+
+            {/* Neighbors Section */}
+            {(activeFilterTab === 'all' || activeFilterTab === 'neighbors') && (
+              <View style={styles.listSection}>
+                <SectionHeader 
+                  title={activeFilter?.lga ? `Neighbors in ${activeFilter.lga}` : "Discover Neighbors"} 
+                  emoji="📍" 
+                  count={neighbors.length} 
+                />
+                {neighbors.length > 0 ? (
+                  neighbors.map(user => (
+                    <DiscoverUserCard
+                      key={user.id}
+                      user={user}
+                      context="neighbor"
+                      onPress={() => router.push(`/profile/${user.id}`)}
+                    />
+                  ))
+                ) : (
+                  <View style={styles.emptyInline}>
+                    <Text style={[styles.emptyInlineText, { color: colors.textMuted }]}>No neighbors found in this area.</Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </>
+        }
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -309,24 +442,7 @@ export default function CommunityScreen() {
           }
         />
       ) : (
-        <FlashList
-          {...({ estimatedItemSize: 60 } as any)}
-          data={users}
-          keyExtractor={(item: any) => item.id}
-          renderItem={renderDiscoverUser}
-          ListHeaderComponent={discoverHeader}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Feather name="search" size={56} color={colors.border} />
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>No Users Found</Text>
-              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
-                Try adjusting your search or location filter.
-              </Text>
-            </View>
-          }
-        />
+        renderDiscoverSections()
       )}
     </SafeAreaView>
   );
@@ -370,12 +486,36 @@ const styles = StyleSheet.create({
   btn: { flex: 1, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
   acceptBtnText: { color: '#0B0D0B', fontSize: 12, fontWeight: 'bold' },
 
-  // Search
+  // Search & Filters
   searchContainer: {
     flexDirection: 'row', alignItems: 'center', borderRadius: 8,
-    paddingHorizontal: 12, height: 44, marginBottom: 8,
+    paddingHorizontal: 12, height: 44, marginBottom: 12,
   },
   searchInput: { flex: 1, marginLeft: 8, fontSize: 16 },
+  chipsRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  filterChipText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  listSection: {
+    marginBottom: 16,
+  },
+  emptyInline: {
+    padding: 24,
+    alignItems: 'center',
+  },
+  emptyInlineText: {
+    fontSize: 14,
+  },
 
   // User List
   userCard: {

@@ -172,7 +172,7 @@ export default function EventDetailScreen() {
     }
     setPurchasing(true);
     try {
-      const callbackUrl = Linking.createURL('payment-verify');
+      const callbackUrl = ExpoLinking.createURL('payment-verify');
       const tierName = selectedTier.name;
       const res = await api.post<any>('/api/events/tickets/purchase', {
         event_id: event.id,

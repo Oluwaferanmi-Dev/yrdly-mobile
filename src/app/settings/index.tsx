@@ -257,23 +257,20 @@ export default function SettingsScreen() {
         {/* Privacy */}
         <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>PRIVACY</Text>
         <View style={[styles.glassCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-          <View style={[styles.navRow, styles.navRowBorder, { borderBottomColor: colors.borderLight }]}>
+          <TouchableOpacity
+            style={[styles.navRow, { borderBottomColor: colors.borderLight }]}
+            onPress={() => router.push('/settings/privacy' as any)}
+            activeOpacity={0.7}
+          >
             <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
-              <Ionicons name="location-outline" size={24} color={colors.tint} />
+              <Ionicons name="lock-closed-outline" size={24} color={colors.tint} />
             </View>
             <View style={styles.navTextWrap}>
-              <Text style={[styles.navLabel, { color: colors.text }]}>Share Location with Friends</Text>
-              <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>Let mutual friends see you on the map</Text>
+              <Text style={[styles.navLabel, { color: colors.text }]}>Privacy & Discoverability</Text>
+              <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>Manage location sharing and visibility</Text>
             </View>
-            <Switch
-              value={shareLocation}
-              onValueChange={handleShareLocationToggle}
-              disabled={savingLocation}
-              trackColor={{ false: '#353534', true: colors.tint }}
-              thumbColor={'#FFFFFF'}
-              ios_backgroundColor="#353534"
-            />
-          </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </TouchableOpacity>
         </View>
 
         {/* Preferences */}

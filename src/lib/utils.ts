@@ -39,3 +39,12 @@ export function formatPrice(amount: number): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+export function parseSafePrice(priceVal: string | number | undefined | null): number {
+  if (priceVal === undefined || priceVal === null || priceVal === '') return 0;
+  if (typeof priceVal === 'number') return priceVal;
+  // Remove all non-numeric characters except decimal points
+  const cleaned = String(priceVal).replace(/[^0-9.]/g, '');
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
+}

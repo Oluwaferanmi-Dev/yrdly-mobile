@@ -39,7 +39,10 @@ export const api = {
 
   async get<T = any>(path: string): Promise<T> {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${WEB_APP_URL}${path}`, { headers });
+    const res = await fetch(`${WEB_APP_URL}${path}`, { 
+      headers,
+      cache: 'no-store' // Critical for RN iOS to bypass aggressive GET caching
+    });
     
     let json;
     const contentType = res.headers.get('content-type') || '';
