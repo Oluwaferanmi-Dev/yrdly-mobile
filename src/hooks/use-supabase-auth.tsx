@@ -4,9 +4,9 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { AuthService, AuthUser } from '@/lib/auth-service';
 import { supabase } from '@/lib/supabase';
-import { identifyDevice } from 'vexo-analytics';
 import { usePostHog } from 'posthog-react-native';
 import * as FileSystem from 'expo-file-system/legacy';
+import NetInfo from '@react-native-community/netinfo';
 
 const PROFILE_CACHE_FILE = `${FileSystem.documentDirectory}user_profile_cache.json`;
 
@@ -46,15 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           if (currentUser) {
             try {
-              if (currentUser.email) {
-                try {
-                  identifyDevice(currentUser.email);
-                } catch (e) {
-                  console.warn('[Yrdly] Failed to identify device for Vexo:', e);
-                }
-              }
 
-              // First, try to get existing profile
               let userProfile = await AuthService.getUserProfile(currentUser.id);
               
               if (userProfile) {
@@ -167,7 +159,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getInitialSession();
 
     // Listen for auth state changes
-    const { data: { subscription } } = AuthService.onAuthStateChange(async (user) => {
+    const { data: { subscription } } = AuthService.onAuthStateChange(async (event, session) => {
+      const user = session?.user ?? null;
+
+      if (event === 'SIGNED_OUT') {
+        const netInfo = await NetInfo.fetch();
+        if (!netInfo.isConnected) {
+          console.warn('[Yrdly Auth] Ignored SIGNED_OUT event because device is offline.');
+          return;
+        }
+      }
+
+      if (event === 'TOKEN_REFRESH_FAILED') {
+        console.warn('[Yrdly Auth] Token refresh failed, keeping current user state.');
+        return;
+      }
+
       if (isMounted) {
         setUser(user);
         
@@ -180,14 +187,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           try {
-            if (user.email) {
-              try {
-                identifyDevice(user.email);
-              } catch (e) {
-                console.warn('[Yrdly] Failed to identify device for Vexo:', e);
-              }
-            }
-
             // First, try to get existing profile
             let userProfile = await AuthService.getUserProfile(user.id);
             

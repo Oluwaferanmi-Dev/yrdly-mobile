@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../lib/alert-service';
@@ -38,7 +39,9 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ alert, onPress, onDism
         {alert.subject_photo_url && (
           <Image 
             source={{ uri: alert.subject_photo_url }} 
-            style={styles.photo} 
+            style={styles.photo}
+            contentFit="cover"
+            cachePolicy="disk"
           />
         )}
         <View style={styles.textContainer}>

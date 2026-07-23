@@ -9,9 +9,7 @@ import { LocationProvider } from '../context/LocationContext';
 import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
 import { FriendshipProvider } from '../context/FriendshipContext';
 import * as SplashScreen from 'expo-splash-screen';
-import * as Insights from 'expo-insights';
 import { PostHogProvider } from 'posthog-react-native';
-// vexo is imported dynamically below
 import { setAudioModeAsync } from 'expo-audio';
 import { OfflineBanner } from '../components/OfflineBanner';
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -20,18 +18,6 @@ SplashScreen.preventAutoHideAsync().catch(() => {
   // already hidden, ignore
 });
 
-import { vexo } from 'vexo-analytics';
-
-// expo-insights: automatic cold-start tracking
-void Insights;
-
-if (process.env.EXPO_PUBLIC_VEXO_API_KEY) {
-  try {
-    vexo(process.env.EXPO_PUBLIC_VEXO_API_KEY);
-  } catch (e) {
-    console.warn('[Yrdly] Failed to initialize vexo analytics:', e);
-  }
-}
 
 function NotificationsHandler() {
   usePushNotifications();

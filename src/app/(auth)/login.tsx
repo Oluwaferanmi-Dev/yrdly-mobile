@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -86,7 +87,7 @@ export default function Login() {
 
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
+          <Image source={require('../../../assets/images/logo.png')} style={styles.logo} contentFit="contain" />
         </View>
 
         {/* Removed Segmented Control */}

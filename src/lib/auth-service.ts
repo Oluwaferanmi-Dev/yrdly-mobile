@@ -182,7 +182,8 @@ export class AuthService {
         if (error.message !== 'Auth session missing!') {
           console.error('Get current session error:', error);
         }
-        return null;
+        // Return session user if it exists despite the error (e.g. offline refresh failure)
+        return session?.user ?? null;
       }
       return session?.user ?? null;
     } catch (error: any) {
@@ -326,9 +327,9 @@ export class AuthService {
   }
 
   // Listen to auth state changes
-  static onAuthStateChange(callback: (user: User | null) => void) {
+  static onAuthStateChange(callback: (event: string, session: any) => void) {
     return supabase.auth.onAuthStateChange((event, session) => {
-      callback(session?.user ?? null);
+      callback(event, session);
     });
   }
 }
