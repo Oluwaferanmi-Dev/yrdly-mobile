@@ -10,6 +10,7 @@ import { Image } from 'expo-image';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { ReviewService } from '../../../lib/review-service';
+import { UserReviewService } from '../../../lib/user-review-service';
 import { useAppTheme } from '../../../context/ThemeContext';
 
 
@@ -32,6 +33,7 @@ export default function ReviewScreen() {
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [businessId, setBusinessId] = useState<string | null>(null);
+  const [isUserReview, setIsUserReview] = useState(false);
   const [canReview, setCanReview] = useState(false);
 
   useEffect(() => {
@@ -61,6 +63,10 @@ export default function ReviewScreen() {
           setBusinessId(biz.id);
           const { canReview: eligible } = await ReviewService.canUserReviewBusiness(user.id, biz.id, id);
           setCanReview(eligible);
+        } else {
+          setIsUserReview(true);
+          const { canReview: eligible } = await UserReviewService.canUserReviewSeller(user.id, normalised.seller_id, id);
+          setCanReview(eligible);
         }
       } catch {
         Alert.alert('Error', 'Could not load transaction.');
@@ -72,11 +78,16 @@ export default function ReviewScreen() {
   }, [id, user]);
 
   const handleSubmit = async () => {
-    if (!user || !businessId || !id) return;
+    if (!user || !id) return;
+    if (!isUserReview && !businessId) return;
     if (rating === 0) { Alert.alert('Rating Required', 'Please select a star rating.'); return; }
     setSubmitting(true);
     try {
-      await ReviewService.submitReview(businessId, user.id, id, rating, comment.trim() || undefined);
+      if (isUserReview) {
+        await UserReviewService.submitReview(tx?.seller_id!, user.id, id, rating, comment.trim() || undefined);
+      } else {
+        await ReviewService.submitReview(businessId!, user.id, id, rating, comment.trim() || undefined);
+      }
       Alert.alert('Thank You!', 'Your review has been submitted.', [{ text: 'OK', onPress: () => router.back() }]);
     } catch (e: any) {
       Alert.alert('Error', e?.message || 'Failed to submit review.');

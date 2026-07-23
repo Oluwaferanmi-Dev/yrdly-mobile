@@ -1,16 +1,20 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert,
+  View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, useWindowDimensions,
+  RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import LottieView from 'lottie-react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
+import { Swipeable } from 'react-native-gesture-handler';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing
+} from 'react-native-reanimated';
 
 interface Notification {
   id: string;
@@ -47,22 +51,55 @@ function timeAgo(dateString: string) {
   }
 }
 
+// Custom Skeleton Component
+const SkeletonCard = () => {
+  const { colors } = useAppTheme();
+  const opacity = useSharedValue(0.3);
+
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(0.7, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.3, { duration: 800, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    );
+  }, []);
+
+  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+  return (
+    <Animated.View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }, animStyle]}>
+      <View style={[styles.avatar, { backgroundColor: colors.border }]} />
+      <View style={styles.contentContainer}>
+        <View style={{ height: 16, width: '60%', backgroundColor: colors.border, borderRadius: 4, marginBottom: 8 }} />
+        <View style={{ height: 12, width: '80%', backgroundColor: colors.border, borderRadius: 4, marginBottom: 8 }} />
+        <View style={{ height: 10, width: '30%', backgroundColor: colors.border, borderRadius: 4 }} />
+      </View>
+    </Animated.View>
+  );
+};
+
 export default function NotificationsScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState('All');
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (isRefresh = false) => {
     if (!user) return;
+    if (isRefresh) setRefreshing(true);
     try {
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50); // Keep reasonable limit for performance
 
       if (error || !data) return;
 
@@ -138,6 +175,7 @@ export default function NotificationsScreen() {
       console.error('Fetch notifications error:', e);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -150,16 +188,21 @@ export default function NotificationsScreen() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-        fetchNotifications
+        () => fetchNotifications() // re-fetch to get enriched data
       )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
-  const handleMarkAsRead = async (id: string) => {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
+  const handleToggleReadStatus = async (id: string, currentStatus: boolean) => {
+    await supabase.from('notifications').update({ is_read: !currentStatus }).eq('id', id);
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: !currentStatus } : n)));
+  };
+
+  const handleDelete = async (id: string) => {
+    await supabase.from('notifications').delete().eq('id', id);
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
   const handleMarkAllRead = async () => {
@@ -170,7 +213,7 @@ export default function NotificationsScreen() {
   };
 
   const handleNotificationPress = (notification: Notification) => {
-    if (!notification.is_read) handleMarkAsRead(notification.id);
+    if (!notification.is_read) handleToggleReadStatus(notification.id, false);
 
     switch (notification.type) {
       case 'message':
@@ -222,6 +265,22 @@ export default function NotificationsScreen() {
     }
   };
 
+  const handleLongPress = (notification: Notification) => {
+    Alert.alert(
+      'Options',
+      'Choose an action',
+      [
+        { text: 'View Sender Profile', onPress: () => {
+          const uid = notification.from_user_id || notification.data?.from_user_id;
+          if (uid) router.push(`/profile/${uid}`);
+        }},
+        { text: notification.is_read ? 'Mark as Unread' : 'Mark as Read', onPress: () => handleToggleReadStatus(notification.id, notification.is_read) },
+        { text: 'Delete Notification', onPress: () => handleDelete(notification.id), style: 'destructive' },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+  };
+
   const filteredNotifications = useMemo(() => {
     switch (activeFilter) {
       case 'Unread':
@@ -243,115 +302,167 @@ export default function NotificationsScreen() {
     switch (type) {
       case 'message':
       case 'message_reaction':
-        return <Ionicons name="chatbubble" size={16} color="#60A5FA" />;
+        return <Ionicons name="chatbubble" size={14} color="#60A5FA" />;
       case 'post_like':
-        return <Ionicons name="heart" size={16} color="#F87171" />;
+        return <Ionicons name="heart" size={14} color="#F87171" />;
       case 'post_comment':
-        return <Ionicons name="chatbubble" size={16} color="#60A5FA" />;
+        return <Ionicons name="chatbubble" size={14} color="#60A5FA" />;
       case 'event_invite':
-        return <Ionicons name="calendar" size={16} color="#FB923C" />;
+        return <Ionicons name="calendar" size={14} color="#FB923C" />;
       case 'new_follower':
       case 'friend_request':
-        return <Ionicons name="person-add" size={16} color="#34D399" />;
+        return <Ionicons name="person-add" size={14} color="#34D399" />;
       case 'payment_successful':
       case 'funds_released':
-        return <Ionicons name="cash" size={16} color="#34D399" />;
+        return <Ionicons name="cash" size={14} color="#34D399" />;
       case 'item_shipped':
-        return <Ionicons name="cube" size={16} color="#60A5FA" />;
+        return <Ionicons name="cube" size={14} color="#60A5FA" />;
       case 'delivery_confirmed':
-        return <Ionicons name="checkmark-done" size={16} color="#34D399" />;
+        return <Ionicons name="checkmark-done" size={14} color="#34D399" />;
       case 'marketplace_item_sold':
       case 'marketplace_item_interest':
-        return <Ionicons name="cart" size={16} color="#FBBF24" />;
+        return <Ionicons name="cart" size={14} color="#FBBF24" />;
       default:
-        return <Ionicons name="notifications" size={16} color={colors.textMuted} />;
+        return <Ionicons name="notifications" size={14} color={colors.textMuted} />;
     }
   };
+
+  const renderRightActions = (item: Notification) => (
+    <View style={styles.swipeRightActionContainer}>
+      <TouchableOpacity 
+        style={[styles.swipeAction, { backgroundColor: '#60A5FA' }]} 
+        onPress={() => handleToggleReadStatus(item.id, item.is_read)}
+      >
+        <Feather name={item.is_read ? "eye-off" : "eye"} size={24} color="#FFF" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderLeftActions = (item: Notification) => (
+    <View style={styles.swipeLeftActionContainer}>
+      <TouchableOpacity 
+        style={[styles.swipeAction, { backgroundColor: '#EF4444' }]} 
+        onPress={() => handleDelete(item.id)}
+      >
+        <Feather name="trash-2" size={24} color="#FFF" />
+      </TouchableOpacity>
+    </View>
+  );
 
   const renderItem = ({ item }: { item: Notification }) => {
     const isUnread = !item.is_read;
 
     return (
-      <TouchableOpacity
-        style={[styles.card, { borderBottomColor: colors.borderLight }, isUnread && [styles.cardUnread, { backgroundColor: colors.inputBackground }]]}
-        onPress={() => handleNotificationPress(item)}
-        activeOpacity={0.8}
+      <Swipeable
+        renderRightActions={() => renderRightActions(item)}
+        renderLeftActions={() => renderLeftActions(item)}
+        friction={2}
+        rightThreshold={40}
+        leftThreshold={40}
       >
-        <View style={styles.avatarContainer}>
-          {item.from_user_avatar ? (
-            <Image source={{ uri: item.from_user_avatar }} style={styles.avatar} contentFit="cover" />
-          ) : item.data?.item_image ? (
-            <Image source={{ uri: item.data.item_image }} style={styles.avatar} contentFit="cover" />
-          ) : (
-            <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint }]}>
-              <Text style={styles.avatarFallbackText}>
-                {item.from_user_name ? item.from_user_name.charAt(0).toUpperCase() : 
-                  (item.type === 'payment_successful' ? '💰' : 
-                   item.type === 'item_shipped' ? '📦' : 
-                   item.type === 'delivery_confirmed' ? '✅' : 
-                   item.type === 'funds_released' ? '💸' : 
-                   item.type.includes('marketplace') ? '🛒' : '?')}
-              </Text>
+        <TouchableOpacity
+          style={[
+            styles.card, 
+            { backgroundColor: isUnread ? colors.card + '90' : colors.card, borderColor: colors.borderLight }
+          ]}
+          onPress={() => handleNotificationPress(item)}
+          onLongPress={() => handleLongPress(item)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.avatarContainer}>
+            {item.from_user_avatar ? (
+              <Image source={{ uri: item.from_user_avatar }} style={styles.avatar} contentFit="cover" />
+            ) : (
+              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint + '40' }]}>
+                <Text style={[styles.avatarFallbackText, { color: colors.tint }]}>
+                  {item.from_user_name ? item.from_user_name.charAt(0).toUpperCase() : 
+                    (item.type === 'payment_successful' ? '💰' : 
+                     item.type === 'item_shipped' ? '📦' : 
+                     item.type === 'delivery_confirmed' ? '✅' : 
+                     item.type === 'funds_released' ? '💸' : 
+                     item.type.includes('marketplace') ? '🛒' : '?')}
+                </Text>
+              </View>
+            )}
+            <View style={[styles.typeIconBadge, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+              {renderIcon(item.type)}
             </View>
-          )}
-          <View style={[styles.typeIconBadge, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-            {renderIcon(item.type)}
           </View>
-        </View>
 
-        <View style={styles.contentContainer}>
-          <Text style={[styles.messageText, { color: colors.textSecondary }, isUnread && [styles.messageTextUnread, { color: colors.text }]]}>
-            <Text style={[styles.boldText, { color: colors.text }]}>{item.from_user_name || item.title} </Text>
-            {item.from_user_name ? item.message : ''}
-          </Text>
-          {!item.from_user_name && (
-            <Text style={[styles.subMessageText, { color: colors.textSecondary }]}>{item.message}</Text>
-          )}
-          <Text style={[styles.timeText, { color: colors.textMuted }]}>{timeAgo(item.created_at)}</Text>
-        </View>
+          <View style={styles.contentContainer}>
+            <Text style={[styles.messageText, { color: isUnread ? colors.text : colors.textSecondary }]}>
+              <Text style={[styles.boldText, { color: colors.text }]}>{item.from_user_name || item.title} </Text>
+              {item.from_user_name ? item.message : ''}
+            </Text>
+            {!item.from_user_name && (
+              <Text style={[styles.subMessageText, { color: colors.textSecondary }]}>{item.message}</Text>
+            )}
+            <Text style={[styles.timeText, { color: colors.textMuted }]}>{timeAgo(item.created_at)}</Text>
+          </View>
 
-        {isUnread && <View style={[styles.unreadDot, { backgroundColor: colors.tint }]} />}
-      </TouchableOpacity>
+          <View style={styles.rightContent}>
+            {item.data?.item_image ? (
+              <Image source={{ uri: item.data.item_image }} style={styles.thumbnail} contentFit="cover" />
+            ) : (
+              <Feather name="chevron-right" size={20} color={colors.textMuted} />
+            )}
+            {isUnread && <View style={[styles.unreadDot, { backgroundColor: colors.tint }]} />}
+          </View>
+        </TouchableOpacity>
+      </Swipeable>
     );
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
-        <View style={{ flex: 1 }}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      {/* Premium Header */}
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
             <Feather name="arrow-left" size={24} color={colors.text} />
-            <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
           </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
+          {unreadCount > 0 ? (
+            <TouchableOpacity style={[styles.markAllBtn, { backgroundColor: colors.tint + '20' }]} onPress={handleMarkAllRead}>
+              <Feather name="check-circle" size={20} color={colors.tint} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.markAllPlaceholder} />
+          )}
         </View>
-        {unreadCount > 0 && (
-          <TouchableOpacity style={styles.markAllBtn} onPress={handleMarkAllRead}>
-            <Feather name="check-circle" size={16} color={colors.tint} />
-          </TouchableOpacity>
-        )}
+        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Everything happening around your account</Text>
       </View>
 
-      {/* Filters */}
-      <View style={[styles.filterContainer, { borderBottomColor: colors.borderLight }]}>
+      {/* Pill Filters */}
+      <View style={styles.filterContainer}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           data={FILTER_TABS}
           keyExtractor={(item) => item}
+          contentContainerStyle={{ paddingHorizontal: 16 }}
           renderItem={({ item }) => {
             const isActive = activeFilter === item;
             return (
               <TouchableOpacity
-                style={[styles.filterTab, { backgroundColor: colors.inputBackground }, isActive && [styles.filterTabActive, { backgroundColor: colors.tint }]]}
+                style={[
+                  styles.filterPill, 
+                  { backgroundColor: isActive ? colors.tint : colors.card }
+                ]}
                 onPress={() => setActiveFilter(item)}
+                activeOpacity={0.8}
               >
-                <Text style={[styles.filterTabText, { color: colors.textSecondary }, isActive && styles.filterTabTextActive]}>
+                <Text style={[
+                  styles.filterPillText, 
+                  { color: isActive ? '#000000' : colors.text }
+                ]}>
                   {item}
                 </Text>
                 {item === 'Unread' && unreadCount > 0 && (
-                  <View style={[styles.filterBadge, { backgroundColor: colors.card }]}>
-                    <Text style={[styles.filterBadgeText, { color: colors.tint }]}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                  <View style={[styles.filterBadge, { backgroundColor: isActive ? 'rgba(0,0,0,0.2)' : colors.tint }]}>
+                    <Text style={[styles.filterBadgeText, { color: isActive ? '#000' : '#FFF' }]}>
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Text>
                   </View>
                 )}
               </TouchableOpacity>
@@ -362,28 +473,44 @@ export default function NotificationsScreen() {
 
       {/* List */}
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.tint} />
+        <View style={styles.listContent}>
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
         </View>
       ) : filteredNotifications.length === 0 ? (
-        <View style={styles.center}>
-          <LottieView
-            autoPlay
-            loop
-            style={{ width: 160, height: 160 }}
-            source={{ uri: 'https://lottie.host/6e2e1f4c-0e6e-4e02-9a91-1a0f1dff01c9/7vJ8b3Xkdj.json' }}
-          />
-          <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No notifications yet</Text>
-          <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>You're all caught up!</Text>
+        <View style={styles.emptyContainer}>
+          <View style={[styles.emptyIconCircle, { backgroundColor: colors.card }]}>
+            <Feather name="bell" size={48} color={colors.textSecondary} />
+          </View>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>No notifications yet</Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
+            When people interact with you, you'll see everything here.
+          </Text>
+          <TouchableOpacity 
+            style={[styles.exploreBtn, { backgroundColor: colors.tint }]}
+            onPress={() => router.push('/(tabs)/')}
+          >
+            <Text style={styles.exploreBtnText}>Explore YRDLY</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlashList
-          {...({ estimatedItemSize: 80 } as any)}
           data={filteredNotifications}
           keyExtractor={(item: any) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          estimatedItemSize={90}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => fetchNotifications(true)}
+              tintColor={colors.tint}
+            />
+          }
         />
       )}
     </SafeAreaView>
@@ -393,48 +520,89 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 20,
   },
-  backBtn: { flexDirection: 'row', alignItems: 'center' },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', marginLeft: 8 },
-  markAllBtn: { padding: 8, backgroundColor: '#E8F5E9', borderRadius: 20 },
-  filterContainer: { paddingVertical: 12, paddingHorizontal: 16, borderBottomWidth: 1 },
-  filterTab: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 20, marginRight: 8,
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
-  filterTabActive: { },
-  filterTabText: { fontSize: 13, fontWeight: 'bold', textTransform: 'uppercase' },
-  filterTabTextActive: { color: '#FFFFFF' },
+  backBtn: { width: 40, alignItems: 'flex-start' },
+  headerTitle: { fontSize: 24, fontWeight: '800', flex: 1, textAlign: 'center' },
+  headerSubtitle: { fontSize: 14, textAlign: 'center', marginTop: 4 },
+  markAllBtn: { 
+    width: 40, height: 40, borderRadius: 20, 
+    justifyContent: 'center', alignItems: 'center' 
+  },
+  markAllPlaceholder: { width: 40 },
+  filterContainer: { paddingBottom: 16 },
+  filterPill: {
+    flexDirection: 'row', alignItems: 'center', 
+    paddingHorizontal: 20, paddingVertical: 10,
+    borderRadius: 24, marginRight: 10,
+  },
+  filterPillText: { fontSize: 14, fontWeight: 'bold' },
   filterBadge: {
-    borderRadius: 10, minWidth: 18, height: 18,
-    justifyContent: 'center', alignItems: 'center', marginLeft: 6, paddingHorizontal: 4,
+    borderRadius: 12, minWidth: 20, height: 20,
+    justifyContent: 'center', alignItems: 'center', 
+    marginLeft: 6, paddingHorizontal: 6,
   },
-  filterBadgeText: { fontSize: 10, fontWeight: 'bold' },
-  listContent: { paddingHorizontal: 16, paddingBottom: 20 },
+  filterBadgeText: { fontSize: 11, fontWeight: 'bold' },
+  listContent: { paddingHorizontal: 16, paddingBottom: 40 },
   card: {
-    flexDirection: 'row', alignItems: 'center', paddingVertical: 14,
-    borderBottomWidth: 1,
+    flexDirection: 'row', alignItems: 'center', 
+    padding: 16, marginBottom: 12,
+    borderRadius: 16, borderWidth: 1,
   },
-  cardUnread: { },
-  avatarContainer: { position: 'relative', marginRight: 12 },
-  avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#E8F5E9' },
+  avatarContainer: { position: 'relative', marginRight: 14 },
+  avatar: { width: 52, height: 52, borderRadius: 26 },
   avatarFallback: { justifyContent: 'center', alignItems: 'center' },
-  avatarFallbackText: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' },
+  avatarFallbackText: { fontSize: 20, fontWeight: 'bold' },
   typeIconBadge: {
-    position: 'absolute', bottom: -4, right: -4,
-    borderRadius: 12, padding: 2,
-    borderWidth: 1,
+    position: 'absolute', bottom: -2, right: -2,
+    borderRadius: 12, padding: 3, borderWidth: 2,
+    justifyContent: 'center', alignItems: 'center',
   },
-  contentContainer: { flex: 1 },
-  messageText: { fontSize: 14, lineHeight: 20 },
-  messageTextUnread: { fontWeight: '500' },
+  contentContainer: { flex: 1, marginRight: 8 },
+  messageText: { fontSize: 15, lineHeight: 21 },
   boldText: { fontWeight: 'bold' },
-  subMessageText: { fontSize: 13, marginTop: 2 },
-  timeText: { fontSize: 12, marginTop: 4 },
-  unreadDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 8 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  emptyTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 16 },
-  emptySubtitle: { fontSize: 14, marginTop: 8 },
+  subMessageText: { fontSize: 14, marginTop: 2 },
+  timeText: { fontSize: 13, marginTop: 6 },
+  rightContent: { flexDirection: 'row', alignItems: 'center', paddingLeft: 8 },
+  thumbnail: { width: 44, height: 44, borderRadius: 8 },
+  unreadDot: { 
+    width: 10, height: 10, borderRadius: 5, 
+    marginLeft: 12, marginTop: -20 // Offset slightly
+  },
+  emptyContainer: { 
+    flex: 1, justifyContent: 'center', alignItems: 'center', 
+    padding: 32, marginTop: -60 
+  },
+  emptyIconCircle: {
+    width: 96, height: 96, borderRadius: 48,
+    justifyContent: 'center', alignItems: 'center',
+    marginBottom: 24,
+  },
+  emptyTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
+  emptySubtitle: { fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
+  exploreBtn: { 
+    paddingHorizontal: 24, paddingVertical: 14, 
+    borderRadius: 24 
+  },
+  exploreBtnText: { color: '#000', fontSize: 16, fontWeight: 'bold' },
+  swipeRightActionContainer: {
+    width: 70, height: '100%', marginBottom: 12,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  swipeLeftActionContainer: {
+    width: 70, height: '100%', marginBottom: 12,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  swipeAction: {
+    width: 50, height: 50, borderRadius: 25,
+    justifyContent: 'center', alignItems: 'center',
+  }
 });

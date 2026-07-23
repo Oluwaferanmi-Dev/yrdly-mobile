@@ -5,7 +5,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, w
 import { Image } from 'expo-image';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { useEventListener } from 'expo';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Post } from '../types';
 import { timeAgo, formatPrice } from '../lib/utils';
@@ -132,7 +132,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   const { colors } = useAppTheme();
 
   const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
-  const imageDisplayWidth = width - 32;
+  const imageDisplayWidth = width - 64;
   const [isExpanded, setIsExpanded] = useState(false);
 
   const [likesCount, setLikesCount] = useState(post.liked_by?.length || 0);
@@ -312,7 +312,14 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      style={[styles.container, { borderBottomColor: colors.borderLight }]}
+      style={[
+        styles.container, 
+        { 
+          backgroundColor: colors.card,
+          borderColor: colors.borderLight,
+          shadowColor: colors.shadow,
+        }
+      ]}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -333,9 +340,12 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             )}
           </View>
           <View style={styles.authorText}>
-            <Text style={[styles.authorName, { color: colors.text }]}>
-              {post.user?.name || post.author_name || 'Anonymous'}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={[styles.authorName, { color: colors.text }]}>
+                {post.user?.name || post.author_name || 'Anonymous'}
+              </Text>
+              <MaterialIcons name="verified" size={14} color={colors.tint} style={{ marginLeft: 4 }} />
+            </View>
             {(post.ward || post.user?.location?.ward) || (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state) ? (
               <Text style={[styles.timeAgo, { color: colors.textMuted }]}>
                 {[post.ward || post.user?.location?.ward, (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state)].filter(Boolean).join(', ')} • {timeAgo(post.timestamp || post.created_at)}
@@ -348,10 +358,15 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           </View>
         </TouchableOpacity>
 
-        <View style={[styles.categoryBadge, { backgroundColor: colors.borderLight }]}>
-          <Text style={[styles.categoryText, { color: colors.textSecondary }]}>
-            {post.category || 'General'}
-          </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={[styles.categoryBadge, { backgroundColor: colors.borderLight }]}>
+            <Text style={[styles.categoryText, { color: colors.textSecondary }]}>
+              {post.category || 'General'}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={(e) => { e.stopPropagation(); }}>
+            <Ionicons name="ellipsis-horizontal" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -442,7 +457,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
       {/* Engagement Row */}
       <View style={[styles.footer, { borderTopColor: colors.borderLight }]}>
-        <View style={styles.actionRow}>
+        <View style={[styles.actionRow, { flex: 1 }]}>
           <TouchableOpacity 
             style={styles.actionButton} 
             onPress={(e) => { e.stopPropagation(); handleLike(); }}
@@ -458,17 +473,17 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={styles.actionButton} 
+            style={[styles.actionButton, { marginLeft: 16 }]} 
             onPress={(e) => { e.stopPropagation(); if (onComment) onComment(); }}
           >
             <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
             <Text style={[styles.actionText, { color: colors.textSecondary }]}>
-              {post.comment_count || 0}
+              {post.comment_count > 0 ? post.comment_count : ''}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={styles.actionButton} 
+            style={[styles.actionButton, { marginLeft: 16 }]} 
             onPress={(e) => { e.stopPropagation(); handleShare(); }}
           >
             <Ionicons name="share-social-outline" size={20} color={colors.textSecondary} />
@@ -477,6 +492,13 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             </Text>
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity 
+          style={styles.actionButton} 
+          onPress={(e) => { e.stopPropagation(); }}
+        >
+          <Ionicons name="bookmark-outline" size={20} color={colors.textSecondary} />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -491,15 +513,21 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    marginHorizontal: 16,
+    marginVertical: 8,
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   authorRow: {
     flexDirection: 'row',
@@ -579,19 +607,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   bodyText: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 22,
   },
   imageContainer: {
     width: '100%',
-    borderRadius: 8,
+    borderRadius: 16,
     overflow: 'hidden',
-    marginBottom: 10,
+    marginBottom: 12,
     position: 'relative',
   },
   muteButtonOverlay: {

@@ -14,6 +14,8 @@ import { useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 import { useFriendshipGlobal } from '../../hooks/use-friendship-global';
+import { UserReviewService } from '../../lib/user-review-service';
+import { FontAwesome } from '@expo/vector-icons';
 
 interface UserProfile {
   id: string;
@@ -23,6 +25,9 @@ interface UserProfile {
   cover_url: string | null;
   followers_count: number;
   following_count: number;
+  rating?: number | null;
+  review_count?: number;
+  verified_seller?: boolean;
 }
 
 export default function OtherUserProfileScreen() {
@@ -40,6 +45,8 @@ export default function OtherUserProfileScreen() {
   const [followLoading, setFollowLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'posts' | 'reviews'>('posts');
 
   const fetchProfileAndPosts = useCallback(async () => {
     if (!id) return;
@@ -81,6 +88,10 @@ export default function OtherUserProfileScreen() {
       ]);
       setFollowersCount(fers || 0);
       setFollowingCount(fing || 0);
+
+      // Fetch reviews
+      const userReviews = await UserReviewService.getSellerReviews(id);
+      setReviews(userReviews);
     } catch (e) {
       console.error(e);
     } finally {
@@ -219,7 +230,25 @@ export default function OtherUserProfileScreen() {
             </View>
           </View>
 
-          <Text style={[styles.name, { color: colors.text }]}>{profile.name}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+            <Text style={[styles.name, { color: colors.text }]}>{profile.name}</Text>
+            {profile.verified_seller && (
+              <Feather name="check-circle" size={16} color={colors.tint} style={{ marginLeft: 6 }} />
+            )}
+          </View>
+          
+          {(profile.review_count ?? 0) > 0 && (
+            <View style={styles.ratingRow}>
+              <FontAwesome name="star" size={14} color="#FFD700" />
+              <Text style={[styles.ratingText, { color: colors.text }]}>
+                {profile.rating?.toFixed(1) || '0.0'}
+              </Text>
+              <Text style={[styles.reviewCount, { color: colors.textMuted }]}>
+                ({profile.review_count} reviews)
+              </Text>
+            </View>
+          )}
+          
           {profile.bio && <Text style={[styles.bio, { color: colors.textSecondary }]}>{profile.bio}</Text>}
 
           {currentUser?.id !== profile.id && (
@@ -285,29 +314,80 @@ export default function OtherUserProfileScreen() {
           )}
         </View>
 
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity 
+            style={[styles.tabBtn, activeTab === 'posts' && { borderBottomColor: colors.tint, borderBottomWidth: 2 }]} 
+            onPress={() => setActiveTab('posts')}
+          >
+            <Text style={[styles.tabText, { color: activeTab === 'posts' ? colors.tint : colors.textMuted }]}>Posts</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tabBtn, activeTab === 'reviews' && { borderBottomColor: colors.tint, borderBottomWidth: 2 }]} 
+            onPress={() => setActiveTab('reviews')}
+          >
+            <Text style={[styles.tabText, { color: activeTab === 'reviews' ? colors.tint : colors.textMuted }]}>Reviews</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.feedSection}>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: '100%' }}>
-            {posts.length > 0 ? (
-              posts.map(post => {
-                const TARGET_TILE_WIDTH = 120;
-                const numColumns = Math.max(3, Math.floor(windowWidth / TARGET_TILE_WIDTH));
-                return (
-                  <ProfilePostGridItem 
-                    key={post.id} 
-                    post={post} 
-                    width={windowWidth / numColumns}
-                    onPress={() => router.push(`/posts/${post.id}`)}
-                  />
-                );
-              })
-            ) : (
-              <View style={[styles.emptyState, { width: '100%' }]}>
-                <Feather name="image" size={40} color={colors.border} />
-                <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No posts yet</Text>
-                <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>{profile.name} hasn't posted anything.</Text>
-              </View>
-            )}
-          </View>
+          {activeTab === 'posts' ? (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: '100%' }}>
+              {posts.length > 0 ? (
+                posts.map(post => {
+                  const TARGET_TILE_WIDTH = 120;
+                  const numColumns = Math.max(3, Math.floor(windowWidth / TARGET_TILE_WIDTH));
+                  return (
+                    <ProfilePostGridItem 
+                      key={post.id} 
+                      post={post} 
+                      width={windowWidth / numColumns}
+                      onPress={() => router.push(`/posts/${post.id}`)}
+                    />
+                  );
+                })
+              ) : (
+                <View style={[styles.emptyState, { width: '100%' }]}>
+                  <Feather name="image" size={40} color={colors.border} />
+                  <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No posts yet</Text>
+                  <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>{profile.name} hasn't posted anything.</Text>
+                </View>
+              )}
+            </View>
+          ) : (
+            <View style={styles.reviewsList}>
+              {reviews.length > 0 ? (
+                reviews.map(review => (
+                  <View key={review.id} style={[styles.reviewCard, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
+                    <View style={styles.reviewHeader}>
+                      <Image source={{ uri: review.buyer?.avatar_url }} style={styles.reviewerAvatar} />
+                      <View style={styles.reviewerInfo}>
+                        <Text style={[styles.reviewerName, { color: colors.text }]}>{review.buyer?.name}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <FontAwesome name="star" size={12} color="#FFD700" />
+                          <Text style={[styles.reviewRatingText, { color: colors.text }]}> {review.rating}</Text>
+                        </View>
+                      </View>
+                      {review.verified_purchase && (
+                        <View style={styles.verifiedBadge}>
+                          <Feather name="check-circle" size={12} color={colors.tint} />
+                          <Text style={[styles.verifiedText, { color: colors.tint }]}>Verified</Text>
+                        </View>
+                      )}
+                    </View>
+                    {review.comment ? (
+                      <Text style={[styles.reviewComment, { color: colors.textSecondary }]}>{review.comment}</Text>
+                    ) : null}
+                  </View>
+                ))
+              ) : (
+                <View style={[styles.emptyState, { width: '100%' }]}>
+                  <Feather name="star" size={40} color={colors.border} />
+                  <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No reviews yet</Text>
+                  <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>{profile.name} doesn't have any reviews.</Text>
+                </View>
+              )}
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -356,4 +436,20 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', padding: 40 },
   emptyTitle: { fontSize: 16, fontWeight: 'bold', marginTop: 12 },
   emptySubtitle: { fontSize: 14, marginTop: 6 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  ratingText: { fontSize: 14, fontWeight: 'bold', marginLeft: 4 },
+  reviewCount: { fontSize: 14, marginLeft: 4 },
+  tabsContainer: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#333' },
+  tabBtn: { flex: 1, paddingVertical: 14, alignItems: 'center' },
+  tabText: { fontSize: 15, fontWeight: 'bold' },
+  reviewsList: { paddingHorizontal: 16 },
+  reviewCard: { paddingVertical: 16, borderBottomWidth: 1 },
+  reviewHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  reviewerAvatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
+  reviewerInfo: { flex: 1 },
+  reviewerName: { fontSize: 15, fontWeight: 'bold', marginBottom: 2 },
+  reviewRatingText: { fontSize: 13, fontWeight: 'bold' },
+  verifiedBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F5E9', paddingHorizontal: 6, paddingVertical: 4, borderRadius: 4, opacity: 0.8 },
+  verifiedText: { fontSize: 11, fontWeight: 'bold', marginLeft: 4 },
+  reviewComment: { fontSize: 14, lineHeight: 20, marginTop: 4 },
 });

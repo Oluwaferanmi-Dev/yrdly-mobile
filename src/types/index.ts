@@ -159,6 +159,10 @@ export interface User {
     address?: string;
     lastUpdated: string;
   };
+  created_at?: string;
+  review_count?: number;
+  rating?: number;
+  verified_seller?: boolean;
   locationUpdatedAt?: string;
   notificationSettings?: NotificationSettings;
   timestamp?: string;

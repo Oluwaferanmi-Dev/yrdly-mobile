@@ -70,7 +70,7 @@ const QuickPostBox = memo(() => {
 
   const content = (
     <>
-      <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' }}>
+      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' }}>
         {avatarUri ? (
           <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
         ) : (
@@ -78,37 +78,37 @@ const QuickPostBox = memo(() => {
         )}
       </View>
       <TouchableOpacity 
-        style={{ flex: 1, height: 36, justifyContent: 'center' }}
+        style={{ flex: 1, height: 44, justifyContent: 'center' }}
         onPress={() => router.push('/new-post' as any)}
         activeOpacity={0.7}
       >
-        <Text style={{ color: colors.textSecondary, fontSize: 15 }} numberOfLines={1} ellipsizeMode="tail">What's happening, neighbour?</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 15 }} numberOfLines={1} ellipsizeMode="tail">What's happening in your neighborhood?</Text>
       </TouchableOpacity>
       
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <TouchableOpacity 
-          style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: isDarkMode ? '#333' : '#F0F0F0', justifyContent: 'center', alignItems: 'center' }}
+          style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: isDarkMode ? '#2A2A2A' : '#F0F0F0', justifyContent: 'center', alignItems: 'center' }}
           onPress={() => router.push('/new-post' as any)}
         >
-          <Feather name="image" size={18} color={colors.textSecondary} />
+          <Feather name="image" size={20} color={colors.textSecondary} />
         </TouchableOpacity>
         
         <TouchableOpacity 
-          style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }}
+          style={{ paddingHorizontal: 20, height: 40, borderRadius: 20, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }}
           onPress={() => router.push('/new-post' as any)}
         >
-          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>Post</Text>
+          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>Post</Text>
         </TouchableOpacity>
       </View>
     </>
   );
 
   const containerStyle = {
-    padding: 8,
+    padding: 12,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     borderWidth: 1,
-    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
   };
 
   return (
