@@ -88,29 +88,18 @@ export default function EventDetailScreen() {
     const address = event.location_address || [event.ward, event.lga, event.state].filter(Boolean).join(', ');
     const encoded = encodeURIComponent(address || '');
 
-    // Try to get user's current location for the origin
-    let originParam = '';
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-        originParam = `${loc.coords.latitude},${loc.coords.longitude}`;
-      }
-    } catch (_) {}
-
     const destCoord = lat && lng ? `${lat},${lng}` : encoded;
-    const destLabel = encodeURIComponent(address || 'Venue');
 
-    // Build URLs with origin for turn-by-turn navigation
+    // Build URLs for turn-by-turn navigation (omitting saddr/origin defaults to user's current location)
     const appleMapsUrl = lat && lng
-      ? `maps://?saddr=${originParam}&daddr=${lat},${lng}&dirflg=d`
-      : `maps://?saddr=${originParam}&daddr=${encoded}&dirflg=d`;
+      ? `maps://?daddr=${lat},${lng}&dirflg=d`
+      : `maps://?daddr=${encoded}&dirflg=d`;
 
     const googleMapsUrl = lat && lng
-      ? `comgooglemaps://?saddr=${originParam}&daddr=${lat},${lng}&directionsmode=driving`
-      : `comgooglemaps://?saddr=${originParam}&daddr=${encoded}&directionsmode=driving`;
+      ? `comgooglemaps://?daddr=${lat},${lng}&directionsmode=driving`
+      : `comgooglemaps://?daddr=${encoded}&directionsmode=driving`;
 
-    const googleMapsWeb = `https://www.google.com/maps/dir/?api=1${originParam ? `&origin=${originParam}` : ''}&destination=${destCoord}&travelmode=driving`;
+    const googleMapsWeb = `https://www.google.com/maps/dir/?api=1&destination=${destCoord}&travelmode=driving`;
 
     const hasGoogleMaps = await Linking.canOpenURL('comgooglemaps://');
 
