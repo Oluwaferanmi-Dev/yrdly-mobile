@@ -47,21 +47,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (currentUser) {
             try {
 
-              let userProfile = await AuthService.getUserProfile(currentUser.id);
-              
-              if (userProfile) {
-                FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(userProfile)).catch(() => {});
-              } else {
-                try {
-                  const info = await FileSystem.getInfoAsync(PROFILE_CACHE_FILE);
-                  if (info.exists) {
-                    const cached = await FileSystem.readAsStringAsync(PROFILE_CACHE_FILE);
-                    const parsed = JSON.parse(cached);
-                    if (parsed && parsed.id === currentUser.id) {
-                      userProfile = parsed;
-                    }
+              let userProfile = null;
+              try {
+                // Try cache first for fast boot
+                const info = await FileSystem.getInfoAsync(PROFILE_CACHE_FILE);
+                if (info.exists) {
+                  const cached = await FileSystem.readAsStringAsync(PROFILE_CACHE_FILE);
+                  const parsed = JSON.parse(cached);
+                  if (parsed && parsed.id === currentUser.id) {
+                    userProfile = parsed;
                   }
-                } catch (e) {}
+                }
+              } catch (e) {}
+
+              const netInfo = await NetInfo.fetch();
+              if (netInfo.isConnected) {
+                try {
+                  // Fetch fresh profile, but timeout after 5 seconds so we don't hang splash screen
+                  const fetchPromise = AuthService.getUserProfile(currentUser.id);
+                  const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000));
+                  const freshProfile = await Promise.race([fetchPromise, timeoutPromise]);
+                  
+                  if (freshProfile) {
+                    userProfile = freshProfile;
+                    FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(freshProfile)).catch(() => {});
+                  }
+                } catch (e) {
+                  console.warn('Network fetch for profile failed:', e);
+                }
               }
 
               // If no profile exists and not from cache, create one
@@ -187,22 +200,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           try {
-            // First, try to get existing profile
-            let userProfile = await AuthService.getUserProfile(user.id);
-            
-            if (userProfile) {
-              FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(userProfile)).catch(() => {});
-            } else {
-              try {
-                const info = await FileSystem.getInfoAsync(PROFILE_CACHE_FILE);
-                if (info.exists) {
-                  const cached = await FileSystem.readAsStringAsync(PROFILE_CACHE_FILE);
-                  const parsed = JSON.parse(cached);
-                  if (parsed && parsed.id === user.id) {
-                    userProfile = parsed;
-                  }
+            let userProfile = null;
+            try {
+              const info = await FileSystem.getInfoAsync(PROFILE_CACHE_FILE);
+              if (info.exists) {
+                const cached = await FileSystem.readAsStringAsync(PROFILE_CACHE_FILE);
+                const parsed = JSON.parse(cached);
+                if (parsed && parsed.id === user.id) {
+                  userProfile = parsed;
                 }
-              } catch (e) {}
+              }
+            } catch (e) {}
+
+            const netInfo = await NetInfo.fetch();
+            if (netInfo.isConnected) {
+              try {
+                const fetchPromise = AuthService.getUserProfile(user.id);
+                const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000));
+                const freshProfile = await Promise.race([fetchPromise, timeoutPromise]);
+                
+                if (freshProfile) {
+                  userProfile = freshProfile;
+                  FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(freshProfile)).catch(() => {});
+                }
+              } catch (e) {
+                console.warn('Network fetch for profile failed:', e);
+              }
             }
 
             // If no profile exists, create one

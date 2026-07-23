@@ -243,7 +243,7 @@ export default function TicketsScreen() {
               <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>Buy tickets to events to see them here.</Text>
               <TouchableOpacity
                 style={[styles.browseButton, { backgroundColor: colors.tint }]}
-                onPress={() => router.push('/(tabs)/catalog')}
+                onPress={() => router.push('/catalog')}
               >
                 <Text style={styles.browseButtonText}>Browse Events</Text>
               </TouchableOpacity>

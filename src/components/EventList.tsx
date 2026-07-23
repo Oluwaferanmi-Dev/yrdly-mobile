@@ -71,11 +71,17 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       }
     } catch (e) {}
     try {
+      const now = new Date();
+      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const isoNow = now.toISOString();
+      const isoYesterday = yesterday.toISOString();
+
       // ── Legacy events from posts table ──
       let postsQuery = supabase
         .from('posts')
         .select('*, users!posts_user_id_fkey(name, avatar_url), attendees:post_attendees(user_id)')
         .eq('category', 'Event')
+        .or(`event_date.gte.${isoYesterday},event_date.is.null`)
         .order('created_at', { ascending: false })
         .limit(30);
       if (activeFilter?.ward) postsQuery = postsQuery.eq('ward', activeFilter.ward);
@@ -89,6 +95,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         .from('events')
         .select(`*, organizer:users!events_organizer_id_fkey(id, name, avatar_url)`)
         .eq('status', 'PUBLISHED')
+        .or(`end_time.gte.${isoNow},start_time.gte.${isoYesterday}`)
         .order('created_at', { ascending: false })
         .limit(30);
       if (activeFilter?.ward) eventsQuery = eventsQuery.eq('ward', activeFilter.ward);
