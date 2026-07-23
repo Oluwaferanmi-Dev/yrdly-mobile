@@ -180,6 +180,14 @@ export default function ProfileTab() {
             <Ionicons name="calendar" size={24} color={colors.tint} />
           </TouchableOpacity>
           
+          <TouchableOpacity 
+            style={[styles.actionButton, { backgroundColor: colors.tint + '1A', borderColor: colors.tint + '40', borderWidth: 1 }]} 
+            onPress={() => router.push('/bookmarks' as any)}
+            activeOpacity={0.7}
+          >
+            <Feather name="bookmark" size={24} color={colors.tint} />
+          </TouchableOpacity>
+          
           {(profile?.role === 'admin' || profile?.is_admin) && (
             <TouchableOpacity 
               style={[styles.actionButton, { backgroundColor: '#fee2e2', borderColor: '#fca5a5', borderWidth: 1 }]} 

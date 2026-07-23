@@ -47,7 +47,7 @@ export default function AlertsScreen() {
         renderItem={({ item }) => (
           <AlertBanner 
             alert={item} 
-            onPress={() => {}} 
+            onPress={() => router.push(`/alert/${item.id}` as any)} 
           />
         )}
         refreshControl={

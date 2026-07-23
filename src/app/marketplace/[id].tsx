@@ -498,8 +498,8 @@ function MarketplaceDetailContent() {
 
             <View style={styles.statsRow}>
               <View style={styles.statColumn}>
-                <Ionicons name={postUser?.verified_seller ? "shield-checkmark" : "shield-outline"} size={20} color={colors.textSecondary} />
-                <Text style={[styles.statValue, { color: colors.text }]}>{postUser?.verified_seller ? 'Verified' : 'Unverified'}</Text>
+                <Ionicons name="shield-checkmark" size={20} color={colors.tint} />
+                <Text style={[styles.statValue, { color: colors.text }]}>Verified</Text>
                 <Text style={[styles.statLabel, { color: colors.textMuted }]}>Seller</Text>
               </View>
               <View style={[styles.statDivider, { backgroundColor: colors.borderLight }]} />

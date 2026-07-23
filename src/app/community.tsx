@@ -95,7 +95,7 @@ export default function CommunityScreen() {
       if (userError) console.error('Error fetching users:', userError);
 
       const blocked = profile?.blocked_users || [];
-      const myFriends = profile?.friends || [];
+      const myFriends = friendList.map(f => f.user.id);
       
       const discoveredUsers = (userData || [])
         .filter(u => !blocked.includes(u.id))
@@ -179,12 +179,36 @@ export default function CommunityScreen() {
     );
   };
 
+  const handleFriendMessage = async (friend: any) => {
+    if (!currentUser) return;
+    try {
+      const { data: existing } = await supabase.from('conversations')
+        .select('id')
+        .eq('type', 'friend')
+        .contains('participant_ids', [currentUser.id, friend.user.id])
+        .limit(1)
+        .maybeSingle();
+      if (existing) {
+        router.push(`/chat/${existing.id}` as any);
+      } else {
+        const { data: newConv } = await supabase.from('conversations').insert({
+          type: 'friend',
+          participant_ids: [currentUser.id, friend.user.id],
+        }).select().single();
+        if (newConv) router.push(`/chat/${newConv.id}` as any);
+      }
+    } catch(e) {
+      console.error(e);
+      Alert.alert("Error", "Could not start conversation");
+    }
+  };
+
   const handleFriendOptions = (friend: any) => {
     Alert.alert(
       friend.user.name || 'Friend Options',
       'Choose an action',
       [
-        { text: 'Message', onPress: () => router.push(`/messages/${friend.user.id}` as any) },
+        { text: 'Message', onPress: () => handleFriendMessage(friend) },
         { text: 'View Profile', onPress: () => router.push(`/profile/${friend.user.id}`) },
         { text: 'Remove Friend', style: 'destructive', onPress: () => handleRemoveFriend(friend.reqId, friend.user.name) },
         { text: 'Cancel', style: 'cancel' },
@@ -214,7 +238,7 @@ export default function CommunityScreen() {
   };
 
   const handleInvite = async () => {
-    const shareUrl = `https://yrdly.app/invite/${profile?.id}`;
+    const shareUrl = `https://app.yrdly.ng/invite/${profile?.id}`;
     const message = Platform.OS === 'android' ? `Join me on YRDLY! ${shareUrl}` : `Join me on YRDLY!`;
     try {
       await Share.share({
@@ -410,7 +434,12 @@ export default function CommunityScreen() {
 
   const discoverHeader = (
     <View style={styles.discoverHeaderContainer}>
-      <Text style={[styles.sectionTitlePremium, { color: colors.text, marginBottom: 16 }]}>Find People</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Text style={[styles.sectionTitlePremium, { color: colors.text, marginBottom: 0 }]}>Find People</Text>
+        <TouchableOpacity onPress={handlePresentModalPress} style={{ padding: 8 }}>
+          <Feather name="sliders" size={20} color={colors.text} />
+        </TouchableOpacity>
+      </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsRowPremium}>
         {(['all', 'neighbors', 'mutuals', 'sellers'] as const).map(tab => (
           <TouchableOpacity
@@ -475,12 +504,7 @@ export default function CommunityScreen() {
           <Text style={[styles.premiumHeaderTitle, { color: colors.text }]}>Community</Text>
           <Text style={[styles.premiumHeaderSubtitle, { color: colors.textSecondary }]}>Connect & discover</Text>
         </View>
-        <TouchableOpacity 
-          style={[styles.addFriendBtn, { borderColor: colors.tint }]}
-          onPress={() => setActiveTab('discover')}
-        >
-          <Feather name="user-plus" size={18} color={colors.tint} />
-        </TouchableOpacity>
+        
       </View>
 
       {/* Segmented Control */}

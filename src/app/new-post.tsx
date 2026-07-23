@@ -214,6 +214,10 @@ export default function CreateTab() {
       Alert.alert('Not signed in', 'You must be logged in to create a post.');
       return;
     }
+    if (category === 'Event' && !text.trim()) {
+      Alert.alert('Description Required', 'Please add a description for your event.');
+      return;
+    }
     if (!text.trim() && !title.trim()) {
       Alert.alert('Missing Content', 'Please add some text before posting.');
       return;

@@ -25,11 +25,20 @@ import { api } from '../../../lib/api';
 import { formatPrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
 
+const DARK_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8a9bb0' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0d1117' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1a2332' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d2236' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#0d1a0f' }] },
+];
+
 const { width } = Dimensions.get('window');
 
 // Custom Skeleton Component
 const SkeletonCard = ({ height = 20, width = '100%', style }: any) => {
-  const { colors } = useAppTheme();
+  const { colors, isDarkMode } = useAppTheme();
   const opacity = useSharedValue(0.3);
 
   useEffect(() => {
@@ -130,7 +139,12 @@ export default function EventDetailScreen() {
 
     const googleMapsWeb = `https://www.google.com/maps/dir/?api=1&destination=${destCoord}&travelmode=driving`;
 
-    const hasGoogleMaps = await Linking.canOpenURL('comgooglemaps://');
+    let hasGoogleMaps = false;
+    try {
+      hasGoogleMaps = await Linking.canOpenURL('comgooglemaps://');
+    } catch(e) {
+      hasGoogleMaps = false;
+    }
 
     const buttons: any[] = [
       { text: '🍎 Apple Maps', onPress: () => { Linking.openURL(appleMapsUrl).catch(() => Linking.openURL(googleMapsWeb)); } },
@@ -559,6 +573,8 @@ export default function EventDetailScreen() {
                 rotateEnabled={false}
                 scrollEnabled={false}
                 zoomEnabled={false}
+                userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
+                customMapStyle={Platform.OS === 'android' ? (isDarkMode ? DARK_STYLE : []) : undefined}
               >
                 <Marker coordinate={{ latitude: event.lat, longitude: event.lng }}>
                   <View style={[styles.mapMarker, { backgroundColor: colors.tint }]}>
@@ -661,9 +677,7 @@ export default function EventDetailScreen() {
 
       {/* FLOATING ACTION BAR */}
       <View style={[styles.bottomActionBar, { backgroundColor: colors.card, borderTopColor: colors.borderLight }]}>
-        <TouchableOpacity style={[styles.bottomShareBtn, { backgroundColor: colors.inputBackground }]} onPress={handleShare}>
-          <Feather name="share" size={20} color={colors.text} />
-        </TouchableOpacity>
+        
         
         <TouchableOpacity 
           style={[styles.bottomPrimaryBtn, { 

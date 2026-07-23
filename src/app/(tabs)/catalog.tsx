@@ -289,7 +289,7 @@ export default function CatalogTab() {
           <Ionicons name="search-outline" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
           <TextInput
             style={[s.searchInput, { color: colors.text }]}
-            placeholder="Search Yrdly Marketplace..."
+            placeholder="Search"
             placeholderTextColor={colors.textMuted}
             value={search}
             onChangeText={setSearch}

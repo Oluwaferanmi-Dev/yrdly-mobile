@@ -189,9 +189,11 @@ export function EventCard({ event, onPress }: EventCardProps) {
 
   const handleShare = async () => {
     try {
-      await Share.share({ message: `Check out "${event.title || 'this event'}" on Yrdly!`, url: `https://app.yrdly.ng/events/${event.id}` });
-      setShareCount(prev => prev + 1);
-      await supabase.rpc('increment_post_share', { post_id: event.id });
+      const result = await Share.share({ message: `Check out "${event.title || 'this event'}" on Yrdly!`, url: `https://app.yrdly.ng/events/${event.id}` });
+      if (result.action === Share.sharedAction) {
+        setShareCount(prev => prev + 1);
+        await supabase.rpc('increment_post_share', { post_id: event.id });
+      }
     } catch {}
   };
 

@@ -7,11 +7,21 @@ import * as Location from 'expo-location';
 import { AlertService } from '../../lib/alert-service';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
+import { Platform } from 'react-native';
+
+const DARK_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8a9bb0' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0d1117' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1a2332' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d2236' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#0d1a0f' }] },
+];
 
 export default function CreateAlertScreen() {
   const router = useRouter();
   const { profile } = useAuth();
-  const { colors } = useAppTheme();
+  const { colors, isDarkMode } = useAppTheme();
   
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState<'amber' | 'missing_person' | 'community_safety'>('amber');
@@ -205,6 +215,8 @@ export default function CreateAlertScreen() {
             longitudeDelta: 0.05,
           }}
           onPress={handleMapPress}
+          userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
+          customMapStyle={Platform.OS === 'android' ? (isDarkMode ? DARK_STYLE : []) : undefined}
         >
           <Marker coordinate={coordinate} />
         </MapView>

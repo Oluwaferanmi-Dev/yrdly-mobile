@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image as RNImage, FlatList, Share, Platform, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image as RNImage, FlatList, Share, Platform, ScrollView, NativeSyntheticEvent, NativeScrollEvent, Alert, ActionSheetIOS } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Image } from 'expo-image';
@@ -304,53 +304,47 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   };
 
   const handleMoreOptions = () => {
-    import('react-native').then(({ ActionSheetIOS, Alert, Platform }) => {
-      const options = ['Cancel', 'Report Post', 'Block User'];
-      const destructiveButtonIndex = 2;
-      const cancelButtonIndex = 0;
+    const options = ['Cancel', 'Report Post', 'Block User'];
+    const destructiveButtonIndex = 2;
+    const cancelButtonIndex = 0;
 
-      if (Platform.OS === 'ios') {
-        ActionSheetIOS.showActionSheetWithOptions(
-          { options, cancelButtonIndex, destructiveButtonIndex },
-          (buttonIndex) => {
-            if (buttonIndex === 1) handleReport();
-            if (buttonIndex === 2) handleBlock();
-          }
-        );
-      } else {
-        Alert.alert('Options', '', [
-          { text: 'Report Post', onPress: handleReport },
-          { text: 'Block User', onPress: handleBlock, style: 'destructive' },
-          { text: 'Cancel', style: 'cancel' }
-        ]);
-      }
-    });
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { options, cancelButtonIndex, destructiveButtonIndex },
+        (buttonIndex) => {
+          if (buttonIndex === 1) handleReport();
+          if (buttonIndex === 2) handleBlock();
+        }
+      );
+    } else {
+      Alert.alert('Options', '', [
+        { text: 'Report Post', onPress: handleReport },
+        { text: 'Block User', onPress: handleBlock, style: 'destructive' },
+        { text: 'Cancel', style: 'cancel' }
+      ]);
+    }
   };
 
   const handleReport = () => {
-    import('react-native').then(({ Alert }) => {
-      Alert.alert('Report Post', 'Are you sure you want to report this post?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Report', style: 'destructive', onPress: async () => {
-          if (!currentUser) return;
-          await supabase.from('reports').insert({ reporter_id: currentUser.id, reported_post_id: post.id, reason: 'Inappropriate content' });
-          Alert.alert('Success', 'Post reported to admins.');
-        }}
-      ]);
-    });
+    Alert.alert('Report Post', 'Are you sure you want to report this post?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Report', style: 'destructive', onPress: async () => {
+        if (!currentUser) return;
+        await supabase.from('reports').insert({ reporter_id: currentUser.id, reported_post_id: post.id, reason: 'Inappropriate content' });
+        Alert.alert('Success', 'Post reported to admins.');
+      }}
+    ]);
   };
 
   const handleBlock = () => {
-    import('react-native').then(({ Alert }) => {
-      Alert.alert('Block User', 'You will no longer see content from this user.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Block', style: 'destructive', onPress: async () => {
-          if (!currentUser) return;
-          await supabase.from('user_blocks').insert({ blocker_id: currentUser.id, blocked_id: post.user_id });
-          Alert.alert('Success', 'User blocked.');
-        }}
-      ]);
-    });
+    Alert.alert('Block User', 'You will no longer see content from this user.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Block', style: 'destructive', onPress: async () => {
+        if (!currentUser) return;
+        await supabase.from('user_blocks').insert({ blocker_id: currentUser.id, blocked_id: post.user_id });
+        Alert.alert('Success', 'User blocked.');
+      }}
+    ]);
   };
 
   const handleShare = async () => {
@@ -360,7 +354,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       
       // Include URL in message body so WhatsApp and other apps render it
       // as a tappable deep link on both iOS and Android
-      await Share.share(
+      const result = await Share.share(
         {
           message: Platform.OS === 'android'
             ? `${title}\n${shareUrl}`
@@ -371,9 +365,11 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         { dialogTitle: 'Share post' }
       );
       
-      // Increment share count locally and in db
-      setShareCount(prev => prev + 1);
-      supabase.rpc('increment_post_share', { post_id: post.id }).then(() => {}, () => {});
+      // Increment share count locally and in db only if actually shared
+      if (result.action === Share.sharedAction) {
+        setShareCount(prev => prev + 1);
+        supabase.rpc('increment_post_share', { post_id: post.id }).then(() => {}, () => {});
+      }
       
       if (onShare) onShare();
     } catch (error) {

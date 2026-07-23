@@ -305,7 +305,8 @@ export default function MapScreen() {
         initialRegion={region || { latitude:6.5244, longitude:3.3792, latitudeDelta:0.0922, longitudeDelta:0.0421 }}
         showsUserLocation showsMyLocationButton={false} showsBuildings={false} pitchEnabled={false}
         moveOnMarkerPress={false}
-        customMapStyle={Platform.OS === 'android' ? DARK_STYLE : undefined}
+        userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
+        customMapStyle={Platform.OS === 'android' ? (isDarkMode ? DARK_STYLE : []) : undefined}
         onRegionChangeComplete={(newRegion) => {
           if (regionTimeout.current) clearTimeout(regionTimeout.current);
           regionTimeout.current = setTimeout(() => setRegion(newRegion), 300);
