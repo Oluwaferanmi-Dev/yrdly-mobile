@@ -84,6 +84,7 @@ function MarketplaceDetailContent() {
   // Favourite state
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
   const scaleValue = useSharedValue(1);
 
   const fetchPost = useCallback(async () => {
@@ -117,6 +118,16 @@ function MarketplaceDetailContent() {
         
         setIsLiked(user ? (data.liked_by || []).includes(user.id) : false);
         setLikeCount(data.liked_by?.length || 0);
+
+        if (user) {
+          const { data: bookmarkData } = await supabase
+            .from('post_bookmarks')
+            .select('id')
+            .eq('post_id', id)
+            .eq('user_id', user.id)
+            .maybeSingle();
+          setIsBookmarked(!!bookmarkData);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -182,23 +193,63 @@ function MarketplaceDetailContent() {
   };
 
   const handleMore = () => {
-    const options = ['Report Item', 'Copy Link', 'Save Item', 'Block Seller', 'Cancel'];
+    const saveOption = isBookmarked ? 'Unsave Item' : 'Save Item';
+    const options = ['Report Item', 'Copy Link', saveOption, 'Block Seller', 'Cancel'];
     const cancelButtonIndex = 4;
+    
+    const handleReport = () => {
+      Alert.alert('Report Item', 'Are you sure you want to report this item?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Report', style: 'destructive', onPress: async () => {
+          if (!user || !post) return;
+          await supabase.from('reports').insert({ reporter_id: user.id, reported_post_id: post.id, reason: 'Inappropriate content' });
+          Alert.alert('Success', 'Item reported to admins.');
+        }}
+      ]);
+    };
+
+    const handleBlock = () => {
+      Alert.alert('Block Seller', 'You will no longer see content from this seller.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Block', style: 'destructive', onPress: async () => {
+          if (!user || !post) return;
+          await supabase.from('user_blocks').insert({ blocker_id: user.id, blocked_id: post.user_id });
+          Alert.alert('Success', 'Seller blocked.');
+        }}
+      ]);
+    };
+
+    const handleBookmarkToggle = async () => {
+      if (!user || !post) return;
+      const newBookmarked = !isBookmarked;
+      setIsBookmarked(newBookmarked);
+      try {
+        if (newBookmarked) {
+          await supabase.from('post_bookmarks').insert({ post_id: post.id, user_id: user.id });
+        } else {
+          await supabase.from('post_bookmarks').delete().match({ post_id: post.id, user_id: user.id });
+        }
+      } catch (e) {
+        setIsBookmarked(!newBookmarked);
+      }
+    };
     
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
-        { options, cancelButtonIndex },
+        { options, cancelButtonIndex, destructiveButtonIndex: 3 },
         (buttonIndex) => {
+          if (buttonIndex === 0) handleReport();
           if (buttonIndex === 1) handleShare();
-          // implement others as needed
+          if (buttonIndex === 2) handleBookmarkToggle();
+          if (buttonIndex === 3) handleBlock();
         }
       );
     } else {
       Alert.alert('More Options', 'Select an option', [
-        { text: 'Report Item', onPress: () => {} },
+        { text: 'Report Item', onPress: handleReport },
         { text: 'Copy Link', onPress: handleShare },
-        { text: 'Save Item', onPress: () => {} },
-        { text: 'Block Seller', onPress: () => {} },
+        { text: saveOption, onPress: handleBookmarkToggle },
+        { text: 'Block Seller', onPress: handleBlock, style: 'destructive' },
         { text: 'Cancel', style: 'cancel' }
       ]);
     }

@@ -603,7 +603,7 @@ export default function EventDetailScreen() {
             ))
           ) : (
             <View style={[styles.premiumCard, { backgroundColor: colors.card, borderColor: colors.borderLight, alignItems: 'center', paddingVertical: 32 }]}>
-              <Feather name="ticket" size={48} color={colors.textMuted} style={{ marginBottom: 12 }} />
+              <Feather name="tag" size={48} color={colors.textMuted} style={{ marginBottom: 12 }} />
               <Text style={{ color: colors.textSecondary, fontSize: 16 }}>No tickets available.</Text>
             </View>
           )}
@@ -671,7 +671,7 @@ export default function EventDetailScreen() {
           }]}
           disabled={isExpired || allTicketsSoldOut}
           onPress={() => {
-            if (userHasTickets) router.push('/(tabs)/tickets');
+            if (userHasTickets) router.push('/(tabs)/tickets' as any);
             else if (event.ticket_tiers && event.ticket_tiers.length > 0) setSelectedTier(event.ticket_tiers[0]);
           }}
         >

@@ -138,13 +138,24 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   const [likesCount, setLikesCount] = useState(post.liked_by?.length || 0);
   const [isLiked, setIsLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
   const [shareCount, setShareCount] = useState(post.share_count || 0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   // Sync state when post prop changes (crucial for FlashList cell recycling)
   useEffect(() => {
     setLikesCount(post.liked_by?.length || 0);
     setIsLiked(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
     setShareCount(post.share_count || 0);
-  }, [post.liked_by, currentUser]);
+    
+    if (currentUser) {
+      supabase
+        .from('post_bookmarks')
+        .select('id')
+        .eq('post_id', post.id)
+        .eq('user_id', currentUser.id)
+        .maybeSingle()
+        .then(({ data }) => setIsBookmarked(!!data));
+    }
+  }, [post.liked_by, currentUser, post.id]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
@@ -276,6 +287,72 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
     }
   };
 
+  const handleBookmark = async () => {
+    if (!currentUser) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newBookmarked = !isBookmarked;
+    setIsBookmarked(newBookmarked);
+    try {
+      if (newBookmarked) {
+        await supabase.from('post_bookmarks').insert({ post_id: post.id, user_id: currentUser.id });
+      } else {
+        await supabase.from('post_bookmarks').delete().match({ post_id: post.id, user_id: currentUser.id });
+      }
+    } catch (e) {
+      setIsBookmarked(!newBookmarked);
+    }
+  };
+
+  const handleMoreOptions = () => {
+    import('react-native').then(({ ActionSheetIOS, Alert, Platform }) => {
+      const options = ['Cancel', 'Report Post', 'Block User'];
+      const destructiveButtonIndex = 2;
+      const cancelButtonIndex = 0;
+
+      if (Platform.OS === 'ios') {
+        ActionSheetIOS.showActionSheetWithOptions(
+          { options, cancelButtonIndex, destructiveButtonIndex },
+          (buttonIndex) => {
+            if (buttonIndex === 1) handleReport();
+            if (buttonIndex === 2) handleBlock();
+          }
+        );
+      } else {
+        Alert.alert('Options', '', [
+          { text: 'Report Post', onPress: handleReport },
+          { text: 'Block User', onPress: handleBlock, style: 'destructive' },
+          { text: 'Cancel', style: 'cancel' }
+        ]);
+      }
+    });
+  };
+
+  const handleReport = () => {
+    import('react-native').then(({ Alert }) => {
+      Alert.alert('Report Post', 'Are you sure you want to report this post?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Report', style: 'destructive', onPress: async () => {
+          if (!currentUser) return;
+          await supabase.from('reports').insert({ reporter_id: currentUser.id, reported_post_id: post.id, reason: 'Inappropriate content' });
+          Alert.alert('Success', 'Post reported to admins.');
+        }}
+      ]);
+    });
+  };
+
+  const handleBlock = () => {
+    import('react-native').then(({ Alert }) => {
+      Alert.alert('Block User', 'You will no longer see content from this user.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Block', style: 'destructive', onPress: async () => {
+          if (!currentUser) return;
+          await supabase.from('user_blocks').insert({ blocker_id: currentUser.id, blocked_id: post.user_id });
+          Alert.alert('Success', 'User blocked.');
+        }}
+      ]);
+    });
+  };
+
   const handleShare = async () => {
     try {
       const shareUrl = `https://app.yrdly.ng/posts/${post.id}`;
@@ -364,7 +441,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               {post.category || 'General'}
             </Text>
           </View>
-          <TouchableOpacity onPress={(e) => { e.stopPropagation(); }}>
+          <TouchableOpacity onPress={(e) => { e.stopPropagation(); handleMoreOptions(); }}>
             <Ionicons name="ellipsis-horizontal" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
@@ -495,9 +572,9 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
         <TouchableOpacity 
           style={styles.actionButton} 
-          onPress={(e) => { e.stopPropagation(); }}
+          onPress={(e) => { e.stopPropagation(); handleBookmark(); }}
         >
-          <Ionicons name="bookmark-outline" size={20} color={colors.textSecondary} />
+          <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={20} color={isBookmarked ? colors.tint : colors.textSecondary} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>

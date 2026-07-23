@@ -491,7 +491,7 @@ export default function NotificationsScreen() {
           </Text>
           <TouchableOpacity 
             style={[styles.exploreBtn, { backgroundColor: colors.tint }]}
-            onPress={() => router.push('/(tabs)/')}
+            onPress={() => router.push('/(tabs)/' as any)}
           >
             <Text style={styles.exploreBtnText}>Explore YRDLY</Text>
           </TouchableOpacity>
@@ -503,7 +503,7 @@ export default function NotificationsScreen() {
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          estimatedItemSize={90}
+          {...({ estimatedItemSize: 90 } as any)}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
