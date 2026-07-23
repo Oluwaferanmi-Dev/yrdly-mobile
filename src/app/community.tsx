@@ -324,7 +324,7 @@ export default function CommunityScreen() {
                     key={user.id}
                     user={user}
                     context="mutual"
-                    mutualCount={user.friends?.filter((fid: string) => profile?.friends?.includes(fid)).length || 1}
+                    mutualCount={user.friends?.filter((fid: string) => profile?.friends?.includes(fid))?.length || 1}
                     onPress={() => router.push(`/profile/${user.id}`)}
                   />
                 ))}
