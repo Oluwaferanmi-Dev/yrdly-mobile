@@ -18,6 +18,8 @@ export default function SettingsScreen() {
   const { isDarkMode, toggleTheme, colors } = useAppTheme();
 
   const [name, setName] = useState(profile?.name || user?.user_metadata?.name || '');
+  const [legalName, setLegalName] = useState(profile?.legal_name || user?.user_metadata?.legal_name || '');
+  const [hasLegalName, setHasLegalName] = useState(!!(profile?.legal_name || user?.user_metadata?.legal_name));
   const [bio, setBio] = useState(profile?.bio || '');
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || user?.user_metadata?.avatar_url || '');
   const [saving, setSaving] = useState(false);
@@ -28,6 +30,8 @@ export default function SettingsScreen() {
   useEffect(() => {
     if (profile) {
       setName(profile.name || '');
+      setLegalName(profile.legal_name || '');
+      setHasLegalName(!!profile.legal_name);
       setBio(profile.bio || '');
       setAvatarUrl(profile.avatar_url || '');
       setShareLocation(profile.share_location ?? false);
@@ -122,18 +126,32 @@ export default function SettingsScreen() {
     if (!user) return;
     setSaving(true);
     try {
-      await AuthService.updateUserProfile(user.id, {
+      const updates: any = {
         name,
         bio,
         avatar_url: avatarUrl,
-      });
+      };
+      if (!hasLegalName && legalName) {
+        updates.legal_name = legalName;
+      }
+
+      await AuthService.updateUserProfile(user.id, updates);
+
+      const authUpdates: any = {
+        name,
+        avatar_url: avatarUrl,
+      };
+      if (!hasLegalName && legalName) {
+        authUpdates.legal_name = legalName;
+      }
 
       await supabase.auth.updateUser({
-        data: {
-          name,
-          avatar_url: avatarUrl,
-        }
+        data: authUpdates
       });
+      
+      if (!hasLegalName && legalName) {
+        setHasLegalName(true);
+      }
 
       Alert.alert('Success', 'Profile updated successfully!', [
         { text: 'OK', onPress: () => router.back() }
@@ -199,6 +217,22 @@ export default function SettingsScreen() {
               placeholder="Your Name"
               placeholderTextColor={colors.textMuted}
             />
+            {hasLegalName ? (
+              <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 6}}>
+                <Ionicons name="shield-checkmark" size={12} color={colors.tint} style={{marginRight: 4}} />
+                <Text style={{fontSize: 12, color: colors.textMuted, fontWeight: '500'}}>
+                  {legalName}
+                </Text>
+              </View>
+            ) : (
+              <TextInput
+                style={[styles.bioInput, { color: colors.text, marginBottom: 6, fontSize: 13 }]}
+                value={legalName}
+                onChangeText={setLegalName}
+                placeholder="Add Legal Name (Required for Payouts)"
+                placeholderTextColor={colors.tint}
+              />
+            )}
             <View style={styles.locationBadgeRow}>
               <Ionicons name="location" size={12} color={colors.tint} style={{marginRight: 4}} />
               <TextInput

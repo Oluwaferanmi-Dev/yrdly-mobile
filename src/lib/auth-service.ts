@@ -10,6 +10,7 @@ export interface AuthUser {
   id: string;
   email?: string;
   name?: string;
+  legal_name?: string;
   username?: string;
   avatar_url?: string;
   bio?: string;
@@ -56,7 +57,7 @@ export class AuthService {
   }
 
   // Sign up with email and password
-  static async signUp(email: string, password: string, name: string) {
+  static async signUp(email: string, password: string, name: string, legalName: string) {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -69,6 +70,7 @@ export class AuthService {
           // which breaks the OTP flow and produces "error sending confirmation code".
           data: {
             name,
+            legal_name: legalName,
           },
         },
       });
@@ -231,6 +233,7 @@ export class AuthService {
         .insert({
           id: user.id,
           name: finalName,
+          legal_name: user.user_metadata?.legal_name,
           email: user.email,
           avatar_url: user.user_metadata?.avatar_url,
           profile_completed: false,

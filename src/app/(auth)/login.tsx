@@ -18,6 +18,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [legalName, setLegalName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -25,7 +26,7 @@ export default function Login() {
   const { signIn, signUp, signInWithGoogle, loading } = useAuth();
 
   const handleAuth = async () => {
-    if (!email || !password || (isSignUp && !name)) {
+    if (!email || !password || (isSignUp && (!name || !legalName))) {
       setError('Please fill in all fields');
       return;
     }
@@ -36,7 +37,7 @@ export default function Login() {
       const { error: signInError } = await signIn(email, password);
       if (signInError) setError(signInError.message);
     } else {
-      const { error: signUpError, session } = await signUp(email, password, name);
+      const { error: signUpError, session } = await signUp(email, password, name, legalName);
       if (signUpError) {
         setError(signUpError.message);
       } else if (!session) {
@@ -96,17 +97,33 @@ export default function Login() {
 
         {/* Inputs */}
         {isSignUp && (
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
-              placeholder="Enter your full name"
-              value={name}
-              onChangeText={setName}
-              autoCapitalize="words"
-              editable={!loading}
-              placeholderTextColor={colors.textMuted}
-            />
-          </View>
+          <>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
+                placeholder="Display Name (e.g. JohnD)"
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+                editable={!loading}
+                placeholderTextColor={colors.textMuted}
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
+                placeholder="Full Legal Name"
+                value={legalName}
+                onChangeText={setLegalName}
+                autoCapitalize="words"
+                editable={!loading}
+                placeholderTextColor={colors.textMuted}
+              />
+              <Text style={{fontSize: 11, color: colors.textMuted, marginTop: 4, marginLeft: 12}}>
+                Kept private. Required to verify your bank account for payouts.
+              </Text>
+            </View>
+          </>
         )}
 
         <View style={styles.inputContainer}>

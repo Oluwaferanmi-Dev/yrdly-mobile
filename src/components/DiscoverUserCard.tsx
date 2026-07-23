@@ -52,11 +52,19 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.container}>
       <GlassCard intensity={80} style={StyleSheet.flatten([styles.card, { borderColor: colors.border }])}>
-        <Image
-          source={user.avatar_url ? { uri: user.avatar_url } : require('../../assets/images/default-avatar.png')}
-          style={[styles.avatar, { backgroundColor: colors.background }]}
-          contentFit="cover"
-        />
+        {user.avatar_url ? (
+          <Image
+            source={{ uri: user.avatar_url }}
+            style={[styles.avatar, { backgroundColor: colors.background }]}
+            contentFit="cover"
+          />
+        ) : (
+          <View style={[styles.avatar, { backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }]}>
+            <Text style={{ color: colors.background, fontSize: 20, fontWeight: '800' }}>
+              {(user.name || 'U').charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
         
         <View style={styles.content}>
           <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
