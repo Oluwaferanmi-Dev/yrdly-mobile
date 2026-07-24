@@ -9,6 +9,8 @@ WebBrowser.maybeCompleteAuthSession();
 export interface AuthUser {
   id: string;
   email?: string;
+  phone?: string;
+  phone_verified?: boolean;
   name?: string;
   legal_name?: string;
   username?: string;

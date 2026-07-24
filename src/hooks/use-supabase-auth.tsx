@@ -22,6 +22,8 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error: any }>;
   updatePassword: (newPassword: string) => Promise<{ error: any }>;
   updateProfile: (updates: Partial<AuthUser>) => Promise<void>;
+  sendPhoneOtp: (phone: string) => Promise<string>;
+  verifyPhoneOtp: (pinId: string, pin: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -393,6 +395,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const sendPhoneOtp = async (phone: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-phone-otp', {
+        body: { phone },
+      });
+      if (error) throw new Error(error.message || 'Failed to send OTP');
+      if (data?.error) throw new Error(data.error);
+      return data.pinId as string;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyPhoneOtp = async (pinId: string, pin: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-phone-otp', {
+        body: { pinId, pin },
+      });
+      if (error) throw new Error(error.message || 'Failed to verify OTP');
+      if (data?.error) throw new Error(data.error);
+      
+      if (profile) {
+        setProfile({ ...profile, phone_verified: true });
+      }
+      return true;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     user,
     profile,
@@ -405,6 +439,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     resetPassword,
     updatePassword,
     updateProfile,
+    sendPhoneOtp,
+    verifyPhoneOtp,
   };
 
   return (
