@@ -97,7 +97,7 @@ export default function TicketsScreen() {
           onPress: async () => {
             setDeletingId(ticketId);
             try {
-              await supabase.from('my_tickets').delete().eq('id', ticketId).eq('user_id', user!.id);
+              await supabase.from('tickets').delete().eq('id', ticketId).eq('buyer_id', user!.id);
               setTickets(prev => prev.filter(t => t.id !== ticketId));
             } catch (e) {
               console.error('Delete ticket error:', e);

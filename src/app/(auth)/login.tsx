@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { Feather, AntDesign } from '@expo/vector-icons';
@@ -79,6 +79,7 @@ export default function Login() {
         <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' }]} />
       )}
 
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
       <View style={styles.formContainer}>
         {/* Header */}
         <View style={styles.header}>
@@ -207,6 +208,7 @@ export default function Login() {
         </View>
 
       </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

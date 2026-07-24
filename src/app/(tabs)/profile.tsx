@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, RefreshControl, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, RefreshControl, Platform, Linking } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -118,7 +118,16 @@ export default function ProfileTab() {
       {/* Top Navigation */}
       <View style={styles.navHeader}>
         <View style={styles.navSpacer} />
-        <Text style={styles.navTitle}>Profile</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Text style={styles.navTitle}>{profile?.name || user?.user_metadata?.name || 'Profile'}</Text>
+          {((profile as any)?.verified_seller || (profile as any)?.is_verified) && (
+            <Ionicons
+              name="checkmark-circle"
+              size={18}
+              color={(profile as any)?.verified_seller ? "#FBC02D" : "#82DB7E"}
+            />
+          )}
+        </View>
         <TouchableOpacity 
           style={styles.settingsBtn}
           onPress={() => router.push('/settings')}
@@ -154,8 +163,13 @@ export default function ProfileTab() {
 
         <View style={styles.nameRow}>
           <Text style={styles.name}>{profile?.legal_name || profile?.name || user?.user_metadata?.name || 'No Name'}</Text>
-          {((profile as any)?.verified_seller || (profile as any)?.is_verified) && (
-            <Ionicons name="checkmark-circle" size={18} color="#82DB7E" style={{ marginLeft: 4 }} />
+          {(profile as any)?.verified_seller && (
+            <MaterialIcons 
+              name="verified" 
+              size={18} 
+              color={colors.tint}
+              style={{ marginLeft: 4 }} 
+            />
           )}
         </View>
         <Text style={styles.username}>@{profile?.username || user?.user_metadata?.username || 'user'}</Text>
@@ -198,9 +212,22 @@ export default function ProfileTab() {
           <Text style={styles.bio} numberOfLines={2}>{profile.bio}</Text>
         )}
         
-        <View style={styles.locationRow}>
-          <Ionicons name="location-outline" size={16} color="#82DB7E" />
-          <Text style={styles.locationText}>Lagos, Nigeria</Text>
+        <View style={styles.metaRow}>
+          {user?.email && (
+            <View style={styles.metaItem}>
+              <Ionicons name="mail-outline" size={14} color="#82DB7E" />
+              <Text style={styles.metaText} numberOfLines={1}>{user.email}</Text>
+            </View>
+          )}
+          {profile?.location && (
+            <TouchableOpacity
+              style={styles.metaItem}
+              onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(profile.location)}`)}
+            >
+              <Ionicons name="location-outline" size={14} color="#82DB7E" />
+              <Text style={[styles.metaText, { textDecorationLine: 'underline' }]}>{profile.location}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -405,9 +432,10 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   statLabel: { color: colors.textSecondary, fontSize: 12, marginTop: 4 },
   statDivider: { width: 1, height: 30, backgroundColor: colors.borderLight },
 
-  bio: { color: colors.text, fontSize: 14, lineHeight: 20, marginBottom: 12 },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  locationText: { color: colors.textSecondary, fontSize: 14 },
+  bio: { color: colors.text, fontSize: 14, lineHeight: 20, marginBottom: 10 },
+  metaRow: { flexDirection: 'column', gap: 6, marginTop: 4 },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  metaText: { color: colors.textSecondary, fontSize: 13, flex: 1 },
 
   quickActions: {
     flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginBottom: 24

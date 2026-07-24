@@ -18,7 +18,7 @@ interface TxInfo {
   id: string;
   seller_id: string;
   seller: { id: string; name: string; avatar_url: string | null } | null;
-  item: { id: string; title: string; images: string[] | null } | null;
+  item: { id: string; title: string; image_urls: string[] | null } | null;
 }
 
 export default function ReviewScreen() {
@@ -42,7 +42,7 @@ export default function ReviewScreen() {
       try {
         const { data, error } = await supabase
           .from('escrow_transactions')
-          .select('id, seller_id, seller:users!escrow_transactions_seller_id_fkey(id, name, avatar_url), item:posts(id, title, images)')
+          .select('id, seller_id, seller:users!escrow_transactions_seller_id_fkey(id, name, avatar_url), item:posts(id, title, image_urls)')
           .eq('id', id)
           .single();
         if (error) throw error;
@@ -68,7 +68,7 @@ export default function ReviewScreen() {
           const { canReview: eligible } = await UserReviewService.canUserReviewSeller(user.id, normalised.seller_id, id);
           setCanReview(eligible);
         }
-      } catch {
+      } catch (e) { console.error('Failed to load tx:', e);
         Alert.alert('Error', 'Could not load transaction.');
         router.back();
       } finally {
@@ -98,7 +98,7 @@ export default function ReviewScreen() {
 
   if (loading) return <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}><ActivityIndicator size="large" color={colors.tint} /></SafeAreaView>;
 
-  const thumb = tx?.item?.images?.[0];
+  const thumb = tx?.item?.image_urls?.[0];
   const LABELS = ['', 'Terrible', 'Poor', 'Okay', 'Good', 'Excellent!'];
 
   return (

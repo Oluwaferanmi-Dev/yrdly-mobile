@@ -36,15 +36,24 @@ export default function ScanTicketScreen() {
     cooldownRef.current = true;
     setScanning(false);
 
-    try {
+      let parsedData: any = null;
+      try {
+        parsedData = JSON.parse(data);
+      } catch (e) {
+        // Fallback if data is just the ticket ID
+        parsedData = { ticket_code: data };
+      }
+
+      const ticketCode = parsedData.ticket_code;
+
       // Direct Supabase implementation for ticket scanning & check-in
       const { data: ticket, error: ticketError } = await supabase
-        .from('my_tickets')
+        .from('tickets')
         .select(`
           *,
-          user:users!my_tickets_user_id_fkey(name)
+          user:users(name)
         `)
-        .eq('id', data)
+        .eq('ticket_code', ticketCode)
         .single();
 
       if (ticketError || !ticket) {
@@ -53,17 +62,17 @@ export default function ScanTicketScreen() {
       } else if (ticket.event_id !== id) {
         setResult({ success: false, message: 'This ticket is for a different event.' });
         showFlash(false);
-      } else if (ticket.status === 'used') {
+      } else if (ticket.status === 'USED') {
         setResult({ success: false, message: 'This ticket has already been used.' });
         showFlash(false);
-      } else if (ticket.status === 'cancelled' || ticket.status === 'refunded') {
+      } else if (ticket.status === 'CANCELLED' || ticket.status === 'REFUNDED') {
         setResult({ success: false, message: `This ticket was ${ticket.status}.` });
         showFlash(false);
       } else {
-        // Ticket is valid (active or confirmed). Update status to 'used'
+        // Ticket is valid (active or confirmed). Update status to 'USED'
         const { error: updateError } = await supabase
-          .from('my_tickets')
-          .update({ status: 'used' })
+          .from('tickets')
+          .update({ status: 'USED' })
           .eq('id', ticket.id);
           
         if (updateError) {
@@ -71,7 +80,7 @@ export default function ScanTicketScreen() {
           showFlash(false);
         } else {
           // @ts-ignore - The user property is joined from the users table
-          const attendeeName = ticket.user?.name || 'Attendee';
+          const attendeeName = ticket.attendee_name || ticket.user?.name || 'Attendee';
           setResult({ success: true, attendee: attendeeName });
           showFlash(true);
         }

@@ -26,6 +26,7 @@ export async function getPublishedEvents(opts?: {
       ticket_tiers(*)
     `)
     .eq('status', 'PUBLISHED')
+    .or(`end_time.gte.${new Date().toISOString()},start_time.gte.${new Date().toISOString()}`)
     .order('start_time', { ascending: true });
 
   if (opts?.state) query = query.eq('state', opts.state);

@@ -61,8 +61,8 @@ export default function ManageEventScreen() {
 
       // Fetch tickets
       const { data: tix, error: tixErr } = await supabase
-        .from('my_tickets')
-        .select('id, status, buyer:users!my_tickets_user_id_fkey(id, name, avatar_url)')
+        .from('tickets')
+        .select('id, status, buyer:users!tickets_buyer_id_fkey(id, name, avatar_url)')
         .eq('event_id', id)
         .order('created_at', { ascending: false });
       if (tixErr) throw tixErr;

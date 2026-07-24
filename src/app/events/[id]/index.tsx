@@ -191,6 +191,7 @@ export default function EventDetailScreen() {
           .from('events')
           .select(`id, title, cover_image_url, start_time, location_address, location_online`)
           .eq('status', 'PUBLISHED')
+          .or(`end_time.gte.${new Date().toISOString()},and(end_time.is.null,start_time.gte.${new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()})`)
           .neq('id', data.id)
           .limit(5);
         if (related) setRelatedEvents(related);
@@ -291,8 +292,40 @@ export default function EventDetailScreen() {
           if (status === 'cancelled') {
             Alert.alert('Cancelled', 'Payment was cancelled.');
           } else {
-            setSelectedTier(null);
-            setTimeout(() => showTicketSuccess(tierName), 100);
+            // Proactively verify ticket with backend to handle cases where webhook hasn't fired yet
+            try {
+              const txRefToVerify = urlObj.searchParams.get('trxref') || res.tx_ref;
+              const verifyRes = await api.post<any>('/api/events/tickets/verify', { tx_ref: txRefToVerify });
+              if (verifyRes.success) {
+                setSelectedTier(null);
+                setTimeout(() => showTicketSuccess(tierName), 100);
+              } else {
+                Alert.alert('Error', verifyRes.error || 'Failed to verify ticket.');
+              }
+            } catch (err: any) {
+              Alert.alert('Error', err?.message || 'Failed to verify ticket.');
+            }
+          }
+        } else if (browserResult.type === 'cancel') {
+          // If the user manually closes the webview, proactively check if payment succeeded anyway
+          setPurchasing(true); // Keep the loading state while verifying
+          try {
+             // Add a 3s delay to allow Paystack's backend state to update to 'success'
+             await new Promise(resolve => setTimeout(resolve, 3000));
+             const verifyRes = await api.post<any>('/api/events/tickets/verify', { tx_ref: res.tx_ref });
+             if (verifyRes.success) {
+               setSelectedTier(null);
+               setTimeout(() => showTicketSuccess(tierName), 100);
+             }
+          } catch (err: any) {
+             const errMsg = err?.response?.data?.error || err?.message;
+             if (errMsg === 'payment_failed' || errMsg === 'Verification failed') {
+               Alert.alert('Payment Incomplete', 'If you completed the payment before closing, your ticket will appear in "My Tickets" once verified.');
+             } else {
+               Alert.alert('Notice', 'Payment might have succeeded but ticket generation failed: ' + errMsg);
+             }
+          } finally {
+             setPurchasing(false);
           }
         }
       }

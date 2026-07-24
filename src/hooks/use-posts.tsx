@@ -58,7 +58,8 @@ export const usePosts = (filter?: LocationFilter | null) => {
             name,
             avatar_url,
             location,
-            created_at
+            created_at,
+            verified_seller
           )
         `);
 
@@ -71,11 +72,12 @@ export const usePosts = (filter?: LocationFilter | null) => {
             name,
             avatar_url,
             location,
-            created_at
+            created_at,
+            verified_seller
           )
         `)
         .eq('status', 'PUBLISHED')
-        .or(`end_time.gte.${new Date().toISOString()},start_time.gte.${new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()}`);
+        .or(`end_time.gte.${new Date().toISOString()},and(end_time.is.null,start_time.gte.${new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()})`);
 
       // Apply location filters
       if (filterState) {

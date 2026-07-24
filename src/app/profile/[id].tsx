@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, ActivityIndicator, Alert,
+  TouchableOpacity, ActivityIndicator, Alert, Linking,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -185,7 +185,16 @@ export default function OtherUserProfileScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>{profile.name}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>{profile.name}</Text>
+          {(profile.verified_seller) && (
+            <MaterialIcons 
+              name="verified" 
+              size={18} 
+              color={colors.tint}
+            />
+          )}
+        </View>
         <View style={{ width: 40 }} />
       </View>
 
@@ -232,10 +241,11 @@ export default function OtherUserProfileScreen() {
 
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
             <Text style={[styles.name, { color: colors.text }]}>{profile.name}</Text>
-            {(profile.verified_seller || (profile as any).is_verified) && (
-              <Ionicons name="checkmark-circle" size={16} color="#82DB7E" style={{ marginLeft: 6 }} />
+            {(profile.verified_seller) && (
+              <Ionicons name="checkmark-circle" size={16} color={colors.tint} style={{ marginLeft: 6 }} />
             )}
           </View>
+          <Text style={[styles.username, { color: colors.textSecondary, marginBottom: 8, fontSize: 14 }]}>@{profile.username || 'user'}</Text>
           
           {(profile.review_count ?? 0) > 0 && (
             <View style={styles.ratingRow}>
@@ -250,6 +260,24 @@ export default function OtherUserProfileScreen() {
           )}
           
           {profile.bio && <Text style={[styles.bio, { color: colors.textSecondary }]}>{profile.bio}</Text>}
+
+          <View style={{ flexDirection: 'column', gap: 6, marginTop: profile.bio ? 8 : 0, marginBottom: 8 }}>
+            {profile.email && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="mail-outline" size={14} color="#82DB7E" />
+                <Text style={{ color: colors.textSecondary, fontSize: 13 }} numberOfLines={1}>{profile.email}</Text>
+              </View>
+            )}
+            {profile.location && (
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(profile.location)}`)}
+              >
+                <Ionicons name="location-outline" size={14} color="#82DB7E" />
+                <Text style={{ color: colors.textSecondary, fontSize: 13, textDecorationLine: 'underline' }}>{profile.location}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           {currentUser?.id !== profile.id && (
             <View style={styles.actionRow}>
