@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 import { useFriendshipGlobal } from '../../hooks/use-friendship-global';
 import { UserReviewService } from '../../lib/user-review-service';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 
 interface UserProfile {
   id: string;
@@ -28,6 +28,9 @@ interface UserProfile {
   rating?: number | null;
   review_count?: number;
   verified_seller?: boolean;
+  username?: string;
+  email?: string;
+  location?: { state?: string; lga?: string; city?: string; ward?: string };
 }
 
 export default function OtherUserProfileScreen() {
@@ -245,7 +248,7 @@ export default function OtherUserProfileScreen() {
               <MaterialIcons name="verified" size={16} color={colors.tint} style={{ marginLeft: 6 }} />
             )}
           </View>
-          <Text style={[styles.username, { color: colors.textSecondary, marginBottom: 8, fontSize: 14 }]}>@{profile.username || 'user'}</Text>
+          <Text style={{ color: colors.textSecondary, marginBottom: 8, fontSize: 14 }}>@{profile.username || 'user'}</Text>
           
           {(profile.review_count ?? 0) > 0 && (
             <View style={styles.ratingRow}>
@@ -271,10 +274,15 @@ export default function OtherUserProfileScreen() {
             {profile.location && (
               <TouchableOpacity
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
-                onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(profile.location)}`)}
+                onPress={() => {
+                  const locStr = [profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ');
+                  if (locStr) Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(locStr)}`);
+                }}
               >
                 <Ionicons name="location-outline" size={14} color="#82DB7E" />
-                <Text style={{ color: colors.textSecondary, fontSize: 13, textDecorationLine: 'underline' }}>{profile.location}</Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 13, textDecorationLine: 'underline' }}>
+                  {[profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ')}
+                </Text>
               </TouchableOpacity>
             )}
           </View>

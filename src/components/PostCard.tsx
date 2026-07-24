@@ -633,6 +633,7 @@ const styles = StyleSheet.create({
   },
   authorText: {
     marginLeft: 10,
+    flex: 1,
   },
   authorName: {
     fontSize: 14,

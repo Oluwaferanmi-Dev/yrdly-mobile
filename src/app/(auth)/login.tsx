@@ -18,6 +18,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [legalName, setLegalName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +27,7 @@ export default function Login() {
   const { signIn, signUp, signInWithGoogle, loading } = useAuth();
 
   const handleAuth = async () => {
-    if (!email || !password || (isSignUp && (!name || !legalName))) {
+    if (!email || !password || (isSignUp && (!name || !legalName || !username))) {
       setError('Please fill in all fields');
       return;
     }
@@ -37,7 +38,7 @@ export default function Login() {
       const { error: signInError } = await signIn(email, password);
       if (signInError) setError(signInError.message);
     } else {
-      const { error: signUpError, session } = await signUp(email, password, name, legalName);
+      const { error: signUpError, session } = await signUp(email, password, name, legalName, username);
       if (signUpError) {
         setError(signUpError.message);
       } else if (!session) {
@@ -102,7 +103,18 @@ export default function Login() {
             <View style={styles.inputContainer}>
               <TextInput
                 style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
-                placeholder="Display Name (e.g. JohnD)"
+                placeholder="Username (e.g. johndoe123)"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+                editable={!loading}
+                placeholderTextColor={colors.textMuted}
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
+                placeholder="Display Name (e.g. John Doe)"
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"

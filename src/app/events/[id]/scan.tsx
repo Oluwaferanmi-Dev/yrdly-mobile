@@ -46,6 +46,7 @@ export default function ScanTicketScreen() {
 
       const ticketCode = parsedData.ticket_code;
 
+      try {
       // Direct Supabase implementation for ticket scanning & check-in
       const { data: ticket, error: ticketError } = await supabase
         .from('tickets')

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, RefreshControl, Platform, Linking } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
@@ -222,10 +222,15 @@ export default function ProfileTab() {
           {profile?.location && (
             <TouchableOpacity
               style={styles.metaItem}
-              onPress={() => Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(profile.location)}`)}
+              onPress={() => {
+                const locStr = [profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ');
+                if (locStr) Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(locStr)}`);
+              }}
             >
               <Ionicons name="location-outline" size={14} color="#82DB7E" />
-              <Text style={[styles.metaText, { textDecorationLine: 'underline' }]}>{profile.location}</Text>
+              <Text style={[styles.metaText, { textDecorationLine: 'underline' }]}>
+                {[profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ')}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
