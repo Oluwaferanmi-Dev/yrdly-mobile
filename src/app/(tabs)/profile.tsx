@@ -237,6 +237,21 @@ export default function ProfileTab() {
         </TouchableOpacity>
       </View>
 
+      {/* Business Action (Only for verified sellers) */}
+      {(profile as any)?.verified_seller && (
+        <View style={[styles.quickActions, { marginTop: -12 }]}>
+          <TouchableOpacity style={[styles.actionCard, { flex: 0, width: '31%' }]} onPress={() => router.push('/businesses/create' as any)}>
+            <View style={[styles.actionIconWrapper, { backgroundColor: colors.tint + '1A' }]}>
+              <Ionicons name="storefront-outline" size={20} color={colors.tint} />
+            </View>
+            <View>
+              <Text style={styles.actionTitle}>My Business</Text>
+              <Text style={styles.actionSub}>Manage store</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
+
     </View>
   ), [avatarUri, profile, user, posts.length, followersCount, followingCount, isOnline, styles, colors]);
 

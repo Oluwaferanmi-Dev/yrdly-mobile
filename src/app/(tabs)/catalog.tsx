@@ -16,6 +16,7 @@ import { useLocation } from '../../context/LocationContext';
 import { MarketplaceItemCard } from '../../components/MarketplaceItemCard';
 import { EventList } from '../../components/EventList';
 import { Skeleton } from '../../components/Skeleton';
+import { BusinessHub } from '../../components/BusinessHub';
 import { Post } from '../../types';
 import { formatPrice } from '../../lib/utils';
 import { StorageService } from '../../lib/storage-service';
@@ -23,8 +24,8 @@ import { MapIcon, NotificationsIcon } from '../../components/SvgIcons';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 
 const { width } = Dimensions.get('window');
-type TabType = 'Marketplace' | 'Events';
-const TABS: TabType[] = ['Marketplace', 'Events'];
+type TabType = 'Marketplace' | 'Events' | 'Businesses';
+const TABS: TabType[] = ['Marketplace', 'Events', 'Businesses'];
 
 const CATEGORIES = [
   { key: '', label: 'All', icon: 'apps-outline' },
@@ -310,7 +311,7 @@ export default function CatalogTab() {
           return (
             <TouchableOpacity key={tab} style={[s.tab, { width: TAB_W }]} onPress={() => switchTab(tab)} activeOpacity={0.7}>
               <Ionicons
-                name={tab === 'Marketplace' ? 'bag-outline' : 'calendar-outline'}
+                name={tab === 'Marketplace' ? 'bag-outline' : tab === 'Events' ? 'calendar-outline' : 'storefront-outline'}
                 size={14} color={active ? '#0B0D0B' : colors.textMuted}
                 style={{ marginRight: 4 }}
               />
@@ -351,6 +352,7 @@ export default function CatalogTab() {
       )}
 
       {activeTab === 'Events' && <EventList searchQuery={search} sortOption={sort} />}
+      {activeTab === 'Businesses' && <BusinessHub searchQuery={search} />}
 
       {/* ── Sort/Filter Modal ── */}
       <Modal visible={filterVisible} transparent animationType="slide">

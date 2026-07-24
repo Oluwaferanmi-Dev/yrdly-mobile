@@ -39,7 +39,7 @@ type Stage = 'loading' | 'summary' | 'paying' | 'verifying' | 'error';
 export default function CheckoutScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, type = 'marketplace_post' } = useLocalSearchParams<{ id: string, type?: string }>();
   const { user, profile } = useAuth();
 
   const [stage, setStage] = useState<Stage>('loading');
@@ -51,20 +51,53 @@ export default function CheckoutScreen() {
   const fetchItem = useCallback(async () => {
     if (!id) return;
     try {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('id, title, price, image_url, image_urls, user_id, user:users!posts_user_id_fkey(id, name, email)')
-        .eq('id', id)
-        .single();
-      if (error || !data) throw error ?? new Error('Not found');
+      if (type === 'catalog_item') {
+        // Fetch from catalog_items
+        const { data, error } = await supabase
+          .from('catalog_items')
+          .select('id, title, price, images, business_id, businesses(owner_id, name)')
+          .eq('id', id)
+          .single();
+          
+        if (error || !data) throw error ?? new Error('Not found');
 
-      const seller = Array.isArray(data.user) ? data.user[0] : data.user;
-      setItem({ ...data, seller } as any);
-      setStage('summary');
+        const business = Array.isArray(data.businesses) ? data.businesses[0] : data.businesses;
+        if (!business) throw new Error('Business not found');
+
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('id, name, email')
+          .eq('id', business.owner_id)
+          .single();
+          
+        if (userError || !userData) throw userError ?? new Error('Owner not found');
+
+        setItem({
+          id: data.id,
+          title: data.title,
+          price: data.price,
+          image_urls: data.images,
+          user_id: business.owner_id,
+          seller: { id: userData.id, name: business.name || userData.name, email: userData.email }
+        });
+        setStage('summary');
+      } else {
+        // Fetch from posts (marketplace)
+        const { data, error } = await supabase
+          .from('posts')
+          .select('id, title, price, image_url, image_urls, user_id, user:users!posts_user_id_fkey(id, name, email)')
+          .eq('id', id)
+          .single();
+        if (error || !data) throw error ?? new Error('Not found');
+
+        const seller = Array.isArray(data.user) ? data.user[0] : data.user;
+        setItem({ ...data, seller } as any);
+        setStage('summary');
+      }
     } catch {
       Alert.alert('Error', 'Item not found.', [{ text: 'OK', onPress: () => router.back() }]);
     }
-  }, [id]);
+  }, [id, type]);
 
   useEffect(() => { fetchItem(); }, [fetchItem]);
 
@@ -93,6 +126,7 @@ export default function CheckoutScreen() {
           itemTitle: item.title,
           sellerName: item.seller?.name ?? 'Seller',
           callbackUrl,
+          itemType: type,
         }
       );
 
