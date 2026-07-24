@@ -57,7 +57,8 @@ serve(async (req) => {
     
     if (data.smsStatus !== 'Message Sent') {
       console.error('Termii send error:', data)
-      return new Response(JSON.stringify({ error: `Failed to send SMS: ${JSON.stringify(data)}` }), { 
+      const errorMessage = data.message || `Failed to send SMS: ${JSON.stringify(data)}`;
+      return new Response(JSON.stringify({ error: errorMessage }), { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })

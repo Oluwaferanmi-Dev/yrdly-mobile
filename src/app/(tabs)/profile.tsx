@@ -154,7 +154,7 @@ export default function ProfileTab() {
 
         <View style={styles.nameRow}>
           <Text style={styles.name}>{profile?.legal_name || profile?.name || user?.user_metadata?.name || 'No Name'}</Text>
-          {(profile as any)?.verified_seller && (
+          {((profile as any)?.verified_seller || (profile as any)?.is_verified) && (
             <Ionicons name="checkmark-circle" size={18} color="#82DB7E" style={{ marginLeft: 4 }} />
           )}
         </View>

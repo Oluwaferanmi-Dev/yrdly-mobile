@@ -4,7 +4,7 @@ import {
   TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -232,8 +232,8 @@ export default function OtherUserProfileScreen() {
 
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
             <Text style={[styles.name, { color: colors.text }]}>{profile.name}</Text>
-            {profile.verified_seller && (
-              <Feather name="check-circle" size={16} color={colors.tint} style={{ marginLeft: 6 }} />
+            {(profile.verified_seller || (profile as any).is_verified) && (
+              <Ionicons name="checkmark-circle" size={16} color="#82DB7E" style={{ marginLeft: 6 }} />
             )}
           </View>
           
