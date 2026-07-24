@@ -228,7 +228,7 @@ export default function ProfileTab() {
       </View>
 
     </View>
-  ), [avatarUri, profile, user, posts.length, followersCount, followingCount, isOnline]);
+  ), [avatarUri, profile, user, posts.length, followersCount, followingCount, isOnline, styles, colors]);
 
   const activeData = activeTab === 'posts' ? posts : savedPosts;
   const isLoading = activeTab === 'posts' ? loadingPosts : loadingSaved;
