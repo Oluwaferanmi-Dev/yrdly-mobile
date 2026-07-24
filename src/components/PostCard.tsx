@@ -412,26 +412,26 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               </Text>
             )}
           </View>
-          <View style={styles.authorText}>
+          <View style={[styles.authorText, { flex: 1 }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={[styles.authorName, { color: colors.text }]}>
+              <Text style={[styles.authorName, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>
                 {post.user?.name || post.author_name || 'Anonymous'}
               </Text>
               {((post.user as any)?.verified_seller) && (
                 <MaterialIcons 
                   name="verified" 
                   size={14} 
-                  color={(post.user as any)?.verified_seller ? "#FBC02D" : "#82DB7E"} 
+                  color={colors.tint} 
                   style={{ marginLeft: 4 }} 
                 />
               )}
             </View>
             {(post.ward || post.user?.location?.ward) || (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state) ? (
-              <Text style={[styles.timeAgo, { color: colors.textMuted }]}>
+              <Text style={[styles.timeAgo, { color: colors.textMuted }]} numberOfLines={1}>
                 {[post.ward || post.user?.location?.ward, (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state)].filter(Boolean).join(', ')} • {timeAgo(post.timestamp || post.created_at)}
               </Text>
             ) : (
-              <Text style={[styles.timeAgo, { color: colors.textMuted }]}>
+              <Text style={[styles.timeAgo, { color: colors.textMuted }]} numberOfLines={1}>
                 {timeAgo(post.timestamp || post.created_at)}
               </Text>
             )}
@@ -612,6 +612,8 @@ const styles = StyleSheet.create({
   authorRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: 10,
   },
   avatar: {
     width: 38,

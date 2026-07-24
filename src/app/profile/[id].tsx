@@ -242,7 +242,7 @@ export default function OtherUserProfileScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
             <Text style={[styles.name, { color: colors.text }]}>{profile.name}</Text>
             {(profile.verified_seller) && (
-              <Ionicons name="checkmark-circle" size={16} color={colors.tint} style={{ marginLeft: 6 }} />
+              <MaterialIcons name="verified" size={16} color={colors.tint} style={{ marginLeft: 6 }} />
             )}
           </View>
           <Text style={[styles.username, { color: colors.textSecondary, marginBottom: 8, fontSize: 14 }]}>@{profile.username || 'user'}</Text>

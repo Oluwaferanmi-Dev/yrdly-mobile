@@ -25,6 +25,7 @@ const FILTERS: { key: FilterType; label: string; icon: keyof typeof Ionicons.gly
   { key: 'all', label: 'All', icon: 'apps', color: '#82DB7E' },
   { key: 'friends', label: 'Friends', icon: 'people', color: '#8B5CF6' },
   { key: 'events', label: 'Events', icon: 'calendar', color: '#F59E0B' },
+  { key: 'businesses', label: 'Businesses', icon: 'briefcase', color: '#3B82F6' },
 ];
 
 const DARK_STYLE = [
@@ -203,16 +204,29 @@ export default function MapScreen() {
       const lng = parseFloat(e.lng);
       if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `nevt-${e.id}`, type: 'event', lat, lng, title: e.title || 'Event', subtitle: e.location_address || '', targetId: e.id });
     });
+    
+    // Businesses
+    const { data: businesses } = await supabase.from('businesses')
+      .select('id,name,location,image_urls')
+      .not('location','is',null)
+      .limit(50);
+    (businesses || []).forEach((b: any) => {
+      const lat = parseFloat(b.location?.geopoint?.latitude || b.location?.lat);
+      const lng = parseFloat(b.location?.geopoint?.longitude || b.location?.lng);
+      if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `biz-${b.id}`, type: 'business', lat, lng, title: b.name || 'Business', subtitle: b.location?.address || '', targetId: b.id });
+    });
+
     setAllMarkers(found);
     setLoading(false);
   };
 
   const fetchActivity = async (userLoc?: Location.LocationObject) => {
     const items: ActivityItem[] = [];
-    const [{ data: mkt }, { data: postEvts }, { data: newEvts }] = await Promise.all([
+    const [{ data: mkt }, { data: postEvts }, { data: newEvts }, { data: bizzes }] = await Promise.all([
       supabase.from('posts').select('id,title,price,created_at,images,event_location').eq('category','For Sale').or('is_sold.eq.false,is_sold.is.null').order('created_at',{ascending:false}).limit(10),
       supabase.from('posts').select('id,title,event_date,event_location,attendees,images').eq('category','Event').gte('event_date', new Date().toISOString()).order('event_date',{ascending:true}).limit(5),
       supabase.from('events').select('id,title,start_time,location_address,lat,lng,cover_image_url,attendee_count').eq('status','PUBLISHED').gte('start_time', new Date().toISOString()).order('start_time',{ascending:true}).limit(10),
+      supabase.from('businesses').select('id,name,location,image_urls,created_at').order('created_at',{ascending:false}).limit(10),
     ]);
 
     (mkt||[]).forEach((p:any) => {
@@ -229,6 +243,11 @@ export default function MapScreen() {
       const lat = parseFloat(e.lat);
       const lng = parseFloat(e.lng);
       items.push({ id:`ne-${e.id}`, kind:'event', title: e.title, subtitle: e.location_address || 'At venue', meta: e.attendee_count ? `${e.attendee_count} going` : '', time: formatTimeOrDate(e.start_time), image: e.cover_image_url, route:`/events/${e.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
+    });
+    (bizzes||[]).forEach((b:any) => {
+      const lat = parseFloat(b.location?.geopoint?.latitude || b.location?.lat);
+      const lng = parseFloat(b.location?.geopoint?.longitude || b.location?.lng);
+      items.push({ id:`bz-${b.id}`, kind:'biz', title: b.name, subtitle: b.location?.address || 'Local business', time: formatTimeOrDate(b.created_at), image: b.image_urls?.[0], route:`/businesses/${b.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
     });
 
     // Sort by proximity if we have user location, otherwise by recency
@@ -248,6 +267,7 @@ export default function MapScreen() {
     const byFilter = filter === 'all' ? allMarkers : allMarkers.filter(m => {
       if (filter === 'friends') return m.type === 'friend';
       if (filter === 'events') return m.type === 'event';
+      if (filter === 'businesses') return m.type === 'business';
       return true;
     });
     if (!search.trim()) return byFilter;
@@ -308,7 +328,7 @@ export default function MapScreen() {
           const m = p as MapMarker;
           return (
             <Marker key={m.id} coordinate={{ latitude:m.lat, longitude:m.lng }}
-              onPress={() => m.type==='friend' ? router.push(`/profile/${m.targetId}`) : m.type==='event' ? router.push(`/events/${m.targetId}`) : null}>
+              onPress={() => m.type==='friend' ? router.push(`/profile/${m.targetId}`) : m.type==='event' ? router.push(`/events/${m.targetId}`) : m.type==='business' ? router.push(`/businesses/${m.targetId}` as any) : null}>
               {m.type==='friend' ? <FriendMarker avatar_url={m.avatar_url} />
                 : m.type==='business' ? <IconMarker icon="storefront-outline" color="#22c55e" bg="rgba(34,197,94,0.15)" />
                 : <IconMarker icon="calendar-outline" color="#F59E0B" bg="rgba(245,158,11,0.15)" />}
