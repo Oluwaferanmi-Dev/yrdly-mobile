@@ -177,7 +177,7 @@ export default function ProfileTab() {
         {!profile?.phone_verified && (
           <TouchableOpacity 
             style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.tint + '1A', padding: 10, borderRadius: 12, marginBottom: 16 }}
-            onPress={() => router.push('/(auth)/verify-phone' as any)}
+            onPress={() => router.push('/verify-phone' as any)}
           >
             <Feather name="alert-circle" size={16} color={colors.tint} style={{ marginRight: 6 }} />
             <Text style={{ color: colors.tint, fontSize: 14, fontWeight: '600' }}>Verify your phone number</Text>

@@ -106,6 +106,8 @@ function RootNavigationGuard() {
         <Stack.Screen name="(onboarding)" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
         <Stack.Screen name="new-post" options={{ presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
+        <Stack.Screen name="verify-phone" options={{ presentation: 'modal', headerShown: false }} />
+        <Stack.Screen name="verify-phone-otp" options={{ presentation: 'modal', headerShown: false }} />
       </Stack>
     </ErrorBoundary>
   );

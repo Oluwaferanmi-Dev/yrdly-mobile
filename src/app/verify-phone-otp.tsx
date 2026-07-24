@@ -8,9 +8,9 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
-import { useAuth } from '../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../context/ThemeContext';
-import { ErrorMessage } from '../../components/ErrorMessage';
+import { useAuth } from '../hooks/use-supabase-auth';
+import { useAppTheme } from '../context/ThemeContext';
+import { ErrorMessage } from '../components/ErrorMessage';
 
 const { width, height } = Dimensions.get('window');
 

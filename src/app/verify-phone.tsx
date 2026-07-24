@@ -8,9 +8,9 @@ import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
-import { useAppTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../hooks/use-supabase-auth';
-import { ErrorMessage } from '../../components/ErrorMessage';
+import { useAppTheme } from '../context/ThemeContext';
+import { useAuth } from '../hooks/use-supabase-auth';
+import { ErrorMessage } from '../components/ErrorMessage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -35,7 +35,7 @@ export default function VerifyPhoneScreen() {
     try {
       const pinId = await sendPhoneOtp(phone);
       router.push({
-        pathname: '/(auth)/verify-phone-otp',
+        pathname: '/verify-phone-otp',
         params: { phone, initialPinId: pinId },
       } as any);
     } catch (e: any) {
