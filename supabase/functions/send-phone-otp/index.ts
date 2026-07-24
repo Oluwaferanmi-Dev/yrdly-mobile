@@ -57,8 +57,8 @@ serve(async (req) => {
     
     if (data.smsStatus !== 'Message Sent') {
       console.error('Termii send error:', data)
-      return new Response(JSON.stringify({ error: 'Failed to send SMS' }), { 
-        status: 500,
+      return new Response(JSON.stringify({ error: `Failed to send SMS: ${JSON.stringify(data)}` }), { 
+        status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
@@ -67,10 +67,10 @@ serve(async (req) => {
     return new Response(JSON.stringify({ pinId: data.pinId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 500,
+    return new Response(JSON.stringify({ error: `Edge Function Error: ${error.message} - ${error.stack}` }), { 
+      status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }
