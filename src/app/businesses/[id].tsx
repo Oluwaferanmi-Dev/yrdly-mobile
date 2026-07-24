@@ -4,11 +4,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { supabase } from '../../../lib/supabase';
-import { useAppTheme } from '../../../context/ThemeContext';
-import { useAuth } from '../../../hooks/use-supabase-auth';
-import type { Business, CatalogItem } from '../../../types';
-import { Skeleton } from '../../../components/Skeleton';
+import { supabase } from '../../lib/supabase';
+import { useAppTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../hooks/use-supabase-auth';
+import type { Business, CatalogItem } from '../../types';
+import { Skeleton } from '../../components/Skeleton';
 
 const { width } = Dimensions.get('window');
 
@@ -297,22 +297,30 @@ export default function BusinessProfileScreen() {
               <Text style={[s.aboutDesc, { color: colors.textSecondary }]}>{business.description}</Text>
 
               <Text style={[s.aboutHeading, { color: colors.text, marginTop: 24 }]}>Contact Information</Text>
-              {business.phone && (
-                <View style={s.contactRow}>
-                  <Ionicons name="call-outline" size={18} color={colors.textMuted} />
-                  <Text style={{ color: colors.textSecondary }}>{business.phone}</Text>
-                </View>
-              )}
-              <View style={s.contactRow}>
-                <Ionicons name="location-outline" size={18} color={colors.textMuted} />
-                <Text style={{ color: colors.textSecondary }}>{getLocStr()}</Text>
-              </View>
               {business.email && (
                 <View style={s.contactRow}>
                   <Ionicons name="mail-outline" size={18} color={colors.textMuted} />
                   <Text style={{ color: colors.textSecondary }}>{business.email}</Text>
                 </View>
               )}
+              {business.phone && (
+                <View style={s.contactRow}>
+                  <Ionicons name="call-outline" size={18} color={colors.textMuted} />
+                  <Text style={{ color: colors.textSecondary }}>{business.phone}</Text>
+                </View>
+              )}
+              <TouchableOpacity 
+                style={s.contactRow}
+                onPress={() => {
+                  const locStr = getLocStr();
+                  if (locStr && locStr !== 'Location not specified') {
+                    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locStr)}`);
+                  }
+                }}
+              >
+                <Ionicons name="location-outline" size={18} color={colors.textMuted} />
+                <Text style={{ color: colors.textSecondary }}>{getLocStr()}</Text>
+              </TouchableOpacity>
             </View>
           )}
 
