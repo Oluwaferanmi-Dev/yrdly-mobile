@@ -573,8 +573,8 @@ export default function EventDetailScreen() {
                 rotateEnabled={false}
                 scrollEnabled={false}
                 zoomEnabled={false}
-                userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
-                customMapStyle={Platform.OS === 'android' ? (isDarkMode ? DARK_STYLE : []) : undefined}
+                userInterfaceStyle={false ? 'dark' : 'light'}
+                customMapStyle={Platform.OS === 'android' ? (false ? DARK_STYLE : []) : undefined}
               >
                 <Marker coordinate={{ latitude: event.lat, longitude: event.lng }}>
                   <View style={[styles.mapMarker, { backgroundColor: colors.tint }]}>

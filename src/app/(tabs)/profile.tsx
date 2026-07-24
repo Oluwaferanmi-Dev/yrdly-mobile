@@ -20,6 +20,7 @@ export default function ProfileTab() {
   const { user, profile } = useAuth();
   const router = useRouter();
   const { colors } = useAppTheme();
+  const styles = React.useMemo(() => dynamicStyles(colors), [colors]);
   const { width: windowWidth } = useWindowDimensions();
   const TARGET_TILE_WIDTH = 120;
   const numColumns = Math.max(3, Math.floor(windowWidth / TARGET_TILE_WIDTH));
@@ -152,8 +153,8 @@ export default function ProfileTab() {
         </View>
 
         <View style={styles.nameRow}>
-          <Text style={styles.name}>{profile?.name || user?.user_metadata?.name || 'No Name'}</Text>
-          {profile?.verified_seller && (
+          <Text style={styles.name}>{profile?.legal_name || profile?.name || user?.user_metadata?.name || 'No Name'}</Text>
+          {(profile as any)?.verified_seller && (
             <Ionicons name="checkmark-circle" size={18} color="#82DB7E" style={{ marginLeft: 4 }} />
           )}
         </View>
@@ -319,8 +320,8 @@ export default function ProfileTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
+const dynamicStyles = (colors: any) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   listContent: { paddingBottom: 100 },
   headerContainer: { paddingHorizontal: 16, paddingBottom: 16 },
   
@@ -329,18 +330,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12, marginBottom: 8
   },
   navSpacer: { width: 40 },
-  navTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
+  navTitle: { color: colors.text, fontSize: 18, fontWeight: '700' },
   settingsBtn: {
-    width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.borderLight,
     alignItems: 'center', justifyContent: 'center'
   },
 
   heroCard: {
-    backgroundColor: '#161616',
+    backgroundColor: colors.card,
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: colors.borderLight,
     marginBottom: 20
   },
   heroTop: {
@@ -350,71 +351,71 @@ const styles = StyleSheet.create({
   avatarWrapper: { position: 'relative' },
   avatarImage: { width: 80, height: 80, borderRadius: 40 },
   avatarPlaceholder: {
-    width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(130, 219, 126, 0.1)',
+    width: 80, height: 80, borderRadius: 40, backgroundColor: colors.tint + '1A',
     alignItems: 'center', justifyContent: 'center'
   },
-  avatarText: { color: '#82DB7E', fontSize: 28, fontWeight: 'bold' },
+  avatarText: { color: colors.tint, fontSize: 28, fontWeight: 'bold' },
   onlineIndicator: {
     position: 'absolute', bottom: 2, right: 2, width: 16, height: 16,
-    borderRadius: 8, backgroundColor: '#82DB7E', borderWidth: 3, borderColor: '#161616'
+    borderRadius: 8, backgroundColor: colors.tint, borderWidth: 3, borderColor: colors.card
   },
   editProfileBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)'
+    borderRadius: 20, borderWidth: 1, borderColor: colors.borderLight
   },
-  editProfileText: { color: '#FFF', fontSize: 13, fontWeight: '600' },
+  editProfileText: { color: colors.text, fontSize: 13, fontWeight: '600' },
 
   nameRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
-  name: { color: '#FFF', fontSize: 22, fontWeight: 'bold' },
-  username: { color: '#A1A1AA', fontSize: 15, marginBottom: 16 },
+  name: { color: colors.text, fontSize: 22, fontWeight: 'bold' },
+  username: { color: colors.textSecondary, fontSize: 15, marginBottom: 16 },
 
   statsRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
     marginBottom: 16, paddingVertical: 12, borderTopWidth: 1, borderBottomWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)'
+    borderColor: colors.borderLight
   },
   statItem: { alignItems: 'center', flex: 1 },
-  statValue: { color: '#FFF', fontSize: 20, fontWeight: 'bold' },
-  statLabel: { color: '#A1A1AA', fontSize: 12, marginTop: 4 },
-  statDivider: { width: 1, height: 30, backgroundColor: 'rgba(255,255,255,0.06)' },
+  statValue: { color: colors.text, fontSize: 20, fontWeight: 'bold' },
+  statLabel: { color: colors.textSecondary, fontSize: 12, marginTop: 4 },
+  statDivider: { width: 1, height: 30, backgroundColor: colors.borderLight },
 
-  bio: { color: '#FFF', fontSize: 14, lineHeight: 20, marginBottom: 12 },
+  bio: { color: colors.text, fontSize: 14, lineHeight: 20, marginBottom: 12 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  locationText: { color: '#A1A1AA', fontSize: 14 },
+  locationText: { color: colors.textSecondary, fontSize: 14 },
 
   quickActions: {
     flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginBottom: 24
   },
   actionCard: {
-    flex: 1, backgroundColor: '#161616', borderRadius: 16, padding: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)'
+    flex: 1, backgroundColor: colors.card, borderRadius: 16, padding: 12,
+    borderWidth: 1, borderColor: colors.borderLight
   },
   actionIconWrapper: {
-    width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(130, 219, 126, 0.1)',
+    width: 32, height: 32, borderRadius: 16, backgroundColor: colors.tint + '1A',
     alignItems: 'center', justifyContent: 'center', marginBottom: 8
   },
-  actionTitle: { color: '#FFF', fontSize: 13, fontWeight: '600', marginBottom: 2 },
-  actionSub: { color: '#A1A1AA', fontSize: 11 },
+  actionTitle: { color: colors.text, fontSize: 13, fontWeight: '600', marginBottom: 2 },
+  actionSub: { color: colors.textSecondary, fontSize: 11 },
 
   tabsContainer: {
-    flexDirection: 'row', backgroundColor: '#050505',
-    paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)',
+    flexDirection: 'row', backgroundColor: colors.background,
+    paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: colors.borderLight,
     marginBottom: 8
   },
   tab: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     paddingVertical: 16, borderBottomWidth: 2, borderBottomColor: 'transparent'
   },
-  activeTab: { borderBottomColor: '#82DB7E' },
-  tabText: { color: '#A1A1AA', fontSize: 15, fontWeight: '600' },
-  activeTabText: { color: '#FFF' },
+  activeTab: { borderBottomColor: colors.tint },
+  tabText: { color: colors.textSecondary, fontSize: 15, fontWeight: '600' },
+  activeTabText: { color: colors.text },
 
   emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60, paddingHorizontal: 20 },
-  emptyHeadline: { color: '#FFF', fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
-  emptySub: { color: '#A1A1AA', fontSize: 15, textAlign: 'center', marginBottom: 24 },
+  emptyHeadline: { color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
+  emptySub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center', marginBottom: 24 },
   createBtn: {
-    backgroundColor: '#82DB7E', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24
+    backgroundColor: colors.tint, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24
   },
-  createBtnText: { color: '#050505', fontSize: 16, fontWeight: 'bold' }
+  createBtnText: { color: colors.background, fontSize: 16, fontWeight: 'bold' }
 });

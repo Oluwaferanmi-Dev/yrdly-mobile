@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Dim
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
-import { Post, Event } from '../types';
-import ScreenHeader from '../components/ScreenHeader';
-import PostCard from '../components/PostCard';
-import EventCard from '../components/EventCard';
+import { Post } from '../types';
+import { ScreenHeader } from '../components/ScreenHeader';
+import { PostCard } from '../components/PostCard';
+import { EventCard } from '../components/EventCard';
 import { useRouter } from 'expo-router';
 import { PostSkeleton } from '../components/Skeleton';
 
@@ -19,7 +19,7 @@ export default function BookmarksScreen() {
   
   const [activeTab, setActiveTab] = useState<'posts' | 'events'>('posts');
   const [posts, setPosts] = useState<Post[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -68,7 +68,7 @@ export default function BookmarksScreen() {
             
             // Re-order by bookmark time
             const orderedEvents = eventIds.map(id => fullEvents?.find(e => e.id === id)).filter(Boolean);
-            setEvents(orderedEvents as Event[]);
+            setEvents(orderedEvents as Post[]);
           } else {
             setEvents([]);
           }
@@ -94,7 +94,7 @@ export default function BookmarksScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScreenHeader title="Saved Items" showBackButton onBack={() => router.back()} />
+      <ScreenHeader title="Saved Items"  />
       
       <View style={[styles.tabs, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity 

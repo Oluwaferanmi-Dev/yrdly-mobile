@@ -18,6 +18,7 @@ const { width } = Dimensions.get('window');
 
 export default function CommunityScreen() {
   const { colors } = useAppTheme();
+  const styles = React.useMemo(() => dynamicStyles(colors), [colors]);
   const router = useRouter();
   const { user: currentUser, profile } = useAuth();
   const { activeFilter } = useLocation();
@@ -399,7 +400,7 @@ export default function CommunityScreen() {
             <Feather name="users" size={32} color={colors.tint} />
           </View>
         </View>
-        <View style={[styles.searchContainerPremium, { backgroundColor: 'rgba(255,255,255,0.05)' }]}>
+        <View style={[styles.searchContainerPremium, { backgroundColor: colors.tint + '1A' }]}>
           <Feather name="search" size={18} color={colors.textSecondary} />
           <TextInput
             style={[styles.searchInputPremium, { color: colors.text }]}
@@ -436,9 +437,7 @@ export default function CommunityScreen() {
     <View style={styles.discoverHeaderContainer}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Text style={[styles.sectionTitlePremium, { color: colors.text, marginBottom: 0 }]}>Find People</Text>
-        <TouchableOpacity onPress={handlePresentModalPress} style={{ padding: 8 }}>
-          <Feather name="sliders" size={20} color={colors.text} />
-        </TouchableOpacity>
+        
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsRowPremium}>
         {(['all', 'neighbors', 'mutuals', 'sellers'] as const).map(tab => (
@@ -494,31 +493,31 @@ export default function CommunityScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#050505' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Premium Header */}
       <View style={styles.premiumHeader}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.glassBtn, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
+        <TouchableOpacity onPress={() => router.back()} style={[styles.glassBtn, { backgroundColor: colors.tint + '1A' }]}>
           <Feather name="chevron-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerTitleCenter}>
           <Text style={[styles.premiumHeaderTitle, { color: colors.text }]}>Community</Text>
-          <Text style={[styles.premiumHeaderSubtitle, { color: colors.textSecondary }]}>Connect & discover</Text>
+          
         </View>
-        
+        <View style={{ width: 40 }} />
       </View>
 
       {/* Segmented Control */}
       <View style={styles.segmentedControlContainer}>
-        <View style={[styles.segmentedControl, { backgroundColor: '#111' }]}>
+        <View style={[styles.segmentedControl, { backgroundColor: colors.card }]}>
           <TouchableOpacity 
-            style={[styles.segmentBtn, activeTab === 'friends' && { backgroundColor: 'rgba(255,255,255,0.05)' }]} 
+            style={[styles.segmentBtn, activeTab === 'friends' && { backgroundColor: colors.tint + '1A' }]} 
             onPress={() => setActiveTab('friends')}
           >
             <Text style={[styles.segmentText, activeTab === 'friends' ? { color: colors.text } : { color: colors.textMuted }]}>Friends</Text>
             {activeTab === 'friends' && <Animated.View layout={Layout.springify()} style={[styles.activeIndicator, { backgroundColor: colors.tint }]} />}
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.segmentBtn, activeTab === 'discover' && { backgroundColor: 'rgba(255,255,255,0.05)' }]} 
+            style={[styles.segmentBtn, activeTab === 'discover' && { backgroundColor: colors.tint + '1A' }]} 
             onPress={() => setActiveTab('discover')}
           >
             <Text style={[styles.segmentText, activeTab === 'discover' ? { color: colors.text } : { color: colors.textMuted }]}>Discover</Text>
@@ -569,8 +568,8 @@ export default function CommunityScreen() {
         ref={bottomSheetModalRef}
         index={0}
         snapPoints={snapPoints}
-        backgroundStyle={{ backgroundColor: '#111' }}
-        handleIndicatorStyle={{ backgroundColor: '#333' }}
+        backgroundStyle={{ backgroundColor: colors.card }}
+        handleIndicatorStyle={{ backgroundColor: colors.borderLight }}
         backdropComponent={(props) => (
           <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.7} />
         )}
@@ -607,7 +606,7 @@ export default function CommunityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const dynamicStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1 },
   premiumHeader: {
     flexDirection: 'row',
@@ -696,11 +695,11 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   premiumCard: {
-    backgroundColor: '#111',
+    backgroundColor: colors.card,
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: colors.borderLight,
   },
   requestCard: {
     width: width * 0.75,
@@ -762,12 +761,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   heroCard: {
-    backgroundColor: '#111',
+    backgroundColor: colors.card,
     borderRadius: 24,
     padding: 20,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: colors.borderLight,
   },
   heroContent: {
     flexDirection: 'row',
@@ -825,7 +824,7 @@ const styles = StyleSheet.create({
   },
   inviteContent: {
     padding: 20,
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    backgroundColor: colors.tint + '1A',
   },
   inviteTextRow: {
     flexDirection: 'row',
@@ -862,7 +861,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   premiumFriendCard: {
-    backgroundColor: '#111',
+    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 12,
     marginBottom: 12,
@@ -904,7 +903,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#82DB7E',
     borderWidth: 2,
-    borderColor: '#111',
+    borderColor: colors.card,
   },
   friendInfo: {
     flex: 1,
@@ -919,7 +918,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: colors.borderLight,
   },
   smallActionBtn: {
     width: 36,
@@ -982,12 +981,12 @@ const styles = StyleSheet.create({
   },
 
   discoverHeroCard: {
-    backgroundColor: '#111',
+    backgroundColor: colors.card,
     borderRadius: 24,
     padding: 20,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: colors.borderLight,
   },
   discoverHeroContent: {
     flexDirection: 'row',
@@ -1087,13 +1086,13 @@ const styles = StyleSheet.create({
   },
   nearbyCard: {
     width: 140,
-    backgroundColor: '#111',
+    backgroundColor: colors.card,
     borderRadius: 24,
     padding: 16,
     alignItems: 'center',
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: colors.borderLight,
   },
   nearbyAvatarContainer: {
     position: 'relative',
@@ -1116,7 +1115,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#82DB7E',
     borderWidth: 3,
-    borderColor: '#111',
+    borderColor: colors.card,
   },
   nearbyName: {
     fontSize: 16,
@@ -1147,12 +1146,12 @@ const styles = StyleSheet.create({
   mutualCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#111',
+    backgroundColor: colors.card,
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: colors.borderLight,
   },
   mutualInfoRow: {
     flexDirection: 'row',
@@ -1188,18 +1187,18 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: colors.tint + '1A',
     alignItems: 'center',
     justifyContent: 'center',
   },
   sellerCard: {
     width: 240,
-    backgroundColor: '#111',
+    backgroundColor: colors.card,
     borderRadius: 24,
     padding: 16,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: colors.borderLight,
   },
   sellerTopRow: {
     flexDirection: 'row',
@@ -1267,11 +1266,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: colors.tint + '1A',
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.borderLight,
   },
   applyFilterBtn: {
     paddingVertical: 16,
