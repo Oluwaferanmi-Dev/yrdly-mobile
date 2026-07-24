@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { Post } from '../types';
-import { useAppTheme } from '../context/ThemeContext';
 import { StorageService } from '../lib/storage-service';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 interface ProfilePostGridItemProps {
   post: Post;
@@ -12,18 +12,35 @@ interface ProfilePostGridItemProps {
   width: number;
 }
 
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
 export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridItemProps) {
-  const { colors } = useAppTheme();
   
   const hasImages = post.image_urls && post.image_urls.length > 0;
   const imageUrl = hasImages ? post.image_urls![0] : post.image_url || post.video_thumbnail_url;
   const hasVideo = !!post.video_url;
+  
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }]
+    };
+  });
+
+  const handlePressIn = () => { scale.value = withSpring(0.95); };
+  const handlePressOut = () => { scale.value = withSpring(1); };
+
+  const PADDING = 2;
+  const itemSize = width - (PADDING * 2);
 
   return (
-    <TouchableOpacity 
-      activeOpacity={0.8} 
-      style={[{ width, height: width }, styles.container, { borderColor: colors.background }]} 
+    <AnimatedTouchable 
+      activeOpacity={0.9} 
+      style={[{ width: itemSize, height: itemSize, margin: PADDING }, styles.container, animatedStyle]} 
       onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
     >
       {imageUrl ? (
         <>
@@ -35,29 +52,46 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
           )}
         </>
       ) : hasVideo ? (
-        <View style={[styles.placeholder, { backgroundColor: colors.borderLight }]}>
-          <Feather name="video" size={32} color={colors.textSecondary} />
+        <View style={[styles.placeholder, { backgroundColor: '#161616' }]}>
+          <Feather name="video" size={32} color="#A1A1AA" />
         </View>
       ) : (
-        <View style={[styles.placeholder, { backgroundColor: colors.inputBackground }]}>
-          <Text style={[styles.textSnippet, { color: colors.text }]} numberOfLines={3}>
+        <View style={[styles.placeholder, { backgroundColor: '#111111' }]}>
+          <Text style={styles.textSnippet} numberOfLines={3}>
             {post.title || post.text || 'Post'}
           </Text>
         </View>
       )}
       
+      <View style={styles.badgeContainer}>
+        {post.category === 'For Sale' && (
+          <View style={styles.badge}>
+            <MaterialIcons name="storefront" size={12} color="#FFF" />
+          </View>
+        )}
+        {post.category === 'Event' && (
+          <View style={[styles.badge, { backgroundColor: '#82DB7E' }]}>
+            <Feather name="calendar" size={12} color="#050505" />
+          </View>
+        )}
+      </View>
+
       {hasVideo && imageUrl && (
         <View style={styles.iconOverlay}>
           <Feather name="play" size={16} color="#FFF" />
         </View>
       )}
-    </TouchableOpacity>
+    </AnimatedTouchable>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1, // acts as a gap/margin between grid items
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#161616',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)'
   },
   image: {
     width: '100%',
@@ -73,15 +107,28 @@ const styles = StyleSheet.create({
   textSnippet: {
     fontSize: 12,
     textAlign: 'center',
+    color: '#FFF'
   },
   iconOverlay: {
     position: 'absolute',
-    top: 6,
-    right: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 3,
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 12,
+    padding: 4,
   },
+  badgeContainer: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    flexDirection: 'row',
+    gap: 4
+  },
+  badge: {
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 4,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
 });

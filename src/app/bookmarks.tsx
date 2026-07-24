@@ -8,7 +8,7 @@ import ScreenHeader from '../components/ScreenHeader';
 import PostCard from '../components/PostCard';
 import EventCard from '../components/EventCard';
 import { useRouter } from 'expo-router';
-import { PostSkeleton } from '../components/Skeletons';
+import { PostSkeleton } from '../components/Skeleton';
 
 const { width } = Dimensions.get('window');
 

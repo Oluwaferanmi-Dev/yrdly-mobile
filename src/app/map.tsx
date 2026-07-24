@@ -24,7 +24,6 @@ type ActivityItem = { id: string; kind: 'post'|'market'|'event'|'biz'; title: st
 const FILTERS: { key: FilterType; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
   { key: 'all', label: 'All', icon: 'apps', color: '#82DB7E' },
   { key: 'friends', label: 'Friends', icon: 'people', color: '#8B5CF6' },
-  { key: 'businesses', label: 'Businesses', icon: 'storefront', color: '#22c55e' },
   { key: 'events', label: 'Events', icon: 'calendar', color: '#F59E0B' },
 ];
 
@@ -181,13 +180,6 @@ export default function MapScreen() {
         });
       }
     }
-    // Businesses
-    const { data: bizs } = await supabase.from('businesses').select('id,name,category,location').not('location','is',null).limit(50);
-    (bizs || []).forEach((b: any) => {
-      const lat = parseFloat(b.location?.lat ?? b.location?.geopoint?.latitude);
-      const lng = parseFloat(b.location?.lng ?? b.location?.geopoint?.longitude);
-      if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `biz-${b.id}`, type: 'business', lat, lng, title: b.name, subtitle: b.category, targetId: b.id });
-    });
     // Events from posts table (legacy)
     const { data: postEvts } = await supabase.from('posts')
       .select('id,title,event_location')
@@ -217,11 +209,10 @@ export default function MapScreen() {
 
   const fetchActivity = async (userLoc?: Location.LocationObject) => {
     const items: ActivityItem[] = [];
-    const [{ data: mkt }, { data: postEvts }, { data: newEvts }, { data: bizs }] = await Promise.all([
+    const [{ data: mkt }, { data: postEvts }, { data: newEvts }] = await Promise.all([
       supabase.from('posts').select('id,title,price,created_at,images,event_location').eq('category','For Sale').or('is_sold.eq.false,is_sold.is.null').order('created_at',{ascending:false}).limit(10),
       supabase.from('posts').select('id,title,event_date,event_location,attendees,images').eq('category','Event').gte('event_date', new Date().toISOString()).order('event_date',{ascending:true}).limit(5),
       supabase.from('events').select('id,title,start_time,location_address,lat,lng,cover_image_url,attendee_count').eq('status','PUBLISHED').gte('start_time', new Date().toISOString()).order('start_time',{ascending:true}).limit(10),
-      supabase.from('businesses').select('id,name,category,description,image_urls,created_at,location').order('created_at',{ascending:false}).limit(5),
     ]);
 
     (mkt||[]).forEach((p:any) => {
@@ -238,11 +229,6 @@ export default function MapScreen() {
       const lat = parseFloat(e.lat);
       const lng = parseFloat(e.lng);
       items.push({ id:`ne-${e.id}`, kind:'event', title: e.title, subtitle: e.location_address || 'At venue', meta: e.attendee_count ? `${e.attendee_count} going` : '', time: formatTimeOrDate(e.start_time), image: e.cover_image_url, route:`/events/${e.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
-    });
-    (bizs||[]).forEach((b:any) => {
-      const lat = parseFloat(b.location?.lat ?? b.location?.geopoint?.latitude);
-      const lng = parseFloat(b.location?.lng ?? b.location?.geopoint?.longitude);
-      items.push({ id:`b-${b.id}`, kind:'biz', title:`${b.name}`, subtitle: b.description?.slice(0,60)||b.category||'', time: formatTimeOrDate(b.created_at), image: b.image_urls?.[0], route:`/business/${b.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
     });
 
     // Sort by proximity if we have user location, otherwise by recency
@@ -261,7 +247,6 @@ export default function MapScreen() {
   const visibleMarkers = useMemo(() => {
     const byFilter = filter === 'all' ? allMarkers : allMarkers.filter(m => {
       if (filter === 'friends') return m.type === 'friend';
-      if (filter === 'businesses') return m.type === 'business';
       if (filter === 'events') return m.type === 'event';
       return true;
     });
@@ -282,7 +267,6 @@ export default function MapScreen() {
   }, [region, sc, visibleMarkers]);
 
   const areaName = (profile?.location as any)?.lga || (profile?.location as any)?.state || 'Your Area';
-  const bizCount = allMarkers.filter(m => m.type === 'business').length;
   const evtCount = allMarkers.filter(m => m.type === 'event').length;
 
   const locateMe = () => {
@@ -343,7 +327,7 @@ export default function MapScreen() {
             <Feather name="search" size={16} color="#8a9bb0" style={{ marginRight:8 }} />
             <TextInput
               style={s.searchInput}
-              placeholder="Search streets, estates, businesses..."
+              placeholder="Search streets, estates, events..."
               placeholderTextColor="#8a9bb0"
               value={search}
               onChangeText={setSearch}
@@ -379,7 +363,7 @@ export default function MapScreen() {
           <Ionicons name="location" size={14} color="#82DB7E" />
           <Text style={s.estateName}>{areaName}</Text>
         </View>
-        <Text style={s.estateMeta}>{bizCount} businesses  •  {evtCount} events nearby</Text>
+        <Text style={s.estateMeta}>{evtCount} events nearby</Text>
         <TouchableOpacity style={s.communityBtn} onPress={() => router.push('/community' as any)}>
           <Text style={s.communityTxt}>View Community</Text>
           <Ionicons name="chevron-forward" size={14} color="#0B0D0B" />
