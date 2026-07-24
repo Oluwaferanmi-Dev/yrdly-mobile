@@ -123,7 +123,7 @@ export default function ProfileTab() {
           style={styles.settingsBtn}
           onPress={() => router.push('/settings')}
         >
-          <Feather name="settings" size={20} color="#FFF" />
+          <Feather name="settings" size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -147,7 +147,7 @@ export default function ProfileTab() {
             style={styles.editProfileBtn}
             onPress={() => router.push('/settings')}
           >
-            <Feather name="edit-2" size={14} color="#FFF" />
+            <Feather name="edit-2" size={14} color={colors.text} />
             <Text style={styles.editProfileText}>Edit profile</Text>
           </TouchableOpacity>
         </View>
