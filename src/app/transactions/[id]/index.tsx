@@ -122,7 +122,8 @@ export default function TransactionDetailScreen() {
           id, amount, commission, seller_amount, status,
           created_at, paid_at, shipped_at, delivered_at, completed_at,
           buyer_id, seller_id,
-          item:posts(id, title, images:image_urls, price),
+          post_item:posts(id, title, images:image_urls, price),
+          catalog_item:catalog_items(id, title, images, price),
           buyer:users!escrow_transactions_buyer_id_fkey(id, name, avatar_url),
           seller:users!escrow_transactions_seller_id_fkey(id, name, avatar_url)
         `)
@@ -130,9 +131,13 @@ export default function TransactionDetailScreen() {
         .single();
       if (error) throw error;
 
+      const postItem = Array.isArray(data.post_item) ? data.post_item[0] : data.post_item;
+      const catalogItem = Array.isArray(data.catalog_item) ? data.catalog_item[0] : data.catalog_item;
+      const itemObj = postItem || (catalogItem ? { id: catalogItem.id, title: catalogItem.title, images: catalogItem.images, price: catalogItem.price } : null);
+
       const normalised = {
         ...data,
-        item: Array.isArray(data.item) ? data.item[0] ?? null : data.item,
+        item: itemObj,
         buyer: Array.isArray(data.buyer) ? data.buyer[0] ?? null : data.buyer,
         seller: Array.isArray(data.seller) ? data.seller[0] ?? null : data.seller,
       } as TxDetail;
@@ -237,6 +242,38 @@ export default function TransactionDetailScreen() {
   const canDispute = (isBuyer || isSeller) && ['paid', 'shipped', 'delivered'].includes(tx.status);
   const canReview = isBuyer && tx.status === 'completed';
 
+  const handleMessageCounterparty = async () => {
+    if (!user || !counterparty?.id) return;
+    try {
+      const { data: convs } = await supabase
+        .from('conversations')
+        .select('id, type, participant_ids')
+        .contains('participant_ids', [user.id, counterparty.id]);
+
+      const existing = convs?.find(c => c.participant_ids?.includes(user.id) && c.participant_ids?.includes(counterparty.id));
+      if (existing?.id) {
+        router.push({ pathname: '/chat/[id]', params: { id: existing.id } });
+        return;
+      }
+
+      const { data: newConv } = await supabase
+        .from('conversations')
+        .insert({
+          type: 'marketplace',
+          participant_ids: [user.id, counterparty.id],
+        })
+        .select('id')
+        .single();
+
+      if (newConv?.id) {
+        router.push({ pathname: '/chat/[id]', params: { id: newConv.id } });
+      }
+    } catch (e) {
+      console.error('Message counterparty error:', e);
+      router.push(`/profile/${counterparty.id}` as any);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
@@ -304,10 +341,7 @@ export default function TransactionDetailScreen() {
             <Text style={[styles.personName, { color: colors.text }]}>{counterparty?.name ?? 'User'}</Text>
             <TouchableOpacity
               style={[styles.messageBtn, { borderColor: colors.tint }]}
-              onPress={() => {
-                /* Find or create a conversation then navigate */
-                router.push(`/profile/${counterparty?.id}` as any);
-              }}
+              onPress={handleMessageCounterparty}
             >
               <Feather name="message-circle" size={16} color={colors.tint} />
               <Text style={[styles.messageBtnText, { color: colors.tint }]}>Message</Text>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Dimensions, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -150,11 +150,51 @@ export default function CatalogItemScreen() {
 
   const handleBuy = useCallback(() => {
     if (!item) return;
+    if (!item.in_stock || (item.quantity !== undefined && item.quantity <= 0)) {
+      Alert.alert("Sold Out", "This item is currently out of stock.");
+      return;
+    }
     router.push({
       pathname: '/checkout/[id]',
       params: { id: item.id, type: 'catalog_item' }
     });
   }, [item, router]);
+
+  const handleRestock = useCallback(async () => {
+    if (!item) return;
+    Alert.prompt(
+      "Restock Item",
+      "Enter new stock quantity for this item:",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Update Stock",
+          onPress: async (val?: string) => {
+            const qty = parseInt(val || '0', 10);
+            if (isNaN(qty) || qty < 0) {
+              Alert.alert("Invalid Quantity", "Please enter a valid positive number.");
+              return;
+            }
+            try {
+              const inStock = qty > 0;
+              const { error } = await supabase
+                .from('catalog_items')
+                .update({ quantity: qty, in_stock: inStock })
+                .eq('id', item.id);
+              if (error) throw error;
+              setItem(prev => prev ? { ...prev, quantity: qty, in_stock: inStock } : null);
+              Alert.alert("Success", `Item stock updated to ${qty}.`);
+            } catch (err) {
+              console.error("Error restocking item:", err);
+              Alert.alert("Error", "Could not update stock.");
+            }
+          }
+        }
+      ],
+      "plain-text",
+      item.quantity !== undefined ? String(item.quantity) : "10"
+    );
+  }, [item]);
 
   if (loading) {
     return (
@@ -269,13 +309,29 @@ export default function CatalogItemScreen() {
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={[s.priceTxt, { color: colors.tint }]}>₦{item.price.toLocaleString()}</Text>
-              {!item.in_stock && (
+              {!item.in_stock || (item.quantity !== undefined && item.quantity <= 0) ? (
                 <View style={[s.outOfStockBadge, { backgroundColor: '#FEE2E2' }]}>
                   <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: '700' }}>Out of Stock</Text>
                 </View>
-              )}
+              ) : item.quantity !== undefined ? (
+                <View style={[s.outOfStockBadge, { backgroundColor: colors.tint + '18' }]}>
+                  <Text style={{ color: colors.tint, fontSize: 12, fontWeight: '700' }}>
+                    {item.quantity <= 3 ? `Only ${item.quantity} left!` : `${item.quantity} in stock`}
+                  </Text>
+                </View>
+              ) : null}
             </View>
           </View>
+
+          {isOwner && (
+            <TouchableOpacity 
+              onPress={handleRestock}
+              style={{ backgroundColor: colors.tint + '20', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start', marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+            >
+              <Ionicons name="refresh-outline" size={16} color={colors.tint} />
+              <Text style={{ color: colors.tint, fontSize: 12, fontWeight: '700' }}>Restock / Update Quantity</Text>
+            </TouchableOpacity>
+          )}
 
           {!!item.description && (
             <Text style={[s.descTxt, { color: colors.textSecondary }]}>{item.description}</Text>

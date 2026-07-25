@@ -61,7 +61,8 @@ export default function TransactionsScreen() {
         .from('escrow_transactions')
         .select(`
           id, amount, status, created_at, buyer_id, seller_id,
-          item:posts(id, title, images:image_urls),
+          post_item:posts(id, title, images:image_urls),
+          catalog_item:catalog_items(id, title, images),
           buyer:users!escrow_transactions_buyer_id_fkey(name, avatar_url),
           seller:users!escrow_transactions_seller_id_fkey(name, avatar_url)
         `)
@@ -70,12 +71,18 @@ export default function TransactionsScreen() {
 
       if (error) throw error;
 
-      const normalised = (data ?? []).map((tx: any) => ({
-        ...tx,
-        item: Array.isArray(tx.item) ? tx.item[0] ?? null : tx.item,
-        buyer: Array.isArray(tx.buyer) ? tx.buyer[0] ?? null : tx.buyer,
-        seller: Array.isArray(tx.seller) ? tx.seller[0] ?? null : tx.seller,
-      })) as Transaction[];
+      const normalised = (data ?? []).map((tx: any) => {
+        const postItem = Array.isArray(tx.post_item) ? tx.post_item[0] : tx.post_item;
+        const catalogItem = Array.isArray(tx.catalog_item) ? tx.catalog_item[0] : tx.catalog_item;
+        const itemObj = postItem || (catalogItem ? { id: catalogItem.id, title: catalogItem.title, images: catalogItem.images } : null);
+
+        return {
+          ...tx,
+          item: itemObj,
+          buyer: Array.isArray(tx.buyer) ? tx.buyer[0] ?? null : tx.buyer,
+          seller: Array.isArray(tx.seller) ? tx.seller[0] ?? null : tx.seller,
+        };
+      }) as Transaction[];
 
       setTransactions(normalised);
     } catch (e) {
