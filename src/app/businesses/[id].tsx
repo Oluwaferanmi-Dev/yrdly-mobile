@@ -539,7 +539,7 @@ const s = StyleSheet.create({
   reviewerName: { fontSize: 15, fontWeight: '600', marginBottom: 2 },
   reviewRating: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   galleryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  galleryGridImg: { width: (width - 40) / 3, height: (width - 40) / 3, borderRadius: 12 },
+  galleryGridImg: { width: (width - 48) / 3, height: (width - 48) / 3, borderRadius: 12 },
   menuBtn: { position: 'absolute', right: 16, width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-start', alignItems: 'flex-end', paddingTop: 80, paddingRight: 16 },
   menuSheet: { borderRadius: 14, borderWidth: 1, minWidth: 220, overflow: 'hidden' },
