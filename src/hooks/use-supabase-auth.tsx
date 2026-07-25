@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { AuthService, AuthUser } from '@/lib/auth-service';
 import { supabase } from '@/lib/supabase';
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profileCreationInProgress, setProfileCreationInProgress] = useState(false);
+  const profileCreationInProgress = React.useRef(false);
   const posthog = usePostHog();
 
   useEffect(() => {
@@ -84,8 +84,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
 
               // If no profile exists and not from cache, create one
-              if (!userProfile && !profileCreationInProgress) {
-                setProfileCreationInProgress(true);
+              if (!userProfile && !profileCreationInProgress.current) {
+                profileCreationInProgress.current = true;
                 try {
                   await AuthService.createUserProfile(currentUser, 
                     currentUser.user_metadata?.name || 
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     profile_completed: true,
                   } as AuthUser;
                 } finally {
-                  setProfileCreationInProgress(false);
+                  profileCreationInProgress.current = false;
                 }
               }
               
@@ -117,10 +117,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setProfile(userProfile);
               }
             } catch (error) {
-              console.error('Error fetching user profile:', error);
-              if (isMounted) {
-                setProfile(null);
-              }
+              console.error('Error fetching user profile (initial session):', error);
+              // Don't null the profile on transient errors — keep whatever we have
             }
           } else {
             // No user, ensure profile is also null
@@ -235,8 +233,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             // If no profile exists, create one
-            if (!userProfile && !profileCreationInProgress) {
-              setProfileCreationInProgress(true);
+            if (!userProfile && !profileCreationInProgress.current) {
+              profileCreationInProgress.current = true;
               try {
                 await AuthService.createUserProfile(user, 
                   user.user_metadata?.name || 
@@ -260,7 +258,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   profile_completed: true,
                 } as AuthUser;
               } finally {
-                setProfileCreationInProgress(false);
+                profileCreationInProgress.current = false;
               }
             }
             
@@ -270,10 +268,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setupProfileRealtime(user.id);
             }
           } catch (error) {
-            console.error('Error fetching user profile:', error);
-            if (isMounted) {
-              setProfile(null);
-            }
+            console.error('Error fetching user profile (auth change):', error);
+            // Don't null the profile on transient fetch errors — keep existing state
           }
         } else {
           setProfile(null);
@@ -295,7 +291,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         supabase.removeChannel(profileChannel);
       }
     };
-  }, [profileCreationInProgress]);
+  }, []); // Empty deps — auth listener must never be torn down and re-registered mid-session
 
   const signUp = async (email: string, password: string, name: string, legalName: string, username: string) => {
     setLoading(true);

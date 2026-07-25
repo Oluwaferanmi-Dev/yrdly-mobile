@@ -214,8 +214,9 @@ export default function BusinessProfileScreen() {
     );
   }
 
-  // Non-owner visiting a deactivated business
-  if (!(business as any).is_active && !isOwner) {
+  // Non-owner visiting a deactivated or archived business
+  const isArchivedOrInactive = (business as any).is_active === false || (business as any).is_archived === true || (business as any).status === 'archived';
+  if (isArchivedOrInactive && !isOwner) {
     return (
       <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }]}>
         <Ionicons name="storefront-outline" size={64} color={colors.textMuted} style={{ marginBottom: 16, opacity: 0.4 }} />

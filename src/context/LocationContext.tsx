@@ -42,7 +42,11 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         const savedData = await SecureStore.getItemAsync(GLOBAL_FILTER_STORAGE_KEY);
         if (savedData) {
           const parsed = JSON.parse(savedData);
-          setActiveFilterRaw(parsed);
+          if (parsed.isAllNigeria) {
+            setActiveFilterRaw(null);
+          } else {
+            setActiveFilterRaw(parsed);
+          }
         } else if (hasLocation) {
           setActiveFilterRaw({ state: userState, lga: userLga });
         }
@@ -63,7 +67,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       if (newFilter) {
         await SecureStore.setItemAsync(GLOBAL_FILTER_STORAGE_KEY, JSON.stringify(newFilter));
       } else {
-        await SecureStore.deleteItemAsync(GLOBAL_FILTER_STORAGE_KEY);
+        await SecureStore.setItemAsync(GLOBAL_FILTER_STORAGE_KEY, JSON.stringify({ isAllNigeria: true }));
       }
     } catch {
       // Ignore

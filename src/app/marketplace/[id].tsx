@@ -193,10 +193,25 @@ function MarketplaceDetailContent() {
   };
 
   const handleMore = () => {
+    const isOwner = user?.id === post?.user_id;
     const saveOption = isBookmarked ? 'Unsave Item' : 'Save Item';
-    const options = ['Report Item', 'Copy Link', saveOption, 'Block Seller', 'Cancel'];
-    const cancelButtonIndex = 4;
-    
+
+    const handleDeleteItem = () => {
+      Alert.alert('Delete Item', 'Are you sure you want to delete this listing?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: async () => {
+          if (!user || !post) return;
+          try {
+            await supabase.from('posts').delete().eq('id', post.id);
+            Alert.alert('Success', 'Listing deleted.');
+            router.back();
+          } catch (e: any) {
+            Alert.alert('Error', e.message || 'Failed to delete listing.');
+          }
+        }}
+      ]);
+    };
+
     const handleReport = () => {
       Alert.alert('Report Item', 'Are you sure you want to report this item?', [
         { text: 'Cancel', style: 'cancel' },
@@ -233,25 +248,47 @@ function MarketplaceDetailContent() {
         setIsBookmarked(!newBookmarked);
       }
     };
-    
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        { options, cancelButtonIndex, destructiveButtonIndex: 3 },
-        (buttonIndex) => {
-          if (buttonIndex === 0) handleReport();
-          if (buttonIndex === 1) handleShare();
-          if (buttonIndex === 2) handleBookmarkToggle();
-          if (buttonIndex === 3) handleBlock();
-        }
-      );
+
+    if (isOwner) {
+      const options = ['Copy Link', saveOption, 'Delete Item', 'Cancel'];
+      if (Platform.OS === 'ios') {
+        ActionSheetIOS.showActionSheetWithOptions(
+          { options, cancelButtonIndex: 3, destructiveButtonIndex: 2 },
+          (buttonIndex) => {
+            if (buttonIndex === 0) handleShare();
+            if (buttonIndex === 1) handleBookmarkToggle();
+            if (buttonIndex === 2) handleDeleteItem();
+          }
+        );
+      } else {
+        Alert.alert('Listing Options', '', [
+          { text: 'Copy Link', onPress: handleShare },
+          { text: saveOption, onPress: handleBookmarkToggle },
+          { text: 'Delete Item', onPress: handleDeleteItem, style: 'destructive' },
+          { text: 'Cancel', style: 'cancel' }
+        ]);
+      }
     } else {
-      Alert.alert('More Options', 'Select an option', [
-        { text: 'Report Item', onPress: handleReport },
-        { text: 'Copy Link', onPress: handleShare },
-        { text: saveOption, onPress: handleBookmarkToggle },
-        { text: 'Block Seller', onPress: handleBlock, style: 'destructive' },
-        { text: 'Cancel', style: 'cancel' }
-      ]);
+      const options = ['Report Item', 'Copy Link', saveOption, 'Block Seller', 'Cancel'];
+      if (Platform.OS === 'ios') {
+        ActionSheetIOS.showActionSheetWithOptions(
+          { options, cancelButtonIndex: 4, destructiveButtonIndex: 3 },
+          (buttonIndex) => {
+            if (buttonIndex === 0) handleReport();
+            if (buttonIndex === 1) handleShare();
+            if (buttonIndex === 2) handleBookmarkToggle();
+            if (buttonIndex === 3) handleBlock();
+          }
+        );
+      } else {
+        Alert.alert('More Options', 'Select an option', [
+          { text: 'Report Item', onPress: handleReport },
+          { text: 'Copy Link', onPress: handleShare },
+          { text: saveOption, onPress: handleBookmarkToggle },
+          { text: 'Block Seller', onPress: handleBlock, style: 'destructive' },
+          { text: 'Cancel', style: 'cancel' }
+        ]);
+      }
     }
   };
 

@@ -41,7 +41,7 @@ interface Props {
 }
 
 // Collapsible ticket card
-function TicketCard({ tier, idx, onChange, onRemove, colors }: any) {
+function TicketCard({ tier, idx, onChange, onRemove, canRemove, colors }: any) {
   const [open, setOpen] = useState(true);
   const rot = useRef(new Animated.Value(open ? 1 : 0)).current;
   const toggle = () => {
@@ -56,8 +56,20 @@ function TicketCard({ tier, idx, onChange, onRemove, colors }: any) {
           <Ionicons name="ticket-outline" size={16} color={colors.tint} />
         </View>
         <Text style={[tk.name, { color: colors.text }]}>{tier.name || `Ticket ${idx + 1}`}</Text>
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
           {!open && <Text style={[tk.price, { color: colors.tint }]}>{tier.price === '0' || !tier.price ? 'Free' : `₦${tier.price}`}</Text>}
+          {canRemove && (
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                onRemove();
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              style={{ padding: 2 }}
+            >
+              <Ionicons name="trash-outline" size={18} color="#ef4444" />
+            </TouchableOpacity>
+          )}
           <Animated.View style={{ transform: [{ rotate }] }}>
             <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
           </Animated.View>
@@ -82,6 +94,12 @@ function TicketCard({ tier, idx, onChange, onRemove, colors }: any) {
                 keyboardType="numeric" placeholder="Unlimited" placeholderTextColor={colors.textMuted} />
             </View>
           </View>
+          {canRemove && (
+            <TouchableOpacity style={tk.removeBtn} onPress={onRemove}>
+              <Ionicons name="trash-outline" size={15} color="#ef4444" />
+              <Text style={tk.removeTxt}>Remove Tier</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </View>
@@ -347,7 +365,9 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
         {values.ticketTiers.map((tier, i) => (
           <TicketCard key={tier.id} tier={tier} idx={i}
             onChange={(t: TicketTierInput) => updateTier(i, t)}
-            onRemove={() => removeTier(i)} colors={colors} />
+            onRemove={() => removeTier(i)}
+            canRemove={values.ticketTiers.length > 1}
+            colors={colors} />
         ))}
         {!values.isTicketed && (
           <Text style={[s.hint, { color: colors.textMuted }]}>Free entry — no ticketing required</Text>

@@ -23,6 +23,7 @@ import { Event, TicketTier } from '../../../types/events';
 import { getEventById } from '../../../lib/event-service';
 import { api } from '../../../lib/api';
 import { formatPrice } from '../../../lib/utils';
+import { AttendeeAvatars } from '../../../components/AttendeeAvatars';
 import { useAppTheme } from '../../../context/ThemeContext';
 
 const DARK_STYLE = [
@@ -525,6 +526,19 @@ export default function EventDetailScreen() {
               </View>
             </View>
 
+            <View style={styles.infoRow}>
+              <View style={[styles.iconBox, { backgroundColor: colors.tint + '15' }]}>
+                <Feather name="users" size={20} color={colors.tint} />
+              </View>
+              <View style={styles.infoTextContainer}>
+                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Attendees</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
+                  <AttendeeAvatars attendees={event.attendees as any} totalCount={event.attendee_count} size={22} showIcon={false} />
+                  <Text style={[styles.infoValue, { color: colors.text }]}>{event.attendee_count || 0} attending</Text>
+                </View>
+              </View>
+            </View>
+
             {!event.location_online && (
               <TouchableOpacity
                 style={[styles.directionsBtn, { backgroundColor: colors.tint }]}
@@ -629,7 +643,10 @@ export default function EventDetailScreen() {
           {/* TICKETS SECTION */}
           <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 12, marginBottom: 12 }]}>Tickets</Text>
           {event.ticket_tiers?.filter(t => t.is_visible).length ? (
-            event.ticket_tiers.filter(t => t.is_visible).map((tier) => (
+            event.ticket_tiers.filter(t => t.is_visible).map((tier) => {
+              const remaining = tier.capacity !== null ? Math.max(0, tier.capacity - tier.sold) : null;
+              const isLimited = remaining !== null && remaining > 0 && tier.capacity !== null && remaining <= tier.capacity * 0.4;
+              return (
               <TouchableOpacity 
                 key={tier.id} 
                 style={[styles.tierCard, { backgroundColor: colors.card, borderColor: tier.price === 0 ? colors.tint : colors.borderLight }]}
@@ -643,6 +660,11 @@ export default function EventDetailScreen() {
                 <View style={styles.tierInfo}>
                   <Text style={[styles.tierName, { color: colors.text }]}>{tier.name}</Text>
                   {tier.description && <Text style={[styles.tierDesc, { color: colors.textSecondary }]} numberOfLines={2}>{tier.description}</Text>}
+                  {isLimited && (
+                    <Text style={{ color: '#F59E0B', fontSize: 11, fontWeight: '700', marginTop: 3 }}>
+                      ⚡ Limited tickets available
+                    </Text>
+                  )}
                   <Text style={[styles.tierPrice, { color: tier.price === 0 ? colors.tint : colors.text }]}>
                     {tier.price === 0 ? 'FREE' : formatPrice(tier.price)}
                   </Text>
@@ -657,7 +679,7 @@ export default function EventDetailScreen() {
                   )}
                 </View>
               </TouchableOpacity>
-            ))
+            );})
           ) : (
             <View style={[styles.premiumCard, { backgroundColor: colors.card, borderColor: colors.borderLight, alignItems: 'center', paddingVertical: 32 }]}>
               <Feather name="tag" size={48} color={colors.textMuted} style={{ marginBottom: 12 }} />
@@ -729,7 +751,7 @@ export default function EventDetailScreen() {
           disabled={!isOwner && (isExpired || allTicketsSoldOut)}
           onPress={() => {
             if (isOwner) router.push('/my-events' as any);
-            else if (userHasTickets) router.push('/(tabs)/tickets' as any);
+            else if (userHasTickets) router.push('/tickets' as any);
             else if (event?.ticket_tiers && event.ticket_tiers.length > 0) setSelectedTier(event.ticket_tiers[0]);
           }}
         >

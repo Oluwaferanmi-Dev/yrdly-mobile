@@ -24,6 +24,7 @@ interface PostCardProps {
   onShare?: () => void;
   isVisible?: boolean;
   onOpenImageViewer?: (images: { uri: string }[], index: number) => void;
+  onDelete?: (postId: string) => void;
 }
 import { AppState } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
@@ -304,25 +305,55 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   };
 
   const handleMoreOptions = () => {
-    const options = ['Cancel', 'Report Post', 'Block User'];
-    const destructiveButtonIndex = 2;
-    const cancelButtonIndex = 0;
+    const isOwnPost = currentUser?.id === post.user_id;
 
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        { options, cancelButtonIndex, destructiveButtonIndex },
-        (buttonIndex) => {
-          if (buttonIndex === 1) handleReport();
-          if (buttonIndex === 2) handleBlock();
-        }
-      );
+    if (isOwnPost) {
+      if (Platform.OS === 'ios') {
+        ActionSheetIOS.showActionSheetWithOptions(
+          { options: ['Cancel', 'Delete Post'], cancelButtonIndex: 0, destructiveButtonIndex: 1 },
+          (buttonIndex) => {
+            if (buttonIndex === 1) handleDeletePost();
+          }
+        );
+      } else {
+        Alert.alert('Post Options', '', [
+          { text: 'Delete Post', onPress: handleDeletePost, style: 'destructive' },
+          { text: 'Cancel', style: 'cancel' }
+        ]);
+      }
     } else {
-      Alert.alert('Options', '', [
-        { text: 'Report Post', onPress: handleReport },
-        { text: 'Block User', onPress: handleBlock, style: 'destructive' },
-        { text: 'Cancel', style: 'cancel' }
-      ]);
+      const options = ['Cancel', 'Report Post', 'Block User'];
+      if (Platform.OS === 'ios') {
+        ActionSheetIOS.showActionSheetWithOptions(
+          { options, cancelButtonIndex: 0, destructiveButtonIndex: 2 },
+          (buttonIndex) => {
+            if (buttonIndex === 1) handleReport();
+            if (buttonIndex === 2) handleBlock();
+          }
+        );
+      } else {
+        Alert.alert('Options', '', [
+          { text: 'Report Post', onPress: handleReport },
+          { text: 'Block User', onPress: handleBlock, style: 'destructive' },
+          { text: 'Cancel', style: 'cancel' }
+        ]);
+      }
     }
+  };
+
+  const handleDeletePost = () => {
+    Alert.alert('Delete Post', 'Are you sure you want to delete this post?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        if (!currentUser) return;
+        try {
+          await supabase.from('posts').delete().eq('id', post.id);
+          Alert.alert('Success', 'Post deleted.');
+        } catch (e: any) {
+          Alert.alert('Error', e.message || 'Failed to delete post.');
+        }
+      }}
+    ]);
   };
 
   const handleReport = () => {

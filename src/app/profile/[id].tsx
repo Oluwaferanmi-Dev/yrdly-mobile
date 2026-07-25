@@ -206,27 +206,29 @@ export default function OtherUserProfileScreen() {
             />
           )}
         </View>
-        <TouchableOpacity 
-          onPress={() => {
-            Alert.alert('Options', '', [
-              { text: 'Block User', style: 'destructive', onPress: async () => {
-                if (!currentUser) return;
-                await supabase.from('user_blocks').insert({ blocker_id: currentUser.id, blocked_id: profile.id });
-                Alert.alert('Success', 'User blocked.');
-                router.back();
-              }},
-              { text: 'Report User', style: 'destructive', onPress: async () => {
-                if (!currentUser) return;
-                await supabase.from('reports').insert({ reporter_id: currentUser.id, reported_user_id: profile.id, reason: 'Inappropriate profile' });
-                Alert.alert('Success', 'User reported.');
-              }},
-              { text: 'Cancel', style: 'cancel' }
-            ]);
-          }}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons name="ellipsis-horizontal" size={22} color={colors.text} />
-        </TouchableOpacity>
+        {!isOwnProfile && (
+          <TouchableOpacity 
+            onPress={() => {
+              Alert.alert('Options', '', [
+                { text: 'Block User', style: 'destructive', onPress: async () => {
+                  if (!currentUser) return;
+                  await supabase.from('user_blocks').insert({ blocker_id: currentUser.id, blocked_id: profile.id });
+                  Alert.alert('Success', 'User blocked.');
+                  router.back();
+                }},
+                { text: 'Report User', style: 'destructive', onPress: async () => {
+                  if (!currentUser) return;
+                  await supabase.from('reports').insert({ reporter_id: currentUser.id, reported_user_id: profile.id, reason: 'Inappropriate profile' });
+                  Alert.alert('Success', 'User reported.');
+                }},
+                { text: 'Cancel', style: 'cancel' }
+              ]);
+            }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="ellipsis-horizontal" size={22} color={colors.text} />
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>

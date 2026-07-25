@@ -153,7 +153,8 @@ export default function CreateBusinessScreen() {
           website: website.trim() || null,
           hours: hours.trim() || null,
           owner_name: profile?.name || user?.user_metadata?.name || 'Seller',
-          owner_avatar: profile?.avatar_url || user?.user_metadata?.avatar_url
+          owner_avatar: profile?.avatar_url || user?.user_metadata?.avatar_url,
+          is_active: true
         })
         .select('id')
         .single();

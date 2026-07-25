@@ -619,38 +619,40 @@ function ChatContent() {
           <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>{title}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={{ width: 40, alignItems: 'flex-end', justifyContent: 'center' }}
-          onPress={() => {
-            Alert.alert(
-              'Options',
-              '',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Report User', onPress: () => Alert.alert('Report', 'User reported successfully.') },
-                { text: 'Block User', style: 'destructive', onPress: async () => {
-                  const otherId = meta?.participant_ids?.find((pid: string) => pid !== user?.id);
-                  if (otherId && profile) {
-                    try {
-                      const blocked = profile.blocked_users || [];
-                      if (!blocked.includes(otherId)) {
-                        await updateProfile({ blocked_users: [...blocked, otherId] });
+        {Boolean(meta?.participant_ids?.find((pid: string) => pid !== user?.id)) && (
+          <TouchableOpacity 
+            style={{ width: 40, alignItems: 'flex-end', justifyContent: 'center' }}
+            onPress={() => {
+              Alert.alert(
+                'Options',
+                '',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Report User', onPress: () => Alert.alert('Report', 'User reported successfully.') },
+                  { text: 'Block User', style: 'destructive', onPress: async () => {
+                    const otherId = meta?.participant_ids?.find((pid: string) => pid !== user?.id);
+                    if (otherId && profile) {
+                      try {
+                        const blocked = profile.blocked_users || [];
+                        if (!blocked.includes(otherId)) {
+                          await updateProfile({ blocked_users: [...blocked, otherId] });
+                        }
+                        Alert.alert('Blocked', 'User blocked successfully.');
+                        router.replace('/(tabs)/messages');
+                      } catch (e) {
+                        console.error(e);
+                        Alert.alert('Error', 'Failed to block user.');
                       }
-                      Alert.alert('Blocked', 'User blocked successfully.');
-                      router.replace('/(tabs)/messages');
-                    } catch (e) {
-                      console.error(e);
-                      Alert.alert('Error', 'Failed to block user.');
                     }
-                  }
-                } },
-              ],
-              { cancelable: true }
-            );
-          }}
-        >
-          <Feather name="more-vertical" size={24} color={colors.text} />
-        </TouchableOpacity>
+                  } },
+                ],
+                { cancelable: true }
+              );
+            }}
+          >
+            <Ionicons name="ellipsis-vertical" size={20} color={colors.text} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Item context banner (for marketplace chats) */}
