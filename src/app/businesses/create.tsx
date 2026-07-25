@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +25,21 @@ export default function CreateBusinessScreen() {
   const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
   const [hours, setHours] = useState('');
+  
+  const [dayPreset, setDayPreset] = useState('Mon - Fri');
+  const [openTime, setOpenTime] = useState('9:00 AM');
+  const [closeTime, setCloseTime] = useState('5:00 PM');
+  const [isCustomHours, setIsCustomHours] = useState(false);
+
+  useEffect(() => {
+    if (!isCustomHours) {
+      if (dayPreset === '24/7') {
+        setHours('Open 24/7');
+      } else {
+        setHours(`${dayPreset}: ${openTime} - ${closeTime}`);
+      }
+    }
+  }, [dayPreset, openTime, closeTime, isCustomHours]);
   
   const [logoUri, setLogoUri] = useState<string | null>(null);
   const [coverUri, setCoverUri] = useState<string | null>(null);
@@ -122,10 +137,11 @@ export default function CreateBusinessScreen() {
       }
 
       if (logoUrl || coverUrl || imageUrls.length > 0) {
+        const finalImageUrls = imageUrls.length > 0 ? imageUrls : (coverUrl ? [coverUrl] : null);
         await supabase.from('businesses').update({
           logo: logoUrl,
           cover_image: coverUrl,
-          image_urls: imageUrls.length > 0 ? imageUrls : null
+          image_urls: finalImageUrls
         }).eq('id', businessId);
       }
       
@@ -282,13 +298,91 @@ export default function CreateBusinessScreen() {
         />
 
         <Text style={[s.label, { color: colors.textSecondary }]}>Operating Hours</Text>
-        <TextInput
-          style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
-          placeholder="e.g. Mon-Fri: 9AM - 5PM"
-          placeholderTextColor={colors.textMuted}
-          value={hours}
-          onChangeText={setHours}
-        />
+        
+        {/* Days Presets */}
+        <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 6 }}>Select Days</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+          {['Mon - Fri', 'Mon - Sat', 'Everyday', 'Weekends', '24/7'].map(preset => (
+            <TouchableOpacity
+              key={preset}
+              style={[
+                s.categoryChip,
+                { backgroundColor: dayPreset === preset && !isCustomHours ? colors.tint : colors.inputBackground }
+              ]}
+              onPress={() => {
+                setIsCustomHours(false);
+                setDayPreset(preset);
+              }}
+            >
+              <Text style={{ 
+                color: dayPreset === preset && !isCustomHours ? '#000' : colors.text,
+                fontWeight: dayPreset === preset && !isCustomHours ? 'bold' : 'normal',
+                fontSize: 13
+              }}>
+                {preset}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {dayPreset !== '24/7' && !isCustomHours && (
+          <View style={{ marginBottom: 16 }}>
+            {/* Open Time */}
+            <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 6 }}>Opening Time</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }}>
+              {['7:00 AM', '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '11:00 AM'].map(t => (
+                <TouchableOpacity
+                  key={t}
+                  style={[
+                    s.categoryChip,
+                    { backgroundColor: openTime === t ? colors.tint : colors.inputBackground, paddingHorizontal: 12, paddingVertical: 6 }
+                  ]}
+                  onPress={() => setOpenTime(t)}
+                >
+                  <Text style={{ color: openTime === t ? '#000' : colors.text, fontSize: 12 }}>{t}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Close Time */}
+            <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 6 }}>Closing Time</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {['4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM', '10:00 PM', '11:00 PM'].map(t => (
+                <TouchableOpacity
+                  key={t}
+                  style={[
+                    s.categoryChip,
+                    { backgroundColor: closeTime === t ? colors.tint : colors.inputBackground, paddingHorizontal: 12, paddingVertical: 6 }
+                  ]}
+                  onPress={() => setCloseTime(t)}
+                >
+                  <Text style={{ color: closeTime === t ? '#000' : colors.text, fontSize: 12 }}>{t}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Display hours result / Custom toggle */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="time-outline" size={16} color={colors.tint} />
+            <Text style={{ color: colors.text, fontWeight: '600', fontSize: 13 }}>{hours || 'Not set'}</Text>
+          </View>
+          <TouchableOpacity onPress={() => setIsCustomHours(!isCustomHours)}>
+            <Text style={{ color: colors.tint, fontSize: 12 }}>{isCustomHours ? 'Use Presets' : 'Custom Text'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {isCustomHours && (
+          <TextInput
+            style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+            placeholder="e.g. Mon-Fri: 9AM - 5PM, Sat: 10AM - 2PM"
+            placeholderTextColor={colors.textMuted}
+            value={hours}
+            onChangeText={setHours}
+          />
+        )}
 
         <Text style={[s.sectionTitle, { color: colors.text, marginTop: 16 }]}>Gallery</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.galleryScroll}>

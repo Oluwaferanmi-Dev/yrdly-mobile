@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../../lib/supabase';
 import { useAppTheme } from '../../../context/ThemeContext';
 import { useAuth } from '../../../hooks/use-supabase-auth';
+import ImageViewing from 'react-native-image-viewing';
 import type { Business, CatalogItem } from '../../../types';
 
 export default function CatalogItemScreen() {
@@ -20,6 +21,9 @@ export default function CatalogItemScreen() {
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
 
   useEffect(() => {
     if (!itemId) return;
@@ -37,12 +41,20 @@ export default function CatalogItemScreen() {
 
         const { data: bizData, error: bizError } = await supabase
           .from('businesses')
-          .select('*, users(name, avatar_url)')
+          .select('*')
           .eq('id', itemData.business_id)
           .single();
 
         if (!bizError && bizData) {
-          const ownerData = Array.isArray(bizData.users) ? bizData.users[0] : bizData.users;
+          let ownerData = null;
+          if (bizData.owner_id) {
+            const { data: uData } = await supabase
+              .from('users')
+              .select('name, avatar_url')
+              .eq('id', bizData.owner_id)
+              .single();
+            ownerData = uData;
+          }
           
           setBusiness({
             id: bizData.id,
@@ -68,7 +80,7 @@ export default function CatalogItemScreen() {
           });
         }
       } catch (e) {
-        console.error(e);
+        console.error('Error fetching catalog item:', e);
       } finally {
         setLoading(false);
       }
@@ -115,18 +127,50 @@ export default function CatalogItemScreen() {
   }
 
   const isOwner = user?.id === business.owner_id;
+  const images = item.images && item.images.length > 0 ? item.images : ['https://via.placeholder.com/400'];
+  const imageViewerImages = images.map(img => ({ uri: img }));
 
   return (
     <View style={[s.root, { backgroundColor: colors.background }]}>
+      <ImageViewing
+        images={imageViewerImages}
+        imageIndex={viewerIndex}
+        visible={isViewerVisible}
+        onRequestClose={() => setIsViewerVisible(false)}
+      />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Header Images */}
+        {/* Header Images Swipeable */}
         <View style={s.imageContainer}>
-          <Image 
-            source={{ uri: item.images?.[currentImageIndex] || 'https://via.placeholder.com/400' }} 
-            style={StyleSheet.absoluteFillObject} 
-            contentFit="cover" 
-          />
-          <View style={s.imageOverlay} />
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={(e) => {
+              const slide = Math.round(e.nativeEvent.contentOffset.x / e.nativeEvent.layoutMeasurement.width);
+              if (slide !== currentImageIndex) setCurrentImageIndex(slide);
+            }}
+            scrollEventThrottle={16}
+            style={StyleSheet.absoluteFillObject}
+          >
+            {images.map((img, idx) => (
+              <TouchableOpacity
+                key={idx}
+                activeOpacity={0.9}
+                style={{ width: Dimensions.get('window').width, height: '100%' }}
+                onPress={() => {
+                  setViewerIndex(idx);
+                  setIsViewerVisible(true);
+                }}
+              >
+                <Image
+                  source={{ uri: img }}
+                  style={{ width: '100%', height: '100%' }}
+                  contentFit="cover"
+                />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <View style={s.imageOverlay} pointerEvents="none" />
 
           {/* Back btn */}
           <TouchableOpacity 
@@ -136,28 +180,10 @@ export default function CatalogItemScreen() {
             <Ionicons name="chevron-back" size={26} color={isDarkMode ? '#fff' : '#000'} />
           </TouchableOpacity>
 
-          {/* Nav arrows */}
-          {item.images && item.images.length > 1 && (
-            <View style={s.navArrowContainer}>
-              <TouchableOpacity 
-                style={[s.navBtn, { backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]} 
-                onPress={() => setCurrentImageIndex(prev => (prev - 1 + item.images.length) % item.images.length)}
-              >
-                <Ionicons name="chevron-back" size={20} color={isDarkMode ? '#fff' : '#000'} />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[s.navBtn, { backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]} 
-                onPress={() => setCurrentImageIndex(prev => (prev + 1) % item.images.length)}
-              >
-                <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#fff' : '#000'} />
-              </TouchableOpacity>
-            </View>
-          )}
-
           {/* Indicators */}
-          {item.images && item.images.length > 1 && (
-            <View style={s.indicators}>
-              {item.images.map((_, idx) => (
+          {images.length > 1 && (
+            <View style={s.indicators} pointerEvents="none">
+              {images.map((_, idx) => (
                 <View 
                   key={idx} 
                   style={[s.dot, { backgroundColor: idx === currentImageIndex ? colors.tint : 'rgba(255,255,255,0.5)' }]} 

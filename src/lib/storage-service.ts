@@ -260,7 +260,8 @@ export class StorageService {
     file: MobileFile
   ): Promise<{ url: string | null; error: any }> {
     const ext = file.name.split('.').pop() ?? 'jpg';
-    const path = `businesses/${businessId}/${Date.now()}.${ext}`;
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `businesses/${businessId}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${safeName}`;
     const mimeType = this.getMimeType(file.name, file.type);
 
     const { data, error } = await this.uploadFile('post-images', path, file, {
@@ -268,7 +269,22 @@ export class StorageService {
       cacheControl: '604800',
     });
 
-    if (error || !data) return { url: null, error };
+    if (error) {
+      console.error('[StorageService] uploadBusinessImage failed:', error);
+      // Retry with upsert
+      try {
+        const base64 = await FileSystem.readAsStringAsync(file.uri, { encoding: 'base64' });
+        const arrayBuffer = decode(base64);
+        const { data: d2, error: e2 } = await supabase.storage
+          .from('post-images')
+          .upload(path, arrayBuffer, { cacheControl: '604800', upsert: true, contentType: mimeType });
+        if (e2) return { url: null, error: e2 };
+        return { url: this.getPublicUrl('post-images', d2?.path ?? path), error: null };
+      } catch (err) {
+        return { url: null, error: err };
+      }
+    }
+
     return { url: this.getPublicUrl('post-images', path), error: null };
   }
 }

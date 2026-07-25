@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import ImageViewing from 'react-native-image-viewing';
 import type { Business, CatalogItem } from '../../types';
 import { Skeleton } from '../../components/Skeleton';
 
@@ -26,6 +27,9 @@ export default function BusinessProfileScreen() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('Catalog');
+
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
 
   const isOwner = user?.id === business?.owner_id;
 
@@ -329,11 +333,28 @@ export default function BusinessProfileScreen() {
                   <Text style={{ color: colors.textMuted }}>No gallery images yet.</Text>
                 </View>
               ) : (
-                <View style={s.galleryGrid}>
-                  {business.image_urls.map((url, i) => (
-                    <Image key={i} source={{ uri: url }} style={s.galleryGridImg} contentFit="cover" />
-                  ))}
-                </View>
+                <>
+                  <ImageViewing
+                    images={business.image_urls.map(url => ({ uri: url }))}
+                    imageIndex={viewerIndex}
+                    visible={isViewerVisible}
+                    onRequestClose={() => setIsViewerVisible(false)}
+                  />
+                  <View style={s.galleryGrid}>
+                    {business.image_urls.map((url, i) => (
+                      <TouchableOpacity
+                        key={i}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          setViewerIndex(i);
+                          setIsViewerVisible(true);
+                        }}
+                      >
+                        <Image source={{ uri: url }} style={s.galleryGridImg} contentFit="cover" />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </>
               )}
             </View>
           )}
