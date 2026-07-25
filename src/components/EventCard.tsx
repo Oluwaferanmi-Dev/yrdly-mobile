@@ -11,6 +11,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { StorageService } from '../lib/storage-service';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
+import { AttendeeAvatars } from './AttendeeAvatars';
 
 const { width } = Dimensions.get('window');
 
@@ -269,14 +270,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
           {/* Attendee avatars + price + CTA */}
           <View style={f.footer}>
             <View style={f.attendees}>
-              {(event.attendees?.length || 0) > 0 && (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="people" size={14} color={colors.textMuted} style={{ marginRight: 4 }} />
-                  <Text style={[f.attendeesTxt, { color: colors.textMuted }]}>
-                    {event.attendees?.length} attending
-                  </Text>
-                </View>
-              )}
+              <AttendeeAvatars attendees={event.attendees as any} size={22} maxVisible={4} />
             </View>
 
             <View style={f.priceWrap}>

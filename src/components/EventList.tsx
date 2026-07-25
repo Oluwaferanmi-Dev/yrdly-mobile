@@ -13,6 +13,8 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
+import { useAuth } from '../hooks/use-supabase-auth';
+import { AttendeeAvatars } from './AttendeeAvatars';
 
 const { width } = Dimensions.get('window');
 
@@ -36,6 +38,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
   const { colors } = useAppTheme();
   const { activeFilter } = useLocation();
   const router = useRouter();
+  const { user } = useAuth();
   const [events, setEvents] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -87,7 +90,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       if (activeFilter?.ward) postsQuery = postsQuery.eq('ward', activeFilter.ward);
       else if (activeFilter?.lga) postsQuery = postsQuery.eq('lga', activeFilter.lga);
       else if (activeFilter?.state) postsQuery = postsQuery.eq('state', activeFilter.state);
-      if (category) postsQuery = postsQuery.eq('event_category', category);
+      if (category) postsQuery = postsQuery.or(`event_category.ilike.%${category}%,category.ilike.%${category}%,text.ilike.%${category}%,title.ilike.%${category}%`);
       if (searchQuery) postsQuery = postsQuery.ilike('title', `%${searchQuery}%`);
 
       // ── New events from events table ──
@@ -101,7 +104,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       if (activeFilter?.ward) eventsQuery = eventsQuery.eq('ward', activeFilter.ward);
       else if (activeFilter?.lga) eventsQuery = eventsQuery.eq('lga', activeFilter.lga);
       else if (activeFilter?.state) eventsQuery = eventsQuery.eq('state', activeFilter.state);
-      if (category) eventsQuery = eventsQuery.ilike('category', `%${category}%`);
+      if (category) eventsQuery = eventsQuery.or(`category.ilike.%${category}%,description.ilike.%${category}%,title.ilike.%${category}%`);
       if (searchQuery) eventsQuery = eventsQuery.ilike('title', `%${searchQuery}%`);
 
       const [postsRes, eventsRes] = await Promise.all([postsQuery, eventsQuery]);
@@ -214,6 +217,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
               const location = typeof item.event_location === 'string'
                 ? item.event_location
                 : (item.event_location as any)?.address || '';
+              const isOwner = user?.id === item.user_id;
               return (
                 <TouchableOpacity
                   key={item.id} activeOpacity={0.93}
@@ -246,16 +250,16 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
                     )}
                     <View style={s.heroFooter}>
                       <View style={s.attendeeAvatars}>
-                        {(item.attendees?.length || 0) > 0 && (
-                          <>
-                            <Ionicons name="people" size={14} color="rgba(255,255,255,0.8)" style={{ marginRight: 4 }} />
-                            <Text style={s.aCount}>{item.attendees?.length} attending</Text>
-                          </>
-                        )}
+                        <AttendeeAvatars attendees={item.attendees as any} size={22} maxVisible={4} />
                       </View>
-                      <TouchableOpacity style={s.heroCTA} onPress={() => navigateToEvent(item)}>
-                        <Text style={s.heroCTATxt}>View Tickets</Text>
-                        <Ionicons name="chevron-forward" size={14} color="#0B0D0B" />
+                      <TouchableOpacity
+                        style={[s.heroCTA, isOwner && { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#82DB7E' }]}
+                        onPress={() => navigateToEvent(item)}
+                      >
+                        <Text style={[s.heroCTATxt, isOwner && { color: '#82DB7E' }]}>
+                          {isOwner ? 'Manage Event' : 'View Tickets'}
+                        </Text>
+                        <Ionicons name="chevron-forward" size={14} color={isOwner ? '#82DB7E' : '#0B0D0B'} />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -307,34 +311,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       )}
     </>
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [featured, horizontal, rest, featuredIdx, category, colors]);
-
-  // ── Conditional returns AFTER all hooks ──
-  if (loading && events.length === 0) {
-    return (
-      <View style={{ flex: 1, paddingTop: 16 }}>
-        <Skeleton width={width - 32} height={220} style={{ marginHorizontal: 16, borderRadius: 24, marginBottom: 16 }} />
-        <PostSkeleton /><PostSkeleton />
-      </View>
-    );
-  }
-
-  if (events.length === 0) {
-    return (
-      <View style={s.empty}>
-        <Ionicons name="calendar-outline" size={52} color={colors.textMuted} style={{ opacity: 0.35, marginBottom: 14 }} />
-        <Text style={[s.emptyTxt, { color: colors.textMuted }]}>
-          {searchQuery ? `No events found for "${searchQuery}"` : 'No upcoming events in your area'}
-        </Text>
-        <TouchableOpacity
-          style={[s.createBtn, { backgroundColor: colors.tint }]}
-          onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
-          <Ionicons name="add-circle-outline" size={16} color="#0B0D0B" style={{ marginRight: 6 }} />
-          <Text style={s.createBtnTxt}>Create Event</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  ), [featured, horizontal, rest, featuredIdx, category, colors, user]);
 
   return (
     <FlatList
@@ -344,10 +321,35 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
       contentContainerStyle={s.listContent}
+      ListHeaderComponent={listHeaderElement}
+      ListEmptyComponent={
+        loading ? (
+          <View style={{ paddingTop: 16 }}>
+            <Skeleton width={width - 32} height={180} style={{ marginHorizontal: 16, borderRadius: 24, marginBottom: 16 }} />
+            <PostSkeleton />
+          </View>
+        ) : events.length === 0 ? (
+          <View style={s.empty}>
+            <Ionicons name="calendar-outline" size={52} color={colors.textMuted} style={{ opacity: 0.35, marginBottom: 14 }} />
+            <Text style={[s.emptyTxt, { color: colors.textMuted }]}>
+              {searchQuery
+                ? `No events found for "${searchQuery}"`
+                : category
+                ? `No ${EVENT_CATEGORIES.find(c => c.key === category)?.label || category} events in your area`
+                : 'No upcoming events in your area'}
+            </Text>
+            <TouchableOpacity
+              style={[s.createBtn, { backgroundColor: colors.tint }]}
+              onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
+              <Ionicons name="add-circle-outline" size={16} color="#0B0D0B" style={{ marginRight: 6 }} />
+              <Text style={s.createBtnTxt}>Create Event</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null
+      }
       renderItem={({ item }) => (
         <EventCard event={item} onPress={() => navigateToEvent(item)} />
       )}
-      ListHeaderComponent={listHeaderElement}
     />
   );
 }

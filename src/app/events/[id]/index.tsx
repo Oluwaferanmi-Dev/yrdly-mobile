@@ -722,16 +722,19 @@ export default function EventDetailScreen() {
         
         <TouchableOpacity 
           style={[styles.bottomPrimaryBtn, { 
-            backgroundColor: isExpired || allTicketsSoldOut ? colors.borderLight : colors.tint 
+            backgroundColor: isOwner ? colors.card : (isExpired || allTicketsSoldOut ? colors.borderLight : colors.tint),
+            borderWidth: isOwner ? 1 : 0,
+            borderColor: isOwner ? colors.borderLight : 'transparent'
           }]}
-          disabled={isExpired || allTicketsSoldOut}
+          disabled={!isOwner && (isExpired || allTicketsSoldOut)}
           onPress={() => {
-            if (userHasTickets) router.push('/(tabs)/tickets' as any);
-            else if (event.ticket_tiers && event.ticket_tiers.length > 0) setSelectedTier(event.ticket_tiers[0]);
+            if (isOwner) router.push('/my-events' as any);
+            else if (userHasTickets) router.push('/(tabs)/tickets' as any);
+            else if (event?.ticket_tiers && event.ticket_tiers.length > 0) setSelectedTier(event.ticket_tiers[0]);
           }}
         >
-          <Text style={[styles.bottomPrimaryText, { color: isExpired || allTicketsSoldOut ? colors.textMuted : '#FFF' }]}>
-            {isExpired ? 'Event Ended' : allTicketsSoldOut ? 'Sold Out' : userHasTickets ? 'View My Tickets' : 'View Tickets'}
+          <Text style={[styles.bottomPrimaryText, { color: isOwner ? colors.text : (isExpired || allTicketsSoldOut ? colors.textMuted : '#FFF') }]}>
+            {isOwner ? 'Manage Event' : isExpired ? 'Event Ended' : allTicketsSoldOut ? 'Sold Out' : userHasTickets ? 'View My Tickets' : 'View Tickets'}
           </Text>
         </TouchableOpacity>
       </View>

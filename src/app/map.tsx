@@ -208,6 +208,7 @@ export default function MapScreen() {
     // Businesses
     const { data: businesses } = await supabase.from('businesses')
       .select('id,name,location,image_urls')
+      .eq('is_active', true)
       .not('location','is',null)
       .limit(50);
     (businesses || []).forEach((b: any) => {
@@ -226,7 +227,7 @@ export default function MapScreen() {
       supabase.from('posts').select('id,title,price,created_at,images,event_location').eq('category','For Sale').or('is_sold.eq.false,is_sold.is.null').order('created_at',{ascending:false}).limit(10),
       supabase.from('posts').select('id,title,event_date,event_location,attendees,images').eq('category','Event').gte('event_date', new Date().toISOString()).order('event_date',{ascending:true}).limit(5),
       supabase.from('events').select('id,title,start_time,location_address,lat,lng,cover_image_url,attendee_count').eq('status','PUBLISHED').gte('start_time', new Date().toISOString()).order('start_time',{ascending:true}).limit(10),
-      supabase.from('businesses').select('id,name,location,image_urls,created_at').order('created_at',{ascending:false}).limit(10),
+      supabase.from('businesses').select('id,name,location,image_urls,created_at').eq('is_active', true).order('created_at',{ascending:false}).limit(10),
     ]);
 
     (mkt||[]).forEach((p:any) => {

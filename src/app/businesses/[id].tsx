@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Linking, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Linking, FlatList, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,6 +30,7 @@ export default function BusinessProfileScreen() {
 
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const isOwner = user?.id === business?.owner_id;
 
@@ -113,6 +114,32 @@ export default function BusinessProfileScreen() {
     fetchReviews();
   }, [id]);
 
+  const handleDeactivate = useCallback(() => {
+    setMenuVisible(false);
+    Alert.alert(
+      'Deactivate Business',
+      'Your business will be hidden from all listings. You can contact support to reactivate it.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Deactivate',
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await supabase
+              .from('businesses')
+              .update({ is_active: false })
+              .eq('id', id);
+            if (error) {
+              Alert.alert('Error', 'Could not deactivate business. Please try again.');
+            } else {
+              setBusiness(prev => prev ? { ...prev, is_active: false } as any : null);
+            }
+          },
+        },
+      ]
+    );
+  }, [id]);
+
   const handleCall = useCallback(() => {
     if (business?.phone) {
       Linking.openURL(`tel:${business.phone}`);
@@ -187,11 +214,46 @@ export default function BusinessProfileScreen() {
     );
   }
 
+  // Non-owner visiting a deactivated business
+  if (!(business as any).is_active && !isOwner) {
+    return (
+      <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }]}>
+        <Ionicons name="storefront-outline" size={64} color={colors.textMuted} style={{ marginBottom: 16, opacity: 0.4 }} />
+        <Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>Business No Longer Active</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 15, textAlign: 'center', lineHeight: 22 }}>This business has been deactivated by the owner and is no longer available.</Text>
+        <TouchableOpacity
+          style={{ marginTop: 28, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24, backgroundColor: colors.tint }}
+          onPress={() => router.back()}
+        >
+          <Text style={{ color: '#000', fontWeight: '700', fontSize: 15 }}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   const coverImg = business.cover_image || business.image_urls?.[0];
   const logoImg = business.logo || business.owner_avatar;
 
   return (
     <View style={[s.root, { backgroundColor: colors.background }]}>
+      {/* Owner menu modal */}
+      <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)}>
+        <TouchableOpacity style={s.modalOverlay} activeOpacity={1} onPress={() => setMenuVisible(false)}>
+          <View style={[s.menuSheet, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+            {!(business as any).is_active ? (
+              <View style={[s.menuItem, { opacity: 0.5 }]}>
+                <Ionicons name="archive-outline" size={18} color={colors.textMuted} />
+                <Text style={[s.menuItemTxt, { color: colors.textMuted }]}>Already Archived</Text>
+              </View>
+            ) : (
+              <TouchableOpacity style={s.menuItem} onPress={handleDeactivate}>
+                <Ionicons name="archive-outline" size={18} color="#EF4444" />
+                <Text style={[s.menuItemTxt, { color: '#EF4444' }]}>Deactivate Business</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Header Cover */}
         <View style={s.coverContainer}>
@@ -209,6 +271,16 @@ export default function BusinessProfileScreen() {
           >
             <Ionicons name="chevron-back" size={26} color={isDarkMode ? '#fff' : '#000'} />
           </TouchableOpacity>
+
+          {/* 3-dot menu — owner only */}
+          {isOwner && (
+            <TouchableOpacity
+              style={[s.menuBtn, { top: insets.top + 10, backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]}
+              onPress={() => setMenuVisible(true)}
+            >
+              <Ionicons name="ellipsis-vertical" size={22} color={isDarkMode ? '#fff' : '#000'} />
+            </TouchableOpacity>
+          )}
 
           {/* Logo */}
           <View style={[s.logoContainer, { backgroundColor: colors.background, borderColor: colors.background }]}>
@@ -468,4 +540,9 @@ const s = StyleSheet.create({
   reviewRating: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   galleryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   galleryGridImg: { width: (width - 40) / 3, height: (width - 40) / 3, borderRadius: 12 },
+  menuBtn: { position: 'absolute', right: 16, width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-start', alignItems: 'flex-end', paddingTop: 80, paddingRight: 16 },
+  menuSheet: { borderRadius: 14, borderWidth: 1, minWidth: 220, overflow: 'hidden' },
+  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14 },
+  menuItemTxt: { fontSize: 15, fontWeight: '600' },
 });
