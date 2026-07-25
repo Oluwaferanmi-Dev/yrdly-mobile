@@ -156,6 +156,9 @@ export default function HomeTab() {
   const flashListRef = useRef<any>(null);
   const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
   const isFocused = useIsFocused();
+  const lastFetchTimeRef = useRef(0);
+  const STALE_AFTER_MS = 30_000; // only re-fetch if data is older than 30s
+  const scrollOffsetShared = useSharedValue(0);
 
   
   useScrollToTop(flashListRef);
@@ -208,6 +211,7 @@ export default function HomeTab() {
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       const currentY = event.contentOffset.y;
+      scrollOffsetShared.value = currentY;
       if (currentY > lastScrollY.value && currentY > 50) {
         isScrollingUp.value = false;
       } else if (currentY < lastScrollY.value) {
@@ -264,8 +268,21 @@ export default function HomeTab() {
 
   useFocusEffect(
     useCallback(() => {
-      refreshPosts();
       fetchAlerts();
+      const now = Date.now();
+      const isStale = now - lastFetchTimeRef.current > STALE_AFTER_MS;
+      if (isStale) {
+        const offsetToRestore = scrollOffsetShared.value;
+        refreshPosts().then(() => {
+          lastFetchTimeRef.current = Date.now();
+          // Restore scroll position after data re-loads
+          if (offsetToRestore > 0) {
+            setTimeout(() => {
+              flashListRef.current?.scrollToOffset({ offset: offsetToRestore, animated: false });
+            }, 50);
+          }
+        });
+      }
       if (params.scrollToTop === 'true' && flashListRef.current) {
         setTimeout(() => {
           flashListRef.current?.scrollToOffset({ offset: 0, animated: true });

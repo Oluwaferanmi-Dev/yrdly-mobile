@@ -119,10 +119,10 @@ export default function TransactionDetailScreen() {
       const { data, error } = await supabase
         .from('escrow_transactions')
         .select(`
-          id, amount, commission, seller_amount, status,
+          id, item_id, item_type, amount, commission, seller_amount, status,
           created_at, paid_at, shipped_at, delivered_at, completed_at,
           buyer_id, seller_id,
-          post_item:posts(id, title, images:image_urls, price),
+          post_item:posts(id, title, text, image_urls, image_url, price),
           catalog_item:catalog_items(id, title, images, price),
           buyer:users!escrow_transactions_buyer_id_fkey(id, name, avatar_url),
           seller:users!escrow_transactions_seller_id_fkey(id, name, avatar_url)
@@ -133,7 +133,79 @@ export default function TransactionDetailScreen() {
 
       const postItem = Array.isArray(data.post_item) ? data.post_item[0] : data.post_item;
       const catalogItem = Array.isArray(data.catalog_item) ? data.catalog_item[0] : data.catalog_item;
-      const itemObj = postItem || (catalogItem ? { id: catalogItem.id, title: catalogItem.title, images: catalogItem.images, price: catalogItem.price } : null);
+
+      let itemObj: { id: string; title: string; images: string[] | null; price: number } | null = null;
+
+      if (postItem) {
+        const imgs = Array.isArray(postItem.image_urls)
+          ? postItem.image_urls
+          : postItem.image_url
+          ? [postItem.image_url]
+          : null;
+        itemObj = {
+          id: postItem.id,
+          title: postItem.title || postItem.text || 'Item',
+          images: imgs,
+          price: postItem.price,
+        };
+      } else if (catalogItem) {
+        const imgs = Array.isArray(catalogItem.images)
+          ? catalogItem.images
+          : typeof catalogItem.images === 'string'
+          ? [catalogItem.images]
+          : null;
+        itemObj = {
+          id: catalogItem.id,
+          title: catalogItem.title || 'Item',
+          images: imgs,
+          price: catalogItem.price,
+        };
+      }
+
+      // Fallback: If joined relationship returned null, fetch directly using item_id
+      if (!itemObj && data.item_id) {
+        // Try catalog_items first
+        const { data: catData } = await supabase
+          .from('catalog_items')
+          .select('id, title, images, price')
+          .eq('id', data.item_id)
+          .maybeSingle();
+
+        if (catData) {
+          const imgs = Array.isArray(catData.images)
+            ? catData.images
+            : typeof catData.images === 'string'
+            ? [catData.images]
+            : null;
+          itemObj = {
+            id: catData.id,
+            title: catData.title || 'Item',
+            images: imgs,
+            price: catData.price,
+          };
+        } else {
+          // Try posts table
+          const { data: pData } = await supabase
+            .from('posts')
+            .select('id, title, text, image_urls, image_url, price')
+            .eq('id', data.item_id)
+            .maybeSingle();
+
+          if (pData) {
+            const imgs = Array.isArray(pData.image_urls)
+              ? pData.image_urls
+              : pData.image_url
+              ? [pData.image_url]
+              : null;
+            itemObj = {
+              id: pData.id,
+              title: pData.title || pData.text || 'Item',
+              images: imgs,
+              price: pData.price,
+            };
+          }
+        }
+      }
 
       const normalised = {
         ...data,
@@ -235,7 +307,12 @@ export default function TransactionDetailScreen() {
 
   const meta = getStatusMeta(tx.status, isDarkMode, colors);
   const currentStepIndex = STATUS_ORDER.indexOf(tx.status);
-  const thumb = tx.item?.images?.[0];
+  const rawThumb = tx.item?.images;
+  const thumb = Array.isArray(rawThumb) && rawThumb.length > 0 && typeof rawThumb[0] === 'string'
+    ? rawThumb[0]
+    : typeof rawThumb === 'string' && rawThumb.startsWith('http')
+    ? rawThumb
+    : null;
 
   const canMarkSent = isSeller && tx.status === 'paid';
   const canConfirmReceipt = isBuyer && (tx.status === 'shipped' || tx.status === 'delivered');

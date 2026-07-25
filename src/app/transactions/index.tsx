@@ -60,8 +60,8 @@ export default function TransactionsScreen() {
       const { data, error } = await supabase
         .from('escrow_transactions')
         .select(`
-          id, amount, status, created_at, buyer_id, seller_id,
-          post_item:posts(id, title, images:image_urls),
+          id, item_id, item_type, amount, status, created_at, buyer_id, seller_id,
+          post_item:posts(id, title, text, image_urls, image_url),
           catalog_item:catalog_items(id, title, images),
           buyer:users!escrow_transactions_buyer_id_fkey(name, avatar_url),
           seller:users!escrow_transactions_seller_id_fkey(name, avatar_url)
@@ -71,10 +71,36 @@ export default function TransactionsScreen() {
 
       if (error) throw error;
 
-      const normalised = (data ?? []).map((tx: any) => {
+      const normalised = await Promise.all((data ?? []).map(async (tx: any) => {
         const postItem = Array.isArray(tx.post_item) ? tx.post_item[0] : tx.post_item;
         const catalogItem = Array.isArray(tx.catalog_item) ? tx.catalog_item[0] : tx.catalog_item;
-        const itemObj = postItem || (catalogItem ? { id: catalogItem.id, title: catalogItem.title, images: catalogItem.images } : null);
+        let itemObj = postItem 
+          ? { id: postItem.id, title: postItem.title || postItem.text || 'Item', images: postItem.image_urls || [postItem.image_url] }
+          : (catalogItem ? { id: catalogItem.id, title: catalogItem.title, images: catalogItem.images } : null);
+
+        if (!itemObj && tx.item_id) {
+          const { data: catData } = await supabase
+            .from('catalog_items')
+            .select('id, title, images')
+            .eq('id', tx.item_id)
+            .maybeSingle();
+
+          if (catData) {
+            const imgs = Array.isArray(catData.images) ? catData.images : typeof catData.images === 'string' ? [catData.images] : null;
+            itemObj = { id: catData.id, title: catData.title || 'Item', images: imgs };
+          } else {
+            const { data: pData } = await supabase
+              .from('posts')
+              .select('id, title, text, image_urls, image_url')
+              .eq('id', tx.item_id)
+              .maybeSingle();
+
+            if (pData) {
+              const imgs = Array.isArray(pData.image_urls) ? pData.image_urls : pData.image_url ? [pData.image_url] : null;
+              itemObj = { id: pData.id, title: pData.title || pData.text || 'Item', images: imgs };
+            }
+          }
+        }
 
         return {
           ...tx,
@@ -82,7 +108,7 @@ export default function TransactionsScreen() {
           buyer: Array.isArray(tx.buyer) ? tx.buyer[0] ?? null : tx.buyer,
           seller: Array.isArray(tx.seller) ? tx.seller[0] ?? null : tx.seller,
         };
-      }) as Transaction[];
+      })) as Transaction[];
 
       setTransactions(normalised);
     } catch (e) {

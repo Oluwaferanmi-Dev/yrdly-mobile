@@ -572,7 +572,7 @@ export default function EventDetailScreen() {
           {/* ORGANIZER CARD */}
           <TouchableOpacity 
             style={[styles.premiumCard, { backgroundColor: colors.card, borderColor: colors.borderLight }, styles.organizerCard]}
-            onPress={() => router.push(`/profile/${event.organizer_id}`)}
+            onPress={() => { if (event.organizer_id) router.push(`/profile/${event.organizer_id}` as any); }}
             activeOpacity={0.8}
           >
             <View style={styles.organizerRow}>

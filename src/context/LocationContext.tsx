@@ -35,8 +35,11 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
   const [activeFilter, setActiveFilterRaw] = useState<LocationFilter | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const hasInitializedRef = React.useRef(false);
 
   useEffect(() => {
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
     const loadPersistedFilter = async () => {
       try {
         const savedData = await SecureStore.getItemAsync(GLOBAL_FILTER_STORAGE_KEY);

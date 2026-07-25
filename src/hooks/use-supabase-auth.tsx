@@ -179,6 +179,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = AuthService.onAuthStateChange(async (event, session) => {
       const user = session?.user ?? null;
 
+      // Skip INITIAL_SESSION — already handled by getInitialSession above
+      if (event === 'INITIAL_SESSION') return;
+
       if (event === 'SIGNED_OUT') {
         const netInfo = await NetInfo.fetch();
         if (!netInfo.isConnected) {
@@ -189,6 +192,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (event === 'TOKEN_REFRESH_FAILED') {
         console.warn('[Yrdly Auth] Token refresh failed, keeping current user state.');
+        return;
+      }
+
+      // On token refresh, only update profile silently in background — don't setState
+      if (event === 'TOKEN_REFRESHED') {
+        if (user) {
+          AuthService.getUserProfile(user.id)
+            .then((freshProfile) => {
+              if (freshProfile && isMounted) {
+                setProfile(freshProfile);
+                FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(freshProfile)).catch(() => {});
+              }
+            })
+            .catch(() => {});
+        }
         return;
       }
 
