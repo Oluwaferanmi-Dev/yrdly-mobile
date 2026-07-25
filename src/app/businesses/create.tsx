@@ -57,14 +57,16 @@ export default function CreateBusinessScreen() {
         return;
       }
       try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('verified_seller')
-          .eq('id', user.id)
-          .single();
+        const { data } = await supabase
+          .from('seller_accounts')
+          .select('id, verification_status')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .eq('is_primary', true)
+          .maybeSingle();
 
-        if (isMounted && data) {
-          setIsVerified(!!data.verified_seller);
+        if (isMounted) {
+          setIsVerified(!!data && data.verification_status === 'verified');
         }
       } catch (err) {
         console.error('Error fetching verified_seller status:', err);
