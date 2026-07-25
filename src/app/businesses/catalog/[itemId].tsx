@@ -26,7 +26,10 @@ export default function CatalogItemScreen() {
   const [viewerIndex, setViewerIndex] = useState(0);
 
   useEffect(() => {
-    if (!itemId) return;
+    if (!itemId) {
+      setLoading(false);
+      return;
+    }
 
     const fetchData = async () => {
       try {
@@ -34,53 +37,67 @@ export default function CatalogItemScreen() {
           .from('catalog_items')
           .select('*')
           .eq('id', itemId)
-          .single();
+          .maybeSingle();
 
-        if (itemError || !itemData) throw itemError;
+        if (itemError || !itemData) {
+          console.error('Error fetching catalog item:', itemError);
+          setLoading(false);
+          return;
+        }
+
         setItem(itemData);
 
-        const { data: bizData, error: bizError } = await supabase
-          .from('businesses')
-          .select('*')
-          .eq('id', itemData.business_id)
-          .single();
+        if (itemData.business_id) {
+          const { data: bizData } = await supabase
+            .from('businesses')
+            .select('*')
+            .eq('id', itemData.business_id)
+            .maybeSingle();
 
-        if (!bizError && bizData) {
-          let ownerData = null;
-          if (bizData.owner_id) {
-            const { data: uData } = await supabase
-              .from('users')
-              .select('name, avatar_url')
-              .eq('id', bizData.owner_id)
-              .single();
-            ownerData = uData;
+          if (bizData) {
+            let ownerName = bizData.owner_name || "Business Owner";
+            let ownerAvatar = bizData.owner_avatar || bizData.logo || null;
+
+            if (bizData.owner_id) {
+              try {
+                const { data: uData } = await supabase
+                  .from('users')
+                  .select('name, avatar_url')
+                  .eq('id', bizData.owner_id)
+                  .maybeSingle();
+                if (uData) {
+                  if (uData.name) ownerName = uData.name;
+                  if (uData.avatar_url) ownerAvatar = uData.avatar_url;
+                }
+              } catch (uErr) {}
+            }
+
+            setBusiness({
+              id: bizData.id,
+              owner_id: bizData.owner_id,
+              name: bizData.name,
+              category: bizData.category,
+              description: bizData.description,
+              location: bizData.location,
+              image_urls: bizData.image_urls,
+              created_at: bizData.created_at,
+              rating: bizData.rating || 0,
+              review_count: bizData.review_count || 0,
+              hours: bizData.hours || "Hours not specified",
+              phone: bizData.phone,
+              email: bizData.email,
+              website: bizData.website,
+              owner_name: ownerName,
+              owner_avatar: ownerAvatar,
+              cover_image: bizData.cover_image || bizData.image_urls?.[0],
+              logo: bizData.logo || ownerAvatar || bizData.image_urls?.[0],
+              distance: "0.5 km away",
+              catalog: []
+            });
           }
-          
-          setBusiness({
-            id: bizData.id,
-            owner_id: bizData.owner_id,
-            name: bizData.name,
-            category: bizData.category,
-            description: bizData.description,
-            location: bizData.location,
-            image_urls: bizData.image_urls,
-            created_at: bizData.created_at,
-            rating: bizData.rating || 0,
-            review_count: bizData.review_count || 0,
-            hours: bizData.hours || "Hours not specified",
-            phone: bizData.phone,
-            email: bizData.email,
-            website: bizData.website,
-            owner_name: ownerData?.name || bizData.owner_name || "Unknown Owner",
-            owner_avatar: ownerData?.avatar_url || bizData.owner_avatar,
-            cover_image: bizData.cover_image || bizData.image_urls?.[0],
-            logo: bizData.logo || bizData.owner_avatar,
-            distance: "0.5 km away",
-            catalog: []
-          });
         }
       } catch (e) {
-        console.error('Error fetching catalog item:', e);
+        console.error('Error in fetchData:', e);
       } finally {
         setLoading(false);
       }
@@ -96,7 +113,6 @@ export default function CatalogItemScreen() {
   }, [business]);
 
   const handleMessage = useCallback(() => {
-    // Navigate to chat
     if (business) {
       router.push(`/chat/business/${business.id}?itemId=${item?.id}` as any);
     }
@@ -118,17 +134,34 @@ export default function CatalogItemScreen() {
     );
   }
 
-  if (!item || !business) {
+  if (!item) {
     return (
-      <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: colors.text }}>Item not found</Text>
+      <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
+        <Ionicons name="cube-outline" size={48} color={colors.textMuted} style={{ opacity: 0.5, marginBottom: 16 }} />
+        <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Item not found</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: 'center', marginBottom: 24 }}>The item you&apos;re looking for doesn&apos;t exist or has been removed.</Text>
+        <TouchableOpacity style={{ backgroundColor: colors.tint, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 25 }} onPress={() => router.back()}>
+          <Text style={{ color: '#000', fontWeight: '700' }}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  const isOwner = user?.id === business.owner_id;
-  const images = item.images && item.images.length > 0 ? item.images : ['https://via.placeholder.com/400'];
+  const isOwner = user?.id === business?.owner_id;
+
+  let rawImages: string[] = [];
+  if (Array.isArray(item.images)) {
+    rawImages = item.images;
+  } else if (typeof item.images === 'string') {
+    try { rawImages = JSON.parse(item.images); } catch (e) {}
+  }
+  if (rawImages.length === 0 && (item as any).image_url) {
+    rawImages = [(item as any).image_url];
+  }
+
+  const images = rawImages.length > 0 ? rawImages : ['https://via.placeholder.com/400'];
   const imageViewerImages = images.map(img => ({ uri: img }));
+  const screenWidth = Dimensions.get('window').width;
 
   return (
     <View style={[s.root, { backgroundColor: colors.background }]}>
@@ -146,7 +179,7 @@ export default function CatalogItemScreen() {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={(e) => {
-              const slide = Math.round(e.nativeEvent.contentOffset.x / e.nativeEvent.layoutMeasurement.width);
+              const slide = Math.round(e.nativeEvent.contentOffset.x / (screenWidth || 1));
               if (slide !== currentImageIndex) setCurrentImageIndex(slide);
             }}
             scrollEventThrottle={16}
@@ -156,7 +189,7 @@ export default function CatalogItemScreen() {
               <TouchableOpacity
                 key={idx}
                 activeOpacity={0.9}
-                style={{ width: Dimensions.get('window').width, height: '100%' }}
+                style={{ width: screenWidth, height: '100%' }}
                 onPress={() => {
                   setViewerIndex(idx);
                   setIsViewerVisible(true);
@@ -198,9 +231,11 @@ export default function CatalogItemScreen() {
           <View style={s.headerRow}>
             <View style={{ flex: 1 }}>
               <Text style={[s.titleTxt, { color: colors.text }]}>{item.title}</Text>
-              <View style={[s.catBadge, { borderColor: colors.borderLight }]}>
-                <Text style={[s.catBadgeTxt, { color: colors.textSecondary }]}>{item.category}</Text>
-              </View>
+              {!!item.category && (
+                <View style={[s.catBadge, { borderColor: colors.borderLight }]}>
+                  <Text style={[s.catBadgeTxt, { color: colors.textSecondary }]}>{item.category}</Text>
+                </View>
+              )}
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={[s.priceTxt, { color: colors.tint }]}>₦{item.price.toLocaleString()}</Text>
@@ -212,50 +247,57 @@ export default function CatalogItemScreen() {
             </View>
           </View>
 
-          <Text style={[s.descTxt, { color: colors.textSecondary }]}>{item.description}</Text>
+          {!!item.description && (
+            <Text style={[s.descTxt, { color: colors.textSecondary }]}>{item.description}</Text>
+          )}
 
           {/* Business Info Card */}
-          <TouchableOpacity 
-            style={[s.bizCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
-            onPress={() => router.push(`/businesses/${business.id}` as any)}
-          >
-            <Image source={{ uri: business.logo || 'https://via.placeholder.com/150' }} style={s.bizLogo} />
-            <View style={{ flex: 1 }}>
-              <Text style={[s.bizName, { color: colors.text }]}>{business.name}</Text>
-              <View style={s.bizMetaRow}>
-                <Ionicons name="star" size={12} color="#FBBF24" />
-                <Text style={{ color: colors.textMuted, fontSize: 12, marginLeft: 4 }}>{business.rating?.toFixed(1) || "0.0"}</Text>
-                <Text style={{ color: colors.textMuted, fontSize: 12, marginHorizontal: 4 }}>•</Text>
-                <Text style={{ color: colors.textMuted, fontSize: 12 }}>{business.review_count || 0} reviews</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
-          </TouchableOpacity>
-
-          {/* Actions */}
-          <View style={s.actionRow}>
-            {!isOwner ? (
-              item.in_stock ? (
-                <TouchableOpacity style={[s.primaryBtn, { backgroundColor: colors.tint, flex: 1 }]} onPress={handleBuy}>
-                  <Text style={[s.primaryBtnTxt, { color: '#000' }]}>Buy Now</Text>
-                </TouchableOpacity>
-              ) : (
-                <View style={[s.primaryBtn, { backgroundColor: colors.borderLight, flex: 1 }]}>
-                  <Text style={[s.primaryBtnTxt, { color: colors.textMuted }]}>Unavailable</Text>
-                </View>
-              )
-            ) : null}
+          {business && (
             <TouchableOpacity 
-              style={[s.outlineBtn, { borderColor: colors.tint, flex: isOwner ? 1 : 0, paddingHorizontal: isOwner ? 0 : 20 }]} 
-              onPress={handleCall}
-              disabled={!business.phone}
+              style={[s.bizCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+              onPress={() => router.push(`/businesses/${business.id}` as any)}
             >
-              <Ionicons name="call-outline" size={18} color={business.phone ? colors.tint : colors.textMuted} />
-              {isOwner && <Text style={[s.outlineBtnTxt, { color: business.phone ? colors.tint : colors.textMuted, marginLeft: 8 }]}>Call Business</Text>}
+              {business.logo ? (
+                <Image source={{ uri: business.logo }} style={s.bizLogo} contentFit="cover" />
+              ) : (
+                <View style={[s.bizLogo, { backgroundColor: colors.borderLight, justifyContent: 'center', alignItems: 'center' }]}>
+                  <Ionicons name="storefront" size={24} color={colors.textMuted} />
+                </View>
+              )}
+              <View style={{ flex: 1 }}>
+                <Text style={[s.bizName, { color: colors.text }]}>{business.name}</Text>
+                <View style={s.bizMetaRow}>
+                  <Ionicons name="star" size={14} color="#FBBF24" />
+                  <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13, marginLeft: 4 }}>{business.rating?.toFixed(1) || "0.0"}</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 13, marginLeft: 6 }}>• {business.category}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
             </TouchableOpacity>
+          )}
+
+          {/* Action Buttons */}
+          <View style={s.actionRow}>
+            <TouchableOpacity 
+              style={[s.primaryBtn, { backgroundColor: colors.tint, flex: 1 }]} 
+              onPress={handleBuy}
+              disabled={!item.in_stock}
+            >
+              <Ionicons name="bag-handle-outline" size={20} color="#000" style={{ marginRight: 8 }} />
+              <Text style={[s.primaryBtnTxt, { color: '#000' }]}>{item.in_stock ? 'Buy Now' : 'Out of Stock'}</Text>
+            </TouchableOpacity>
+
+            {business?.phone && (
+              <TouchableOpacity 
+                style={[s.outlineBtn, { borderColor: colors.borderLight, width: 50 }]} 
+                onPress={handleCall}
+              >
+                <Ionicons name="call-outline" size={20} color={colors.tint} />
+              </TouchableOpacity>
+            )}
           </View>
 
-          {!isOwner && (
+          {!isOwner && business && (
             <TouchableOpacity style={[s.outlineBtn, { borderColor: colors.borderLight, marginTop: 12 }]} onPress={handleMessage}>
               <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.text} />
               <Text style={[s.outlineBtnTxt, { color: colors.text, marginLeft: 8 }]}>Message about Item</Text>
@@ -272,7 +314,7 @@ const s = StyleSheet.create({
   root: { flex: 1 },
   imageContainer: { height: 300, width: '100%', position: 'relative' },
   imageOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)' },
-  backBtn: { position: 'absolute', left: 16, width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
+  backBtn: { position: 'absolute', left: 16, width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', zIndex: 10 },
   navArrowContainer: { position: 'absolute', inset: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
   navBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
   indicators: { position: 'absolute', bottom: 16, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 6 },

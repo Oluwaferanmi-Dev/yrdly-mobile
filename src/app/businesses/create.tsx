@@ -57,19 +57,28 @@ export default function CreateBusinessScreen() {
         return;
       }
       try {
-        const { data } = await supabase
-          .from('seller_accounts')
-          .select('id, verification_status')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .eq('is_primary', true)
-          .maybeSingle();
+        const [{ data: userData }, { data: sellerData }] = await Promise.all([
+          supabase
+            .from('users')
+            .select('verified_seller')
+            .eq('id', user.id)
+            .single(),
+          supabase
+            .from('seller_accounts')
+            .select('id, verification_status')
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+            .maybeSingle(),
+        ]);
 
         if (isMounted) {
-          setIsVerified(!!data && data.verification_status === 'verified');
+          setIsVerified(
+            !!userData?.verified_seller ||
+            (!!sellerData && sellerData.verification_status === 'verified')
+          );
         }
       } catch (err) {
-        console.error('Error fetching verified_seller status:', err);
+        console.error('Error fetching verification status:', err);
       } finally {
         if (isMounted) setCheckingVerification(false);
       }
