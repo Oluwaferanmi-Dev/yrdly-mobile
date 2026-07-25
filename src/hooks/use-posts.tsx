@@ -152,8 +152,22 @@ export const usePosts = (filter?: LocationFilter | null) => {
         user: event.organizer,
       }));
 
+      // Filter out duplicate Event posts from posts table if matching event exists in freshEvents
+      const freshPostsDeduplicated = freshPosts.filter((post) => {
+        if (post.category === 'Event') {
+          const eventIdInLink = post.event_link?.split('/').pop();
+          if (eventIdInLink && freshEvents.some((e) => e.id === eventIdInLink)) {
+            return false;
+          }
+          if (freshEvents.some((e) => e.user_id === post.user_id && e.title === post.title)) {
+            return false;
+          }
+        }
+        return true;
+      });
+
       // Merge and sort
-      const merged = [...freshPosts, ...freshEvents].sort((a, b) => 
+      const merged = [...freshPostsDeduplicated, ...freshEvents].sort((a, b) => 
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
 

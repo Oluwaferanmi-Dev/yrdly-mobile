@@ -112,6 +112,25 @@ export default function ProfileTab() {
   const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
   const isOnline = true; // Hardcoded to true for authenticated user's own profile
 
+  const handleManageStore = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (data && data.length > 0) {
+        router.push(`/businesses/${data[0].id}` as any);
+      } else {
+        router.push('/businesses/create' as any);
+      }
+    } catch (e) {
+      router.push('/businesses/create' as any);
+    }
+  }, [user, router]);
+
   const listHeader = useMemo(() => (
     <View style={styles.headerContainer}>
       
@@ -130,52 +149,48 @@ export default function ProfileTab() {
       {/* Hero Profile Card */}
       <View style={styles.heroCard}>
         <View style={styles.heroTop}>
-          <View style={styles.avatarWrapper}>
+          <TouchableOpacity 
+            style={styles.avatarWrapper}
+            onPress={() => router.push('/profile/edit')}
+            activeOpacity={0.9}
+          >
             {avatarUri ? (
-              <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+              <Image 
+                source={{ uri: avatarUri }} 
+                style={styles.avatarImage} 
+                contentFit="cover"
+                transition={200}
+              />
             ) : (
-              <View style={styles.avatarPlaceholder}>
+              <View style={[styles.avatarPlaceholder, { backgroundColor: colors.tint }]}>
                 <Text style={styles.avatarText}>
-                  {profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}
+                  {profile?.name ? profile.name.charAt(0).toUpperCase() : user?.email ? user.email.charAt(0).toUpperCase() : '?'}
                 </Text>
               </View>
             )}
             {isOnline && <View style={styles.onlineIndicator} />}
-          </View>
-          
-          <TouchableOpacity 
-            style={styles.editProfileBtn}
-            onPress={() => router.push('/settings')}
-          >
-            <Feather name="edit-2" size={14} color={colors.text} />
-            <Text style={styles.editProfileText}>Edit profile</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.editProfileBtn} onPress={() => router.push('/profile/edit')}>
+            <Feather name="edit-3" size={14} color={colors.text} />
+            <Text style={styles.editProfileText}>Edit</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.nameRow}>
-          <Text style={styles.name}>{profile?.legal_name || profile?.name || user?.user_metadata?.name || 'No Name'}</Text>
-          {(profile as any)?.verified_seller && (
-            <MaterialIcons 
-              name="verified" 
-              size={18} 
-              color={colors.tint}
-              style={{ marginLeft: 4 }} 
-            />
+        <View style={{ marginBottom: 12 }}>
+          <View style={styles.nameRow}>
+            <Text style={styles.name}>{profile?.name || user?.user_metadata?.name || 'Anonymous'}</Text>
+            {(profile as any)?.verified_seller && (
+              <MaterialIcons name="verified" size={16} color={colors.tint} style={{ marginLeft: 4 }} />
+            )}
+          </View>
+
+          {(profile as any)?.handle && (
+            <Text style={styles.username}>@{(profile as any).handle}</Text>
           )}
         </View>
-        <Text style={styles.username}>@{profile?.username || user?.user_metadata?.username || 'user'}</Text>
 
-        {!profile?.phone_verified && (
-          <TouchableOpacity 
-            style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.tint + '1A', padding: 10, borderRadius: 12, marginBottom: 16 }}
-            onPress={() => router.push('/verify-phone' as any)}
-          >
-            <Feather name="alert-circle" size={16} color={colors.tint} style={{ marginRight: 6 }} />
-            <Text style={{ color: colors.tint, fontSize: 14, fontWeight: '600' }}>Verify your phone number</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Stats Row within Card */}
+        {/* Stats Row */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{posts.length}</Text>
@@ -197,33 +212,6 @@ export default function ProfileTab() {
             <Text style={styles.statValue}>{followingCount}</Text>
             <Text style={styles.statLabel}>Following</Text>
           </TouchableOpacity>
-        </View>
-
-        {profile?.bio && (
-          <Text style={styles.bio} numberOfLines={2}>{profile.bio}</Text>
-        )}
-        
-        <View style={styles.metaRow}>
-          {user?.email && (
-            <View style={styles.metaItem}>
-              <Ionicons name="mail-outline" size={14} color="#82DB7E" />
-              <Text style={styles.metaText} numberOfLines={1}>{user.email}</Text>
-            </View>
-          )}
-          {profile?.location && (
-            <TouchableOpacity
-              style={styles.metaItem}
-              onPress={() => {
-                const locStr = [profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ');
-                if (locStr) Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(locStr)}`);
-              }}
-            >
-              <Ionicons name="location-outline" size={14} color="#82DB7E" />
-              <Text style={[styles.metaText, { textDecorationLine: 'underline' }]}>
-                {[profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ')}
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
       </View>
 
@@ -263,7 +251,7 @@ export default function ProfileTab() {
       {/* Business Action (Only for verified sellers) */}
       {(profile as any)?.verified_seller && (
         <View style={[styles.quickActions, { marginTop: -12 }]}>
-          <TouchableOpacity style={[styles.actionCard, { flex: 0, width: '31%' }]} onPress={() => router.push('/businesses/create' as any)}>
+          <TouchableOpacity style={[styles.actionCard, { flex: 0, width: '31%' }]} onPress={handleManageStore}>
             <View style={[styles.actionIconWrapper, { backgroundColor: colors.tint + '1A' }]}>
               <Ionicons name="storefront-outline" size={20} color={colors.tint} />
             </View>
@@ -276,7 +264,7 @@ export default function ProfileTab() {
       )}
 
     </View>
-  ), [avatarUri, profile, user, posts.length, followersCount, followingCount, isOnline, styles, colors]);
+  ), [avatarUri, profile, user, posts.length, followersCount, followingCount, isOnline, styles, colors, handleManageStore]);
 
   const activeData = activeTab === 'posts' ? posts : savedPosts;
   const isLoading = activeTab === 'posts' ? loadingPosts : loadingSaved;

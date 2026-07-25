@@ -97,6 +97,14 @@ export default function MyEventsScreen() {
               <Text style={[styles.statLabel, { color: colors.textMuted }]}>Attendees</Text>
             </View>
           </View>
+
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: colors.tint, paddingVertical: 8, borderRadius: 12, marginTop: 10 }}
+            onPress={() => router.push({ pathname: '/events/scan' as any, params: { eventId: item.id } })}
+          >
+            <Ionicons name="qr-code" size={16} color="#000" />
+            <Text style={{ color: '#000', fontWeight: '800', fontSize: 13 }}>Scan Attendee Tickets</Text>
+          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     );
@@ -110,7 +118,10 @@ export default function MyEventsScreen() {
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>My Events</Text>
-        <View style={{ width: 40 }} />
+        <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.tint + '20', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14 }} onPress={() => router.push('/events/scan' as any)}>
+          <Ionicons name="qr-code-outline" size={16} color={colors.tint} />
+          <Text style={{ color: colors.tint, fontWeight: '700', fontSize: 12 }}>Scan</Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList

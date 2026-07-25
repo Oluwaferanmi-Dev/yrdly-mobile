@@ -186,14 +186,21 @@ export default function EventDetailScreen() {
           }
         }
 
-        // Fetch related events
-        const { data: related } = await supabase
+        // Fetch related events (filtered by same LGA/state location)
+        let relatedQuery = supabase
           .from('events')
-          .select(`id, title, cover_image_url, start_time, location_address, location_online`)
+          .select(`id, title, cover_image_url, start_time, location_address, location_online, state, lga`)
           .eq('status', 'PUBLISHED')
           .or(`end_time.gte.${new Date().toISOString()},and(end_time.is.null,start_time.gte.${new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()})`)
-          .neq('id', data.id)
-          .limit(5);
+          .neq('id', data.id);
+
+        if (data.lga) {
+          relatedQuery = relatedQuery.eq('lga', data.lga);
+        } else if (data.state) {
+          relatedQuery = relatedQuery.eq('state', data.state);
+        }
+
+        const { data: related } = await relatedQuery.limit(5);
         if (related) setRelatedEvents(related);
       }
     } catch (error) {
@@ -564,12 +571,13 @@ export default function EventDetailScreen() {
                   </Text>
                 )}
               </View>
-              <View style={styles.organizerInfo}>
+              <View style={[styles.organizerInfo, { marginRight: 8 }]}>
                 <Text style={[styles.organizerLabel, { color: colors.textSecondary }]}>Organizer</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={[styles.sellerName, { color: colors.text }]}>{event.organizer?.name || 'Unknown Organizer'}</Text>
-                  {/* Verified badge placeholder */}
-                  <Ionicons name="checkmark-circle" size={16} color={colors.tint} style={{ marginLeft: 4 }} />
+                  <Text style={[styles.sellerName, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>
+                    {event.organizer?.name || 'Unknown Organizer'}
+                  </Text>
+                  <Ionicons name="checkmark-circle" size={16} color={colors.tint} style={{ marginLeft: 4, flexShrink: 0 }} />
                 </View>
               </View>
               {!isOwner && (

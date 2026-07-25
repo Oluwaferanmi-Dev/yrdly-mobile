@@ -182,6 +182,21 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         })}
       </ScrollView>
 
+      {category !== '' && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.tint + '15', borderRadius: 14, marginHorizontal: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.tint + '40' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="funnel-outline" size={14} color={colors.tint} />
+            <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>
+              Showing: {EVENT_CATEGORIES.find(c => c.key === category)?.label || category}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => setCategory('')} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: colors.borderLight }}>
+            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', marginRight: 4 }}>Clear</Text>
+            <Ionicons name="close" size={14} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      )}
+
       {featured.length > 0 && (
         <View style={s.section}>
           <View style={s.sectionHeader}>

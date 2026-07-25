@@ -95,12 +95,20 @@ export default function CommunityScreen() {
       const { data: userData, error: userError } = await userQuery;
       if (userError) console.error('Error fetching users:', userError);
 
+      const { data: pendingSent } = await supabase
+        .from('friend_requests')
+        .select('to_user_id')
+        .eq('from_user_id', currentUser.id)
+        .eq('status', 'pending');
+      const pendingSentTargetIds = (pendingSent || []).map((r: any) => r.to_user_id);
+
       const blocked = profile?.blocked_users || [];
       const myFriends = friendList.map(f => f.user.id);
       
       const discoveredUsers = (userData || [])
         .filter(u => !blocked.includes(u.id))
         .filter(u => !myFriends.includes(u.id))
+        .filter(u => !pendingSentTargetIds.includes(u.id))
         .filter(u => u.discoverable !== false);
 
       const nearbyUsers = discoveredUsers.filter(u => {

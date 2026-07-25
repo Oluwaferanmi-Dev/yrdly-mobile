@@ -98,7 +98,8 @@ export default function TransactionsScreen() {
   const renderItem = ({ item: tx }: { item: Transaction }) => {
     const meta = STATUS_META[tx.status] ?? STATUS_META.pending;
     const counterparty = tab === 'purchases' ? tx.seller : tx.buyer;
-    const thumb = tx.item?.images?.[0];
+    const imagesArr = Array.isArray(tx.item?.images) ? tx.item?.images : typeof tx.item?.images === 'string' ? [tx.item?.images] : [];
+    const thumb = imagesArr[0] || (tx.item as any)?.image_url;
 
     return (
       <TouchableOpacity

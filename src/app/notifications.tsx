@@ -244,14 +244,34 @@ export default function NotificationsScreen() {
         if (uid) router.push(`/profile/${uid}`);
         break;
       }
+      case 'ticket':
+      case 'ticket_purchase':
+      case 'event_rsvp': {
+        router.push('/tickets');
+        break;
+      }
+      case 'purchase':
+      case 'escrow':
       case 'payment_successful':
       case 'item_shipped':
       case 'delivery_confirmed':
       case 'funds_released':
       case 'dispute_opened':
       case 'dispute_resolved': {
-        const txId = notification.related_id || notification.data?.transactionId;
-        if (txId) router.push(`/transactions/${txId}`);
+        const txId = notification.related_id || notification.data?.transactionId || notification.data?.transaction_id;
+        if (txId) {
+          router.push(`/transactions/${txId}`);
+        } else {
+          router.push('/transactions');
+        }
+        break;
+      }
+      case 'review':
+      case 'business_review': {
+        const bizId = notification.related_id || notification.data?.business_id;
+        if (bizId) {
+          router.push(`/businesses/${bizId}` as any);
+        }
         break;
       }
       case 'marketplace_item_sold':
@@ -260,8 +280,12 @@ export default function NotificationsScreen() {
         if (pid) router.push(`/posts/${pid}`);
         break;
       }
-      default:
+      default: {
+        if (notification.related_id) {
+          router.push(`/transactions/${notification.related_id}`);
+        }
         break;
+      }
     }
   };
 
