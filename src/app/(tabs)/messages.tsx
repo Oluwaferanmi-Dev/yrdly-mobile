@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
-  TouchableOpacity, ActivityIndicator, Alert, RefreshControl
+  TouchableOpacity, ActivityIndicator, Alert, RefreshControl, Modal
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -343,9 +343,87 @@ export default function MessagesTab() {
     );
   };
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [friendsList, setFriendsList] = useState<{ id: string; name: string; avatar_url: string | null }[]>([]);
+  const [friendsLoading, setFriendsLoading] = useState(false);
+  const [modalSearch, setModalSearch] = useState('');
+
+  const openNewChatModal = async () => {
+    setIsModalOpen(true);
+    if (!user) return;
+    setFriendsLoading(true);
+    try {
+      const { data: userData } = await supabase.from('users').select('friends').eq('id', user.id).single();
+      const arrayFriends: string[] = userData?.friends || [];
+
+      const { data: acceptedReqs } = await supabase
+        .from('friend_requests')
+        .select('from_user_id, to_user_id')
+        .eq('status', 'accepted')
+        .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`);
+
+      const reqFriends = (acceptedReqs || []).map(r => r.from_user_id === user.id ? r.to_user_id : r.from_user_id);
+      const allFriendIds = Array.from(new Set([...arrayFriends, ...reqFriends])).filter(id => id && id !== user.id);
+
+      if (allFriendIds.length > 0) {
+        const { data: friendUsers } = await supabase.from('users').select('id, name, avatar_url').in('id', allFriendIds);
+        setFriendsList(friendUsers || []);
+      } else {
+        setFriendsList([]);
+      }
+    } catch (e) {
+      console.error('Fetch friends for chat error:', e);
+    } finally {
+      setFriendsLoading(false);
+    }
+  };
+
+  const handleStartChatWithFriend = async (friend: { id: string; name: string; avatar_url: string | null }) => {
+    setIsModalOpen(false);
+    if (!user) return;
+    try {
+      const { data: existing } = await supabase
+        .from('conversations')
+        .select('id')
+        .contains('participant_ids', [user.id])
+        .contains('participant_ids', [friend.id])
+        .eq('type', 'friend')
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        router.push({ pathname: '/chat/[id]', params: { id: existing[0].id } });
+      } else {
+        router.push({
+          pathname: '/chat/[id]',
+          params: {
+            id: 'new',
+            type: 'friend',
+            participant_id: friend.id,
+            participantName: friend.name,
+            participantAvatar: friend.avatar_url || '',
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Start chat error:', e);
+    }
+  };
+
+  const filteredModalFriends = useMemo(() => {
+    if (!modalSearch) return friendsList;
+    return friendsList.filter(f => (f.name || '').toLowerCase().includes(modalSearch.toLowerCase()));
+  }, [friendsList, modalSearch]);
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScreenHeader title="Messages" />
+      <ScreenHeader
+        title="Messages"
+        rightContent={
+          <TouchableOpacity style={{ marginLeft: 12 }} onPress={openNewChatModal}>
+            <Feather name="edit" size={22} color={colors.text} />
+          </TouchableOpacity>
+        }
+      />
       {/* Search */}
       <View style={[styles.searchContainer, { backgroundColor: 'transparent', borderColor: colors.borderLight }]}>
         <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
@@ -396,6 +474,69 @@ export default function MessagesTab() {
           showsVerticalScrollIndicator={false}
         />
       )}
+
+      {/* New Message Modal */}
+      <Modal visible={isModalOpen} animationType="slide" transparent onRequestClose={() => setIsModalOpen(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: colors.background, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '80%', padding: 20, paddingBottom: insets.bottom + 20 }}>
+            {/* Header */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.text }}>New Message</Text>
+              <TouchableOpacity onPress={() => setIsModalOpen(false)} style={{ padding: 4 }}>
+                <Feather name="x" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Friend Search */}
+            <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground || colors.card, borderColor: colors.borderLight, marginHorizontal: 0, marginBottom: 16 }]}>
+              <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
+              <TextInput
+                style={[styles.searchInput, { color: colors.text }]}
+                placeholder="Search friends..."
+                placeholderTextColor={colors.textMuted}
+                value={modalSearch}
+                onChangeText={setModalSearch}
+              />
+            </View>
+
+            {/* Friends list */}
+            {friendsLoading ? (
+              <View style={{ padding: 40, alignItems: 'center' }}>
+                <ActivityIndicator size="small" color={colors.tint} />
+              </View>
+            ) : filteredModalFriends.length === 0 ? (
+              <View style={{ padding: 40, alignItems: 'center' }}>
+                <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+                  {modalSearch ? 'No friends match search' : 'No friends found'}
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={filteredModalFriends}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.borderLight }}
+                    onPress={() => handleStartChatWithFriend(item)}
+                  >
+                    {item.avatar_url ? (
+                      <Image source={{ uri: item.avatar_url }} style={{ width: 44, height: 44, borderRadius: 22, marginRight: 12 }} />
+                    ) : (
+                      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                        <Text style={{ color: '#FFF', fontWeight: 'bold', fontSize: 16 }}>
+                          {(item.name || 'U').charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, flex: 1 }}>{item.name}</Text>
+                    <Feather name="chevron-right" size={18} color={colors.textMuted} />
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
