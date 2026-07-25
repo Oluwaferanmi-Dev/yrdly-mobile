@@ -118,16 +118,7 @@ export default function ProfileTab() {
       {/* Top Navigation */}
       <View style={styles.navHeader}>
         <View style={styles.navSpacer} />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Text style={styles.navTitle}>{profile?.name || user?.user_metadata?.name || 'Profile'}</Text>
-          {((profile as any)?.verified_seller || (profile as any)?.is_verified) && (
-            <Ionicons
-              name="checkmark-circle"
-              size={18}
-              color={(profile as any)?.verified_seller ? "#FBC02D" : "#82DB7E"}
-            />
-          )}
-        </View>
+
         <TouchableOpacity 
           style={styles.settingsBtn}
           onPress={() => router.push('/settings')}

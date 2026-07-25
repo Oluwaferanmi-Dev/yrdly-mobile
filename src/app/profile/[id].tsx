@@ -174,7 +174,7 @@ export default function OtherUserProfileScreen() {
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Feather name="arrow-left" size={24} color={colors.text} />
+            <Ionicons name="chevron-back" size={28} color={colors.text} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Profile Not Found</Text>
         </View>
@@ -185,20 +185,42 @@ export default function OtherUserProfileScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>{profile.name}</Text>
-          {(profile.verified_seller) && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
+          <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Ionicons name="chevron-back" size={28} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitleLeft, { color: colors.text }]} numberOfLines={1}>
+            {profile.username || profile.name}
+          </Text>
+          {profile.verified_seller && (
             <MaterialIcons 
               name="verified" 
-              size={18} 
+              size={16} 
               color={colors.tint}
             />
           )}
         </View>
-        <View style={{ width: 40 }} />
+        <TouchableOpacity 
+          onPress={() => {
+            Alert.alert('Options', '', [
+              { text: 'Block User', style: 'destructive', onPress: async () => {
+                if (!currentUser) return;
+                await supabase.from('user_blocks').insert({ blocker_id: currentUser.id, blocked_id: profile.id });
+                Alert.alert('Success', 'User blocked.');
+                router.back();
+              }},
+              { text: 'Report User', style: 'destructive', onPress: async () => {
+                if (!currentUser) return;
+                await supabase.from('reports').insert({ reporter_id: currentUser.id, reported_user_id: profile.id, reason: 'Inappropriate profile' });
+                Alert.alert('Success', 'User reported.');
+              }},
+              { text: 'Cancel', style: 'cancel' }
+            ]);
+          }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="ellipsis-horizontal" size={22} color={colors.text} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -433,12 +455,13 @@ export default function OtherUserProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 12, paddingVertical: 12,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 12,
     borderBottomWidth: 1,
   },
   backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
   headerTitle: { fontSize: 16, fontWeight: 'bold', flex: 1, textAlign: 'center' },
+  headerTitleLeft: { fontSize: 20, fontWeight: '800' },
   cover: { height: 120, width: '100%' },
   profileHeader: { padding: 16, borderBottomWidth: 1 },
   avatarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },

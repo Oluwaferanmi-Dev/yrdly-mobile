@@ -142,7 +142,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
           ) : (
             <View style={s.actRow}>
               <TouchableOpacity style={[s.chatBtn, { borderColor: colors.borderLight, backgroundColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }]} onPress={() => onMessageSeller?.(item)}>
-                <Ionicons name="chatbubble-outline" size={13} color={colors.text} style={{ marginRight: 4 }} />
+                <Ionicons name="chatbubble-ellipses-outline" size={13} color={colors.text} style={{ marginRight: 4 }} />
                 <Text style={[s.chatTxt, { color: colors.text }]}>Chat</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[s.buyBtn, { backgroundColor: colors.tint }]} onPress={() => onBuyNow?.(item)}>

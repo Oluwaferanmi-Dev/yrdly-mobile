@@ -5,7 +5,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, w
 import { Image } from 'expo-image';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { useEventListener } from 'expo';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Post } from '../types';
 import { timeAgo, formatPrice } from '../lib/utils';
@@ -556,7 +556,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             style={[styles.actionButton, { marginLeft: 16 }]} 
             onPress={(e) => { e.stopPropagation(); if (onComment) onComment(); }}
           >
-            <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
+            <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.textSecondary} />
             <Text style={[styles.actionText, { color: colors.textSecondary }]}>
               {post.comment_count > 0 ? post.comment_count : ''}
             </Text>
@@ -566,7 +566,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             style={[styles.actionButton, { marginLeft: 16 }]} 
             onPress={(e) => { e.stopPropagation(); handleShare(); }}
           >
-            <Ionicons name="share-social-outline" size={20} color={colors.textSecondary} />
+            <Entypo name="forward" size={20} color={colors.textSecondary} />
             <Text style={[styles.actionText, { color: colors.textSecondary }]}>
               {shareCount > 0 ? shareCount : ''}
             </Text>

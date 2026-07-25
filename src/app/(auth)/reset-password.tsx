@@ -113,7 +113,7 @@ export default function ResetPassword() {
       <View style={styles.formContainer}>
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/(auth)/login')}>
-          <Feather name="arrow-left" size={24} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
 
         {/* Header */}

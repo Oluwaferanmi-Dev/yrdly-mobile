@@ -280,7 +280,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
                   setShowLocation(false);
                 }
               }}
-              query={{ key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY, language: 'en' }}
+              query={{ key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY, language: 'en', components: 'country:ng' }}
               styles={{
                 textInput: [s.googleInput, { color: colors.text, backgroundColor: colors.inputBackground || colors.background }],
                 row: { backgroundColor: colors.background },

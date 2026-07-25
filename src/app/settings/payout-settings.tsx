@@ -83,7 +83,7 @@ export default function PayoutSettingsScreen() {
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity onPress={() => router.back()} style={s.back}><Feather name="arrow-left" size={24} color={colors.text} /></TouchableOpacity>
+        <TouchableOpacity onPress={() => router.back()} style={s.back}><Ionicons name="chevron-back" size={28} color={colors.text} /></TouchableOpacity>
         <Text style={[s.title, { color: colors.text }]}>Bank Account</Text>
         <View style={{ width: 40 }} />
       </View>

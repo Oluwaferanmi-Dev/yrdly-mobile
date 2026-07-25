@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { timeAgo } from '../lib/utils';
 import { useAppTheme } from '../context/ThemeContext';
 import { StorageService } from '../lib/storage-service';
@@ -19,7 +19,9 @@ export interface CommentType {
   user?: {
     name: string;
     avatar_url: string;
+    verified_seller?: boolean;
   };
+  verified_seller?: boolean;
   is_liked?: boolean;
 }
 
@@ -83,8 +85,15 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
       <View style={styles.commentContent}>
         <Text style={styles.commentText}>
           <Text style={[styles.authorName, { color: colors.text }]}>
-            {item.user?.name || item.author_name}{'  '}
+            {item.user?.name || item.author_name}
           </Text>
+          {(item.user?.verified_seller || item.verified_seller) && (
+            <Text>
+              {' '}
+              <MaterialIcons name="verified" size={13} color={colors.tint} />
+            </Text>
+          )}
+          <Text>{'  '}</Text>
           <Text style={{ color: colors.text }}>
             {item.text}
           </Text>

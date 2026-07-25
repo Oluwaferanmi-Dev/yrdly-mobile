@@ -115,7 +115,7 @@ export function BusinessHub({ searchQuery }: BusinessHubProps) {
           style={s.backBtn}
           onPress={() => setActiveCategory(null)}
         >
-          <Ionicons name="arrow-back" size={16} color={colors.textMuted} />
+          <Ionicons name="chevron-back" size={18} color={colors.textMuted} />
           <Text style={[s.backTxt, { color: colors.textMuted }]}>Back to categories</Text>
         </TouchableOpacity>
       )}

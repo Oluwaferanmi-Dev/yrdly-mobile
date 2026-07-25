@@ -17,7 +17,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 
 // ── Types ─────────────────────────────────────────────────────────
 type ConvType = 'friend' | 'marketplace' | 'briefcase';
-type FilterTab = 'all' | 'friends' | 'marketplace';
+type FilterTab = 'all' | 'friends' | 'marketplace' | 'business';
 
 interface Conversation {
   id: string;
@@ -196,7 +196,8 @@ export default function MessagesTab() {
       const tabOk =
         activeFilter === 'all' ||
         (activeFilter === 'friends' && c.type === 'friend') ||
-        (activeFilter === 'marketplace' && c.type === 'marketplace');
+        (activeFilter === 'marketplace' && c.type === 'marketplace') ||
+        (activeFilter === 'business' && c.type === 'briefcase');
       const q = searchQuery.toLowerCase();
       const searchOk = !q || 
         (c.participantName || '').toLowerCase().includes(q) || 
@@ -239,6 +240,7 @@ export default function MessagesTab() {
     { key: 'all', label: 'All' },
     { key: 'friends', label: 'Friends' },
     { key: 'marketplace', label: 'Market' },
+    { key: 'business', label: 'Business' },
   ];
 
   const renderItem = ({ item }: { item: Conversation }) => {

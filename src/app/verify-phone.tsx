@@ -68,7 +68,7 @@ export default function VerifyPhoneScreen() {
 
       <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.text }]}>
         <TouchableOpacity style={styles.back} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={22} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
 
         <View style={[styles.iconRing, { backgroundColor: colors.inputBackground }]}>

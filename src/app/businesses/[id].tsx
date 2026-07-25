@@ -12,7 +12,7 @@ import { Skeleton } from '../../components/Skeleton';
 
 const { width } = Dimensions.get('window');
 
-type Tab = 'Catalog' | 'About' | 'Reviews';
+type Tab = 'Catalog' | 'Gallery' | 'About' | 'Reviews';
 
 export default function BusinessProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -115,14 +115,44 @@ export default function BusinessProfileScreen() {
     }
   }, [business]);
 
-  const handleMessage = useCallback(() => {
-    // Navigate to chat
-    if (business) {
-      // Assuming you have a route like /chat/business/[id] or similar.
-      // For now, let's just log it or route to generic chat
-      router.push(`/chat/business/${business.id}` as any);
+  const handleMessage = useCallback(async () => {
+    if (!business || !user || user.id === business.owner_id) return;
+
+    try {
+      const { data: convs, error: fetchError } = await supabase
+        .from('conversations')
+        .select('id, type, participant_ids, item_id')
+        .eq('item_id', business.id)
+        .order('created_at', { ascending: true });
+
+      if (fetchError) console.error('Error fetching conversations:', fetchError);
+
+      const existing = convs?.find(c => {
+        if (c.type === 'briefcase' && c.item_id === business.id && c.participant_ids?.includes(user.id) && c.participant_ids?.includes(business.owner_id)) return true;
+        return false;
+      });
+
+      if (existing?.id) {
+        router.push({ pathname: '/chat/[id]', params: { id: existing.id } });
+        return;
+      }
+
+      const imageUrl = business.cover_image || business.logo || '';
+      router.push({ 
+        pathname: '/chat/[id]', 
+        params: { 
+          id: 'new',
+          type: 'briefcase',
+          participant_id: business.owner_id,
+          item_id: business.id,
+          item_title: business.name,
+          item_image: imageUrl,
+        } 
+      });
+    } catch (e) {
+      console.error('Error starting chat', e);
     }
-  }, [business, router]);
+  }, [business, user, router]);
 
   const shortenAddress = (addr: string, len: number) => {
     if (addr.length > len) return addr.substring(0, len) + '...';
@@ -173,7 +203,7 @@ export default function BusinessProfileScreen() {
             style={[s.backBtn, { top: insets.top + 10, backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]} 
             onPress={() => router.back()}
           >
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#fff' : '#000'} />
+            <Ionicons name="chevron-back" size={26} color={isDarkMode ? '#fff' : '#000'} />
           </TouchableOpacity>
 
           {/* Logo */}
@@ -221,7 +251,7 @@ export default function BusinessProfileScreen() {
           <View style={s.actionRow}>
             {!isOwner && (
               <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.tint, flex: 1 }]} onPress={handleMessage}>
-                <Ionicons name="chatbubble-outline" size={18} color="#000" />
+                <Ionicons name="chatbubble-ellipses-outline" size={18} color="#000" />
                 <Text style={[s.actionBtnTxt, { color: '#000' }]}>Message</Text>
               </TouchableOpacity>
             )}
@@ -238,7 +268,7 @@ export default function BusinessProfileScreen() {
 
         {/* Tabs */}
         <View style={[s.tabRow, { borderBottomColor: colors.borderLight }]}>
-          {(['Catalog', 'About', 'Reviews'] as Tab[]).map(tab => {
+          {(['Catalog', 'Gallery', 'About', 'Reviews'] as Tab[]).map(tab => {
             const active = activeTab === tab;
             return (
               <TouchableOpacity key={tab} style={[s.tabItem, active && { borderBottomColor: colors.tint, borderBottomWidth: 2 }]} onPress={() => setActiveTab(tab)}>
@@ -253,7 +283,7 @@ export default function BusinessProfileScreen() {
           {activeTab === 'Catalog' && (
             <View>
               {isOwner && (
-                <TouchableOpacity style={[s.addBtn, { backgroundColor: colors.card, borderColor: colors.borderLight }]} onPress={() => {}}>
+                <TouchableOpacity style={[s.addBtn, { backgroundColor: colors.card, borderColor: colors.borderLight }]} onPress={() => router.push({ pathname: '/businesses/create-catalog-item', params: { businessId: business.id } } as any)}>
                   <Ionicons name="add" size={20} color={colors.tint} />
                   <Text style={[s.addBtnTxt, { color: colors.tint }]}>Add Catalog Item</Text>
                 </TouchableOpacity>
@@ -285,6 +315,23 @@ export default function BusinessProfileScreen() {
                         <Text style={[s.catalogPrice, { color: colors.tint }]}>₦{item.price.toLocaleString()}</Text>
                       </View>
                     </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+
+          {activeTab === 'Gallery' && (
+            <View>
+              {(!business.image_urls || business.image_urls.length === 0) ? (
+                <View style={s.emptyTab}>
+                  <Ionicons name="image-outline" size={48} color={colors.textMuted} style={{ opacity: 0.5, marginBottom: 12 }} />
+                  <Text style={{ color: colors.textMuted }}>No gallery images yet.</Text>
+                </View>
+              ) : (
+                <View style={s.galleryGrid}>
+                  {business.image_urls.map((url, i) => (
+                    <Image key={i} source={{ uri: url }} style={s.galleryGridImg} contentFit="cover" />
                   ))}
                 </View>
               )}
@@ -398,4 +445,6 @@ const s = StyleSheet.create({
   reviewerInfo: { flex: 1 },
   reviewerName: { fontSize: 15, fontWeight: '600', marginBottom: 2 },
   reviewRating: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  galleryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  galleryGridImg: { width: (width - 40) / 3, height: (width - 40) / 3, borderRadius: 12 },
 });

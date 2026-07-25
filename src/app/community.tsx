@@ -497,7 +497,7 @@ export default function CommunityScreen() {
       {/* Premium Header */}
       <View style={styles.premiumHeader}>
         <TouchableOpacity onPress={() => router.back()} style={[styles.glassBtn, { backgroundColor: colors.tint + '1A' }]}>
-          <Feather name="chevron-left" size={24} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerTitleCenter}>
           <Text style={[styles.premiumHeaderTitle, { color: colors.text }]}>Community</Text>

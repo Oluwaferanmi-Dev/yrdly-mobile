@@ -153,7 +153,7 @@ export default function VerifyOtpScreen() {
       <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.text }]}>
         {/* Back */}
         <TouchableOpacity style={styles.back} onPress={() => router.back()}>
-          <Feather name="arrow-left" size={22} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
 
         {/* Icon */}

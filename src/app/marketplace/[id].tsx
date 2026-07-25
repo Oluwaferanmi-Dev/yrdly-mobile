@@ -498,8 +498,14 @@ function MarketplaceDetailContent() {
 
             <View style={styles.statsRow}>
               <View style={styles.statColumn}>
-                <Ionicons name="shield-checkmark" size={20} color={colors.tint} />
-                <Text style={[styles.statValue, { color: colors.text }]}>Verified</Text>
+                <Ionicons 
+                  name={postUser?.verified_seller ? "shield-checkmark" : "shield-outline"} 
+                  size={20} 
+                  color={postUser?.verified_seller ? colors.tint : colors.textMuted} 
+                />
+                <Text style={[styles.statValue, { color: postUser?.verified_seller ? colors.text : colors.textMuted }]}>
+                  {postUser?.verified_seller ? 'Verified' : 'Unverified'}
+                </Text>
                 <Text style={[styles.statLabel, { color: colors.textMuted }]}>Seller</Text>
               </View>
               <View style={[styles.statDivider, { backgroundColor: colors.borderLight }]} />
@@ -532,7 +538,7 @@ function MarketplaceDetailContent() {
           ) : (
             <>
               <TouchableOpacity style={[styles.messageButton, { borderColor: colors.tint, backgroundColor: colors.inputBackground }]} onPress={handleMessageSeller}>
-                <Ionicons name="chatbubble-outline" size={20} color={colors.tint} />
+                <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.tint} />
                 <Text style={[styles.messageButtonText, { color: colors.tint }]}>Message</Text>
               </TouchableOpacity>
               <TouchableOpacity 

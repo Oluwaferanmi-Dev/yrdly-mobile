@@ -133,7 +133,7 @@ export default function CatalogItemScreen() {
             style={[s.backBtn, { top: insets.top + 10, backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]} 
             onPress={() => router.back()}
           >
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#fff' : '#000'} />
+            <Ionicons name="chevron-back" size={26} color={isDarkMode ? '#fff' : '#000'} />
           </TouchableOpacity>
 
           {/* Nav arrows */}
@@ -231,7 +231,7 @@ export default function CatalogItemScreen() {
 
           {!isOwner && (
             <TouchableOpacity style={[s.outlineBtn, { borderColor: colors.borderLight, marginTop: 12 }]} onPress={handleMessage}>
-              <Ionicons name="chatbubble-outline" size={18} color={colors.text} />
+              <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.text} />
               <Text style={[s.outlineBtnTxt, { color: colors.text, marginLeft: 8 }]}>Message about Item</Text>
             </TouchableOpacity>
           )}

@@ -99,7 +99,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
     setLoading(true);
     const { data, error } = await supabase
       .from('comments')
-      .select('*, user:users!comments_user_id_fkey(name, avatar_url)')
+      .select('*, user:users!comments_user_id_fkey(name, avatar_url, verified_seller)')
       .eq('post_id', postId)
       .order('timestamp', { ascending: true });
 

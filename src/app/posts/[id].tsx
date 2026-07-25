@@ -105,7 +105,7 @@ function PostDetailContent() {
     if (!id) return;
     const { data, error } = await supabase
       .from('comments')
-      .select('*, user:users!comments_user_id_fkey(name, avatar_url)')
+      .select('*, user:users!comments_user_id_fkey(name, avatar_url, verified_seller)')
       .eq('post_id', id)
       .order('timestamp', { ascending: true });
 
@@ -235,7 +235,7 @@ function PostDetailContent() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={24} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Post</Text>
         {post?.user_id === user?.id ? (

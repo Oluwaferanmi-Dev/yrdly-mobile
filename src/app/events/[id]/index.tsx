@@ -364,7 +364,7 @@ export default function EventDetailScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}><Feather name="arrow-left" size={24} color={colors.text} /></TouchableOpacity>
+          <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}><Ionicons name="chevron-back" size={28} color={colors.text} /></TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Event Details</Text>
           <View style={styles.headerRightActions}>
              <View style={styles.iconBtn} />
@@ -417,7 +417,7 @@ export default function EventDetailScreen() {
       <SafeAreaView edges={['top']} style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20 }} pointerEvents="box-none">
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => router.back()} style={[styles.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-            <Feather name="arrow-left" size={24} color="#FFF" />
+            <Ionicons name="chevron-back" size={28} color="#FFF" />
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
           <View style={styles.headerRightActions}>

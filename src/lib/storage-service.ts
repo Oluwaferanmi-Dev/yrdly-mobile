@@ -254,4 +254,21 @@ export class StorageService {
     if (error || !data) return { url: null, error };
     return { url: this.getPublicUrl('chat-videos', path), error: null };
   }
+  /** Upload a business image */
+  static async uploadBusinessImage(
+    businessId: string,
+    file: MobileFile
+  ): Promise<{ url: string | null; error: any }> {
+    const ext = file.name.split('.').pop() ?? 'jpg';
+    const path = `businesses/${businessId}/${Date.now()}.${ext}`;
+    const mimeType = this.getMimeType(file.name, file.type);
+
+    const { data, error } = await this.uploadFile('post-images', path, file, {
+      contentType: mimeType,
+      cacheControl: '604800',
+    });
+
+    if (error || !data) return { url: null, error };
+    return { url: this.getPublicUrl('post-images', path), error: null };
+  }
 }
