@@ -64,19 +64,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
               const netInfo = await NetInfo.fetch();
               if (netInfo.isConnected) {
-                try {
-                  // Fetch fresh profile, but timeout after 5 seconds so we don't hang splash screen
-                  const fetchPromise = AuthService.getUserProfile(currentUser.id);
-                  const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000));
-                  const freshProfile = await Promise.race([fetchPromise, timeoutPromise]);
-                  
-                  if (freshProfile) {
-                    userProfile = freshProfile;
+                // Fetch fresh profile in background and update state when ready
+                AuthService.getUserProfile(currentUser.id).then((freshProfile) => {
+                  if (freshProfile && isMounted) {
+                    setProfile(freshProfile);
                     FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(freshProfile)).catch(() => {});
                   }
-                } catch (e) {
-                  console.warn('Network fetch for profile failed:', e);
-                }
+                }).catch((e) => console.warn('Background profile fetch error:', e));
+
+                // Also try quick fetch for initial mount
+                try {
+                  const fetchPromise = AuthService.getUserProfile(currentUser.id);
+                  const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000));
+                  const quickProfile = await Promise.race([fetchPromise, timeoutPromise]);
+                  if (quickProfile) {
+                    userProfile = quickProfile;
+                  }
+                } catch (e) {}
               }
 
               // If no profile exists and not from cache, create one

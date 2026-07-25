@@ -46,8 +46,44 @@ export default function CreateBusinessScreen() {
   const [galleryUris, setGalleryUris] = useState<string[]>([]);
   
   const [loading, setLoading] = useState(false);
+  const [checkingVerification, setCheckingVerification] = useState(true);
+  const [isVerified, setIsVerified] = useState<boolean>(!!(profile as any)?.verified_seller);
 
-  const isVerified = (profile as any)?.verified_seller;
+  useEffect(() => {
+    let isMounted = true;
+    const checkVerificationStatus = async () => {
+      if (!user) {
+        if (isMounted) setCheckingVerification(false);
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('verified_seller')
+          .eq('id', user.id)
+          .single();
+
+        if (isMounted && data) {
+          setIsVerified(!!data.verified_seller);
+        }
+      } catch (err) {
+        console.error('Error fetching verified_seller status:', err);
+      } finally {
+        if (isMounted) setCheckingVerification(false);
+      }
+    };
+
+    checkVerificationStatus();
+    return () => { isMounted = false; };
+  }, [user]);
+
+  if (checkingVerification) {
+    return (
+      <SafeAreaView style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
+      </SafeAreaView>
+    );
+  }
 
   if (!isVerified) {
     return (
