@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { timeAgo } from '../lib/utils';
 import { useAppTheme } from '../context/ThemeContext';
 import { StorageService } from '../lib/storage-service';
@@ -35,6 +36,7 @@ interface CommentItemProps {
 
 export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, onReply, onLike, onDelete }) => {
   const { colors } = useAppTheme();
+  const router = useRouter();
   const [showReplies, setShowReplies] = useState(false);
 
   const hasReplies = item.replies && item.replies.length > 0;
@@ -67,7 +69,10 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
         delayLongPress={500}
         activeOpacity={isOwner ? 0.6 : 1}
       >
-      <View style={styles.avatar}>
+      <TouchableOpacity 
+        style={styles.avatar} 
+        onPress={() => item.user_id && router.push(`/profile/${item.user_id}` as any)}
+      >
         {item.user?.avatar_url || item.author_image ? (
           <Image 
             source={avatarSource} 
@@ -81,10 +86,13 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
             </Text>
           </View>
         )}
-      </View>
+      </TouchableOpacity>
       <View style={styles.commentContent}>
         <Text style={styles.commentText}>
-          <Text style={[styles.authorName, { color: colors.text }]}>
+          <Text 
+            style={[styles.authorName, { color: colors.text }]}
+            onPress={() => item.user_id && router.push(`/profile/${item.user_id}` as any)}
+          >
             {item.user?.name || item.author_name}
           </Text>
           {(item.user?.verified_seller || item.verified_seller) && (

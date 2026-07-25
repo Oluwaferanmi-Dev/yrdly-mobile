@@ -109,7 +109,25 @@ export const usePosts = (filter?: LocationFilter | null) => {
         return;
       }
 
-      const freshPosts = postsRes.data as Post[];
+      // Filter private posts: only author and accepted friends can view
+      let myFriendsList: string[] = [];
+      if (user) {
+        try {
+          const { data: uData } = await supabase.from('users').select('friends').eq('id', user.id).maybeSingle();
+          if (uData?.friends && Array.isArray(uData.friends)) {
+            myFriendsList = uData.friends;
+          }
+        } catch (e) {}
+      }
+
+      const freshPosts = (postsRes.data as Post[] || []).filter(post => {
+        const isPrivate = post.visibility === 'private' || (post as any).is_private === true;
+        if (!isPrivate) return true;
+        if (!user) return false;
+        if (post.user_id === user.id) return true;
+        return myFriendsList.includes(post.user_id);
+      });
+
       const freshEvents = (eventsRes.data || []).map((event: any): Post => ({
         id: event.id,
         user_id: event.organizer_id,

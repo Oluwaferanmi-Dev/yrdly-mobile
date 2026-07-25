@@ -112,11 +112,41 @@ export default function CatalogItemScreen() {
     }
   }, [business]);
 
-  const handleMessage = useCallback(() => {
-    if (business) {
-      router.push(`/chat/business/${business.id}?itemId=${item?.id}` as any);
+  const handleMessage = useCallback(async () => {
+    if (!business || !user) return;
+    try {
+      const { data: convs } = await supabase
+        .from('conversations')
+        .select('id, type, participant_ids, item_id')
+        .eq('item_id', business.id)
+        .order('created_at', { ascending: true });
+
+      const existing = convs?.find(c => {
+        if ((c.type === 'briefcase' || c.type === 'business') && c.item_id === business.id && c.participant_ids?.includes(user.id) && c.participant_ids?.includes(business.owner_id)) return true;
+        return false;
+      });
+
+      if (existing?.id) {
+        router.push({ pathname: '/chat/[id]', params: { id: existing.id } });
+        return;
+      }
+
+      const imageUrl = (item?.images && item.images[0]) || business.cover_image || business.logo || '';
+      router.push({ 
+        pathname: '/chat/[id]', 
+        params: { 
+          id: 'new',
+          type: 'briefcase',
+          participant_id: business.owner_id,
+          item_id: business.id,
+          item_title: item ? `${item.title} (${business.name})` : business.name,
+          item_image: imageUrl,
+        } 
+      });
+    } catch (e) {
+      console.error('Error starting chat from catalog item:', e);
     }
-  }, [business, item, router]);
+  }, [business, item, user, router]);
 
   const handleBuy = useCallback(() => {
     if (!item) return;

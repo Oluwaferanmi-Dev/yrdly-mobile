@@ -318,6 +318,7 @@ export default function CreateTab() {
         liked_by: [],
         comment_count: 0,
         is_sold: false,
+        visibility: visibility || 'public',
       };
 
       // Add specific fields for category

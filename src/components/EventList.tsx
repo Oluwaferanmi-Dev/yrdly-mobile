@@ -101,6 +101,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       if (activeFilter?.ward) eventsQuery = eventsQuery.eq('ward', activeFilter.ward);
       else if (activeFilter?.lga) eventsQuery = eventsQuery.eq('lga', activeFilter.lga);
       else if (activeFilter?.state) eventsQuery = eventsQuery.eq('state', activeFilter.state);
+      if (category) eventsQuery = eventsQuery.ilike('category', `%${category}%`);
       if (searchQuery) eventsQuery = eventsQuery.ilike('title', `%${searchQuery}%`);
 
       const [postsRes, eventsRes] = await Promise.all([postsQuery, eventsQuery]);
@@ -165,7 +166,14 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
           const active = category === cat.key;
           return (
             <TouchableOpacity
-              key={cat.key} onPress={() => setCategory(active ? '' : cat.key)}
+              key={cat.key}
+              onPress={() => {
+                setCategory(active ? '' : cat.key);
+                setFeaturedIdx(0);
+                if (featuredRef.current) {
+                  featuredRef.current.scrollTo({ x: 0, animated: true });
+                }
+              }}
               style={[s.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
               <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : colors.textMuted} style={{ marginRight: 4 }} />
               <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat.label}</Text>

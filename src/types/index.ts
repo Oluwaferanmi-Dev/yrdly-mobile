@@ -58,6 +58,9 @@ export interface BusinessMessage {
   content: string;
   timestamp: string;
   is_read: boolean;
+  liked_by: string[];
+  visibility?: string;
+  is_private?: boolean;
   item_id?: string;
   created_at?: string;
 }
@@ -109,6 +112,8 @@ export interface Post {
   view_count?: number;
   is_sold?: boolean;
   liked_by: string[];
+  visibility?: string;
+  is_private?: boolean;
   share_count?: number;
   created_at?: string;
   updated_at?: string;

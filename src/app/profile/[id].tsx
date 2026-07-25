@@ -54,7 +54,7 @@ export default function OtherUserProfileScreen() {
   const fetchProfileAndPosts = useCallback(async () => {
     if (!id) return;
     try {
-      const { data: pData } = await supabase.from('users').select('*').eq('id', id).single();
+      const { data: pData } = await supabase.from('users').select('*').eq('id', id).maybeSingle();
       if (pData) setProfile(pData);
 
       if (currentUser) {
@@ -85,26 +85,32 @@ export default function OtherUserProfileScreen() {
       if (postData) setPosts(postData as Post[]);
 
       // Dynamically fetch accurate follower counts
-      const [{ count: fers }, { count: fing }] = await Promise.all([
-        supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', id),
-        supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', id)
-      ]);
-      setFollowersCount(fers || 0);
-      setFollowingCount(fing || 0);
+      try {
+        const [{ count: fers }, { count: fing }] = await Promise.all([
+          supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', id),
+          supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', id)
+        ]);
+        setFollowersCount(fers || 0);
+        setFollowingCount(fing || 0);
+      } catch (fErr) {}
 
       // Fetch reviews
-      const userReviews = await UserReviewService.getSellerReviews(id);
-      setReviews(userReviews);
+      try {
+        const userReviews = await UserReviewService.getSellerReviews(id);
+        setReviews(userReviews || []);
+      } catch (rErr) {}
     } catch (e) {
-      console.error(e);
+      console.error('Error fetching profile:', e);
     } finally {
       setLoading(false);
     }
   }, [id, currentUser]);
 
   useEffect(() => {
+    setLoading(true);
+    setProfile(null);
     fetchProfileAndPosts();
-  }, [fetchProfileAndPosts]);
+  }, [id, fetchProfileAndPosts]);
 
   const handleToggleFollow = async () => {
     if (!currentUser || !profile) return;
