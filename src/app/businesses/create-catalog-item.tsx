@@ -22,6 +22,7 @@ export default function CreateCatalogItemScreen() {
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState(CATALOG_CATEGORIES[0]);
   const [inStock, setInStock] = useState(true);
+  const [quantity, setQuantity] = useState('1');
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -53,6 +54,9 @@ export default function CreateCatalogItemScreen() {
       return;
     }
 
+    const parsedQty = parseInt(quantity, 10);
+    const qtyNum = isNaN(parsedQty) ? 1 : Math.max(0, parsedQty);
+
     setLoading(true);
     try {
       // 1. Create the catalog item record first
@@ -64,7 +68,8 @@ export default function CreateCatalogItemScreen() {
           description: description.trim(),
           price: parseFloat(price) || 0,
           category,
-          in_stock: inStock,
+          in_stock: inStock && qtyNum > 0,
+          quantity: qtyNum,
         })
         .select('id')
         .single();
@@ -129,6 +134,16 @@ export default function CreateCatalogItemScreen() {
             keyboardType="numeric"
             value={price}
             onChangeText={setPrice}
+          />
+
+          <Text style={[s.label, { color: colors.textSecondary }]}>Stock Quantity *</Text>
+          <TextInput
+            style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+            placeholder="e.g. 5"
+            placeholderTextColor={colors.textMuted}
+            keyboardType="numeric"
+            value={quantity}
+            onChangeText={setQuantity}
           />
 
           <Text style={[s.label, { color: colors.textSecondary }]}>Category *</Text>
