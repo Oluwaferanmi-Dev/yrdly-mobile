@@ -183,6 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (event === 'INITIAL_SESSION') return;
 
       if (event === 'SIGNED_OUT') {
+        FileSystem.deleteAsync(PROFILE_CACHE_FILE, { idempotent: true }).catch(() => {});
         const netInfo = await NetInfo.fetch();
         if (!netInfo.isConnected) {
           console.warn('[Yrdly Auth] Ignored SIGNED_OUT event because device is offline.');
@@ -377,17 +378,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         posthog.capture('user_signed_out');
         posthog.reset();
       }
+      FileSystem.deleteAsync(PROFILE_CACHE_FILE, { idempotent: true }).catch(() => {});
       const result = await AuthService.signOut();
-      if (result.error) {
-        setLoading(false);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
+      setUser(null);
+      setProfile(null);
       return result;
     } catch (e) {
-      setLoading(false);
       throw e;
+    } finally {
+      setLoading(false);
     }
   };
 

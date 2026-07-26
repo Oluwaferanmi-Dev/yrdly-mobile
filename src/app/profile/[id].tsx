@@ -188,6 +188,8 @@ export default function OtherUserProfileScreen() {
     );
   }
 
+  const isOwnProfile = currentUser?.id === profile.id;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>

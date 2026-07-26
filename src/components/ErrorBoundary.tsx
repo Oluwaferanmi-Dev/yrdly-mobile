@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 interface Props {
   children: React.ReactNode;
@@ -13,31 +14,46 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  resetKey: number;
 }
 
 export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, resetKey: 0 };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // Always log — this will appear in EAS / Metro logs
     console.error(`[ErrorBoundary${this.props.screenName ? `:${this.props.screenName}` : ''}] Caught:`, error.message);
     console.error('[ErrorBoundary] Stack:', error.stack);
     console.error('[ErrorBoundary] Component Stack:', info.componentStack);
   }
 
   handleRestart = () => {
-    this.setState({ hasError: false, error: null });
+    // Increment resetKey to force full remount of children tree
+    this.setState((prev) => ({ hasError: false, error: null, resetKey: prev.resetKey + 1 }), () => {
+      // Navigate to root to reset the navigator stack cleanly
+      try {
+        router.replace('/' as any);
+      } catch (e) {
+        // If router isn't ready yet, the setState above is enough
+      }
+    });
   };
 
   render() {
-    if (!this.state.hasError) return this.props.children;
+    if (!this.state.hasError) {
+      return (
+        // Key forces full remount of children when resetKey changes
+        <React.Fragment key={this.state.resetKey}>
+          {this.props.children}
+        </React.Fragment>
+      );
+    }
 
     if (this.props.inline) {
       return (
@@ -78,7 +94,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#0A0A0A',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
@@ -86,7 +102,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#111',
+    color: '#FFFFFF',
     marginTop: 20,
     marginBottom: 6,
     textAlign: 'center',
@@ -98,23 +114,23 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
-    color: '#6B7280',
+    color: '#9CA3AF',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   devBox: {
     maxHeight: 200,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#1A0000',
     borderRadius: 8,
     marginBottom: 24,
     width: '100%',
     borderWidth: 1,
-    borderColor: '#FCA5A5',
+    borderColor: '#7F1D1D',
   },
   devText: {
     fontSize: 12,
-    color: '#DC2626',
+    color: '#FCA5A5',
     fontWeight: '700',
     marginBottom: 8,
   },
@@ -124,13 +140,13 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   btn: {
-    backgroundColor: '#22c55e',
+    backgroundColor: '#82E157',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 30,
   },
   btnText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -138,18 +154,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#1A0000',
     borderRadius: 8,
     margin: 16,
   },
   inlineText: {
     fontSize: 13,
-    color: '#DC2626',
+    color: '#FCA5A5',
     marginLeft: 8,
   },
   inlineRetry: {
     fontSize: 13,
-    color: '#DC2626',
+    color: '#FCA5A5',
     fontWeight: '700',
     textDecorationLine: 'underline',
   },

@@ -431,7 +431,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           style={styles.authorRow}
           onPress={(e) => {
             e.stopPropagation();
-            router.push(`/profile/${post.user_id}`);
+            router.push(`/profile/${post.user_id}` as any);
           }}
         >
           <View style={[styles.avatar, { backgroundColor: colors.inputBackground }]}>

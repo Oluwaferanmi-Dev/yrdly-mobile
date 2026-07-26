@@ -20,7 +20,7 @@ function FriendRequestRow({ req, colors, router }: {
     <View style={styles.requestRow}>
       <TouchableOpacity
         style={styles.userInfo}
-        onPress={() => router.push(`/profile/${req.from_user_id}`)}
+        onPress={() => router.push(`/profile/${req.from_user_id}` as any)}
       >
         {req.user?.avatar_url ? (
           <Image source={{ uri: req.user.avatar_url }} style={styles.avatar} />

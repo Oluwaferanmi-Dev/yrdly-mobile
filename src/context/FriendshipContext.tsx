@@ -35,8 +35,8 @@ export function FriendshipProvider({ children }: { children: React.ReactNode }) 
       try {
         // 1. Check users.friends array first
         const [{ data: me }, { data: them }] = await Promise.all([
-          supabase.from("users").select("friends").eq("id", user.id).single(),
-          supabase.from("users").select("friends").eq("id", targetUserId).single()
+          supabase.from("users").select("friends").eq("id", user.id).maybeSingle(),
+          supabase.from("users").select("friends").eq("id", targetUserId).maybeSingle()
         ]);
 
         const meHasThem = me?.friends?.includes(targetUserId);
