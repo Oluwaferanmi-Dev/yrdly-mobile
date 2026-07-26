@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, RefreshControl, Platform, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -8,12 +8,41 @@ import { supabase } from '../../lib/supabase';
 import { PostSkeleton } from '../../components/Skeleton';
 import { Post } from '../../types';
 import { useRouter, useFocusEffect } from 'expo-router';
-import * as FileSystem from 'expo-file-system/legacy';
 import { useAppTheme } from '../../context/ThemeContext';
-import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
-import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, Layout, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+
+function PressableCard({ style, onPress, children, activeOpacity = 0.85, ...props }: any) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+  };
+
+  return (
+    <AnimatedTouchableOpacity
+      style={[style, animatedStyle]}
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={activeOpacity}
+      {...props}
+    >
+      {children}
+    </AnimatedTouchableOpacity>
+  );
+}
 
 export default function ProfileTab() {
   const insets = useSafeAreaInsets();
@@ -110,7 +139,14 @@ export default function ProfileTab() {
   }, [fetchUserPosts, fetchSavedPosts]);
 
   const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
-  const isOnline = true; // Hardcoded to true for authenticated user's own profile
+  const isOnline = true;
+
+  const formattedLocation = useMemo(() => {
+    if (!profile?.location) return null;
+    const loc = profile.location;
+    const parts = [loc.city || loc.ward, loc.lga, loc.state].filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : null;
+  }, [profile?.location]);
 
   const handleManageStore = useCallback(async () => {
     if (!user) return;
@@ -135,63 +171,95 @@ export default function ProfileTab() {
   const listHeader = useMemo(() => (
     <View style={styles.headerContainer}>
       
-      {/* Top Navigation */}
+      {/* ── Top Header Navigation Bar ── */}
       <View style={styles.navHeader}>
-        <View style={styles.navSpacer} />
+        {router.canGoBack() ? (
+          <TouchableOpacity 
+            style={styles.headerBackBtn}
+            onPress={() => router.back()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.navSpacer} />
+        )}
+
+        <Text style={styles.navTitle}>Profile</Text>
 
         <TouchableOpacity 
           style={styles.settingsBtn}
           onPress={() => router.push('/settings')}
+          activeOpacity={0.7}
         >
-          <Feather name="settings" size={20} color={colors.text} />
+          <Ionicons name="settings-outline" size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
 
-      {/* Hero Profile Card */}
-      <View style={styles.heroCard}>
-        <View style={styles.heroTop}>
+      {/* ── Hero Profile Floating Card ── */}
+      <PressableCard style={styles.heroCard} activeOpacity={0.98}>
+        {/* Top Info Row: Avatar + Name & Username + Edit Profile Button */}
+        <View style={styles.heroTopRow}>
           <TouchableOpacity 
             style={styles.avatarWrapper}
             onPress={() => router.push('/profile/edit')}
             activeOpacity={0.9}
           >
-            {avatarUri ? (
-              <Image 
-                source={{ uri: avatarUri }} 
-                style={styles.avatarImage} 
-                contentFit="cover"
-                transition={200}
-              />
-            ) : (
-              <View style={[styles.avatarPlaceholder, { backgroundColor: colors.tint }]}>
-                <Text style={styles.avatarText}>
-                  {profile?.name ? profile.name.charAt(0).toUpperCase() : user?.email ? user.email.charAt(0).toUpperCase() : '?'}
-                </Text>
+            <View style={styles.avatarRingBorder}>
+              {avatarUri ? (
+                <Image 
+                  source={{ uri: avatarUri }} 
+                  style={styles.avatarImage} 
+                  contentFit="cover"
+                  transition={200}
+                />
+              ) : (
+                <View style={[styles.avatarPlaceholder, { backgroundColor: colors.tint + '1F' }]}>
+                  <Text style={[styles.avatarText, { color: colors.tint }]}>
+                    {profile?.name ? profile.name.charAt(0).toUpperCase() : user?.email ? user.email.charAt(0).toUpperCase() : '?'}
+                  </Text>
+                </View>
+              )}
+            </View>
+            {isOnline && <View style={styles.onlineBadgeDot} />}
+          </TouchableOpacity>
+
+          <View style={styles.heroInfoCol}>
+            <View style={styles.nameRow}>
+              <Text style={styles.displayName} numberOfLines={1}>
+                {profile?.name || user?.user_metadata?.name || 'Anonymous'}
+              </Text>
+              {(profile as any)?.verified_seller && (
+                <MaterialIcons name="verified" size={18} color="#82DB7E" style={{ marginLeft: 4 }} />
+              )}
+            </View>
+
+            <Text style={styles.handleText}>
+              @{(profile as any)?.handle || (profile as any)?.username || user?.email?.split('@')[0] || 'user'}
+            </Text>
+
+            {(profile as any)?.role_tag ? (
+              <View style={styles.roleTagPill}>
+                <Text style={styles.roleTagText}>{(profile as any).role_tag}</Text>
               </View>
-            )}
-            {isOnline && <View style={styles.onlineIndicator} />}
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.editProfileBtn} onPress={() => router.push('/profile/edit')}>
-            <Feather name="edit-3" size={14} color={colors.text} />
-            <Text style={styles.editProfileText}>Edit</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={{ marginBottom: 12 }}>
-          <View style={styles.nameRow}>
-            <Text style={styles.name}>{profile?.name || user?.user_metadata?.name || 'Anonymous'}</Text>
-            {(profile as any)?.verified_seller && (
-              <MaterialIcons name="verified" size={16} color={colors.tint} style={{ marginLeft: 4 }} />
-            )}
+            ) : (profile as any)?.verified_seller ? (
+              <View style={styles.roleTagPill}>
+                <Text style={styles.roleTagText}>Verified Seller</Text>
+              </View>
+            ) : null}
           </View>
 
-          {(profile as any)?.handle && (
-            <Text style={styles.username}>@{(profile as any).handle}</Text>
-          )}
+          <TouchableOpacity 
+            style={styles.editProfileBtn} 
+            onPress={() => router.push('/profile/edit')}
+            activeOpacity={0.7}
+          >
+            <Feather name="edit-3" size={13} color={colors.text} />
+            <Text style={styles.editProfileText}>Edit profile</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Stats Row */}
+        {/* Stats Row: Posts | Followers | Following */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{posts.length}</Text>
@@ -201,6 +269,7 @@ export default function ProfileTab() {
           <TouchableOpacity 
             style={styles.statItem} 
             onPress={() => router.push(`/network/${user?.id}?mode=followers` as any)}
+            activeOpacity={0.7}
           >
             <Text style={styles.statValue}>{followersCount}</Text>
             <Text style={styles.statLabel}>Followers</Text>
@@ -209,63 +278,81 @@ export default function ProfileTab() {
           <TouchableOpacity 
             style={styles.statItem}
             onPress={() => router.push(`/network/${user?.id}?mode=following` as any)}
+            activeOpacity={0.7}
           >
             <Text style={styles.statValue}>{followingCount}</Text>
             <Text style={styles.statLabel}>Following</Text>
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Quick Actions */}
-      <View style={styles.quickActions}>
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/community')}>
-          <View style={styles.actionIconWrapper}>
-            <Feather name="users" size={20} color="#82DB7E" />
-          </View>
-          <View>
-            <Text style={styles.actionTitle}>Community</Text>
-            <Text style={styles.actionSub}>Connections</Text>
-          </View>
-        </TouchableOpacity>
+        {/* Bio */}
+        {profile?.bio ? (
+          <Text style={styles.bioText}>{profile.bio}</Text>
+        ) : null}
 
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/tickets')}>
-          <View style={styles.actionIconWrapper}>
-            <MaterialCommunityIcons name="ticket-outline" size={20} color="#82DB7E" />
+        {/* Location */}
+        {formattedLocation ? (
+          <View style={styles.locationRow}>
+            <Ionicons name="location-outline" size={15} color="#82DB7E" />
+            <Text style={styles.locationText}>{formattedLocation}</Text>
           </View>
-          <View>
-            <Text style={styles.actionTitle}>Tickets</Text>
-            <Text style={styles.actionSub}>Your RSVPs</Text>
-          </View>
-        </TouchableOpacity>
+        ) : null}
+      </PressableCard>
 
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/my-events' as any)}>
-          <View style={styles.actionIconWrapper}>
-            <Ionicons name="calendar-outline" size={20} color="#82DB7E" />
+      {/* ── Quick Action Cards ── */}
+      <View style={styles.quickActionsRow}>
+        <PressableCard style={styles.actionCard} onPress={() => router.push('/community')}>
+          <View style={styles.actionHeaderRow}>
+            <View style={styles.actionIconWrapper}>
+              <Ionicons name="people-outline" size={19} color="#82DB7E" />
+            </View>
+            <Feather name="chevron-right" size={14} color={colors.textSecondary} />
           </View>
-          <View>
-            <Text style={styles.actionTitle}>My Events</Text>
-            <Text style={styles.actionSub}>Created</Text>
+          <Text style={styles.actionTitle}>Community</Text>
+          <Text style={styles.actionSub}>Connections</Text>
+        </PressableCard>
+
+        <PressableCard style={styles.actionCard} onPress={() => router.push('/tickets')}>
+          <View style={styles.actionHeaderRow}>
+            <View style={styles.actionIconWrapper}>
+              <MaterialCommunityIcons name="ticket-outline" size={19} color="#82DB7E" />
+            </View>
+            <Feather name="chevron-right" size={14} color={colors.textSecondary} />
           </View>
-        </TouchableOpacity>
+          <Text style={styles.actionTitle}>Tickets</Text>
+          <Text style={styles.actionSub}>Your tickets & RSVPs</Text>
+        </PressableCard>
+
+        <PressableCard style={styles.actionCard} onPress={() => router.push('/my-events' as any)}>
+          <View style={styles.actionHeaderRow}>
+            <View style={styles.actionIconWrapper}>
+              <Ionicons name="calendar-outline" size={19} color="#82DB7E" />
+            </View>
+            <Feather name="chevron-right" size={14} color={colors.textSecondary} />
+          </View>
+          <Text style={styles.actionTitle}>My Events</Text>
+          <Text style={styles.actionSub}>Events created</Text>
+        </PressableCard>
       </View>
 
       {/* Business Action (Only for verified sellers) */}
       {(profile as any)?.verified_seller && (
-        <View style={[styles.quickActions, { marginTop: -12 }]}>
-          <TouchableOpacity style={[styles.actionCard, { flex: 0, width: '31%' }]} onPress={handleManageStore}>
-            <View style={[styles.actionIconWrapper, { backgroundColor: colors.tint + '1A' }]}>
-              <Ionicons name="storefront-outline" size={20} color={colors.tint} />
+        <View style={{ marginTop: -8, marginBottom: 16 }}>
+          <PressableCard style={[styles.actionCard, { flex: 0, width: '32%' }]} onPress={handleManageStore}>
+            <View style={styles.actionHeaderRow}>
+              <View style={[styles.actionIconWrapper, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
+                <Ionicons name="storefront-outline" size={19} color="#82DB7E" />
+              </View>
+              <Feather name="chevron-right" size={14} color={colors.textSecondary} />
             </View>
-            <View>
-              <Text style={styles.actionTitle}>My Business</Text>
-              <Text style={styles.actionSub}>Manage store</Text>
-            </View>
-          </TouchableOpacity>
+            <Text style={styles.actionTitle}>My Business</Text>
+            <Text style={styles.actionSub}>Manage store</Text>
+          </PressableCard>
         </View>
       )}
 
     </View>
-  ), [avatarUri, profile, user, posts.length, followersCount, followingCount, isOnline, styles, colors, handleManageStore]);
+  ), [avatarUri, profile, user, posts.length, followersCount, followingCount, isOnline, formattedLocation, styles, colors, handleManageStore, router]);
 
   const activeData = activeTab === 'posts' ? posts : savedPosts;
   const isLoading = activeTab === 'posts' ? loadingPosts : loadingSaved;
@@ -340,7 +427,7 @@ export default function ProfileTab() {
             </View>
           ) : (
             <Animated.View entering={FadeIn} style={styles.emptyContainer}>
-              <Ionicons name="images-outline" size={64} color="#333" style={{marginBottom: 16}} />
+              <Ionicons name="images-outline" size={56} color="#333" style={{marginBottom: 16}} />
               <Text style={styles.emptyHeadline}>No posts yet</Text>
               <Text style={styles.emptySub}>Share something with your neighborhood.</Text>
               <TouchableOpacity 
@@ -358,102 +445,325 @@ export default function ProfileTab() {
 }
 
 const dynamicStyles = (colors: any) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  listContent: { paddingBottom: 100 },
-  headerContainer: { paddingHorizontal: 16, paddingBottom: 16 },
-  
-  navHeader: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 12, marginBottom: 8
+  container: { 
+    flex: 1, 
+    backgroundColor: colors.background 
   },
-  navSpacer: { width: 40 },
-  navTitle: { color: colors.text, fontSize: 18, fontWeight: '700' },
+  listContent: { 
+    paddingBottom: 100 
+  },
+  headerContainer: { 
+    paddingHorizontal: 16, 
+    paddingBottom: 8 
+  },
+  
+  // ── Header Navigation Bar ──
+  navHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    marginBottom: 8,
+  },
+  headerBackBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justify: 'center',
+  },
+  navSpacer: { 
+    width: 40 
+  },
+  navTitle: { 
+    flex: 1,
+    color: colors.text, 
+    fontSize: 20, 
+    fontWeight: '800',
+    textAlign: 'center',
+    letterSpacing: -0.4,
+  },
   settingsBtn: {
-    width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.borderLight,
-    alignItems: 'center', justifyContent: 'center'
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    borderWidth: 1, 
+    borderColor: colors.borderLight,
+    backgroundColor: colors.card,
+    alignItems: 'center', 
+    justify: 'center'
   },
 
+  // ── Hero Floating Profile Card ──
   heroCard: {
     backgroundColor: colors.card,
-    borderRadius: 24,
+    borderRadius: 26,
     padding: 20,
     borderWidth: 1,
     borderColor: colors.borderLight,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  heroTopRow: {
+    flexDirection: 'row', 
+    alignItems: 'flex-start',
+    gap: 14,
+    marginBottom: 18,
+  },
+  avatarWrapper: { 
+    position: 'relative' 
+  },
+  avatarRingBorder: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    borderWidth: 2,
+    borderColor: '#82DB7E',
+    padding: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarImage: { 
+    width: 74, 
+    height: 74, 
+    borderRadius: 37 
+  },
+  avatarPlaceholder: {
+    width: 74, 
+    height: 74, 
+    borderRadius: 37, 
+    alignItems: 'center', 
+    justify: 'center'
+  },
+  avatarText: { 
+    fontSize: 28, 
+    fontWeight: '800' 
+  },
+  onlineBadgeDot: {
+    position: 'absolute', 
+    bottom: 2, 
+    right: 2, 
+    width: 18, 
+    height: 18,
+    borderRadius: 9, 
+    backgroundColor: '#82DB7E', 
+    borderWidth: 3, 
+    borderColor: colors.card
+  },
+
+  heroInfoCol: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingTop: 2,
+  },
+  nameRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 2 
+  },
+  displayName: { 
+    color: colors.text, 
+    fontSize: 22, 
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  handleText: { 
+    color: colors.textSecondary, 
+    fontSize: 14, 
+    fontWeight: '500',
+    marginBottom: 6,
+  },
+  roleTagPill: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(130, 219, 126, 0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(130, 219, 126, 0.3)',
+  },
+  roleTagText: {
+    color: '#82DB7E',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  editProfileBtn: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 6,
+    paddingHorizontal: 14, 
+    paddingVertical: 8,
+    borderRadius: 20, 
+    borderWidth: 1, 
+    borderColor: colors.borderLight,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+  },
+  editProfileText: { 
+    color: colors.text, 
+    fontSize: 13, 
+    fontWeight: '600' 
+  },
+
+  // ── Stats Row ──
+  statsRow: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-around',
+    paddingVertical: 14, 
+    borderTopWidth: 1, 
+    borderBottomWidth: 1,
+    borderColor: colors.borderLight,
+    marginBottom: 16,
+  },
+  statItem: { 
+    alignItems: 'center', 
+    flex: 1 
+  },
+  statValue: { 
+    color: colors.text, 
+    fontSize: 20, 
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  statLabel: { 
+    color: colors.textSecondary, 
+    fontSize: 12, 
+    fontWeight: '500',
+    marginTop: 2 
+  },
+  statDivider: { 
+    width: 1, 
+    height: 28, 
+    backgroundColor: colors.borderLight 
+  },
+
+  // ── Bio & Location ──
+  bioText: { 
+    color: colors.text, 
+    fontSize: 14, 
+    lineHeight: 20, 
+    fontWeight: '400',
+    marginBottom: 12 
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  locationText: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+
+  // ── Quick Action Cards ──
+  quickActionsRow: {
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    gap: 8, 
     marginBottom: 20
   },
-  heroTop: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-    marginBottom: 16
-  },
-  avatarWrapper: { position: 'relative' },
-  avatarImage: { width: 80, height: 80, borderRadius: 40 },
-  avatarPlaceholder: {
-    width: 80, height: 80, borderRadius: 40, backgroundColor: colors.tint + '1A',
-    alignItems: 'center', justifyContent: 'center'
-  },
-  avatarText: { color: colors.tint, fontSize: 28, fontWeight: 'bold' },
-  onlineIndicator: {
-    position: 'absolute', bottom: 2, right: 2, width: 16, height: 16,
-    borderRadius: 8, backgroundColor: colors.tint, borderWidth: 3, borderColor: colors.card
-  },
-  editProfileBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 20, borderWidth: 1, borderColor: colors.borderLight
-  },
-  editProfileText: { color: colors.text, fontSize: 13, fontWeight: '600' },
-
-  nameRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
-  name: { color: colors.text, fontSize: 22, fontWeight: 'bold' },
-  username: { color: colors.textSecondary, fontSize: 15, marginBottom: 16 },
-
-  statsRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
-    marginBottom: 16, paddingVertical: 12, borderTopWidth: 1, borderBottomWidth: 1,
-    borderColor: colors.borderLight
-  },
-  statItem: { alignItems: 'center', flex: 1 },
-  statValue: { color: colors.text, fontSize: 20, fontWeight: 'bold' },
-  statLabel: { color: colors.textSecondary, fontSize: 12, marginTop: 4 },
-  statDivider: { width: 1, height: 30, backgroundColor: colors.borderLight },
-
-  bio: { color: colors.text, fontSize: 14, lineHeight: 20, marginBottom: 10 },
-  metaRow: { flexDirection: 'column', gap: 6, marginTop: 4 },
-  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  metaText: { color: colors.textSecondary, fontSize: 13, flex: 1 },
-
-  quickActions: {
-    flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginBottom: 24
-  },
   actionCard: {
-    flex: 1, backgroundColor: colors.card, borderRadius: 16, padding: 12,
-    borderWidth: 1, borderColor: colors.borderLight
+    flex: 1, 
+    backgroundColor: colors.card, 
+    borderRadius: 20, 
+    padding: 14,
+    borderWidth: 1, 
+    borderColor: colors.borderLight,
+    justify: 'space-between',
+    minHeight: 88,
+  },
+  actionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
   actionIconWrapper: {
-    width: 32, height: 32, borderRadius: 16, backgroundColor: colors.tint + '1A',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 8
+    width: 34, 
+    height: 34, 
+    borderRadius: 17, 
+    backgroundColor: 'rgba(130, 219, 126, 0.12)',
+    alignItems: 'center', 
+    justify: 'center',
   },
-  actionTitle: { color: colors.text, fontSize: 13, fontWeight: '600', marginBottom: 2 },
-  actionSub: { color: colors.textSecondary, fontSize: 11 },
+  actionTitle: { 
+    color: colors.text, 
+    fontSize: 13, 
+    fontWeight: '700',
+    marginBottom: 2 
+  },
+  actionSub: { 
+    color: colors.textSecondary, 
+    fontSize: 11,
+    fontWeight: '400',
+  },
 
+  // ── Tabs ──
   tabsContainer: {
-    flexDirection: 'row', backgroundColor: colors.background,
-    paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: colors.borderLight,
+    flexDirection: 'row', 
+    backgroundColor: colors.background,
+    paddingHorizontal: 16, 
+    borderBottomWidth: 1, 
+    borderBottomColor: colors.borderLight,
     marginBottom: 8
   },
   tab: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    paddingVertical: 16, borderBottomWidth: 2, borderBottomColor: 'transparent'
+    flex: 1, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    gap: 8,
+    paddingVertical: 14, 
+    borderBottomWidth: 2, 
+    borderBottomColor: 'transparent'
   },
-  activeTab: { borderBottomColor: colors.tint },
-  tabText: { color: colors.textSecondary, fontSize: 15, fontWeight: '600' },
-  activeTabText: { color: colors.text },
+  activeTab: { 
+    borderBottomColor: '#82DB7E' 
+  },
+  tabText: { 
+    color: colors.textSecondary, 
+    fontSize: 15, 
+    fontWeight: '600' 
+  },
+  activeTabText: { 
+    color: colors.text 
+  },
 
-  emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60, paddingHorizontal: 20 },
-  emptyHeadline: { color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
-  emptySub: { color: colors.textSecondary, fontSize: 15, textAlign: 'center', marginBottom: 24 },
-  createBtn: {
-    backgroundColor: colors.tint, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24
+  // ── Empty State ──
+  emptyContainer: { 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    paddingVertical: 60, 
+    paddingHorizontal: 20 
   },
-  createBtnText: { color: colors.background, fontSize: 16, fontWeight: 'bold' }
+  emptyHeadline: { 
+    color: colors.text, 
+    fontSize: 18, 
+    fontWeight: '700', 
+    marginBottom: 6 
+  },
+  emptySub: { 
+    color: colors.textSecondary, 
+    fontSize: 14, 
+    textAlign: 'center', 
+    marginBottom: 20 
+  },
+  createBtn: {
+    backgroundColor: '#82DB7E', 
+    paddingHorizontal: 24, 
+    paddingVertical: 12, 
+    borderRadius: 24
+  },
+  createBtnText: { 
+    color: '#000', 
+    fontSize: 15, 
+    fontWeight: '700' 
+  }
 });

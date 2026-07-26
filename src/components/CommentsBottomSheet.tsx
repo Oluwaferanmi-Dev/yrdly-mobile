@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal, BottomSheetFlatList, BottomSheetTextInput, BottomSheetBackdrop, BottomSheetFooter } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { timeAgo } from '../lib/utils';
@@ -25,6 +26,7 @@ import { CommentItem, CommentType } from './CommentItem';
 import { CommentInput, CommentInputRef } from './CommentInput';
 
 export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBottomSheetProps>(({ postId }, ref) => {
+  const router = useRouter();
   const { colors } = useAppTheme();
   const { user, profile } = useAuth();
   const insets = useSafeAreaInsets();
@@ -230,6 +232,11 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
     []
   );
 
+  const handlePressProfile = useCallback((userId: string) => {
+    bottomSheetModalRef.current?.dismiss();
+    router.push(`/profile/${userId}` as any);
+  }, [router]);
+
   const renderComment = useCallback(({ item }: { item: CommentType }) => {
     return (
       <CommentItem 
@@ -238,9 +245,10 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
         onReply={handleReply} 
         onLike={handleLikeComment}
         onDelete={handleDeleteComment}
+        onPressProfile={handlePressProfile}
       />
     );
-  }, [handleReply, handleLikeComment, handleDeleteComment, user?.id]);
+  }, [handleReply, handleLikeComment, handleDeleteComment, handlePressProfile, user?.id]);
 
   const renderFooter = useCallback(
     (props: any) => (

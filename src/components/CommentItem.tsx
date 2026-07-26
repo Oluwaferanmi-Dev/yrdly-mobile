@@ -32,9 +32,10 @@ interface CommentItemProps {
   onReply?: (item: CommentType) => void;
   onLike?: (item: CommentType) => void;
   onDelete?: (item: CommentType) => void;
+  onPressProfile?: (userId: string) => void;
 }
 
-export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, onReply, onLike, onDelete }) => {
+export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, onReply, onLike, onDelete, onPressProfile }) => {
   const { colors } = useAppTheme();
   const router = useRouter();
   const [showReplies, setShowReplies] = useState(false);
@@ -61,6 +62,15 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
     );
   };
 
+  const handleProfilePress = () => {
+    if (!item.user_id) return;
+    if (onPressProfile) {
+      onPressProfile(item.user_id);
+    } else {
+      router.push(`/profile/${item.user_id}` as any);
+    }
+  };
+
   return (
     <View style={[styles.commentContainer, isReply && styles.replyContainer]}>
       <TouchableOpacity 
@@ -71,7 +81,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
       >
       <TouchableOpacity 
         style={styles.avatar} 
-        onPress={() => item.user_id && router.push(`/profile/${item.user_id}` as any)}
+        onPress={handleProfilePress}
       >
         {item.user?.avatar_url || item.author_image ? (
           <Image 
@@ -91,7 +101,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
         <Text style={styles.commentText}>
           <Text 
             style={[styles.authorName, { color: colors.text }]}
-            onPress={() => item.user_id && router.push(`/profile/${item.user_id}` as any)}
+            onPress={handleProfilePress}
           >
             {item.user?.name || item.author_name}
           </Text>
@@ -144,6 +154,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
               onReply={onReply} 
               onLike={onLike} 
               onDelete={onDelete} 
+              onPressProfile={onPressProfile}
             />
           ))}
           <TouchableOpacity style={styles.viewRepliesBtn} onPress={() => setShowReplies(false)}>
