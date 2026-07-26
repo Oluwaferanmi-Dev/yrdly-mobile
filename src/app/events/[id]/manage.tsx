@@ -1,79 +1,54 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, RefreshControl, FlatList,
-} from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
-import { usePosts } from '../../../hooks/use-posts';
-import { formatPrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
+import type { Event, Ticket } from '../../../types/events';
 
-interface Ticket {
-  id: string;
-  status: string;
-  buyer: { id: string; name: string; avatar_url: string | null } | null;
-}
-
-interface EventDetail {
-  id: string;
-  title: string;
-  user_id: string;
-  image_url: string | null;
-  image_urls: string[] | null;
-  price: number | null;
-  event_date: string | null;
-  status?: string;
-}
+const formatDateTime = (value: string | null) => value
+  ? new Date(value).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })
+  : 'Not scanned';
 
 export default function ManageEventScreen() {
-  const { colors } = useAppTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { deletePost } = usePosts();
-
-  const [event, setEvent] = useState<EventDetail | null>(null);
+  const { colors } = useAppTheme();
+  const [event, setEvent] = useState<Event | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!id || !user) return;
     try {
-      // Fetch event
-      const { data: ev, error: evErr } = await supabase
-        .from('posts')
-        .select('id, title, event_date, user_id, image_url, image_urls, price, status')
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('*, ticket_tiers(*)')
         .eq('id', id)
-        .single();
-      if (evErr) throw evErr;
+        .maybeSingle();
+      if (eventError) throw eventError;
 
-      if (ev.user_id !== user.id) {
-        Alert.alert('Access Denied', 'You are not the organizer of this event.');
-        router.back();
+      if (!eventData || eventData.organizer_id !== user.id) {
+        setAccessDenied(true);
         return;
       }
-      setEvent(ev as EventDetail);
+      setEvent(eventData as Event);
 
-      // Fetch tickets
-      const { data: tix, error: tixErr } = await supabase
+      const { data: ticketData, error: ticketError } = await supabase
         .from('tickets')
-        .select('id, status, buyer:users!tickets_buyer_id_fkey(id, name, avatar_url)')
+        .select('*, tier:ticket_tiers(id, name, price)')
         .eq('event_id', id)
         .order('created_at', { ascending: false });
-      if (tixErr) throw tixErr;
-
-      const normalised = (tix || []).map(t => ({
-        ...t,
-        buyer: Array.isArray(t.buyer) ? t.buyer[0] ?? null : t.buyer,
-      })) as Ticket[];
-      setTickets(normalised);
-    } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Failed to load event data.');
+      if (ticketError) throw ticketError;
+      setTickets((ticketData || []) as Ticket[]);
+    } catch (error) {
+      console.error('Failed to load organizer event details:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -81,318 +56,114 @@ export default function ManageEventScreen() {
   }, [id, user]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-  const onRefresh = () => { setRefreshing(true); fetchData(); };
+  const onRefresh = useCallback(() => { setRefreshing(true); fetchData(); }, [fetchData]);
 
-  const totalSold = tickets.length;
-  const checkedIn = tickets.filter(t => t.status === 'checked_in').length;
-  const revenue = tickets.length * (event?.price || 0);
-
-  const handleCancelEvent = () => {
-    Alert.alert(
-      'Cancel Event?',
-      'This will cancel the event and trigger refunds for all ticket holders. This cannot be undone.',
-      [
-        { text: 'Keep Event', style: 'cancel' },
-        {
-          text: 'Cancel Event',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await supabase
-                .from('posts')
-                .update({ status: 'cancelled' })
-                .eq('id', id);
-              Alert.alert('Event Cancelled', 'The event has been cancelled.');
-              setEvent(prev => prev ? { ...prev, status: 'cancelled' } : prev);
-            } catch {
-              Alert.alert('Error', 'Failed to cancel event. Please try again.');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleDeleteEvent = () => {
-    Alert.alert(
-      'Delete Event?',
-      'This will permanently delete the event from the feed and your profile. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              if (id) {
-                await deletePost(id);
-                router.replace('/');
-              }
-            } catch {
-              Alert.alert('Error', 'Failed to delete event. Please try again.');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleArchiveEvent = () => {
-    Alert.alert(
-      'Archive Event?',
-      'This will archive the event. It will no longer appear in the public feed, but you can still view its analytics.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Archive',
-          onPress: async () => {
-            try {
-              await supabase
-                .from('posts')
-                .update({ status: 'archived' })
-                .eq('id', id);
-              Alert.alert('Event Archived', 'The event has been archived.');
-              setEvent(prev => prev ? { ...prev, status: 'archived' } : prev);
-            } catch {
-              Alert.alert('Error', 'Failed to archive event.');
-            }
-          },
-        },
-      ]
-    );
-  };
+  const metrics = useMemo(() => {
+    const paidTickets = tickets.filter(ticket => ticket.status === 'PAID' || ticket.status === 'USED');
+    return {
+      sold: paidTickets.length,
+      checkedIn: tickets.filter(ticket => ticket.status === 'USED').length,
+      revenue: paidTickets.reduce((sum, ticket) => sum + Number(ticket.amount_paid || 0), 0),
+    };
+  }, [tickets]);
 
   if (loading) {
+    return <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}><ActivityIndicator size="large" color={colors.tint} /></SafeAreaView>;
+  }
+
+  if (accessDenied || !event) {
     return (
-      <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+      <SafeAreaView style={[styles.center, { backgroundColor: colors.background, padding: 28 }]}>
+        <Feather name="lock" size={44} color={colors.textMuted} />
+        <Text style={[styles.emptyTitle, { color: colors.text }]}>Organizer access only</Text>
+        <Text style={[styles.emptyText, { color: colors.textMuted }]}>Only the event organizer can view ticket buyers and check-ins.</Text>
+        <TouchableOpacity style={[styles.backAction, { backgroundColor: colors.tint }]} onPress={() => router.back()}>
+          <Text style={styles.backActionText}>Go back</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
-  const eventImage = event?.image_urls?.[0] || event?.image_url;
-  const eventDate = event?.event_date
-    ? new Date(event.event_date).toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-    : 'Date TBD';
-
-  const isPastEvent = event?.event_date
-    ? new Date(event.event_date).getTime() < Date.now()
-    : false;
-
+  const eventDate = new Date(event.start_time).toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const renderTicket = ({ item }: { item: Ticket }) => {
-    const isCheckedIn = item.status === 'checked_in';
+    const checkedIn = item.status === 'USED';
     return (
-      <View style={[styles.ticketRow, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
-        {item.buyer?.avatar_url
-          ? <Image source={{ uri: item.buyer.avatar_url }} style={styles.avatar} contentFit="cover" />
-          : <View style={[styles.avatar, styles.avatarFallback]}>
-              <Text style={[styles.avatarInitial, { color: colors.tint }]}>{item.buyer?.name?.[0]?.toUpperCase() ?? '?'}</Text>
-            </View>
-        }
-        <View style={styles.ticketInfo}>
-          <Text style={[styles.ticketName, { color: colors.text }]}>{item.buyer?.name ?? 'Attendee'}</Text>
-          <Text style={[styles.ticketType, { color: colors.textMuted }]}>General Admission</Text>
+      <View style={[styles.ticketCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={styles.ticketTopRow}>
+          <View style={[styles.attendeeIcon, { backgroundColor: colors.tint + '18' }]}><Feather name="user" size={18} color={colors.tint} /></View>
+          <View style={styles.ticketInfo}>
+            <Text style={[styles.ticketName, { color: colors.text }]}>{item.attendee_name || 'Attendee'}</Text>
+            <Text style={[styles.ticketEmail, { color: colors.textMuted }]}>{item.attendee_email || 'Email unavailable'}</Text>
+          </View>
+          <View style={[styles.statusBadge, { backgroundColor: checkedIn ? colors.tint + '20' : colors.borderLight }]}>
+            <Feather name={checkedIn ? 'check-circle' : 'clock'} size={12} color={checkedIn ? colors.tint : colors.textMuted} />
+            <Text style={{ color: checkedIn ? colors.tint : colors.textMuted, fontSize: 11, fontWeight: '700' }}>{checkedIn ? 'Scanned' : 'Not scanned'}</Text>
+          </View>
         </View>
-        <View style={[styles.statusBadge, isCheckedIn ? styles.checkedInBadge : [styles.activeBadge, { backgroundColor: colors.borderLight }]]}>
-          <Feather name={isCheckedIn ? 'check-circle' : 'tag'} size={12} color={isCheckedIn ? '#2E7D32' : colors.textMuted} />
-          <Text style={[styles.statusText, isCheckedIn ? styles.checkedInText : [styles.activeText, { color: colors.textMuted }]]}>
-            {isCheckedIn ? 'Checked In' : 'Active'}
-          </Text>
+        <View style={[styles.ticketDivider, { backgroundColor: colors.borderLight }]} />
+        <View style={styles.ticketMeta}>
+          <View style={styles.metaItem}>
+            <Text style={[styles.metaLabel, { color: colors.textMuted }]}>PURCHASED</Text>
+            <Text style={[styles.metaValue, { color: colors.text }]}>{formatDateTime(item.created_at)}</Text>
+          </View>
+          <View style={styles.metaItem}>
+            <Text style={[styles.metaLabel, { color: colors.textMuted }]}>SCANNED</Text>
+            <Text style={[styles.metaValue, { color: checkedIn ? colors.tint : colors.textMuted }]}>{formatDateTime(item.scanned_at)}</Text>
+          </View>
         </View>
+        <Text style={[styles.tierText, { color: colors.textSecondary }]}>{item.tier?.name || 'Ticket'} · ₦{Number(item.amount_paid || 0).toLocaleString()}</Text>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>Manage Event</Text>
-        <View style={{ width: 40 }} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}><Ionicons name="chevron-back" size={28} color={colors.text} /></TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Event Dashboard</Text>
+        <TouchableOpacity onPress={() => router.push(`/events/${id}/scan` as any)} style={[styles.scanIcon, { backgroundColor: colors.tint + '20' }]}><Ionicons name="qr-code-outline" size={20} color={colors.tint} /></TouchableOpacity>
       </View>
 
       <FlatList
         data={tickets}
-        keyExtractor={t => t.id}
+        keyExtractor={ticket => ticket.id}
         renderItem={renderTicket}
+        contentContainerStyle={styles.listContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        ListHeaderComponent={
-          <>
-            {/* Event Banner */}
-            <View style={[styles.eventBanner, { backgroundColor: colors.card }]}>
-              {eventImage && <Image source={{ uri: eventImage }} style={styles.bannerImg} contentFit="cover" />}
-              <View style={styles.bannerOverlay} />
-              <View style={styles.bannerContent}>
-                <Text style={styles.bannerTitle} numberOfLines={2}>{event?.title}</Text>
-                <Text style={styles.bannerDate}>{eventDate}</Text>
-              </View>
+        ListHeaderComponent={<>
+          <View style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+            {event.cover_image_url && <Image source={{ uri: event.cover_image_url }} style={styles.eventImage} contentFit="cover" />}
+            <View style={styles.eventBody}>
+              <Text style={[styles.eventTitle, { color: colors.text }]}>{event.title}</Text>
+              <Text style={[styles.eventDate, { color: colors.textSecondary }]}>{eventDate}</Text>
             </View>
-
-            {/* Stats */}
-            <View style={styles.statsRow}>
-              <View style={[styles.statCard, { backgroundColor: colors.card }]}>
-                <Text style={[styles.statValue, { color: colors.text }]}>{totalSold}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Tickets Sold</Text>
-              </View>
-              <View style={[styles.statCard, { backgroundColor: colors.card }]}>
-                <Text style={[styles.statValue, { color: colors.text }]}>{checkedIn}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Checked In</Text>
-              </View>
-              <View style={[styles.statCard, { backgroundColor: colors.card }]}>
-                <Text style={[styles.statValue, { color: colors.tint }]}>{formatPrice(revenue)}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Revenue</Text>
-              </View>
-            </View>
-
-            {/* Check-in progress bar */}
-            {totalSold > 0 && (
-              <View style={styles.progressSection}>
-                <View style={styles.progressHeader}>
-                  <Text style={[styles.progressLabel, { color: colors.text }]}>Check-in Progress</Text>
-                  <Text style={[styles.progressPct, { color: colors.tint }]}>{Math.round((checkedIn / totalSold) * 100)}%</Text>
-                </View>
-                <View style={[styles.progressBar, { backgroundColor: colors.borderLight }]}>
-                  <View style={[styles.progressFill, { backgroundColor: colors.tint, width: `${(checkedIn / totalSold) * 100}%` as any }]} />
-                </View>
-              </View>
-            )}
-
-            {/* Scan Button */}
-            <TouchableOpacity
-              style={[styles.scanBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }]}
-              onPress={() => router.push(`/events/${id}/scan` as any)}
-              activeOpacity={0.85}
-            >
-              <Feather name="maximize" size={22} color="#FFF" style={{ marginRight: 10 }} />
-              <Text style={styles.scanBtnText}>Start Scanning Tickets</Text>
-            </TouchableOpacity>
-
-            <Text style={[styles.listHeader, { color: colors.textMuted }]}>ATTENDEES ({totalSold})</Text>
-          </>
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyBox}>
-            <Feather name="tag" size={52} color={colors.tint} style={{ opacity: 0.25 }} />
-            <Text style={[styles.emptyText, { color: colors.textMuted }]}>No tickets sold yet</Text>
           </View>
-        }
-        ListFooterComponent={
-          <View>
-            {isPastEvent && event?.status !== 'archived' && (
-              <TouchableOpacity style={styles.archiveBtn} onPress={handleArchiveEvent}>
-                <Feather name="archive" size={18} color="#FFF" style={{ marginRight: 8 }} />
-                <Text style={styles.archiveBtnText}>Archive Event</Text>
-              </TouchableOpacity>
-            )}
-
-            {totalSold > 0 && !isPastEvent && event?.status !== 'cancelled' && (
-              <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelEvent}>
-                <Feather name="x-circle" size={18} color="#B71C1C" style={{ marginRight: 8 }} />
-                <Text style={styles.cancelBtnText}>Cancel This Event</Text>
-              </TouchableOpacity>
-            )}
-            
-            {totalSold === 0 && (
-              <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteEvent}>
-                <Feather name="trash-2" size={18} color="#FFF" style={{ marginRight: 8 }} />
-                <Text style={styles.deleteBtnText}>Delete Event</Text>
-              </TouchableOpacity>
-            )}
+          <View style={styles.metricsRow}>
+            <Metric label="Sold" value={String(metrics.sold)} colors={colors} />
+            <Metric label="Revenue" value={`₦${metrics.revenue.toLocaleString()}`} colors={colors} />
+            <Metric label="Scanned" value={String(metrics.checkedIn)} colors={colors} />
           </View>
-        }
+          <TouchableOpacity style={[styles.scanButton, { backgroundColor: colors.tint }]} onPress={() => router.push(`/events/${id}/scan` as any)}>
+            <Ionicons name="qr-code" size={22} color="#000" /><Text style={styles.scanButtonText}>Scan Attendee Tickets</Text>
+          </TouchableOpacity>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Ticket buyers ({metrics.sold})</Text>
+        </>}
+        ListEmptyComponent={<View style={styles.emptyList}><Feather name="users" size={42} color={colors.textMuted} /><Text style={[styles.emptyText, { color: colors.textMuted }]}>No tickets sold yet.</Text></View>}
       />
     </SafeAreaView>
   );
 }
 
+function Metric({ label, value, colors }: { label: string; value: string; colors: any }) {
+  return <View style={[styles.metric, { backgroundColor: colors.card, borderColor: colors.borderLight }]}><Text style={[styles.metricValue, { color: colors.text }]} numberOfLines={1}>{value}</Text><Text style={[styles.metricLabel, { color: colors.textMuted }]}>{label}</Text></View>;
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold' },
-
-  eventBanner: { height: 180, position: 'relative' },
-  bannerImg: { ...StyleSheet.absoluteFillObject },
-  bannerOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
-  bannerContent: { position: 'absolute', bottom: 16, left: 16, right: 16 },
-  bannerTitle: { fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 4 },
-  bannerDate: { fontSize: 13, color: 'rgba(255,255,255,0.8)' },
-
-  statsRow: { flexDirection: 'row', gap: 10, padding: 16 },
-  statCard: {
-    flex: 1, borderRadius: 14, padding: 14, alignItems: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
-  },
-  statValue: { fontSize: 22, fontWeight: '800', marginBottom: 2 },
-  statLabel: { fontSize: 11, textTransform: 'uppercase', fontWeight: '600' },
-
-  progressSection: { marginHorizontal: 16, marginBottom: 16 },
-  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  progressLabel: { fontSize: 13, fontWeight: '600' },
-  progressPct: { fontSize: 13, fontWeight: '700' },
-  progressBar: { height: 8, borderRadius: 4, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 4 },
-
-  scanBtn: {
-    flexDirection: 'row', height: 54, borderRadius: 27,
-    justifyContent: 'center', alignItems: 'center',
-    marginHorizontal: 16, marginBottom: 20,
-    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
-  },
-  scanBtnText: { fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' },
-
-  listHeader: {
-    fontSize: 11, fontWeight: '800',
-    textTransform: 'uppercase', letterSpacing: 0.8,
-    paddingHorizontal: 16, marginBottom: 8,
-  },
-
-  ticketRow: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1, gap: 12,
-  },
-  avatar: { width: 40, height: 40, borderRadius: 20 },
-  avatarFallback: { backgroundColor: '#E8F5E9', justifyContent: 'center', alignItems: 'center' },
-  avatarInitial: { fontSize: 16, fontWeight: 'bold' },
-  ticketInfo: { flex: 1 },
-  ticketName: { fontSize: 14, fontWeight: '700' },
-  ticketType: { fontSize: 12, marginTop: 2 },
-  statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  checkedInBadge: { backgroundColor: '#E8F5E9' },
-  activeBadge: { },
-  statusText: { fontSize: 11, fontWeight: '700' },
-  checkedInText: { color: '#2E7D32' },
-  activeText: { },
-
-  emptyBox: { alignItems: 'center', paddingTop: 40, gap: 10 },
-  emptyText: { fontSize: 15 },
-
-  cancelBtn: {
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    marginHorizontal: 16, marginTop: 16, paddingVertical: 14, borderRadius: 12,
-    borderWidth: 1.5, borderColor: '#FFCDD2', backgroundColor: '#FFEBEE',
-  },
-  cancelBtnText: { fontSize: 14, fontWeight: '700', color: '#B71C1C' },
-  archiveBtn: {
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    marginHorizontal: 16, marginTop: 16, paddingVertical: 14, borderRadius: 12,
-    backgroundColor: '#1976D2',
-  },
-  archiveBtnText: { fontSize: 14, fontWeight: '700', color: '#FFF' },
-  deleteBtn: {
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    margin: 16, paddingVertical: 14, borderRadius: 12,
-    backgroundColor: '#D32F2F',
-  },
-  deleteBtnText: { fontSize: 14, fontWeight: '700', color: '#FFF' },
+  container: { flex: 1 }, center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
+  header: { height: 60, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, paddingHorizontal: 12 }, backBtn: { width: 40 }, headerTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '800' }, scanIcon: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 20 },
+  listContent: { padding: 16, paddingBottom: 40 }, eventCard: { borderWidth: 1, borderRadius: 16, overflow: 'hidden' }, eventImage: { height: 150, width: '100%' }, eventBody: { padding: 14 }, eventTitle: { fontSize: 20, fontWeight: '800' }, eventDate: { fontSize: 13, marginTop: 4 },
+  metricsRow: { flexDirection: 'row', gap: 8, marginTop: 14 }, metric: { flex: 1, borderWidth: 1, borderRadius: 12, padding: 10, alignItems: 'center' }, metricValue: { fontSize: 17, fontWeight: '800' }, metricLabel: { fontSize: 11, marginTop: 3 },
+  scanButton: { height: 52, borderRadius: 14, marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }, scanButtonText: { color: '#000', fontSize: 16, fontWeight: '800' }, sectionTitle: { fontSize: 17, fontWeight: '800', marginTop: 24, marginBottom: 10 },
+  ticketCard: { borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 10 }, ticketTopRow: { flexDirection: 'row', alignItems: 'center', gap: 10 }, attendeeIcon: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' }, ticketInfo: { flex: 1 }, ticketName: { fontSize: 15, fontWeight: '800' }, ticketEmail: { fontSize: 12, marginTop: 2 }, statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 12 }, ticketDivider: { height: 1, marginVertical: 12 }, ticketMeta: { flexDirection: 'row', gap: 12 }, metaItem: { flex: 1 }, metaLabel: { fontSize: 9, fontWeight: '800', letterSpacing: .5 }, metaValue: { fontSize: 12, fontWeight: '600', marginTop: 3 }, tierText: { fontSize: 12, marginTop: 12 },
+  emptyList: { paddingVertical: 44, alignItems: 'center', gap: 10 }, emptyTitle: { fontSize: 18, fontWeight: '800' }, emptyText: { fontSize: 14, textAlign: 'center' }, backAction: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 24, marginTop: 8 }, backActionText: { color: '#000', fontWeight: '800' },
 });

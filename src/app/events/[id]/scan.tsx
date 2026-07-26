@@ -71,9 +71,9 @@ export default function ScanTicketScreen() {
         showFlash(false);
       } else {
         // Ticket is valid (active or confirmed). Update status to 'USED'
-        const { error: updateError } = await supabase
+          const { error: updateError } = await supabase
           .from('tickets')
-          .update({ status: 'USED' })
+          .update({ status: 'USED', scanned_at: new Date().toISOString() })
           .eq('id', ticket.id);
           
         if (updateError) {

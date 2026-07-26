@@ -53,7 +53,7 @@ export default function MyEventsScreen() {
     return (
       <TouchableOpacity
         style={[styles.eventCard, { backgroundColor: colors.card }]}
-        onPress={() => router.push(`/events/${item.id}`)}
+        onPress={() => router.push(`/events/${item.id}/manage`)}
         activeOpacity={0.8}
       >
         <View style={styles.eventImageWrapper}>

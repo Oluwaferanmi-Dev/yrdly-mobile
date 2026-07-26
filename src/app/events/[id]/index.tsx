@@ -533,7 +533,7 @@ export default function EventDetailScreen() {
               <View style={styles.infoTextContainer}>
                 <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Attendees</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
-                  <AttendeeAvatars attendees={event.attendees as any} totalCount={event.attendee_count} size={22} showIcon={false} />
+                  <AttendeeAvatars attendees={event.attendees as any} totalCount={event.attendee_count} size={22} showIcon={false} showCountBadge={false} />
                   <Text style={[styles.infoValue, { color: colors.text }]}>{event.attendee_count || 0} attending</Text>
                 </View>
               </View>

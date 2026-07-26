@@ -363,25 +363,29 @@ export default function CatalogItemScreen() {
           )}
 
           {/* Action Buttons */}
-          <View style={s.actionRow}>
-            <TouchableOpacity 
-              style={[s.primaryBtn, { backgroundColor: colors.tint, flex: 1 }]} 
-              onPress={handleBuy}
-              disabled={!item.in_stock}
-            >
-              <Ionicons name="bag-handle-outline" size={20} color="#000" style={{ marginRight: 8 }} />
-              <Text style={[s.primaryBtnTxt, { color: '#000' }]}>{item.in_stock ? 'Buy Now' : 'Out of Stock'}</Text>
-            </TouchableOpacity>
+          {(!isOwner || business?.phone) && (
+            <View style={s.actionRow}>
+              {!isOwner && (
+                <TouchableOpacity
+                  style={[s.primaryBtn, { backgroundColor: colors.tint, flex: 1 }]}
+                  onPress={handleBuy}
+                  disabled={!item.in_stock}
+                >
+                  <Ionicons name="bag-handle-outline" size={20} color="#000" style={{ marginRight: 8 }} />
+                  <Text style={[s.primaryBtnTxt, { color: '#000' }]}>{item.in_stock ? 'Buy Now' : 'Out of Stock'}</Text>
+                </TouchableOpacity>
+              )}
 
-            {business?.phone && (
-              <TouchableOpacity 
-                style={[s.outlineBtn, { borderColor: colors.borderLight, width: 50 }]} 
-                onPress={handleCall}
-              >
-                <Ionicons name="call-outline" size={20} color={colors.tint} />
-              </TouchableOpacity>
-            )}
-          </View>
+              {business?.phone && (
+                <TouchableOpacity
+                  style={[s.outlineBtn, { borderColor: colors.borderLight, width: 50 }]}
+                  onPress={handleCall}
+                >
+                  <Ionicons name="call-outline" size={20} color={colors.tint} />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
 
           {!isOwner && business && (
             <TouchableOpacity style={[s.outlineBtn, { borderColor: colors.borderLight, marginTop: 12 }]} onPress={handleMessage}>

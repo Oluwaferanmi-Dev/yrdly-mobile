@@ -16,6 +16,7 @@ interface AttendeeAvatarsProps {
   maxVisible?: number;
   size?: number;
   showIcon?: boolean;
+  showCountBadge?: boolean;
 }
 
 export function AttendeeAvatars({
@@ -24,6 +25,7 @@ export function AttendeeAvatars({
   maxVisible = 4,
   size = 24,
   showIcon = true,
+  showCountBadge = true,
 }: AttendeeAvatarsProps) {
   const { colors } = useAppTheme();
   const [failedImages, setFailedImages] = useState<Record<number, boolean>>({});
@@ -118,7 +120,7 @@ export function AttendeeAvatars({
         })}
       </View>
 
-      {remainingCount > 0 && (
+      {showCountBadge && remainingCount > 0 && (
         <View
           style={[
             styles.countBadge,

@@ -95,8 +95,6 @@ export class UserReviewService {
 
       if (error) throw error;
 
-      await this.updateSellerRating(sellerId);
-
       return data.id;
     } catch (error) {
       console.error('Error submitting user review:', error);
