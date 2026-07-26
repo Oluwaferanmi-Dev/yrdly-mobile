@@ -506,7 +506,7 @@ function MarketplaceDetailContent() {
           {/* Premium Seller Card */}
           <TouchableOpacity 
             style={[styles.card, { backgroundColor: colors.inputBackground }]}
-            onPress={() => router.push(`/profile/${post.user_id}`)}
+            onPress={() => router.push(`/profile/${post.user_id}` as any)}
             activeOpacity={0.8}
           >
             <View style={styles.sellerHeader}>

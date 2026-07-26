@@ -86,6 +86,13 @@ function ChatContent() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const id = params.id as string;
+  // Extract stable primitive values once — avoids params object reference changing every render
+  const paramType = params.type as string | undefined;
+  const paramParticipantId = params.participant_id as string | undefined;
+  const paramItemId = params.item_id as string | undefined;
+  const paramItemTitle = params.item_title as string | undefined;
+  const paramItemImage = params.item_image as string | undefined;
+  const paramItemPrice = params.item_price as string | undefined;
   const { user, profile, updateProfile } = useAuth();
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
@@ -159,21 +166,20 @@ function ChatContent() {
   const fetchMeta = useCallback(async () => {
     if (!id || !user) return;
     if (id === 'new') {
-      const { type, participant_id, item_id, item_title, item_image, item_price } = params;
       setMeta({
         id: 'new',
-        type: type as any,
-        participant_ids: [user.id, participant_id as string],
-        item_id: item_id as string,
-        item_title: item_title as string,
-        item_image: item_image as string,
-        item_price: item_price ? Number(item_price) : undefined,
+        type: paramType as any,
+        participant_ids: [user.id, paramParticipantId as string],
+        item_id: paramItemId as string,
+        item_title: paramItemTitle as string,
+        item_image: paramItemImage as string,
+        item_price: paramItemPrice ? Number(paramItemPrice) : undefined,
       });
-      if (participant_id) {
+      if (paramParticipantId) {
         const { data: u } = await supabase
           .from('users')
           .select('name, avatar_url')
-          .eq('id', participant_id)
+          .eq('id', paramParticipantId)
           .single();
         if (u) setOtherUser(u);
       }
@@ -188,7 +194,6 @@ function ChatContent() {
       .single();
     if (data) {
       setMeta(data);
-      // Fetch the other participant's profile
       const otherId = data.participant_ids?.find((pid: string) => pid !== user.id);
       if (otherId) {
         const { data: u } = await supabase
@@ -199,10 +204,11 @@ function ChatContent() {
         if (u) setOtherUser(u);
       }
     }
-  }, [id, user, params]);
+    setLoading(false);
+  }, [id, user, paramType, paramParticipantId, paramItemId, paramItemTitle, paramItemImage, paramItemPrice]);
 
   const fetchMessages = useCallback(async () => {
-    if (!id || id === 'new') return;
+    if (!id || id === 'new') { setLoading(false); return; }
     
     const { data, error } = await supabase
       .from('messages')
@@ -213,7 +219,6 @@ function ChatContent() {
     if (!error && data) {
       setMessages(data as Message[]);
       
-      // Mark received unread messages as read
       const unreadIds = data
         .filter((m: any) => !m.is_read && m.sender_id !== user?.id)
         .map((m: any) => m.id);
@@ -284,16 +289,15 @@ function ChatContent() {
     try {
       let currentConvId = id;
       if (id === 'new') {
-        const { type, participant_id, item_id, item_title, item_image, item_price } = params;
         const { data: newConv, error: newError } = await supabase
           .from('conversations')
           .insert({
-            type,
-            participant_ids: [user.id, participant_id],
-            item_id: item_id || null,
-            item_title: item_title || null,
-            item_image: item_image || null,
-            item_price: item_price ? Number(item_price) : null,
+            type: paramType,
+            participant_ids: [user.id, paramParticipantId],
+            item_id: paramItemId || null,
+            item_title: paramItemTitle || null,
+            item_image: paramItemImage || null,
+            item_price: paramItemPrice ? Number(paramItemPrice) : null,
             last_message_text: body,
             updated_at: new Date().toISOString(),
           })
@@ -606,7 +610,7 @@ function ChatContent() {
           style={styles.headerCenter}
           onPress={() => {
             const otherId = meta?.participant_ids?.find((pid: string) => pid !== user?.id);
-            if (otherId) router.push(`/profile/${otherId}`);
+            if (otherId) router.push(`/profile/${otherId}` as any);
           }}
         >
           {otherUser?.avatar_url ? (

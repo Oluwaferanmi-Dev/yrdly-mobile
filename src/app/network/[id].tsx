@@ -66,7 +66,7 @@ export default function NetworkScreen() {
   const renderUser = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={[styles.userRow, { borderBottomColor: colors.borderLight }]}
-      onPress={() => router.push(`/profile/${item.id}`)}
+      onPress={() => router.push(`/profile/${item.id}` as any)}
     >
       {item.avatar_url ? (
         <Image source={{ uri: item.avatar_url }} style={styles.avatar} />

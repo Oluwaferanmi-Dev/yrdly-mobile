@@ -218,7 +218,7 @@ export default function CommunityScreen() {
       'Choose an action',
       [
         { text: 'Message', onPress: () => handleFriendMessage(friend) },
-        { text: 'View Profile', onPress: () => router.push(`/profile/${friend.user.id}`) },
+        { text: 'View Profile', onPress: () => router.push(`/profile/${friend.user.id}` as any) },
         { text: 'Remove Friend', style: 'destructive', onPress: () => handleRemoveFriend(friend.reqId, friend.user.name) },
         { text: 'Cancel', style: 'cancel' },
       ],
@@ -272,7 +272,7 @@ export default function CommunityScreen() {
     if (!sender) return null;
     return (
       <Animated.View entering={FadeInUp.delay(index * 100).springify()} style={[styles.premiumCard, styles.requestCard]}>
-        <TouchableOpacity style={styles.userInfo} onPress={() => router.push(`/profile/${sender.id}`)}>
+        <TouchableOpacity style={styles.userInfo} onPress={() => router.push(`/profile/${sender.id}` as any)}>
           <View style={[styles.avatar, { backgroundColor: colors.tint + '20' }]}>
             {sender.avatar_url ? (
               <Image source={{ uri: sender.avatar_url }} style={styles.avatarImage} />
@@ -310,7 +310,7 @@ export default function CommunityScreen() {
       <Animated.View entering={FadeInUp.delay(index * 50).springify()} layout={Layout.springify()}>
         <TouchableOpacity
           style={styles.premiumFriendCard}
-          onPress={() => router.push(`/profile/${user.id}`)}
+          onPress={() => router.push(`/profile/${user.id}` as any)}
           onLongPress={() => handleFriendOptions(item)}
         >
           <View style={styles.friendRow}>
@@ -350,7 +350,7 @@ export default function CommunityScreen() {
       <Animated.View entering={FadeInUp.delay(index * 50).springify()} layout={Layout.springify()}>
         <View style={styles.premiumFriendCard}>
           <View style={styles.friendRow}>
-            <TouchableOpacity style={styles.friendInfoRow} onPress={() => router.push(`/profile/${item.id}`)}>
+            <TouchableOpacity style={styles.friendInfoRow} onPress={() => router.push(`/profile/${item.id}` as any)}>
               <View style={[styles.avatarMedium, { backgroundColor: colors.tint + '30' }]}>
                 {item.avatar_url ? (
                   <Image source={{ uri: item.avatar_url }} style={styles.avatarImage} />

@@ -241,7 +241,7 @@ export default function NotificationsScreen() {
       case 'new_follower':
       case 'friend_request': {
         const uid = notification.data?.from_user_id || notification.from_user_id;
-        if (uid) router.push(`/profile/${uid}`);
+        if (uid) router.push(`/profile/${uid}` as any);
         break;
       }
       case 'ticket':
@@ -296,7 +296,7 @@ export default function NotificationsScreen() {
       [
         { text: 'View Sender Profile', onPress: () => {
           const uid = notification.from_user_id || notification.data?.from_user_id;
-          if (uid) router.push(`/profile/${uid}`);
+          if (uid) router.push(`/profile/${uid}` as any);
         }},
         { text: notification.is_read ? 'Mark as Unread' : 'Mark as Read', onPress: () => handleToggleReadStatus(notification.id, notification.is_read) },
         { text: 'Delete Notification', onPress: () => handleDelete(notification.id), style: 'destructive' },
