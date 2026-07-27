@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Linking, FlatList, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -299,7 +299,7 @@ export default function BusinessProfileScreen() {
         <View style={s.infoPad}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={[s.nameTxt, { color: colors.text, flexShrink: 1 }]}>{business.name}</Text>
-            <Ionicons name="checkmark-circle" size={20} color="#FBBF24" style={{ marginLeft: 6 }} />
+            <MaterialIcons name="verified" size={20} color="#FBBF24" style={{ marginLeft: 6 }} />
           </View>
           <View style={[s.catBadge, { borderColor: colors.borderLight }]}>
             <Text style={[s.catBadgeTxt, { color: colors.textSecondary }]}>{business.category}</Text>
