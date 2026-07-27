@@ -249,14 +249,7 @@ export default function ProfileTab() {
             ) : null}
           </View>
 
-          <TouchableOpacity 
-            style={styles.editProfileBtn} 
-            onPress={() => router.push('/profile/edit')}
-            activeOpacity={0.7}
-          >
-            <Feather name="edit-3" size={13} color={colors.text} />
-            <Text style={styles.editProfileText}>Edit profile</Text>
-          </TouchableOpacity>
+
         </View>
 
         {/* Stats Row: Posts | Followers | Following */}
@@ -297,6 +290,15 @@ export default function ProfileTab() {
             <Text style={styles.locationText}>{formattedLocation}</Text>
           </View>
         ) : null}
+
+        {/* Instagram-style Edit Profile row */}
+        <TouchableOpacity 
+          style={styles.editProfileBtn} 
+          onPress={() => router.push('/profile/edit')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.editProfileText}>Edit profile</Text>
+        </TouchableOpacity>
       </PressableCard>
 
       {/* ── Quick Action Cards ── */}
@@ -593,20 +595,19 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
 
   editProfileBtn: {
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 6,
-    paddingHorizontal: 14, 
-    paddingVertical: 8,
-    borderRadius: 20, 
-    borderWidth: 1, 
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
     borderColor: colors.borderLight,
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    marginTop: 14,
   },
-  editProfileText: { 
-    color: colors.text, 
-    fontSize: 13, 
-    fontWeight: '600' 
+  editProfileText: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '600',
   },
 
   // ── Stats Row ──
