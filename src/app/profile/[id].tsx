@@ -112,6 +112,24 @@ export default function OtherUserProfileScreen() {
     fetchProfileAndPosts();
   }, [id, fetchProfileAndPosts]);
 
+  // Realtime: keep rating & review_count in sync when this user's row updates
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`profile-rating-${id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${id}` },
+        (payload) => {
+          if (payload.new) {
+            setProfile((prev) => prev ? { ...prev, ...(payload.new as Partial<UserProfile>) } : prev);
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id]);
+
   const handleToggleFollow = async () => {
     if (!currentUser || !profile) return;
     setFollowLoading(true);

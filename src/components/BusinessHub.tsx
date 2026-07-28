@@ -52,6 +52,27 @@ export function BusinessHub({ searchQuery }: BusinessHubProps) {
     fetchBusinesses();
   }, [fetchBusinesses]);
 
+  // Realtime: patch rating & review_count when any business row updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('business-ratings')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'businesses' },
+        (payload) => {
+          if (payload.new?.id) {
+            setBusinesses((prev) =>
+              prev.map((b) =>
+                b.id === payload.new.id ? { ...b, ...(payload.new as Partial<Business>) } : b
+              )
+            );
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchBusinesses(true);
