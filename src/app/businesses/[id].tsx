@@ -114,6 +114,24 @@ export default function BusinessProfileScreen() {
     fetchReviews();
   }, [id]);
 
+  // Realtime: patch rating & review_count when the business row updates
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`business-detail-${id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'businesses', filter: `id=eq.${id}` },
+        (payload) => {
+          if (payload.new) {
+            setBusiness((prev) => prev ? { ...prev, ...(payload.new as Partial<Business>) } : prev);
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id]);
+
   const handleDeactivate = useCallback(() => {
     setMenuVisible(false);
     Alert.alert(
