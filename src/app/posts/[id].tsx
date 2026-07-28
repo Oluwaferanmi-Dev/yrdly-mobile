@@ -110,10 +110,21 @@ function PostDetailContent() {
       .order('timestamp', { ascending: true });
 
     if (!error && data) {
-      setComments(data);
+      if (user?.id) {
+        const commentIds = data.map(c => c.id);
+        const { data: likesData } = await supabase
+          .from('comment_likes')
+          .select('comment_id')
+          .eq('user_id', user.id)
+          .in('comment_id', commentIds);
+        const likedSet = new Set(likesData?.map(l => l.comment_id) || []);
+        setComments(data.map(c => ({ ...c, is_liked: likedSet.has(c.id) })));
+      } else {
+        setComments(data);
+      }
     }
     setLoading(false);
-  }, [id]);
+  }, [id, user?.id]);
 
   useEffect(() => {
     fetchPost();
@@ -192,6 +203,25 @@ function PostDetailContent() {
     }
   };
 
+  const handleLikeComment = useCallback(async (item: CommentType) => {
+    if (!user) return;
+    const isLiked = item.is_liked;
+    const newCount = Math.max(0, (item.like_count || 0) + (isLiked ? -1 : 1));
+    setComments(prev => prev.map(c =>
+      c.id === item.id ? { ...c, is_liked: !isLiked, like_count: newCount } : c
+    ));
+    try {
+      if (isLiked) {
+        await supabase.from('comment_likes').delete().match({ comment_id: item.id, user_id: user.id });
+      } else {
+        await supabase.from('comment_likes').insert({ comment_id: item.id, user_id: user.id });
+      }
+      await supabase.from('comments').update({ like_count: newCount }).eq('id', item.id);
+    } catch (e) {
+      console.error('Like comment error:', e);
+    }
+  }, [user]);
+
   const commentTree = React.useMemo(() => {
     const rootComments = comments.filter(c => !c.parent_id);
     return rootComments.map(root => ({
@@ -225,11 +255,12 @@ function PostDetailContent() {
       <CommentItem 
         item={item} 
         currentUserId={user?.id}
-        onReply={handleReply} 
+        onReply={handleReply}
+        onLike={handleLikeComment}
         onDelete={handleDeleteComment}
       />
     );
-  }, [handleReply, handleDeleteComment, user?.id]);
+  }, [handleReply, handleLikeComment, handleDeleteComment, user?.id]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>

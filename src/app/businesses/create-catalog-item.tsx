@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image, Switch } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,8 +14,11 @@ const CATALOG_CATEGORIES = ['Product', 'Service', 'Digital', 'Other'];
 export default function CreateCatalogItemScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
-  const { businessId } = useLocalSearchParams();
+  // itemId is present when editing an existing item
+  const { businessId, itemId } = useLocalSearchParams<{ businessId?: string; itemId?: string }>();
   const { user } = useAuth();
+
+  const isEditMode = !!itemId;
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -24,7 +27,38 @@ export default function CreateCatalogItemScreen() {
   const [inStock, setInStock] = useState(true);
   const [quantity, setQuantity] = useState('1');
   const [imageUris, setImageUris] = useState<string[]>([]);
+  // Existing remote URLs to keep (edit mode)
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initLoading, setInitLoading] = useState(isEditMode);
+
+  // Pre-populate fields when editing
+  useEffect(() => {
+    if (!isEditMode) return;
+    (async () => {
+      const { data, error } = await supabase
+        .from('catalog_items')
+        .select('*')
+        .eq('id', itemId)
+        .maybeSingle();
+      if (error || !data) {
+        Alert.alert('Error', 'Could not load item.');
+        router.back();
+        return;
+      }
+      setTitle(data.title || '');
+      setDescription(data.description || '');
+      setPrice(String(data.price || ''));
+      setCategory(data.category || CATALOG_CATEGORIES[0]);
+      setInStock(data.in_stock ?? true);
+      setQuantity(String(data.quantity ?? 1));
+      let imgs: string[] = [];
+      if (Array.isArray(data.images)) imgs = data.images;
+      else if (typeof data.images === 'string') { try { imgs = JSON.parse(data.images); } catch (_) {} }
+      setExistingImageUrls(imgs);
+      setInitLoading(false);
+    })();
+  }, [itemId, isEditMode]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -33,23 +67,24 @@ export default function CreateCatalogItemScreen() {
       quality: 0.8,
       allowsMultipleSelection: true,
     });
-
     if (!result.canceled) {
-      const uris = result.assets.map(a => a.uri);
-      setImageUris(prev => [...prev, ...uris]);
+      setImageUris(prev => [...prev, ...result.assets.map(a => a.uri)]);
     }
   };
 
-  const removeImage = (index: number) => {
-    setImageUris(prev => prev.filter((_, i) => i !== index));
-  };
+  const removeNewImage = (index: number) => setImageUris(prev => prev.filter((_, i) => i !== index));
+  const removeExistingImage = (index: number) => setExistingImageUrls(prev => prev.filter((_, i) => i !== index));
 
-  const handleCreate = async () => {
+  const resolvedBusinessId = businessId || (isEditMode ? undefined : undefined);
+
+  const handleSubmit = async () => {
     if (!title.trim() || !price.trim()) {
       Alert.alert('Error', 'Please enter a title and price.');
       return;
     }
-    if (!businessId || typeof businessId !== 'string') {
+
+    const bizId = resolvedBusinessId;
+    if (!isEditMode && (!bizId || typeof bizId !== 'string')) {
       Alert.alert('Error', 'Invalid business context.');
       return;
     }
@@ -59,50 +94,72 @@ export default function CreateCatalogItemScreen() {
 
     setLoading(true);
     try {
-      // 1. Create the catalog item record first
-      const { data, error } = await supabase
-        .from('catalog_items')
-        .insert({
-          business_id: businessId,
-          title: title.trim(),
-          description: description.trim(),
-          price: parseFloat(price) || 0,
-          category,
-          in_stock: inStock && qtyNum > 0,
-          quantity: qtyNum,
-        })
-        .select('id')
-        .single();
+      const fields = {
+        title: title.trim(),
+        description: description.trim(),
+        price: parseFloat(price) || 0,
+        category,
+        in_stock: inStock && qtyNum > 0,
+        quantity: qtyNum,
+      };
 
-      if (error) throw error;
-      const itemId = data.id;
+      let targetItemId = itemId;
 
-      // 2. Upload images
-      const imageUrls: string[] = [];
-      if (imageUris.length > 0) {
+      if (isEditMode) {
+        // Update existing record
+        const { error } = await supabase
+          .from('catalog_items')
+          .update(fields)
+          .eq('id', itemId);
+        if (error) throw error;
+      } else {
+        // Create new record
+        const { data, error } = await supabase
+          .from('catalog_items')
+          .insert({ business_id: bizId, ...fields })
+          .select('id')
+          .single();
+        if (error) throw error;
+        targetItemId = data.id;
+      }
+
+      // Upload any new images
+      const newUrls: string[] = [];
+      if (imageUris.length > 0 && targetItemId) {
+        const uploadBizId = bizId || 'catalog';
         for (let i = 0; i < imageUris.length; i++) {
-          // Re-use uploadBusinessImage or use uploadPostImage
-          const { url } = await StorageService.uploadBusinessImage(businessId, { uri: imageUris[i], name: `catalog_${itemId}_${i}.jpg`, type: 'image/jpeg' });
-          if (url) imageUrls.push(url);
+          const { url } = await StorageService.uploadBusinessImage(uploadBizId, {
+            uri: imageUris[i],
+            name: `catalog_${targetItemId}_${Date.now()}_${i}.jpg`,
+            type: 'image/jpeg',
+          });
+          if (url) newUrls.push(url);
         }
       }
 
-      // 3. Update the record with image URLs
-      if (imageUrls.length > 0) {
-        await supabase.from('catalog_items').update({
-          images: imageUrls
-        }).eq('id', itemId);
+      // Merge existing + new URLs and save
+      const finalImages = [...existingImageUrls, ...newUrls];
+      if (finalImages.length > 0 || isEditMode) {
+        await supabase.from('catalog_items').update({ images: finalImages }).eq('id', targetItemId);
       }
 
-      Alert.alert('Success', 'Item added to catalog!', [
-        { text: 'OK', onPress: () => router.back() }
+      Alert.alert('Success', isEditMode ? 'Item updated!' : 'Item added to catalog!', [
+        { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Could not add item to catalog.');
+      Alert.alert('Error', e.message || 'Could not save item.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (initLoading) {
+    return (
+      <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.tint} />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={[s.root, { backgroundColor: colors.background }]}>
@@ -111,7 +168,9 @@ export default function CreateCatalogItemScreen() {
           <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={28} color={colors.text} />
           </TouchableOpacity>
-          <Text style={[s.headerTitle, { color: colors.text }]}>Add Catalog Item</Text>
+          <Text style={[s.headerTitle, { color: colors.text }]}>
+            {isEditMode ? 'Edit Catalog Item' : 'Add Catalog Item'}
+          </Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -151,16 +210,10 @@ export default function CreateCatalogItemScreen() {
             {CATALOG_CATEGORIES.map(cat => (
               <TouchableOpacity 
                 key={cat}
-                style={[
-                  s.categoryChip, 
-                  { backgroundColor: category === cat ? colors.tint : colors.inputBackground }
-                ]}
+                style={[s.categoryChip, { backgroundColor: category === cat ? colors.tint : colors.inputBackground }]}
                 onPress={() => setCategory(cat)}
               >
-                <Text style={{ 
-                  color: category === cat ? '#000' : colors.text,
-                  fontWeight: category === cat ? 'bold' : 'normal'
-                }}>
+                <Text style={{ color: category === cat ? '#000' : colors.text, fontWeight: category === cat ? 'bold' : 'normal' }}>
                   {cat}
                 </Text>
               </TouchableOpacity>
@@ -192,10 +245,20 @@ export default function CreateCatalogItemScreen() {
             <TouchableOpacity style={[s.addGalleryBtn, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]} onPress={pickImage}>
               <Ionicons name="add" size={32} color={colors.textMuted} />
             </TouchableOpacity>
+            {/* Existing remote images */}
+            {existingImageUrls.map((url, index) => (
+              <View key={`existing-${index}`} style={s.galleryImgWrapper}>
+                <Image source={{ uri: url }} style={s.galleryImg} />
+                <TouchableOpacity style={s.removeGalleryBtn} onPress={() => removeExistingImage(index)}>
+                  <Ionicons name="close-circle" size={24} color="#ff4444" />
+                </TouchableOpacity>
+              </View>
+            ))}
+            {/* Newly picked local images */}
             {imageUris.map((uri, index) => (
-              <View key={index} style={s.galleryImgWrapper}>
+              <View key={`new-${index}`} style={s.galleryImgWrapper}>
                 <Image source={{ uri }} style={s.galleryImg} />
-                <TouchableOpacity style={s.removeGalleryBtn} onPress={() => removeImage(index)}>
+                <TouchableOpacity style={s.removeGalleryBtn} onPress={() => removeNewImage(index)}>
                   <Ionicons name="close-circle" size={24} color="#ff4444" />
                 </TouchableOpacity>
               </View>
@@ -204,13 +267,15 @@ export default function CreateCatalogItemScreen() {
 
           <TouchableOpacity 
             style={[s.submitBtn, { backgroundColor: colors.tint, opacity: loading ? 0.7 : 1 }]} 
-            onPress={handleCreate}
+            onPress={handleSubmit}
             disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#000" />
             ) : (
-              <Text style={[s.submitBtnTxt, { color: '#000' }]}>Add to Catalog</Text>
+              <Text style={[s.submitBtnTxt, { color: '#000' }]}>
+                {isEditMode ? 'Save Changes' : 'Add to Catalog'}
+              </Text>
             )}
           </TouchableOpacity>
         </ScrollView>

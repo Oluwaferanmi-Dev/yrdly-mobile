@@ -112,19 +112,26 @@ export default function NotificationsScreen() {
         }
       }
 
-      // Collect transaction IDs to fetch item images
-      const txIds = Array.from(new Set(data.map(n => n.related_id || n.data?.transactionId).filter(Boolean)));
+      // Collect transaction IDs to fetch item images (supports both posts and catalog_items)
+      const txIds = Array.from(new Set(data.map((n: any) => n.related_id || n.data?.transactionId).filter(Boolean)));
       let txImageMap = new Map();
       if (txIds.length > 0) {
         const { data: txs } = await supabase
           .from('escrow_transactions')
-          .select('id, item:posts(image_urls)')
+          .select('id, item_type, post_item:posts(image_urls, image_url), catalog_item:catalog_items(images)')
           .in('id', txIds);
         if (txs) {
           txs.forEach((tx: any) => {
-            const itemObj = Array.isArray(tx.item) ? tx.item[0] : tx.item;
-            const imgUrls = itemObj?.image_urls;
-            const img = Array.isArray(imgUrls) ? imgUrls[0] : null;
+            let img: string | null = null;
+            if (tx.item_type === 'catalog_item') {
+              const catItem = Array.isArray(tx.catalog_item) ? tx.catalog_item[0] : tx.catalog_item;
+              const imgs = catItem?.images;
+              img = Array.isArray(imgs) ? imgs[0] : (typeof imgs === 'string' ? imgs : null);
+            } else {
+              const postItem = Array.isArray(tx.post_item) ? tx.post_item[0] : tx.post_item;
+              const imgUrls = postItem?.image_urls;
+              img = Array.isArray(imgUrls) ? imgUrls[0] : (postItem?.image_url || null);
+            }
             if (img) txImageMap.set(tx.id, img);
           });
         }
@@ -246,6 +253,7 @@ export default function NotificationsScreen() {
       }
       case 'ticket':
       case 'ticket_purchase':
+      case 'ticket_confirmed':
       case 'event_rsvp': {
         router.push('/tickets');
         break;
@@ -266,9 +274,17 @@ export default function NotificationsScreen() {
         }
         break;
       }
+      // Payout IDs are not escrow transaction IDs — go to transactions list
+      case 'payout_processed':
+      case 'payout_failed': {
+        router.push('/transactions');
+        break;
+      }
       case 'review':
-      case 'business_review': {
-        const bizId = notification.related_id || notification.data?.business_id;
+      case 'business_review':
+      case 'business_review_received': {
+        // related_id is the reviewId; businessId lives in data
+        const bizId = notification.data?.businessId || notification.data?.business_id;
         if (bizId) {
           router.push(`/businesses/${bizId}` as any);
         }
@@ -281,8 +297,12 @@ export default function NotificationsScreen() {
         break;
       }
       default: {
-        if (notification.related_id) {
-          router.push(`/transactions/${notification.related_id}`);
+        // Generic fallback — only navigate if the related_id looks like a transaction
+        if (notification.related_id && notification.data?.transactionId) {
+          router.push(`/transactions/${notification.data.transactionId}`);
+        } else if (notification.related_id) {
+          // Don't blindly navigate — just go to transactions list
+          router.push('/transactions');
         }
         break;
       }

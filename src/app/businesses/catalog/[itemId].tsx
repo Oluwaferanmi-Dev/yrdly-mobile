@@ -196,6 +196,68 @@ export default function CatalogItemScreen() {
     );
   }, [item]);
 
+  /** Returns true when there is at least one pending/processing escrow transaction for this item */
+  const checkPendingTransaction = useCallback(async (): Promise<boolean> => {
+    if (!item) return false;
+    const { data } = await supabase
+      .from('escrow_transactions')
+      .select('id')
+      .eq('item_id', item.id)
+      .eq('item_type', 'catalog_item')
+      .in('status', ['pending', 'processing', 'funded'])
+      .limit(1);
+    return !!(data && data.length > 0);
+  }, [item]);
+
+  const handleEditItem = useCallback(async () => {
+    const hasPending = await checkPendingTransaction();
+    if (hasPending) {
+      Alert.alert(
+        'Cannot Edit',
+        'This item has a pending transaction. Please wait until it is completed or cancelled before making changes.'
+      );
+      return;
+    }
+    router.push({
+      pathname: '/businesses/create-catalog-item',
+      params: { itemId: item?.id },
+    } as any);
+  }, [checkPendingTransaction, item, router]);
+
+  const handleDeleteItem = useCallback(async () => {
+    const hasPending = await checkPendingTransaction();
+    if (hasPending) {
+      Alert.alert(
+        'Cannot Delete',
+        'This item has a pending transaction. Please wait until it is completed or cancelled before deleting.'
+      );
+      return;
+    }
+    Alert.alert(
+      'Delete Item',
+      'Are you sure you want to permanently delete this catalog item?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabase.from('catalog_items').delete().eq('id', item!.id);
+              if (error) throw error;
+              Alert.alert('Deleted', 'The catalog item has been removed.', [
+                { text: 'OK', onPress: () => router.back() },
+              ]);
+            } catch (err) {
+              console.error('Delete catalog item error:', err);
+              Alert.alert('Error', 'Could not delete the item.');
+            }
+          },
+        },
+      ]
+    );
+  }, [checkPendingTransaction, item, router]);
+
   if (loading) {
     return (
       <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
@@ -324,13 +386,33 @@ export default function CatalogItemScreen() {
           </View>
 
           {isOwner && (
-            <TouchableOpacity 
-              onPress={handleRestock}
-              style={{ backgroundColor: colors.tint + '20', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start', marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
-            >
-              <Ionicons name="refresh-outline" size={16} color={colors.tint} />
-              <Text style={{ color: colors.tint, fontSize: 12, fontWeight: '700' }}>Restock / Update Quantity</Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity 
+                onPress={handleRestock}
+                style={{ backgroundColor: colors.tint + '20', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start', marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+              >
+                <Ionicons name="refresh-outline" size={16} color={colors.tint} />
+                <Text style={{ color: colors.tint, fontSize: 12, fontWeight: '700' }}>Restock / Update Quantity</Text>
+              </TouchableOpacity>
+
+              {/* Edit & Delete row */}
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                <TouchableOpacity
+                  onPress={handleEditItem}
+                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: colors.inputBackground, borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: colors.borderLight }}
+                >
+                  <Ionicons name="create-outline" size={16} color={colors.text} />
+                  <Text style={{ color: colors.text, fontSize: 12, fontWeight: '700' }}>Edit Item</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleDeleteItem}
+                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#FEE2E2', borderRadius: 12, paddingVertical: 10 }}
+                >
+                  <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                  <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: '700' }}>Delete Item</Text>
+                </TouchableOpacity>
+              </View>
+            </>
           )}
 
           {!!item.description && (
