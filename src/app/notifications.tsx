@@ -352,17 +352,30 @@ export default function NotificationsScreen() {
       case 'post_comment':
         return <Ionicons name="chatbubble" size={14} color="#60A5FA" />;
       case 'event_invite':
+      case 'event_rsvp':
         return <Ionicons name="calendar" size={14} color="#FB923C" />;
+      case 'ticket':
+      case 'ticket_purchase':
+      case 'ticket_confirmed':
+        return <Ionicons name="ticket" size={14} color="#A78BFA" />;
       case 'new_follower':
       case 'friend_request':
         return <Ionicons name="person-add" size={14} color="#34D399" />;
       case 'payment_successful':
       case 'funds_released':
         return <Ionicons name="cash" size={14} color="#34D399" />;
+      case 'payout_processed':
+        return <Ionicons name="wallet" size={14} color="#34D399" />;
+      case 'payout_failed':
+        return <Ionicons name="wallet" size={14} color="#F87171" />;
       case 'item_shipped':
         return <Ionicons name="cube" size={14} color="#60A5FA" />;
       case 'delivery_confirmed':
         return <Ionicons name="checkmark-done" size={14} color="#34D399" />;
+      case 'review':
+      case 'business_review':
+      case 'business_review_received':
+        return <Ionicons name="star" size={14} color="#FBBF24" />;
       case 'marketplace_item_sold':
       case 'marketplace_item_interest':
         return <Ionicons name="cart" size={14} color="#FBBF24" />;
@@ -421,10 +434,14 @@ export default function NotificationsScreen() {
                 <Text style={[styles.avatarFallbackText, { color: colors.tint }]}>
                   {item.from_user_name ? item.from_user_name.charAt(0).toUpperCase() : 
                     (item.type === 'payment_successful' ? '💰' : 
+                     item.type === 'payout_processed' ? '💳' :
+                     item.type === 'payout_failed' ? '❌' :
                      item.type === 'item_shipped' ? '📦' : 
                      item.type === 'delivery_confirmed' ? '✅' : 
-                     item.type === 'funds_released' ? '💸' : 
-                     item.type.includes('marketplace') ? '🛒' : '?')}
+                     item.type === 'funds_released' ? '💸' :
+                     item.type === 'ticket_confirmed' || item.type === 'ticket_purchase' || item.type === 'ticket' ? '🎟️' :
+                     item.type === 'business_review_received' || item.type === 'review' || item.type === 'business_review' ? '⭐' :
+                     item.type.includes('marketplace') ? '🛒' : '🔔')}
                 </Text>
               </View>
             )}
