@@ -13,6 +13,7 @@ import {
   SocialRow,
 } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { AuthService } from '@/lib/auth-service';
 import { useAuth } from '@/hooks/use-supabase-auth';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -68,6 +69,13 @@ export default function LoginScreen() {
       if (err) setError(err.message);
       else router.push('/(tabs)');
     } else {
+      const cleanUsername = username.replace(/^@/, '').trim();
+      const isAvailable = await AuthService.checkUsernameAvailability(cleanUsername);
+      if (!isAvailable) {
+        setError(`The username @${cleanUsername} is already taken. Please choose another.`);
+        return;
+      }
+
       const { error: err, session } = await signUp(email, password, name, username);
       if (err) {
         setError(err.message);

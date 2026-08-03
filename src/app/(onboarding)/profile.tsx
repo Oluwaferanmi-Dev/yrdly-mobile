@@ -17,6 +17,8 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { SceneBg, GlassCard, GlassInput, StepBar, PrimaryBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { AuthService } from '@/lib/auth-service';
+import { useAuth } from '@/hooks/use-supabase-auth';
 import { Ionicons } from '@expo/vector-icons';
 
 const { colors, radii } = ONBOARDING_THEME;
@@ -25,6 +27,7 @@ const SUGGESTIONS = ['Victoria Island, Lagos', 'Lekki Phase 1, Lagos', 'Surulere
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const { phoneSkipped } = useLocalSearchParams();
   const [step, setStep] = useState<1 | 2>(1);
 
@@ -95,7 +98,18 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleNextStep1 = () => {
+  const [usernameError, setUsernameError] = useState('');
+
+  const handleNextStep1 = async () => {
+    const clean = handle.replace(/^@/, '').trim();
+    if (clean) {
+      setUsernameError('');
+      const available = await AuthService.checkUsernameAvailability(clean, user?.id);
+      if (!available) {
+        setUsernameError(`The username @${clean} is already taken. Please choose another.`);
+        return;
+      }
+    }
     setStep(2);
   };
 
@@ -170,6 +184,8 @@ export default function ProfileScreen() {
                     {avatarUri ? 'Tap to change photo' : 'Tap to add profile photo'}
                   </Text>
                 </View>
+
+                {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
 
                 <View style={styles.inputStack}>
                   <GlassInput
@@ -316,6 +332,13 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: colors.DARK,
+  },
+  errorText: {
+    color: colors.DANGER,
+    fontSize: 13,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 4,
   },
   cardTitle: {
     fontSize: 22,

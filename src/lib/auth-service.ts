@@ -220,6 +220,34 @@ export class AuthService {
     }
   }
 
+  // Check if a username is available (case-insensitive)
+  static async checkUsernameAvailability(username: string, excludeUserId?: string): Promise<boolean> {
+    try {
+      const clean = username.replace(/^@/, '').trim().toLowerCase();
+      if (!clean) return true;
+
+      let query = supabase
+        .from('users')
+        .select('id')
+        .ilike('username', clean);
+
+      if (excludeUserId) {
+        query = query.neq('id', excludeUserId);
+      }
+
+      const { data, error } = await query;
+      if (error) {
+        console.error('Error checking username availability:', error);
+        return true;
+      }
+
+      return !data || data.length === 0;
+    } catch (e) {
+      console.error('Check username availability error:', e);
+      return true;
+    }
+  }
+
   // Create user profile in public.users table
   static async createUserProfile(user: User, name: string) {
     try {

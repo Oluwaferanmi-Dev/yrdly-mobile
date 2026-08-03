@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
 import { StorageService } from '../../lib/storage-service';
+import { AuthService } from '../../lib/auth-service';
 import { useAppTheme } from '../../context/ThemeContext';
 
 export default function ProfileEditScreen() {
@@ -44,6 +45,15 @@ export default function ProfileEditScreen() {
     if (!name.trim()) {
       Alert.alert('Error', 'Name is required.');
       return;
+    }
+
+    const cleanUsername = username.replace(/^@/, '').trim();
+    if (cleanUsername) {
+      const isAvailable = await AuthService.checkUsernameAvailability(cleanUsername, user.id);
+      if (!isAvailable) {
+        Alert.alert('Error', `The username @${cleanUsername} is already taken. Please choose another.`);
+        return;
+      }
     }
 
     setLoading(true);
