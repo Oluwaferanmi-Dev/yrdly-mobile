@@ -66,8 +66,18 @@ export default function LoginScreen() {
     setError('');
     if (!isSignUp) {
       const { error: err } = await signIn(email, password);
-      if (err) setError(err.message);
-      else router.push('/(tabs)');
+      if (err) {
+        if (err.message.toLowerCase().includes('email not confirmed') || err.message.toLowerCase().includes('unconfirmed')) {
+          try {
+            await supabase.auth.resend({ type: 'signup', email });
+          } catch {}
+          router.push({ pathname: '/(auth)/verify-email', params: { email } } as any);
+          return;
+        }
+        setError(err.message);
+      } else {
+        router.push('/(tabs)');
+      }
     } else {
       const cleanUsername = username.replace(/^@/, '').trim();
       const isAvailable = await AuthService.checkUsernameAvailability(cleanUsername);
@@ -78,6 +88,13 @@ export default function LoginScreen() {
 
       const { error: err, session } = await signUp(email, password, name, username);
       if (err) {
+        if (err.message.toLowerCase().includes('already registered') || err.message.toLowerCase().includes('already in use')) {
+          try {
+            await supabase.auth.resend({ type: 'signup', email });
+          } catch {}
+          router.push({ pathname: '/(auth)/verify-email', params: { email } } as any);
+          return;
+        }
         setError(err.message);
       } else if (!session) {
         router.push({ pathname: '/(auth)/verify-email', params: { email } } as any);
