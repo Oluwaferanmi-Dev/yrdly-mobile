@@ -62,8 +62,10 @@ function RootNavigationGuard() {
 
     try {
       if (!user) {
-        // Not signed in → always go to login
-        if (!inAuth) router.replace('/(auth)/login');
+        // Not signed in → allow navigation within auth and onboarding flows
+        if (!inAuth && !inOnboarding) {
+          router.replace('/(onboarding)/welcome');
+        }
         return;
       }
 
@@ -75,15 +77,9 @@ function RootNavigationGuard() {
 
       // Signed in and profile loaded — check onboarding state
       const needsProfile = !profile.profile_completed;
-      const needsWelcome = profile.profile_completed && !(profile as any).welcome_message_sent;
-      const needsTour = profile.profile_completed && (profile as any).welcome_message_sent && !(profile as any).tour_completed;
 
       if (needsProfile) {
         if (!inOnboarding) router.replace('/(onboarding)/profile');
-      } else if (needsWelcome) {
-        if (!inOnboarding) router.replace('/(onboarding)/welcome');
-      } else if (needsTour) {
-        if (!inOnboarding) router.replace('/(onboarding)/tour');
       } else {
         // Onboarding complete — redirect out of auth/onboarding/root to tabs
         const isRoot = (segments as any).length === 0 || (segments[0] as string) === 'index' || (segments[0] as string) === '';
@@ -92,8 +88,6 @@ function RootNavigationGuard() {
         }
       }
     } catch (navError) {
-      // Navigation can throw transiently while the navigator is mounting.
-      // Swallow the error here — the effect will re-run when dependencies change.
       console.warn('[RootNavigationGuard] Navigation error (transient):', navError);
     }
   }, [user, profile, loading, segments, router]);
