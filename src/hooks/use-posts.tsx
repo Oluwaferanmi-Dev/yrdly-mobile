@@ -120,7 +120,11 @@ export const usePosts = (filter?: LocationFilter | null) => {
         } catch (e) {}
       }
 
-      const freshPosts = (postsRes.data as Post[] || []).filter(post => {
+      const blocked = profile?.blocked_users || [];
+      const unblockedPosts = (postsRes.data || []).filter(p => !blocked.includes(p.user_id));
+      const unblockedEvents = (eventsRes.data || []).filter(e => !blocked.includes(e.organizer_id));
+
+      const freshPosts = unblockedPosts.filter(post => {
         const isPrivate = post.visibility === 'private' || (post as any).is_private === true;
         if (!isPrivate) return true;
         if (!user) return false;

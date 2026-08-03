@@ -14,6 +14,7 @@ import {
 } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
 import { AuthService } from '@/lib/auth-service';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/use-supabase-auth';
 import { Ionicons } from '@expo/vector-icons';
 
