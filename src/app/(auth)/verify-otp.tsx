@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SceneBg, GlassCard, PrimaryBtn, BackBtn } from '@/components/onboarding/primitives';
@@ -35,69 +35,79 @@ export default function VerifyOtpScreen() {
     }
   };
 
-  const filled = digits.every(d => d !== '');
-
   const handleVerify = () => {
     router.push('/(onboarding)/profile' as any);
   };
+
+  const filled = digits.every(d => d !== '');
+
+  useEffect(() => {
+    if (filled) {
+      handleVerify();
+    }
+  }, [digits]);
 
   return (
     <View style={styles.container}>
       <SceneBg photoId="1654762550505-7c58277e0fac" pos="center 30%" gradientStart="40%" />
 
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.topBar}>
-          <BackBtn onClick={() => router.back()} light />
-        </View>
-
-        <View style={{ flex: 1 }} />
-
-        <GlassCard>
-          <View style={styles.titleBox}>
-            <Text style={styles.titleText}>Enter 6-digit code</Text>
-            <Text style={styles.subtitleText}>
-              We sent a code via SMS to{' '}
-              <Text style={{ color: colors.MUTED, fontWeight: '500' }}>
-                {phone ? `+234 ${phone}` : '+234 801 *** *678'}
-              </Text>
-            </Text>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+          <View style={styles.topBar}>
+            <BackBtn onClick={() => router.back()} light />
           </View>
 
-          {/* OTP Digit Boxes */}
-          <View style={styles.otpRow}>
-            {digits.map((d, i) => (
-              <TextInput
-                key={i}
-                ref={el => { inputRefs.current[i] = el; }}
-                value={d}
-                onChangeText={v => handleDigit(i, v)}
-                onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
-                keyboardType="number-pad"
-                maxLength={1}
-                style={[
-                  styles.otpBox,
-                  {
-                    backgroundColor: d ? 'rgba(130,219,126,0.1)' : colors.SURFACE,
-                    borderColor: d ? 'rgba(130,219,126,0.5)' : colors.GLASS_BORDER,
-                  },
-                ]}
-              />
-            ))}
-          </View>
+          <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <View style={{ flex: 1, minHeight: 40 }} />
 
-          {/* Countdown & Resend */}
-          <View style={styles.resendBox}>
-            <Text style={[styles.timerText, { color: countdown > 0 ? colors.LABEL : colors.G }]}>
-              {countdown > 0 ? `Resend SMS in 0:${String(countdown).padStart(2, '0')}` : 'Resend Code'}
-            </Text>
-            <Text style={styles.altText}>
-              Didn't receive SMS? Try <Text style={{ color: colors.MUTED }}>WhatsApp</Text> or{' '}
-              <Text style={{ color: colors.MUTED }}>Voice Call</Text>
-            </Text>
-          </View>
+            <GlassCard>
+              <View style={styles.titleBox}>
+                <Text style={styles.titleText}>Enter 6-digit code</Text>
+                <Text style={styles.subtitleText}>
+                  We sent a code via SMS to{' '}
+                  <Text style={{ color: colors.MUTED, fontWeight: '500' }}>
+                    {phone ? `+234 ${phone}` : 'your phone number'}
+                  </Text>
+                </Text>
+              </View>
 
-          <PrimaryBtn label="Verify & Continue" onClick={handleVerify} disabled={!filled} />
-        </GlassCard>
+              {/* OTP Digit Boxes */}
+              <View style={styles.otpRow}>
+                {digits.map((d, i) => (
+                  <TextInput
+                    key={i}
+                    ref={el => { inputRefs.current[i] = el; }}
+                    value={d}
+                    onChangeText={v => handleDigit(i, v)}
+                    onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    style={[
+                      styles.otpBox,
+                      {
+                        backgroundColor: d ? 'rgba(130,219,126,0.1)' : colors.SURFACE,
+                        borderColor: d ? 'rgba(130,219,126,0.5)' : colors.GLASS_BORDER,
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+
+              {/* Countdown */}
+              <View style={styles.resendBox}>
+                <Text style={[styles.timerText, { color: countdown > 0 ? colors.LABEL : colors.G }]}>
+                  {countdown > 0 ? `Resend SMS in 0:${String(countdown).padStart(2, '0')}` : 'Resend Code'}
+                </Text>
+                <Text style={styles.altText}>
+                  Didn't receive SMS? Try <Text style={{ color: colors.MUTED }}>WhatsApp</Text> or{' '}
+                  <Text style={{ color: colors.MUTED }}>Voice Call</Text>
+                </Text>
+              </View>
+
+              <PrimaryBtn label="Verify & Continue" onClick={handleVerify} disabled={!filled} />
+            </GlassCard>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
@@ -114,6 +124,10 @@ const styles = StyleSheet.create({
   topBar: {
     paddingHorizontal: 24,
     paddingTop: 12,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
   },
   titleBox: {
     gap: 4,

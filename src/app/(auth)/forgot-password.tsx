@@ -10,14 +10,34 @@ import {
   BackBtn,
 } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { useAuth } from '@/hooks/use-supabase-auth';
 import { Ionicons } from '@expo/vector-icons';
 
 const { colors, radii } = ONBOARDING_THEME;
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const { resetPassword, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSendReset = async () => {
+    if (!email) {
+      setError('Please enter your email address');
+      return;
+    }
+    setError('');
+    setSubmitting(true);
+    const { error: err } = await resetPassword(email.trim());
+    setSubmitting(false);
+    if (err) {
+      setError(err.message || 'Failed to send reset link');
+    } else {
+      setSent(true);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -43,6 +63,8 @@ export default function ForgotPasswordScreen() {
                 </Text>
               </View>
 
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
               {!sent ? (
                 <>
                   <GlassInput
@@ -53,7 +75,11 @@ export default function ForgotPasswordScreen() {
                     keyboardType="email-address"
                     icon={<Ionicons name="mail-outline" size={18} color={colors.LABEL} />}
                   />
-                  <PrimaryBtn label="Send Reset Link" onClick={() => setSent(true)} />
+                  <PrimaryBtn
+                    label={submitting ? 'Sending...' : 'Send Reset Link'}
+                    onClick={handleSendReset}
+                    disabled={submitting || !email}
+                  />
                 </>
               ) : (
                 <View style={styles.sentBox}>
@@ -97,6 +123,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     textAlign: 'center',
     gap: 12,
+  },
+  errorText: {
+    color: colors.DANGER,
+    fontSize: 13,
+    fontWeight: '500',
+    textAlign: 'center',
   },
   keyBadge: {
     width: 68,

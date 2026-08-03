@@ -140,26 +140,61 @@ export function GlassInput({
 }
 
 export function PasswordStrength({ value }: { value: string }) {
-  const score = Math.min([/.{8,}/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/].filter(r => r.test(value)).length, 4);
+  const reqs = [
+    { label: '8+ chars', met: value.length >= 8 },
+    { label: 'ABC', met: /[A-Z]/.test(value) },
+    { label: '123', met: /[0-9]/.test(value) },
+    { label: '#@$', met: /[^A-Za-z0-9]/.test(value) },
+  ];
+  const score = reqs.filter(r => r.met).length;
   const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
   const colorsList = ['', '#FF5C5C', '#FFB648', colors.G, colors.G];
 
   return (
-    <View style={styles.strengthRow}>
-      <View style={styles.barsContainer}>
-        {[1, 2, 3, 4].map(i => (
+    <View style={{ gap: 6 }}>
+      <View style={styles.strengthRow}>
+        <View style={styles.barsContainer}>
+          {[1, 2, 3, 4].map(i => (
+            <View
+              key={i}
+              style={[
+                styles.strengthBar,
+                { backgroundColor: i <= score ? colorsList[score] : 'rgba(255,255,255,0.1)' },
+              ]}
+            />
+          ))}
+        </View>
+        <Text style={[styles.strengthLabel, { color: score > 0 ? colorsList[score] : colors.LABEL }]}>
+          {labels[score]}
+        </Text>
+      </View>
+      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+        {reqs.map(r => (
           <View
-            key={i}
-            style={[
-              styles.strengthBar,
-              { backgroundColor: i <= score ? colorsList[score] : 'rgba(255,255,255,0.1)' },
-            ]}
-          />
+            key={r.label}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+              borderRadius: 8,
+              backgroundColor: r.met ? 'rgba(130,219,126,0.1)' : 'rgba(255,255,255,0.04)',
+              borderWidth: 1,
+              borderColor: r.met ? 'rgba(130,219,126,0.3)' : 'rgba(255,255,255,0.06)',
+            }}
+          >
+            <Ionicons
+              name={r.met ? 'checkmark-circle' : 'ellipse-outline'}
+              size={12}
+              color={r.met ? colors.G : colors.LABEL}
+            />
+            <Text style={{ fontSize: 11, color: r.met ? colors.G : colors.LABEL, fontWeight: '500' }}>
+              {r.label}
+            </Text>
+          </View>
         ))}
       </View>
-      <Text style={[styles.strengthLabel, { color: score > 0 ? colorsList[score] : colors.LABEL }]}>
-        {labels[score]}
-      </Text>
     </View>
   );
 }
@@ -174,14 +209,14 @@ export function Divider({ label }: { label: string }) {
   );
 }
 
-export function SocialRow() {
+export function SocialRow({ onGooglePress, onApplePress }: { onGooglePress?: () => void; onApplePress?: () => void }) {
   return (
     <View style={styles.socialRow}>
-      <TouchableOpacity activeOpacity={0.8} style={styles.socialBtn}>
+      <TouchableOpacity activeOpacity={0.8} onPress={onGooglePress} style={styles.socialBtn}>
         <Ionicons name="logo-google" size={18} color="#fff" style={{ marginRight: 6 }} />
         <Text style={styles.socialBtnText}>Google</Text>
       </TouchableOpacity>
-      <TouchableOpacity activeOpacity={0.8} style={styles.socialBtn}>
+      <TouchableOpacity activeOpacity={0.8} onPress={onApplePress} style={styles.socialBtn}>
         <Ionicons name="logo-apple" size={18} color="#fff" style={{ marginRight: 6 }} />
         <Text style={styles.socialBtnText}>Apple</Text>
       </TouchableOpacity>

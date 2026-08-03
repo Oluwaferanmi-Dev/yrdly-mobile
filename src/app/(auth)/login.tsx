@@ -20,18 +20,45 @@ const { colors } = ONBOARDING_THEME;
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn, signUp, loading } = useAuth();
+  const { signIn, signUp, signInWithGoogle, signInWithApple, loading } = useAuth();
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
+
+  const isPasswordStrong = (pw: string) => {
+    return (
+      pw.length >= 8 &&
+      /[A-Z]/.test(pw) &&
+      /[0-9]/.test(pw) &&
+      /[^A-Za-z0-9]/.test(pw)
+    );
+  };
+
+  const handleGoogle = async () => {
+    setError('');
+    const { error: err } = await signInWithGoogle();
+    if (err) setError(err.message);
+  };
+
+  const handleApple = async () => {
+    setError('');
+    const { error: err } = await signInWithApple();
+    if (err) setError(err.message);
+  };
 
   const handleAuth = async () => {
     if (!email || !password || (isSignUp && (!name || !username))) {
       setError('Please fill in all required fields');
+      return;
+    }
+
+    if (isSignUp && !isPasswordStrong(password)) {
+      setError('Please create a strong password meeting all 4 requirements below');
       return;
     }
 
@@ -45,9 +72,9 @@ export default function LoginScreen() {
       if (err) {
         setError(err.message);
       } else if (!session) {
-        router.push({ pathname: '/(auth)/verify-otp', params: { email } } as any);
+        router.push({ pathname: '/(auth)/verify-email', params: { email } } as any);
       } else {
-        router.push('/(onboarding)/profile');
+        router.push('/(auth)/phone' as any);
       }
     }
   };
@@ -113,11 +140,20 @@ export default function LoginScreen() {
                 />
 
                 <GlassInput
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder={isSignUp ? 'Create a password' : 'Password'}
                   value={password}
                   onChange={setPassword}
                   icon={<Ionicons name="lock-closed-outline" size={18} color={colors.LABEL} />}
+                  right={
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <Ionicons
+                        name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                        size={18}
+                        color={colors.LABEL}
+                      />
+                    </TouchableOpacity>
+                  }
                 />
 
                 {isSignUp && password.length > 0 && <PasswordStrength value={password} />}
@@ -140,7 +176,7 @@ export default function LoginScreen() {
 
               <Divider label="or continue with" />
 
-              <SocialRow />
+              <SocialRow onGooglePress={handleGoogle} onApplePress={handleApple} />
 
               <View style={styles.crossLinkRow}>
                 <Text style={styles.crossLinkText}>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SceneBg, GlassCard, GlassInput, StepBar, PrimaryBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
@@ -13,6 +13,7 @@ const SUGGESTIONS = ['Victoria Island, Lagos', 'Lekki Phase 1, Lagos', 'Surulere
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { phoneSkipped } = useLocalSearchParams();
   const [step, setStep] = useState<1 | 2>(1);
 
   // Step 1 State
@@ -55,6 +56,19 @@ export default function ProfileScreen() {
 
           {step === 1 ? (
             <GlassCard>
+              {phoneSkipped === 'true' && (
+                <View style={styles.verificationBanner}>
+                  <Ionicons name="shield-outline" size={18} color={colors.WARNING} style={{ marginTop: 2 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.verifyBannerTitle}>Verify your phone number</Text>
+                    <Text style={styles.verifyBannerDesc}>Get your Verified Neighbour badge & buy/sell safely.</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => router.push('/(auth)/phone' as any)} style={styles.verifyNowBtn}>
+                    <Text style={styles.verifyNowText}>Verify</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
               <Text style={styles.cardTitle}>Tell us about yourself</Text>
 
               {/* Avatar Selection */}
@@ -193,6 +207,41 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'flex-end',
+  },
+  verificationBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,182,72,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,182,72,0.3)',
+    marginBottom: 4,
+  },
+  verifyBannerTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.WARNING,
+  },
+  verifyBannerDesc: {
+    fontSize: 11,
+    color: colors.LABEL,
+    marginTop: 2,
+    lineHeight: 16,
+  },
+  verifyNowBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: colors.WARNING,
+    alignSelf: 'center',
+  },
+  verifyNowText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.DARK,
   },
   cardTitle: {
     fontSize: 22,
