@@ -1,30 +1,87 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SceneBg, GlassCard, PrimaryBtn, BackBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 
 const { colors } = ONBOARDING_THEME;
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
-  const [countdown, setCountdown] = useState(0);
-  const [resent, setResent] = useState(false);
+  const { email } = useLocalSearchParams();
+  const [digits, setDigits] = useState(['', '', '', '', '', '']);
+  const [countdown, setCountdown] = useState(45);
+  const [error, setError] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const inputRefs = useRef<(TextInput | null)[]>([]);
 
-  const handleResend = () => {
-    setResent(true);
-    setCountdown(45);
-    const interval = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
+  useEffect(() => {
+    const timer = setInterval(() => setCountdown(c => (c > 0 ? c - 1 : 0)), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleDigit = (i: number, val: string) => {
+    const clean = val.replace(/\D/g, '').slice(-1);
+    const next = [...digits];
+    next[i] = clean;
+    setDigits(next);
+    if (clean && i < 5) {
+      inputRefs.current[i + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (i: number, key: string) => {
+    if (key === 'Backspace' && !digits[i] && i > 0) {
+      inputRefs.current[i - 1]?.focus();
+    }
+  };
+
+  const filled = digits.every(d => d !== '');
+
+  const handleVerifyOtp = async () => {
+    const token = digits.join('');
+    if (token.length < 6) return;
+
+    setError('');
+    setVerifying(true);
+
+    try {
+      const emailStr = (typeof email === 'string' && email) ? email : '';
+      const { error: err } = await supabase.auth.verifyOtp({
+        email: emailStr,
+        token,
+        type: 'signup',
       });
-    }, 1000);
+
+      setVerifying(false);
+
+      if (err) {
+        setError(err.message || 'Invalid verification code');
+      } else {
+        router.push('/(auth)/phone' as any);
+      }
+    } catch (e: any) {
+      setVerifying(false);
+      setError(e.message || 'Verification failed');
+    }
+  };
+
+  useEffect(() => {
+    if (filled && !verifying) {
+      handleVerifyOtp();
+    }
+  }, [digits]);
+
+  const handleResend = async () => {
+    if (!email || typeof email !== 'string') return;
+    setCountdown(45);
+    await supabase.auth.resend({
+      type: 'signup',
+      email,
+    });
   };
 
   return (
@@ -32,46 +89,73 @@ export default function VerifyEmailScreen() {
       <SceneBg photoId="1768244016593-8ca75b15bc92" pos="center 25%" gradientStart="42%" />
 
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.topBar}>
-          <BackBtn onClick={() => router.back()} light />
-        </View>
-
-        <View style={{ flex: 1 }} />
-
-        <GlassCard>
-          <View style={styles.centerBox}>
-            <View style={styles.envelopeBadge}>
-              <Ionicons name="mail-outline" size={28} color={colors.G} />
-            </View>
-            <Text style={styles.titleText}>Check your inbox</Text>
-            <Text style={styles.descText}>
-              We sent a verification link to <Text style={{ color: colors.MUTED, fontWeight: '500' }}>your@email.com</Text>. Tap it to confirm your account.
-            </Text>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+          <View style={styles.topBar}>
+            <BackBtn onClick={() => router.back()} light />
           </View>
 
-          <PrimaryBtn
-            label="Open Email App"
-            onClick={() => router.push('/(auth)/phone' as any)}
-            icon={<Ionicons name="mail-unread-outline" size={18} color={colors.DARK} />}
-          />
+          <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <View style={{ flex: 1, minHeight: 40 }} />
 
-          <View style={styles.actionsBox}>
-            <TouchableOpacity onPress={countdown === 0 ? handleResend : undefined}>
-              <Text
-                style={[
-                  styles.resendText,
-                  { color: countdown > 0 ? colors.LABEL : colors.G, opacity: countdown > 0 ? 0.6 : 1 },
-                ]}
-              >
-                {countdown > 0 ? `Resend in ${countdown}s` : resent ? 'Resend again' : 'Resend email'}
-              </Text>
-            </TouchableOpacity>
+            <GlassCard>
+              <View style={styles.centerBox}>
+                <View style={styles.envelopeBadge}>
+                  <Ionicons name="mail-outline" size={28} color={colors.G} />
+                </View>
+                <Text style={styles.titleText}>Verify your email</Text>
+                <Text style={styles.descText}>
+                  We sent a 6-digit code to{' '}
+                  <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                    {typeof email === 'string' ? email : 'your email'}
+                  </Text>
+                </Text>
+              </View>
 
-            <TouchableOpacity>
-              <Text style={styles.changeEmailText}>Change email address</Text>
-            </TouchableOpacity>
-          </View>
-        </GlassCard>
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+              {/* 6-Digit Email OTP Box */}
+              <View style={styles.otpRow}>
+                {digits.map((d, i) => (
+                  <TextInput
+                    key={i}
+                    ref={el => { inputRefs.current[i] = el; }}
+                    value={d}
+                    onChangeText={v => handleDigit(i, v)}
+                    onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    style={[
+                      styles.otpBox,
+                      {
+                        backgroundColor: d ? 'rgba(130,219,126,0.1)' : colors.SURFACE,
+                        borderColor: d ? 'rgba(130,219,126,0.5)' : colors.GLASS_BORDER,
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+
+              <PrimaryBtn
+                label={verifying ? 'Verifying...' : 'Verify & Continue'}
+                onClick={handleVerifyOtp}
+                disabled={!filled || verifying}
+              />
+
+              <View style={styles.actionsBox}>
+                <TouchableOpacity onPress={countdown === 0 ? handleResend : undefined}>
+                  <Text
+                    style={[
+                      styles.resendText,
+                      { color: countdown > 0 ? colors.LABEL : colors.G, opacity: countdown > 0 ? 0.6 : 1 },
+                    ]}
+                  >
+                    {countdown > 0 ? `Resend email code in ${countdown}s` : 'Resend verification code'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </GlassCard>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
@@ -88,6 +172,10 @@ const styles = StyleSheet.create({
   topBar: {
     paddingHorizontal: 24,
     paddingTop: 12,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
   },
   centerBox: {
     alignItems: 'center',
@@ -113,20 +201,37 @@ const styles = StyleSheet.create({
   descText: {
     fontSize: 14,
     color: colors.LABEL,
-    lineHeight: 24,
+    lineHeight: 22,
     textAlign: 'center',
-    maxWidth: 260,
+    maxWidth: 270,
+  },
+  errorText: {
+    color: colors.DANGER,
+    fontSize: 13,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  otpRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  otpBox: {
+    width: 46,
+    height: 58,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    textAlign: 'center',
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: '700',
   },
   actionsBox: {
     alignItems: 'center',
     gap: 12,
   },
   resendText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  changeEmailText: {
     fontSize: 13,
-    color: colors.LABEL,
+    fontWeight: '600',
   },
 });

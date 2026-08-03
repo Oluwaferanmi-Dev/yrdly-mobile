@@ -62,9 +62,9 @@ export default function VerifyOtpScreen() {
 
             <GlassCard>
               <View style={styles.titleBox}>
-                <Text style={styles.titleText}>Enter 6-digit code</Text>
+                <Text style={styles.titleText}>Enter SMS code</Text>
                 <Text style={styles.subtitleText}>
-                  We sent a code via SMS to{' '}
+                  We sent a 6-digit code via SMS to{' '}
                   <Text style={{ color: colors.MUTED, fontWeight: '500' }}>
                     {phone ? `+234 ${phone}` : 'your phone number'}
                   </Text>
@@ -95,13 +95,11 @@ export default function VerifyOtpScreen() {
 
               {/* Countdown */}
               <View style={styles.resendBox}>
-                <Text style={[styles.timerText, { color: countdown > 0 ? colors.LABEL : colors.G }]}>
-                  {countdown > 0 ? `Resend SMS in 0:${String(countdown).padStart(2, '0')}` : 'Resend Code'}
-                </Text>
-                <Text style={styles.altText}>
-                  Didn't receive SMS? Try <Text style={{ color: colors.MUTED }}>WhatsApp</Text> or{' '}
-                  <Text style={{ color: colors.MUTED }}>Voice Call</Text>
-                </Text>
+                <TouchableOpacity onPress={countdown === 0 ? () => setCountdown(45) : undefined}>
+                  <Text style={[styles.timerText, { color: countdown > 0 ? colors.LABEL : colors.G, fontWeight: '600' }]}>
+                    {countdown > 0 ? `Resend SMS in 0:${String(countdown).padStart(2, '0')}` : 'Resend Code'}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               <PrimaryBtn label="Verify & Continue" onClick={handleVerify} disabled={!filled} />

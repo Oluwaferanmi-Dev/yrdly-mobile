@@ -71,34 +71,14 @@ export default function ProfileScreen() {
 
               <Text style={styles.cardTitle}>Tell us about yourself</Text>
 
-              {/* Avatar Selection */}
+              {/* Avatar Ring */}
               <View style={styles.avatarContainer}>
-                <View style={styles.avatarRing}>
-                  {selectedAvatar !== null ? (
-                    <Text style={{ fontSize: 36 }}>{AVATARS[selectedAvatar]}</Text>
-                  ) : (
-                    <Ionicons name="camera-outline" size={26} color={colors.LABEL} />
-                  )}
+                <TouchableOpacity activeOpacity={0.8} style={styles.avatarRing}>
+                  <Ionicons name="camera-outline" size={26} color={colors.LABEL} />
                   <View style={styles.plusBadge}>
                     <Ionicons name="add" size={12} color={colors.DARK} />
                   </View>
-                </View>
-
-                {/* Avatar Row Selector */}
-                <View style={styles.avatarRow}>
-                  {AVATARS.map((emoji, idx) => (
-                    <TouchableOpacity
-                      key={idx}
-                      onPress={() => setSelectedAvatar(idx)}
-                      style={[
-                        styles.avatarOption,
-                        selectedAvatar === idx && styles.avatarSelected,
-                      ]}
-                    >
-                      <Text style={{ fontSize: 20 }}>{emoji}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
+                </TouchableOpacity>
               </View>
 
               <View style={styles.inputStack}>

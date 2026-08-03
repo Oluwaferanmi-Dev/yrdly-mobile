@@ -81,7 +81,7 @@ export default function PermissionsScreen() {
         </View>
 
         <View style={styles.bottomActions}>
-          <PrimaryBtn label="Allow Selected & Continue" onClick={() => router.push('/(onboarding)/feed' as any)} />
+          <PrimaryBtn label="Allow Selected & Continue" onClick={() => router.push('/(tabs)')} />
         </View>
       </SafeAreaView>
     </View>
