@@ -310,7 +310,7 @@ export default function TransactionDetailScreen() {
   const rawThumb = tx.item?.images;
   const thumb = Array.isArray(rawThumb) && rawThumb.length > 0 && typeof rawThumb[0] === 'string'
     ? rawThumb[0]
-    : typeof rawThumb === 'string' && rawThumb.startsWith('http')
+    : typeof rawThumb === 'string' && (rawThumb as string).startsWith('http')
     ? rawThumb
     : null;
 

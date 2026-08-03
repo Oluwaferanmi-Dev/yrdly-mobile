@@ -1,0 +1,134 @@
+import React, { useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SceneBg, GlassCard, GlassInput, PrimaryBtn, BackBtn } from '@/components/onboarding/primitives';
+import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { Ionicons } from '@expo/vector-icons';
+
+const { colors, radii } = ONBOARDING_THEME;
+
+export default function PhoneScreen() {
+  const router = useRouter();
+  const [phone, setPhone] = useState('');
+
+  return (
+    <View style={styles.container}>
+      <SceneBg photoId="1654762550505-7c58277e0fac" pos="center 35%" gradientStart="40%" />
+
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.topBar}>
+          <BackBtn onClick={() => router.back()} light />
+        </View>
+
+        <View style={{ flex: 1 }} />
+
+        <GlassCard>
+          <View style={styles.titleBox}>
+            <Text style={styles.titleText}>Verify your phone number</Text>
+            <Text style={styles.subtitleText}>
+              YRDLY is a verified community. We use your number to keep buyers and sellers safe in your neighbourhood.
+            </Text>
+          </View>
+
+          {/* Phone Field Row */}
+          <View style={styles.phoneRow}>
+            <View style={styles.countryPill}>
+              <Text style={{ fontSize: 18 }}>🇳🇬</Text>
+              <Text style={styles.countryCode}>+234</Text>
+              <Ionicons name="chevron-down" size={12} color={colors.LABEL} />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <GlassInput
+                placeholder="801 234 5678"
+                value={phone}
+                onChange={v => setPhone(v.replace(/\D/g, '').slice(0, 10))}
+                keyboardType="number-pad"
+                maxLength={10}
+              />
+            </View>
+          </View>
+
+          {/* Trust Badge */}
+          <View style={styles.trustBadge}>
+            <Ionicons name="shield-checkmark-outline" size={20} color={colors.G} style={{ marginTop: 2 }} />
+            <Text style={styles.trustText}>
+              Your number is never shared publicly with other users.
+            </Text>
+          </View>
+
+          <PrimaryBtn
+            label="Send Verification Code"
+            onClick={() => router.push({ pathname: '/(auth)/verify-otp', params: { phone } } as any)}
+            disabled={phone.length < 10}
+          />
+        </GlassCard>
+      </SafeAreaView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.DARK,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  topBar: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+  },
+  titleBox: {
+    gap: 4,
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  subtitleText: {
+    fontSize: 14,
+    color: colors.LABEL,
+    lineHeight: 24,
+  },
+  phoneRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  countryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    height: 56,
+    borderRadius: radii.input,
+    backgroundColor: colors.SURFACE,
+    borderWidth: 1,
+    borderColor: colors.GLASS_BORDER,
+  },
+  countryCode: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  trustBadge: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: colors.SURFACE,
+    borderWidth: 1,
+    borderColor: colors.GLASS_BORDER,
+  },
+  trustText: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.LABEL,
+    lineHeight: 18,
+  },
+});

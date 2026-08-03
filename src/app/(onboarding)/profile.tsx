@@ -1,200 +1,329 @@
 import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, TextInput, TouchableOpacity,
-  KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, SafeAreaView
-} from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { useAuth } from '../../hooks/use-supabase-auth';
-import { LocationPicker, LocationValue } from '../../components/LocationPicker';
-import { useAppTheme } from '../../context/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SceneBg, GlassCard, GlassInput, StepBar, PrimaryBtn } from '@/components/onboarding/primitives';
+import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { Ionicons } from '@expo/vector-icons';
 
-export default function OnboardingProfileScreen() {
-  const { colors } = useAppTheme();
-  const { profile, updateProfile } = useAuth();
+const { colors, radii } = ONBOARDING_THEME;
+
+const AVATARS = ['👩🏾', '👨🏾', '👩🏿', '👨🏿', '👩🏽', '👨🏽'];
+const SUGGESTIONS = ['Victoria Island, Lagos', 'Lekki Phase 1, Lagos', 'Surulere, Lagos', 'Ikeja GRA, Lagos'];
+
+export default function ProfileScreen() {
   const router = useRouter();
+  const [step, setStep] = useState<1 | 2>(1);
 
-  const [name, setName] = useState(profile?.name || '');
-  const [bio, setBio] = useState(profile?.bio || '');
-  const [location, setLocation] = useState<LocationValue>({
-    state: (profile?.location as any)?.state || '',
-    lga: (profile?.location as any)?.lga || '',
-  });
-  const [saving, setSaving] = useState(false);
+  // Step 1 State
+  const [name, setName] = useState('');
+  const [handle, setHandle] = useState('');
+  const [bio, setBio] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState<number | null>(null);
 
-  const handleContinue = async () => {
-    if (!name.trim()) {
-      Alert.alert('Name required', 'Please enter your display name to continue.');
-      return;
-    }
-    if (!location.state || !location.lga) {
-      Alert.alert(
-        'Location required',
-        'Your neighbourhood is how Yrdly connects you locally. Please select your State and LGA.'
-      );
-      return;
-    }
+  // Step 2 State
+  const [location, setLocation] = useState('');
+  const [selectedLoc, setSelectedLoc] = useState(false);
 
-    setSaving(true);
-    try {
-      await updateProfile({
-        name: name.trim(),
-        bio: bio.trim(),
-        location: {
-          state: location.state,
-          lga: location.lga,
-          ...(location.lat ? { lat: location.lat, lng: location.lng } : {}),
-        },
-        profile_completed: true,
-        onboarding_status: 'welcome',
-      } as any);
-      router.replace('/(onboarding)/welcome');
-    } catch (e) {
-      console.error('Profile save error:', e);
-      Alert.alert('Error', 'Could not save your profile. Please try again.');
-    } finally {
-      setSaving(false);
-    }
+  const handleNextStep1 = () => {
+    setStep(2);
+  };
+
+  const handleCompleteSetup = () => {
+    router.push('/(onboarding)/permissions' as any);
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          style={styles.flex}
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Progress dots */}
-          <View style={styles.progress}>
-            <View style={[styles.dot, styles.dotActive, { backgroundColor: colors.tint }]} />
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-          </View>
+    <View style={styles.container}>
+      <SceneBg
+        photoId={step === 1 ? '1764921587464-f3cdd46fb4c9' : '1594538756542-8c88bda491c5'}
+        pos={step === 1 ? 'center 20%' : 'center 50%'}
+        gradientStart="25%"
+      />
 
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={[styles.iconRing, { backgroundColor: colors.tint + '22' }]}>
-              <Feather name="user-plus" size={32} color={colors.tint} />
-            </View>
-            <Text style={[styles.title, { color: colors.text }]}>Set up your profile</Text>
-            <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-              Tell your neighbours a little about yourself. You can always edit this later.
-            </Text>
-          </View>
-
-          {/* Name */}
-          <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textMuted }]}>Display name *</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
-              value={name}
-              onChangeText={setName}
-              placeholder="e.g. James Okafor"
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="words"
-              returnKeyType="next"
-              maxLength={50}
-            />
-          </View>
-
-          {/* Bio */}
-          <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textMuted }]}>
-              Bio <Text style={styles.optional}>(optional)</Text>
-            </Text>
-            <TextInput
-              style={[styles.input, styles.textarea, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
-              value={bio}
-              onChangeText={setBio}
-              placeholder="Tell your neighbours something about yourself…"
-              placeholderTextColor={colors.textMuted}
-              multiline
-              numberOfLines={3}
-              maxLength={200}
-              textAlignVertical="top"
-            />
-            <Text style={[styles.charCount, { color: colors.textMuted }]}>{bio.length}/200</Text>
-          </View>
-
-          {/* Location Picker */}
-          <View style={styles.sectionDivider}>
-            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            <Text style={[styles.dividerText, { color: colors.textMuted }]}>Your neighbourhood</Text>
-            <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-          </View>
-
-          <LocationPicker value={location} onChange={setLocation} />
-
-          <View style={styles.locationNote}>
-            <Feather name="shield" size={14} color={colors.textMuted} />
-            <Text style={[styles.locationNoteText, { color: colors.textMuted }]}>
-              Your exact GPS coordinates are never shared. Only your State and LGA are visible to neighbours.
-            </Text>
-          </View>
-        </ScrollView>
-
-        {/* Footer CTA */}
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[styles.continueBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }, saving && styles.continueBtnDisabled]}
-            onPress={handleContinue}
-            disabled={saving}
-            activeOpacity={0.85}
-          >
-            {saving ? (
-              <ActivityIndicator color="#FFF" />
-            ) : (
-              <>
-                <Text style={styles.continueBtnText}>Continue</Text>
-                <Feather name="arrow-right" size={20} color="#FFF" style={{ marginLeft: 8 }} />
-              </>
-            )}
-          </TouchableOpacity>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.topBar}>
+          <StepBar
+            step={step}
+            total={2}
+            label={step === 1 ? 'Personalize' : 'Your Neighbourhood'}
+          />
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <View style={{ flex: 1, minHeight: 40 }} />
+
+          {step === 1 ? (
+            <GlassCard>
+              <Text style={styles.cardTitle}>Tell us about yourself</Text>
+
+              {/* Avatar Selection */}
+              <View style={styles.avatarContainer}>
+                <View style={styles.avatarRing}>
+                  {selectedAvatar !== null ? (
+                    <Text style={{ fontSize: 36 }}>{AVATARS[selectedAvatar]}</Text>
+                  ) : (
+                    <Ionicons name="camera-outline" size={26} color={colors.LABEL} />
+                  )}
+                  <View style={styles.plusBadge}>
+                    <Ionicons name="add" size={12} color={colors.DARK} />
+                  </View>
+                </View>
+
+                {/* Avatar Row Selector */}
+                <View style={styles.avatarRow}>
+                  {AVATARS.map((emoji, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      onPress={() => setSelectedAvatar(idx)}
+                      style={[
+                        styles.avatarOption,
+                        selectedAvatar === idx && styles.avatarSelected,
+                      ]}
+                    >
+                      <Text style={{ fontSize: 20 }}>{emoji}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.inputStack}>
+                <GlassInput
+                  placeholder="Display name (e.g. Amina Bello)"
+                  value={name}
+                  onChange={setName}
+                  icon={<Ionicons name="person-outline" size={18} color={colors.LABEL} />}
+                />
+
+                <GlassInput
+                  placeholder="@username"
+                  value={handle}
+                  onChange={v => setHandle(v.startsWith('@') ? v : '@' + v)}
+                  icon={<Ionicons name="at-outline" size={18} color={colors.LABEL} />}
+                />
+
+                <View style={styles.bioBox}>
+                  <TextInput
+                    placeholder="Short bio (optional)"
+                    placeholderTextColor={colors.LABEL}
+                    value={bio}
+                    onChangeText={v => v.length <= 140 && setBio(v)}
+                    multiline
+                    numberOfLines={3}
+                    style={styles.bioInput}
+                  />
+                  <Text style={styles.bioCounter}>{bio.length}/140</Text>
+                </View>
+              </View>
+
+              <PrimaryBtn label="Next: Choose Neighbourhood →" onClick={handleNextStep1} />
+            </GlassCard>
+          ) : (
+            <GlassCard>
+              <View style={styles.titleBox}>
+                <Text style={styles.cardTitle}>Where do you live?</Text>
+                <Text style={styles.cardSubtitle}>
+                  Enter your address or estate to join your local neighbourhood group.
+                </Text>
+              </View>
+
+              {/* Location Input with GPS */}
+              <View style={{ zIndex: 50 }}>
+                <GlassInput
+                  placeholder="Search your neighbourhood…"
+                  value={location}
+                  onChange={v => { setLocation(v); setSelectedLoc(false); }}
+                  icon={<Ionicons name="location-outline" size={18} color={colors.LABEL} />}
+                  right={
+                    <TouchableOpacity style={styles.gpsPill}>
+                      <Ionicons name="navigate-outline" size={11} color={colors.DARK} />
+                      <Text style={styles.gpsText}>GPS</Text>
+                    </TouchableOpacity>
+                  }
+                />
+
+                {location.length > 0 && !selectedLoc && (
+                  <View style={styles.suggestionsBox}>
+                    {SUGGESTIONS.filter(s => s.toLowerCase().includes(location.toLowerCase())).map(s => (
+                      <TouchableOpacity
+                        key={s}
+                        onPress={() => { setLocation(s); setSelectedLoc(true); }}
+                        style={styles.suggestionRow}
+                      >
+                        <Ionicons name="location-outline" size={16} color={colors.LABEL} />
+                        <Text style={styles.suggestionText}>{s}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Privacy Note */}
+              <View style={styles.privacyCard}>
+                <Ionicons name="lock-closed-outline" size={16} color={colors.G} style={{ marginTop: 1 }} />
+                <Text style={styles.privacyText}>
+                  Exact house numbers are kept private. Neighbours only see your general neighbourhood area.
+                </Text>
+              </View>
+
+              <PrimaryBtn
+                label={`Complete Setup & Join${selectedLoc ? ' ' + location.split(',')[0] : ''}`}
+                onClick={handleCompleteSetup}
+              />
+            </GlassCard>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  flex: { flex: 1 },
-  scroll: { paddingHorizontal: 24, paddingBottom: 24 },
-
-  progress: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 24, marginBottom: 32 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E0E0E0' },
-  dotActive: { width: 24 },
-
-  header: { alignItems: 'center', marginBottom: 32 },
-  iconRing: { width: 72, height: 72, borderRadius: 36, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  title: { fontSize: 26, fontWeight: '800', textAlign: 'center', marginBottom: 10 },
-  subtitle: { fontSize: 15, textAlign: 'center', lineHeight: 22, maxWidth: 280 },
-
-  fieldGroup: { marginBottom: 20 },
-  label: { fontSize: 12, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
-  optional: { fontWeight: '400', textTransform: 'none', letterSpacing: 0 },
-  input: { borderRadius: 12, borderWidth: 1.5, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16 },
-  textarea: { height: 90, paddingTop: 14 },
-  charCount: { fontSize: 11, textAlign: 'right', marginTop: 4 },
-
-  sectionDivider: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  dividerLine: { flex: 1, height: 1 },
-  dividerText: { fontSize: 12, marginHorizontal: 12, fontWeight: '600' },
-
-  locationNote: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 8, gap: 6 },
-  locationNoteText: { fontSize: 12, flex: 1, lineHeight: 17 },
-
-  footer: { paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1 },
-  continueBtn: {
-    borderRadius: 14, height: 56, flexDirection: 'row',
-    justifyContent: 'center', alignItems: 'center',
-    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 4,
+  container: {
+    flex: 1,
+    backgroundColor: '#0E0E0E',
   },
-  continueBtnDisabled: { opacity: 0.6 },
-  continueBtnText: { fontSize: 17, fontWeight: '700', color: '#FFF' },
+  safeArea: {
+    flex: 1,
+  },
+  topBar: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+  },
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    color: colors.LABEL,
+    lineHeight: 22,
+  },
+  titleBox: {
+    gap: 4,
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    gap: 16,
+  },
+  avatarRing: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2.5,
+    borderColor: colors.G,
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.SURFACE,
+  },
+  plusBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.G,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  avatarOption: {
+    padding: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  avatarSelected: {
+    borderColor: colors.G,
+    backgroundColor: 'rgba(130,219,126,0.1)',
+  },
+  inputStack: {
+    gap: 12,
+  },
+  bioBox: {
+    position: 'relative',
+    height: 72,
+    borderRadius: radii.input,
+    backgroundColor: colors.SURFACE,
+    borderWidth: 1,
+    borderColor: colors.GLASS_BORDER,
+    padding: 14,
+  },
+  bioInput: {
+    color: '#FFFFFF',
+    fontSize: 15,
+  },
+  bioCounter: {
+    position: 'absolute',
+    bottom: 10,
+    right: 12,
+    fontSize: 11,
+    color: colors.LABEL,
+  },
+  gpsPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    backgroundColor: colors.G,
+  },
+  gpsText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.DARK,
+  },
+  suggestionsBox: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(15,15,15,0.96)',
+    borderWidth: 1,
+    borderColor: colors.GLASS_BORDER,
+    borderRadius: radii.input,
+    overflow: 'hidden',
+    zIndex: 50,
+  },
+  suggestionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.GLASS_BORDER,
+  },
+  suggestionText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  privacyCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: colors.SURFACE,
+    borderWidth: 1,
+    borderColor: colors.GLASS_BORDER,
+  },
+  privacyText: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.LABEL,
+    lineHeight: 18,
+  },
 });

@@ -5,6 +5,7 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { useAuth } from './use-supabase-auth';
 import { AuthService } from '@/lib/auth-service';
+import { router } from 'expo-router';
 
 // NO top-level Notifications calls here
 
@@ -101,6 +102,15 @@ export function usePushNotifications() {
       responseListener.current = 
         Notifications.addNotificationResponseReceivedListener(response => {
           console.log('Notification Response:', response);
+          const data = response.notification.request.content.data;
+          const url = data?.url;
+          const type = data?.type;
+          
+          if (url) {
+            router.push(url as any);
+          } else if (typeof type === 'string' && ['ticket', 'ticket_purchase', 'ticket_confirmed', 'event_rsvp'].includes(type)) {
+            router.push('/tickets');
+          }
         });
     });
 

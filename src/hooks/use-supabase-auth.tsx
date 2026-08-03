@@ -14,7 +14,7 @@ interface AuthContextType {
   user: User | null;
   profile: AuthUser | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string, legalName: string, username: string) => Promise<{ user: User | null; session: Session | null; error: any }>;
+  signUp: (email: string, password: string, name: string, username: string) => Promise<{ user: User | null; session: Session | null; error: any }>;
   signIn: (email: string, password: string) => Promise<{ user: User | null; error: any }>;
   signInWithGoogle: () => Promise<{ data: any; error: any }>;
   signInWithApple: () => Promise<{ data: any; error: any }>;
@@ -312,10 +312,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []); // Empty deps — auth listener must never be torn down and re-registered mid-session
 
-  const signUp = async (email: string, password: string, name: string, legalName: string, username: string) => {
+  const signUp = async (email: string, password: string, name: string, username: string) => {
     setLoading(true);
     try {
-      const result = await AuthService.signUp(email, password, name, legalName, username);
+      const result = await AuthService.signUp(email, password, name, username);
       const { data: { session } } = await supabase.auth.getSession();
       if (result.error || !session) {
         setLoading(false);

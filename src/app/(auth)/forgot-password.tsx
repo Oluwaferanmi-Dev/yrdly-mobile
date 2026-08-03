@@ -1,208 +1,155 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Feather, Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
-import { supabase } from '../../lib/supabase';
-import { AuthService } from '../../lib/auth-service';
-import { useAppTheme } from '../../context/ThemeContext';
-import { ErrorMessage } from '../../components/ErrorMessage';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SceneBg,
+  GlassCard,
+  GlassInput,
+  PrimaryBtn,
+  BackBtn,
+} from '@/components/onboarding/primitives';
+import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { Ionicons } from '@expo/vector-icons';
 
-const { width, height } = Dimensions.get('window');
+const { colors, radii } = ONBOARDING_THEME;
 
-
-export default function ForgotPassword() {
-  const { colors } = useAppTheme();
+export default function ForgotPasswordScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-
-  const handleResetPassword = async () => {
-    if (!email) {
-      setError('Please enter your email address');
-      return;
-    }
-    
-    setError('');
-    setMessage('');
-    setLoading(true);
-    
-    try {
-      const { error: resetError } = await AuthService.resetPassword(email);
-      
-      if (resetError) {
-        setError((resetError as any).message || 'An error occurred');
-      } else {
-        setMessage('Check your email for a password reset link.');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [sent, setSent] = useState(false);
 
   return (
-    <KeyboardAvoidingView 
-      style={[styles.container, { backgroundColor: colors.background }]} 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      {/* Background Blobs */}
-      <View style={StyleSheet.absoluteFillObject}>
-        <View style={[styles.blob, { top: height * 0.1, left: width * 0.05, transform: [{ rotate: '36deg' }], backgroundColor: colors.tint }]} />
-        <View style={[styles.blob, { top: height * 0.2, left: width * 0.8, backgroundColor: colors.tint }]} />
-        <View style={[styles.blob, { top: height * 0.7, left: width * 0.2, backgroundColor: colors.tint }]} />
-        <View style={[styles.blob, { top: height * 0.85, left: width * 0.85, backgroundColor: colors.tint }]} />
-      </View>
+    <View style={styles.container}>
+      <SceneBg photoId="1707011017057-e80acf66ddeb" pos="center 60%" gradientStart="30%" />
 
-      {/* Glass Overlay */}
-      {isLiquidGlassSupported ? (
-        <LiquidGlassView 
-          {...({ intensity: 20, tint: colors.background === '#121212' ? 'dark' : 'light', fallbackColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' } as any)}
-          style={StyleSheet.absoluteFillObject} 
-        />
-      ) : Platform.OS === 'ios' ? (
-        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={colors.background === '#121212' ? 'dark' : 'light'} />
-      ) : (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' }]} />
-      )}
-
-      <View style={styles.formContainer}>
-        {/* Back Button */}
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
-        </TouchableOpacity>
-
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>Reset Password</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Enter your email to receive a reset link</Text>
-        </View>
-
-        <ErrorMessage error={error} />
-
-        {message ? (
-          <View style={styles.successBox}>
-            <Feather name="check-circle" size={16} color="#388E3C" />
-            <Text style={styles.successText}>{message}</Text>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+          <View style={styles.topBar}>
+            <BackBtn onClick={() => router.back()} light />
           </View>
-        ) : null}
 
-        {/* Input */}
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            editable={!loading}
-            placeholderTextColor={colors.textMuted}
-          />
-          <Feather name="mail" size={20} color={colors.textMuted} style={styles.inputIcon} />
-        </View>
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <View style={{ flex: 1 }} />
 
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: colors.tint }]} 
-          onPress={handleResetPassword}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color={colors.card} />
-          ) : (
-            <Text style={[styles.buttonText, { color: colors.card }]}>Send Reset Link</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+            <GlassCard>
+              <View style={styles.centerBox}>
+                <View style={styles.keyBadge}>
+                  <Ionicons name="key-outline" size={28} color={colors.G} />
+                </View>
+                <Text style={styles.titleText}>Forgot your password?</Text>
+                <Text style={styles.descText}>
+                  No worries! Enter your account email and we'll send you a reset link.
+                </Text>
+              </View>
+
+              {!sent ? (
+                <>
+                  <GlassInput
+                    type="email"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={setEmail}
+                    keyboardType="email-address"
+                    icon={<Ionicons name="mail-outline" size={18} color={colors.LABEL} />}
+                  />
+                  <PrimaryBtn label="Send Reset Link" onClick={() => setSent(true)} />
+                </>
+              ) : (
+                <View style={styles.sentBox}>
+                  <View style={styles.checkCircle}>
+                    <Ionicons name="checkmark" size={24} color={colors.G} />
+                  </View>
+                  <Text style={styles.sentText}>
+                    Reset link sent to <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>{email || 'your email'}</Text>. Check your inbox.
+                  </Text>
+                </View>
+              )}
+
+              <TouchableOpacity onPress={() => router.push('/(auth)/login')} style={styles.backLink}>
+                <Text style={styles.backLinkText}>← Back to Sign In</Text>
+              </TouchableOpacity>
+            </GlassCard>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.DARK,
   },
-  blob: {
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    opacity: 0.55,
-  },
-  formContainer: {
+  safeArea: {
     flex: 1,
+  },
+  topBar: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+  },
+  centerBox: {
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: 12,
+  },
+  keyBadge: {
+    width: 68,
+    height: 68,
+    borderRadius: 22,
+    backgroundColor: 'rgba(130,219,126,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(130,219,126,0.2)',
     justifyContent: 'center',
-    padding: 24,
-    maxWidth: 500,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 60,
-    left: 24,
-    zIndex: 10,
-    padding: 8,
-  },
-  header: {
     alignItems: 'center',
-    marginBottom: 32,
+    shadowColor: colors.G,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
   },
-  title: {
-    fontSize: 28,
+  titleText: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FFFFFF',
     textAlign: 'center',
-    fontWeight: '600',
   },
-  subtitle: {
+  descText: {
     fontSize: 14,
+    color: colors.LABEL,
+    lineHeight: 22,
     textAlign: 'center',
-    marginTop: 8,
+    maxWidth: 270,
   },
-  successBox: {
-    flexDirection: 'row',
+  sentBox: {
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#A5D6A7',
+    gap: 12,
+    paddingVertical: 8,
   },
-  successText: {
-    color: '#2E7D32',
-    marginLeft: 8,
-    fontSize: 13,
-    flex: 1,
-  },
-  inputContainer: {
-    position: 'relative',
-    marginBottom: 24,
-  },
-  input: {
-    height: 54,
-    borderWidth: 1,
-    borderRadius: 27,
-    paddingHorizontal: 20,
-    fontSize: 14,
-    backgroundColor: 'transparent',
-  },
-  inputIcon: {
-    position: 'absolute',
-    right: 20,
-    top: 17,
-  },
-  button: {
-    height: 54,
-    borderRadius: 27,
+  checkCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(130,219,126,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
+  sentText: {
+    fontSize: 14,
+    color: colors.MUTED,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  backLink: {
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  backLinkText: {
+    fontSize: 14,
+    color: colors.LABEL,
   },
 });

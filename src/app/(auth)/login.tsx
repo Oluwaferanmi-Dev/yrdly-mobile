@@ -1,345 +1,229 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Dimensions, ScrollView } from 'react-native';
-import { Image } from 'expo-image';
-import { useAuth } from '../../hooks/use-supabase-auth';
-import { Feather, AntDesign } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAppTheme } from '../../context/ThemeContext';
-import { ErrorMessage } from '../../components/ErrorMessage';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  Logo,
+  SceneBg,
+  GlassCard,
+  GlassInput,
+  PasswordStrength,
+  PrimaryBtn,
+  Divider,
+  SocialRow,
+} from '@/components/onboarding/primitives';
+import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { useAuth } from '@/hooks/use-supabase-auth';
+import { Ionicons } from '@expo/vector-icons';
 
-const { width, height } = Dimensions.get('window');
+const { colors } = ONBOARDING_THEME;
 
-
-export default function Login() {
-  const { colors } = useAppTheme();
+export default function LoginScreen() {
   const router = useRouter();
+  const { signIn, signUp, loading } = useAuth();
+
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [username, setUsername] = useState('');
-  const [legalName, setLegalName] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  
-  const { signIn, signUp, signInWithGoogle, loading } = useAuth();
 
   const handleAuth = async () => {
-    if (!email || !password || (isSignUp && (!name || !legalName || !username))) {
-      setError('Please fill in all fields');
+    if (!email || !password || (isSignUp && (!name || !username))) {
+      setError('Please fill in all required fields');
       return;
     }
-    
-    setError('');
-    
-    if (!isSignUp) {
-      const { error: signInError } = await signIn(email, password);
-      if (signInError) setError(signInError.message);
-    } else {
-      const { error: signUpError, session } = await signUp(email, password, name, legalName, username);
-      if (signUpError) {
-        setError(signUpError.message);
-      } else if (!session) {
-        // Supabase sent OTP (email confirmation is enabled) — navigate to verification screen
-        router.push({ pathname: '/(auth)/verify-otp', params: { email } } as any);
-      }
-      // If session exists, email confirmation is disabled/verified, and the RootNavigationGuard will automatically route us away.
-    }
-  };
 
-  const handleGoogleSignIn = async () => {
     setError('');
-    const { error: err } = await signInWithGoogle();
-    if (err) setError(err.message);
+    if (!isSignUp) {
+      const { error: err } = await signIn(email, password);
+      if (err) setError(err.message);
+      else router.push('/(tabs)');
+    } else {
+      const { error: err, session } = await signUp(email, password, name, username);
+      if (err) {
+        setError(err.message);
+      } else if (!session) {
+        router.push({ pathname: '/(auth)/verify-otp', params: { email } } as any);
+      } else {
+        router.push('/(onboarding)/profile');
+      }
+    }
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={[styles.container, { backgroundColor: colors.background }]} 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      {/* Background Blobs */}
-      <View style={StyleSheet.absoluteFillObject}>
-        <View style={[styles.blob, { top: height * 0.1, left: width * 0.05, transform: [{ rotate: '36deg' }], backgroundColor: colors.tint }]} />
-        <View style={[styles.blob, { top: height * 0.2, left: width * 0.8, backgroundColor: colors.tint }]} />
-        <View style={[styles.blob, { top: height * 0.7, left: width * 0.2, backgroundColor: colors.tint }]} />
-        <View style={[styles.blob, { top: height * 0.85, left: width * 0.85, backgroundColor: colors.tint }]} />
-      </View>
+    <View style={styles.container}>
+      <SceneBg
+        photoId={isSignUp ? '1571346746462-d4e51c41072f' : '1707011017057-e80acf66ddeb'}
+        gradientStart="40%"
+      />
 
-      {/* Glass Overlay */}
-      {isLiquidGlassSupported ? (
-        <LiquidGlassView 
-          {...({ intensity: 20, tint: colors.background === '#121212' ? 'dark' : 'light', fallbackColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' } as any)}
-          style={StyleSheet.absoluteFillObject} 
-        />
-      ) : Platform.OS === 'ios' ? (
-        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={colors.background === '#121212' ? 'dark' : 'light'} />
-      ) : (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' }]} />
-      )}
-
-      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-      <View style={styles.formContainer}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>See what's happening</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Sign in to your Yrdly account</Text>
-        </View>
-
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/images/logo.png')} style={styles.logo} contentFit="contain" />
-        </View>
-
-        {/* Removed Segmented Control */}
-
-        <ErrorMessage error={error} />
-
-        {/* Inputs */}
-        {isSignUp && (
-          <>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
-                placeholder="Username (e.g. johndoe123)"
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-                editable={!loading}
-                placeholderTextColor={colors.textMuted}
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
-                placeholder="Display Name (e.g. John Doe)"
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-                editable={!loading}
-                placeholderTextColor={colors.textMuted}
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
-                placeholder="Full Legal Name"
-                value={legalName}
-                onChangeText={setLegalName}
-                autoCapitalize="words"
-                editable={!loading}
-                placeholderTextColor={colors.textMuted}
-              />
-              <Text style={{fontSize: 11, color: colors.textMuted, marginTop: 4, marginLeft: 12}}>
-                Kept private. Required to verify your bank account for payouts.
-              </Text>
-            </View>
-          </>
-        )}
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            editable={!loading}
-            placeholderTextColor={colors.textMuted}
-          />
-          <Feather name="mail" size={20} color={colors.textMuted} style={styles.inputIcon} />
-        </View>
-        
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={[styles.input, { borderColor: colors.tint, color: colors.text }]}
-            placeholder="Enter your password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword}
-            editable={!loading}
-            placeholderTextColor={colors.textMuted}
-          />
-          <TouchableOpacity 
-            style={styles.inputIcon}
-            onPress={() => setShowPassword(!showPassword)}
-          >
-            <Feather name={showPassword ? "eye-off" : "eye"} size={20} color={colors.textMuted} />
-          </TouchableOpacity>
-        </View>
-
-        {!isSignUp && (
-          <TouchableOpacity 
-            style={styles.forgotPassword}
-            onPress={() => router.push('/(auth)/forgot-password' as any)}
-          >
-            <Text style={[styles.forgotPasswordText, { color: colors.tint }]}>Forgot Password?</Text>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: colors.tint }]} 
-          onPress={handleAuth}
-          disabled={loading}
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
         >
-          {loading ? (
-            <ActivityIndicator color={colors.card} />
-          ) : (
-            <Text style={[styles.buttonText, { color: colors.card }]}>{isSignUp ? 'Create Account' : 'Sign in'}</Text>
-          )}
-        </TouchableOpacity>
+          <View style={styles.header}>
+            <Logo size={36} />
+          </View>
 
-        {/* Divider */}
-        <View style={styles.dividerContainer}>
-          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-          <Text style={[styles.dividerText, { color: colors.textMuted }]}>OR CONTINUE WITH</Text>
-          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-        </View>
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.flexSpacer} />
 
-        {/* Google Auth Button */}
-        <TouchableOpacity 
-          style={[styles.googleButton, { borderColor: colors.tint }]} 
-          onPress={handleGoogleSignIn}
-          disabled={loading}
-        >
-          <AntDesign name="google" size={18} color="#EA4335" style={{ marginRight: 8 }} />
-          <Text style={[styles.googleButtonText, { color: colors.text }]}>Continue with Google</Text>
-        </TouchableOpacity>
+            <GlassCard>
+              <View style={styles.titleBox}>
+                <Text style={styles.titleText}>
+                  {isSignUp ? 'Join your neighbourhood' : 'Welcome back'}
+                </Text>
+                <Text style={styles.subtitleText}>
+                  {isSignUp
+                    ? 'Create your account — it only takes a moment'
+                    : 'Sign in to your neighbourhood'}
+                </Text>
+              </View>
 
-        {/* Toggle Footer Text */}
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: colors.textMuted }]}>
-            {isSignUp ? "Already have an account? " : "Don't have an account? "}
-          </Text>
-          <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
-            <Text style={[styles.footerLink, { color: colors.tint }]}>{isSignUp ? "Sign in" : "Sign up"}</Text>
-          </TouchableOpacity>
-        </View>
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+              <View style={styles.inputStack}>
+                {isSignUp && (
+                  <>
+                    <GlassInput
+                      placeholder="Full name"
+                      value={name}
+                      onChange={setName}
+                      icon={<Ionicons name="person-outline" size={18} color={colors.LABEL} />}
+                    />
+                    <GlassInput
+                      placeholder="Username (e.g. johndoe)"
+                      value={username}
+                      onChange={setUsername}
+                      icon={<Ionicons name="at-outline" size={18} color={colors.LABEL} />}
+                    />
+                  </>
+                )}
+
+                <GlassInput
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={setEmail}
+                  keyboardType="email-address"
+                  icon={<Ionicons name="mail-outline" size={18} color={colors.LABEL} />}
+                />
+
+                <GlassInput
+                  type="password"
+                  placeholder={isSignUp ? 'Create a password' : 'Password'}
+                  value={password}
+                  onChange={setPassword}
+                  icon={<Ionicons name="lock-closed-outline" size={18} color={colors.LABEL} />}
+                />
+
+                {isSignUp && password.length > 0 && <PasswordStrength value={password} />}
+
+                {!isSignUp && (
+                  <TouchableOpacity
+                    onPress={() => router.push('/(auth)/forgot-password')}
+                    style={styles.forgotBtn}
+                  >
+                    <Text style={styles.forgotText}>Forgot password?</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <PrimaryBtn
+                label={isSignUp ? 'Create Account' : 'Sign In'}
+                onClick={handleAuth}
+                disabled={loading}
+              />
+
+              <Divider label="or continue with" />
+
+              <SocialRow />
+
+              <View style={styles.crossLinkRow}>
+                <Text style={styles.crossLinkText}>
+                  {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+                </Text>
+                <TouchableOpacity onPress={() => { setIsSignUp(!isSignUp); setError(''); }}>
+                  <Text style={styles.crossLinkAction}>
+                    {isSignUp ? 'Sign in' : 'Sign up'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </GlassCard>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.DARK,
   },
-  blob: {
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    opacity: 0.55,
-  },
-  formContainer: {
+  safeArea: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-    maxWidth: 500,
-    alignSelf: 'center',
-    width: '100%',
+  },
+  keyboardView: {
+    flex: 1,
   },
   header: {
-    alignItems: 'center',
-    marginBottom: 20,
+    paddingHorizontal: 24,
+    paddingTop: 12,
   },
-  title: {
-    fontSize: 28,
-    textAlign: 'center',
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
   },
-  subtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    marginTop: 4,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 16,
-  },
-  inputContainer: {
-    position: 'relative',
-    marginBottom: 16,
-  },
-  input: {
-    height: 54,
-    borderWidth: 1,
-    borderRadius: 27,
-    paddingHorizontal: 20,
-    fontSize: 14,
-    backgroundColor: 'transparent',
-  },
-  inputIcon: {
-    position: 'absolute',
-    right: 20,
-    top: 17,
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 16,
-  },
-  forgotPasswordText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  button: {
-    height: 54,
-    borderRadius: 27,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 32,
-  },
-  dividerLine: {
+  flexSpacer: {
     flex: 1,
-    height: 1,
+    minHeight: 40,
   },
-  dividerText: {
-    marginHorizontal: 12,
-    fontSize: 12,
-    letterSpacing: 1,
+  titleBox: {
+    gap: 4,
   },
-  googleButton: {
-    height: 54,
-    borderWidth: 1,
-    borderRadius: 27,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
+  titleText: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
-  googleButtonText: {
+  subtitleText: {
     fontSize: 14,
+    color: colors.LABEL,
+  },
+  errorText: {
+    color: colors.DANGER,
+    fontSize: 13,
     fontWeight: '500',
   },
-  footer: {
+  inputStack: {
+    gap: 12,
+  },
+  forgotBtn: {
+    alignSelf: 'flex-end',
+    marginTop: -4,
+  },
+  forgotText: {
+    color: colors.G,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  crossLinkRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    alignItems: 'center',
   },
-  footerText: {
-    fontSize: 13,
+  crossLinkText: {
+    fontSize: 14,
+    color: colors.LABEL,
   },
-  footerLink: {
-    fontSize: 13,
+  crossLinkAction: {
+    color: colors.G,
+    fontSize: 14,
     fontWeight: '600',
   },
 });

@@ -1,310 +1,158 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ActivityIndicator, KeyboardAvoidingView, Platform,
-  Dimensions, Alert,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Feather, Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
-import { supabase } from '../../lib/supabase';
-import { useAppTheme } from '../../context/ThemeContext';
-import { ErrorMessage } from '../../components/ErrorMessage';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SceneBg, GlassCard, PrimaryBtn, BackBtn } from '@/components/onboarding/primitives';
+import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
 
-const { width, height } = Dimensions.get('window');
-
-const OTP_LENGTH = 6;
+const { colors } = ONBOARDING_THEME;
 
 export default function VerifyOtpScreen() {
-  const { colors } = useAppTheme();
   const router = useRouter();
-  const { email } = useLocalSearchParams<{ email: string }>();
+  const { phone } = useLocalSearchParams();
+  const [digits, setDigits] = useState(['', '', '', '', '', '']);
+  const [countdown, setCountdown] = useState(45);
+  const inputRefs = useRef<(TextInput | null)[]>([]);
 
-  const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
-  const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [error, setError] = useState('');
-
-  const inputRefs = useRef<(TextInput | null)[]>(Array(OTP_LENGTH).fill(null));
-
-  // Cooldown timer
   useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
-    return () => clearTimeout(t);
-  }, [resendCooldown]);
+    const timer = setInterval(() => setCountdown(c => (c > 0 ? c - 1 : 0)), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  // Auto-submit when all digits filled
-  useEffect(() => {
-    if (digits.every((d) => d !== '')) {
-      handleVerify(digits.join(''));
-    }
-  }, [digits]);
-
-  const handleDigitChange = (value: string, index: number) => {
-    // Handle paste of full OTP
-    if (value.length > 1) {
-      const pasted = value.replace(/\D/g, '').slice(0, OTP_LENGTH);
-      const newDigits = [...digits];
-      for (let i = 0; i < OTP_LENGTH; i++) {
-        newDigits[i] = pasted[i] || '';
-      }
-      setDigits(newDigits);
-      inputRefs.current[Math.min(pasted.length, OTP_LENGTH - 1)]?.focus();
-      return;
-    }
-
-    const digit = value.replace(/\D/g, '');
-    const newDigits = [...digits];
-    newDigits[index] = digit;
-    setDigits(newDigits);
-
-    if (digit && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
+  const handleDigit = (i: number, val: string) => {
+    const clean = val.replace(/\D/g, '').slice(-1);
+    const next = [...digits];
+    next[i] = clean;
+    setDigits(next);
+    if (clean && i < 5) {
+      inputRefs.current[i + 1]?.focus();
     }
   };
 
-  const handleKeyPress = (key: string, index: number) => {
-    if (key === 'Backspace' && !digits[index] && index > 0) {
-      const newDigits = [...digits];
-      newDigits[index - 1] = '';
-      setDigits(newDigits);
-      inputRefs.current[index - 1]?.focus();
+  const handleKeyPress = (i: number, key: string) => {
+    if (key === 'Backspace' && !digits[i] && i > 0) {
+      inputRefs.current[i - 1]?.focus();
     }
   };
 
-  const handleVerify = async (code?: string) => {
-    const otp = code ?? digits.join('');
-    if (otp.length < OTP_LENGTH) {
-      setError('Please enter the full 6-digit code.');
-      return;
-    }
+  const filled = digits.every(d => d !== '');
 
-    setLoading(true);
-    setError('');
-    try {
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: email ?? '',
-        token: otp,
-        type: 'signup',
-      });
-
-      if (verifyError) {
-        setError(verifyError.message || 'Invalid or expired code. Please try again.');
-        setDigits(Array(OTP_LENGTH).fill(''));
-        inputRefs.current[0]?.focus();
-      }
-      // On success, auth state change in use-supabase-auth fires automatically
-      // → RootNavigationGuard routes to onboarding
-    } catch {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    if (resendCooldown > 0 || !email) return;
-    setResending(true);
-    setError('');
-    try {
-      const { error: resendError } = await supabase.auth.resend({
-        email,
-        type: 'signup',
-      });
-      if (resendError) {
-        setError(resendError.message);
-      } else {
-        setResendCooldown(60);
-        Alert.alert('Code resent', `A new code has been sent to ${email}`);
-      }
-    } catch {
-      setError('Could not resend code. Please try again.');
-    } finally {
-      setResending(false);
-    }
+  const handleVerify = () => {
+    router.push('/(onboarding)/profile' as any);
   };
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      {/* Background blobs */}
-      <View style={StyleSheet.absoluteFillObject}>
-        <View style={[styles.blob, { top: height * 0.05, left: width * 0.1, backgroundColor: colors.tint }]} />
-        <View style={[styles.blob, { top: height * 0.75, left: width * 0.75, backgroundColor: colors.tint }]} />
-      </View>
+    <View style={styles.container}>
+      <SceneBg photoId="1654762550505-7c58277e0fac" pos="center 30%" gradientStart="40%" />
 
-      {/* Glass Overlay */}
-      {isLiquidGlassSupported ? (
-        <LiquidGlassView 
-          {...({ intensity: 20, tint: colors.background === '#121212' ? 'dark' : 'light', fallbackColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' } as any)}
-          style={StyleSheet.absoluteFillObject} 
-        />
-      ) : Platform.OS === 'ios' ? (
-        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={colors.background === '#121212' ? 'dark' : 'light'} />
-      ) : (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background === '#121212' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.4)' }]} />
-      )}
-
-      <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.text }]}>
-        {/* Back */}
-        <TouchableOpacity style={styles.back} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
-        </TouchableOpacity>
-
-        {/* Icon */}
-        <View style={[styles.iconRing, { backgroundColor: colors.inputBackground }]}>
-          <Feather name="mail" size={36} color={colors.tint} />
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.topBar}>
+          <BackBtn onClick={() => router.back()} light />
         </View>
 
-        <Text style={[styles.title, { color: colors.text }]}>Check your email</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          We sent a 6-digit code to{'\n'}
-          <Text style={[styles.emailText, { color: colors.text }]}>{email}</Text>
-        </Text>
+        <View style={{ flex: 1 }} />
 
-        {/* OTP inputs */}
-        <View style={styles.otpRow}>
-          {digits.map((d, i) => (
-            <TextInput
-              key={i}
-              ref={(r) => { inputRefs.current[i] = r; }}
-              style={[styles.otpBox, { backgroundColor: colors.card, borderColor: colors.borderLight, color: colors.text }, d && [styles.otpBoxFilled, { borderColor: colors.tint, backgroundColor: colors.inputBackground }]]}
-              value={d}
-              onChangeText={(v) => handleDigitChange(v, i)}
-              onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, i)}
-              keyboardType="number-pad"
-              maxLength={6} // allow 6 for paste
-              selectTextOnFocus
-              textContentType="oneTimeCode"
-              autoComplete="one-time-code"
-            />
-          ))}
-        </View>
-
-        {/* Error */}
-        <ErrorMessage error={error} />
-
-        {/* Verify button */}
-        <TouchableOpacity
-          style={[styles.verifyBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }, loading && styles.verifyBtnDisabled]}
-          onPress={() => handleVerify()}
-          disabled={loading}
-          activeOpacity={0.85}
-        >
-          {loading ? (
-            <ActivityIndicator color={colors.card} />
-          ) : (
-            <Text style={[styles.verifyBtnText, { color: colors.card }]}>Verify & Continue</Text>
-          )}
-        </TouchableOpacity>
-
-        {/* Resend */}
-        <View style={styles.resendRow}>
-          <Text style={[styles.resendLabel, { color: colors.textMuted }]}>Didn't get the email? </Text>
-          <TouchableOpacity
-            onPress={handleResend}
-            disabled={resendCooldown > 0 || resending}
-          >
-            {resending ? (
-              <ActivityIndicator size="small" color={colors.tint} />
-            ) : (
-              <Text style={[styles.resendLink, { color: colors.tint }, resendCooldown > 0 && [styles.resendLinkDisabled, { color: colors.textMuted }]]}>
-                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
+        <GlassCard>
+          <View style={styles.titleBox}>
+            <Text style={styles.titleText}>Enter 6-digit code</Text>
+            <Text style={styles.subtitleText}>
+              We sent a code via SMS to{' '}
+              <Text style={{ color: colors.MUTED, fontWeight: '500' }}>
+                {phone ? `+234 ${phone}` : '+234 801 *** *678'}
               </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+            </Text>
+          </View>
+
+          {/* OTP Digit Boxes */}
+          <View style={styles.otpRow}>
+            {digits.map((d, i) => (
+              <TextInput
+                key={i}
+                ref={el => { inputRefs.current[i] = el; }}
+                value={d}
+                onChangeText={v => handleDigit(i, v)}
+                onKeyPress={({ nativeEvent }) => handleKeyPress(i, nativeEvent.key)}
+                keyboardType="number-pad"
+                maxLength={1}
+                style={[
+                  styles.otpBox,
+                  {
+                    backgroundColor: d ? 'rgba(130,219,126,0.1)' : colors.SURFACE,
+                    borderColor: d ? 'rgba(130,219,126,0.5)' : colors.GLASS_BORDER,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+
+          {/* Countdown & Resend */}
+          <View style={styles.resendBox}>
+            <Text style={[styles.timerText, { color: countdown > 0 ? colors.LABEL : colors.G }]}>
+              {countdown > 0 ? `Resend SMS in 0:${String(countdown).padStart(2, '0')}` : 'Resend Code'}
+            </Text>
+            <Text style={styles.altText}>
+              Didn't receive SMS? Try <Text style={{ color: colors.MUTED }}>WhatsApp</Text> or{' '}
+              <Text style={{ color: colors.MUTED }}>Voice Call</Text>
+            </Text>
+          </View>
+
+          <PrimaryBtn label="Verify & Continue" onClick={handleVerify} disabled={!filled} />
+        </GlassCard>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 24,
+    backgroundColor: colors.DARK,
   },
-  blob: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    opacity: 0.45,
+  safeArea: {
+    flex: 1,
   },
-  card: {
-    borderRadius: 28,
-    padding: 28,
-    alignItems: 'center',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 6,
+  topBar: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
   },
-  back: {
-    alignSelf: 'flex-start',
-    marginBottom: 20,
-    padding: 4,
+  titleBox: {
+    gap: 4,
   },
-  iconRing: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 26,
+  titleText: {
+    fontSize: 24,
     fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 10,
+    color: '#FFFFFF',
   },
-  subtitle: {
-    fontSize: 15,
-    textAlign: 'center',
-    lineHeight: 23,
-    marginBottom: 32,
-  },
-  emailText: {
-    fontWeight: '700',
+  subtitleText: {
+    fontSize: 14,
+    color: colors.LABEL,
   },
   otpRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 24,
+    justifyContent: 'space-between',
+    gap: 8,
   },
   otpBox: {
     width: 46,
-    height: 56,
-    borderRadius: 12,
+    height: 58,
+    borderRadius: 16,
     borderWidth: 1.5,
     textAlign: 'center',
+    color: '#FFFFFF',
     fontSize: 22,
     fontWeight: '700',
   },
-  otpBoxFilled: {},
-  verifyBtn: {
-    width: '100%',
-    height: 54,
-    borderRadius: 27,
-    justifyContent: 'center',
+  resendBox: {
     alignItems: 'center',
-    marginBottom: 20,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 4,
+    gap: 8,
   },
-  verifyBtnDisabled: { opacity: 0.6 },
-  verifyBtnText: { fontSize: 16, fontWeight: '700' },
-  resendRow: { flexDirection: 'row', alignItems: 'center' },
-  resendLabel: { fontSize: 13 },
-  resendLink: { fontSize: 13, fontWeight: '700' },
-  resendLinkDisabled: {},
+  timerText: {
+    fontSize: 13,
+  },
+  altText: {
+    fontSize: 13,
+    color: colors.LABEL,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
 });

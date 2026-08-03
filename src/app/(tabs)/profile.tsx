@@ -472,7 +472,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     height: 40,
     borderRadius: 20,
     alignItems: 'center',
-    justify: 'center',
+    justifyContent: 'center',
   },
   navSpacer: { 
     width: 40 
@@ -493,7 +493,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     borderColor: colors.borderLight,
     backgroundColor: colors.card,
     alignItems: 'center', 
-    justify: 'center'
+    justifyContent: 'center'
   },
 
   // ── Hero Floating Profile Card ──
