@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 import * as ImagePicker from 'expo-image-picker';
 import { Logo, PrimaryBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { useAuth } from '@/hooks/use-supabase-auth';
 
 const { colors, radii } = ONBOARDING_THEME;
 
@@ -32,7 +33,17 @@ function ToggleSwitch({ value, onToggle }: { value: boolean; onToggle: () => voi
 
 export default function PermissionsScreen() {
   const router = useRouter();
+  const { updateProfile } = useAuth();
   const [perms, setPerms] = useState({ location: false, notifications: false, camera: false });
+
+  const handleFinish = async () => {
+    try {
+      await updateProfile({ profile_completed: true });
+    } catch (e) {
+      console.log('Profile completion update skipped:', e);
+    }
+    router.replace('/(tabs)');
+  };
 
   const togglePermission = async (key: keyof typeof perms) => {
     if (perms[key]) {
@@ -103,7 +114,7 @@ export default function PermissionsScreen() {
           </View>
 
           <View style={styles.bottomActions}>
-            <PrimaryBtn label="Allow Selected & Continue" onClick={() => router.push('/(tabs)')} />
+            <PrimaryBtn label="Allow Selected & Continue" onClick={handleFinish} />
           </View>
         </ScrollView>
       </SafeAreaView>

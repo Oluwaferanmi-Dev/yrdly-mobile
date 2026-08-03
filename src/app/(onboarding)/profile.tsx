@@ -153,15 +153,17 @@ export default function ProfileScreen() {
                   <TouchableOpacity
                     activeOpacity={0.8}
                     onPress={handlePickAvatar}
-                    style={styles.avatarRing}
+                    style={styles.avatarWrapper}
                   >
-                    {avatarUri ? (
-                      <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
-                    ) : (
-                      <Ionicons name="camera-outline" size={26} color={colors.LABEL} />
-                    )}
+                    <View style={styles.avatarRing}>
+                      {avatarUri ? (
+                        <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+                      ) : (
+                        <Ionicons name="camera-outline" size={26} color={colors.LABEL} />
+                      )}
+                    </View>
                     <View style={styles.plusBadge}>
-                      <Ionicons name="add" size={12} color={colors.DARK} />
+                      <Ionicons name="add" size={14} color={colors.DARK} />
                     </View>
                   </TouchableOpacity>
                   <Text style={styles.avatarHintText}>
@@ -171,7 +173,7 @@ export default function ProfileScreen() {
 
                 <View style={styles.inputStack}>
                   <GlassInput
-                    placeholder="@username"
+                    placeholder="username"
                     value={handle}
                     onChange={v => setHandle(v.startsWith('@') ? v : '@' + v)}
                     icon={<Ionicons name="at-outline" size={18} color={colors.LABEL} />}
@@ -332,6 +334,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  avatarWrapper: {
+    position: 'relative',
+    width: 84,
+    height: 84,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   avatarRing: {
     width: 80,
     height: 80,
@@ -355,14 +364,19 @@ const styles = StyleSheet.create({
   },
   plusBadge: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    bottom: 2,
+    right: 2,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: colors.G,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
   },
   inputStack: {
     gap: 12,
