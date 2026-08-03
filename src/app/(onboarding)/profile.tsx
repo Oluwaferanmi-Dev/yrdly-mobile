@@ -1,14 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { SceneBg, GlassCard, GlassInput, StepBar, PrimaryBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
 import { Ionicons } from '@expo/vector-icons';
 
 const { colors, radii } = ONBOARDING_THEME;
 
-const AVATARS = ['👩🏾', '👨🏾', '👩🏿', '👨🏿', '👩🏽', '👨🏽'];
 const SUGGESTIONS = ['Victoria Island, Lagos', 'Lekki Phase 1, Lagos', 'Surulere, Lagos', 'Ikeja GRA, Lagos'];
 
 export default function ProfileScreen() {
@@ -17,14 +29,71 @@ export default function ProfileScreen() {
   const [step, setStep] = useState<1 | 2>(1);
 
   // Step 1 State
-  const [name, setName] = useState('');
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [handle, setHandle] = useState('');
   const [bio, setBio] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState<number | null>(null);
 
   // Step 2 State
   const [location, setLocation] = useState('');
   const [selectedLoc, setSelectedLoc] = useState(false);
+  const [locLoading, setLocLoading] = useState(false);
+
+  const handlePickAvatar = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission to access photos is required.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]?.uri) {
+        setAvatarUri(result.assets[0].uri);
+      }
+    } catch (e) {
+      console.log('Error picking image:', e);
+    }
+  };
+
+  const handleUseGPS = async () => {
+    try {
+      setLocLoading(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setLocLoading(false);
+        setLocation('Victoria Island, Lagos');
+        setSelectedLoc(true);
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      const reverse = await Location.reverseGeocodeAsync({
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
+      });
+
+      if (reverse && reverse.length > 0) {
+        const place = reverse[0];
+        const district = place.district || place.subregion || place.city;
+        const region = place.region || place.city || 'Lagos';
+        const formatted = district ? `${district}, ${region}` : 'Victoria Island, Lagos';
+        setLocation(formatted);
+        setSelectedLoc(true);
+      } else {
+        setLocation('Victoria Island, Lagos');
+        setSelectedLoc(true);
+      }
+      setLocLoading(false);
+    } catch (e) {
+      setLocLoading(false);
+      setLocation('Victoria Island, Lagos');
+      setSelectedLoc(true);
+    }
+  };
 
   const handleNextStep1 = () => {
     setStep(2);
@@ -43,130 +112,153 @@ export default function ProfileScreen() {
       />
 
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.topBar}>
-          <StepBar
-            step={step}
-            total={2}
-            label={step === 1 ? 'Personalize' : 'Your Neighbourhood'}
-          />
-        </View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.topBar}>
+            <StepBar
+              step={step}
+              total={2}
+              label={step === 1 ? 'Personalize' : 'Your Neighbourhood'}
+            />
+          </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={{ flex: 1, minHeight: 40 }} />
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={{ flex: 1, minHeight: 40 }} />
 
-          {step === 1 ? (
-            <GlassCard>
-              {phoneSkipped === 'true' && (
-                <View style={styles.verificationBanner}>
-                  <Ionicons name="shield-outline" size={18} color={colors.WARNING} style={{ marginTop: 2 }} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.verifyBannerTitle}>Verify your phone number</Text>
-                    <Text style={styles.verifyBannerDesc}>Get your Verified Neighbour badge & buy/sell safely.</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => router.push('/(auth)/phone' as any)} style={styles.verifyNowBtn}>
-                    <Text style={styles.verifyNowText}>Verify</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              <Text style={styles.cardTitle}>Tell us about yourself</Text>
-
-              {/* Avatar Ring */}
-              <View style={styles.avatarContainer}>
-                <TouchableOpacity activeOpacity={0.8} style={styles.avatarRing}>
-                  <Ionicons name="camera-outline" size={26} color={colors.LABEL} />
-                  <View style={styles.plusBadge}>
-                    <Ionicons name="add" size={12} color={colors.DARK} />
-                  </View>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.inputStack}>
-                <GlassInput
-                  placeholder="Display name (e.g. Amina Bello)"
-                  value={name}
-                  onChange={setName}
-                  icon={<Ionicons name="person-outline" size={18} color={colors.LABEL} />}
-                />
-
-                <GlassInput
-                  placeholder="@username"
-                  value={handle}
-                  onChange={v => setHandle(v.startsWith('@') ? v : '@' + v)}
-                  icon={<Ionicons name="at-outline" size={18} color={colors.LABEL} />}
-                />
-
-                <View style={styles.bioBox}>
-                  <TextInput
-                    placeholder="Short bio (optional)"
-                    placeholderTextColor={colors.LABEL}
-                    value={bio}
-                    onChangeText={v => v.length <= 140 && setBio(v)}
-                    multiline
-                    numberOfLines={3}
-                    style={styles.bioInput}
-                  />
-                  <Text style={styles.bioCounter}>{bio.length}/140</Text>
-                </View>
-              </View>
-
-              <PrimaryBtn label="Next: Choose Neighbourhood →" onClick={handleNextStep1} />
-            </GlassCard>
-          ) : (
-            <GlassCard>
-              <View style={styles.titleBox}>
-                <Text style={styles.cardTitle}>Where do you live?</Text>
-                <Text style={styles.cardSubtitle}>
-                  Enter your address or estate to join your local neighbourhood group.
-                </Text>
-              </View>
-
-              {/* Location Input with GPS */}
-              <View style={{ zIndex: 50 }}>
-                <GlassInput
-                  placeholder="Search your neighbourhood…"
-                  value={location}
-                  onChange={v => { setLocation(v); setSelectedLoc(false); }}
-                  icon={<Ionicons name="location-outline" size={18} color={colors.LABEL} />}
-                  right={
-                    <TouchableOpacity style={styles.gpsPill}>
-                      <Ionicons name="navigate-outline" size={11} color={colors.DARK} />
-                      <Text style={styles.gpsText}>GPS</Text>
+            {step === 1 ? (
+              <GlassCard>
+                {phoneSkipped === 'true' && (
+                  <View style={styles.verificationBanner}>
+                    <Ionicons name="shield-outline" size={18} color={colors.WARNING} style={{ marginTop: 2 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.verifyBannerTitle}>Verify your phone number</Text>
+                      <Text style={styles.verifyBannerDesc}>Get your Verified Neighbour badge & buy/sell safely.</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => router.push('/(auth)/phone' as any)} style={styles.verifyNowBtn}>
+                      <Text style={styles.verifyNowText}>Verify</Text>
                     </TouchableOpacity>
-                  }
-                />
-
-                {location.length > 0 && !selectedLoc && (
-                  <View style={styles.suggestionsBox}>
-                    {SUGGESTIONS.filter(s => s.toLowerCase().includes(location.toLowerCase())).map(s => (
-                      <TouchableOpacity
-                        key={s}
-                        onPress={() => { setLocation(s); setSelectedLoc(true); }}
-                        style={styles.suggestionRow}
-                      >
-                        <Ionicons name="location-outline" size={16} color={colors.LABEL} />
-                        <Text style={styles.suggestionText}>{s}</Text>
-                      </TouchableOpacity>
-                    ))}
                   </View>
                 )}
-              </View>
 
-              {/* Privacy Note */}
-              <View style={styles.privacyCard}>
-                <Ionicons name="lock-closed-outline" size={16} color={colors.G} style={{ marginTop: 1 }} />
-                <Text style={styles.privacyText}>
-                  Exact house numbers are kept private. Neighbours only see your general neighbourhood area.
-                </Text>
-              </View>
+                <Text style={styles.cardTitle}>Tell us about yourself</Text>
 
-              <PrimaryBtn
-                label={`Complete Setup & Join${selectedLoc ? ' ' + location.split(',')[0] : ''}`}
-                onClick={handleCompleteSetup}
-              />
-            </GlassCard>
-          )}
-        </ScrollView>
+                {/* Avatar Ring with ImagePicker */}
+                <View style={styles.avatarContainer}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={handlePickAvatar}
+                    style={styles.avatarRing}
+                  >
+                    {avatarUri ? (
+                      <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+                    ) : (
+                      <Ionicons name="camera-outline" size={26} color={colors.LABEL} />
+                    )}
+                    <View style={styles.plusBadge}>
+                      <Ionicons name="add" size={12} color={colors.DARK} />
+                    </View>
+                  </TouchableOpacity>
+                  <Text style={styles.avatarHintText}>
+                    {avatarUri ? 'Tap to change photo' : 'Tap to add profile photo'}
+                  </Text>
+                </View>
+
+                <View style={styles.inputStack}>
+                  <GlassInput
+                    placeholder="@username"
+                    value={handle}
+                    onChange={v => setHandle(v.startsWith('@') ? v : '@' + v)}
+                    icon={<Ionicons name="at-outline" size={18} color={colors.LABEL} />}
+                  />
+
+                  <View style={styles.bioBox}>
+                    <TextInput
+                      placeholder="Short bio (optional)"
+                      placeholderTextColor={colors.LABEL}
+                      value={bio}
+                      onChangeText={v => v.length <= 140 && setBio(v)}
+                      multiline
+                      numberOfLines={3}
+                      style={styles.bioInput}
+                    />
+                    <Text style={styles.bioCounter}>{bio.length}/140</Text>
+                  </View>
+                </View>
+
+                <PrimaryBtn label="Next: Choose Neighbourhood →" onClick={handleNextStep1} />
+              </GlassCard>
+            ) : (
+              <GlassCard>
+                <View style={styles.titleBox}>
+                  <Text style={styles.cardTitle}>Where do you live?</Text>
+                  <Text style={styles.cardSubtitle}>
+                    Enter your address or estate to join your local neighbourhood group.
+                  </Text>
+                </View>
+
+                {/* Location Input with Functional GPS */}
+                <View style={{ zIndex: 50 }}>
+                  <GlassInput
+                    placeholder="Search your neighbourhood…"
+                    value={location}
+                    onChange={v => { setLocation(v); setSelectedLoc(false); }}
+                    icon={<Ionicons name="location-outline" size={18} color={colors.LABEL} />}
+                    right={
+                      <TouchableOpacity
+                        onPress={handleUseGPS}
+                        disabled={locLoading}
+                        style={styles.gpsPill}
+                      >
+                        {locLoading ? (
+                          <ActivityIndicator size="small" color={colors.DARK} />
+                        ) : (
+                          <>
+                            <Ionicons name="navigate-outline" size={11} color={colors.DARK} />
+                            <Text style={styles.gpsText}>GPS</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    }
+                  />
+
+                  {location.length > 0 && !selectedLoc && (
+                    <View style={styles.suggestionsBox}>
+                      {SUGGESTIONS.filter(s => s.toLowerCase().includes(location.toLowerCase())).map(s => (
+                        <TouchableOpacity
+                          key={s}
+                          onPress={() => { setLocation(s); setSelectedLoc(true); }}
+                          style={styles.suggestionRow}
+                        >
+                          <Ionicons name="location-outline" size={16} color={colors.LABEL} />
+                          <Text style={styles.suggestionText}>{s}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
+
+                {/* Privacy Note */}
+                <View style={styles.privacyCard}>
+                  <Ionicons name="lock-closed-outline" size={16} color={colors.G} style={{ marginTop: 1 }} />
+                  <Text style={styles.privacyText}>
+                    Exact house numbers are kept private. Neighbours only see your general neighbourhood area.
+                  </Text>
+                </View>
+
+                <PrimaryBtn
+                  label={`Complete Setup & Join${selectedLoc && location ? ' ' + location.split(',')[0] : ''}`}
+                  onClick={handleCompleteSetup}
+                />
+              </GlassCard>
+            )}
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
@@ -238,7 +330,7 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     alignItems: 'center',
-    gap: 16,
+    gap: 8,
   },
   avatarRing: {
     width: 80,
@@ -250,6 +342,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.SURFACE,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 40,
+  },
+  avatarHintText: {
+    fontSize: 12,
+    color: colors.LABEL,
   },
   plusBadge: {
     position: 'absolute',
@@ -261,20 +363,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.G,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatarRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  avatarOption: {
-    padding: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  avatarSelected: {
-    borderColor: colors.G,
-    backgroundColor: 'rgba(130,219,126,0.1)',
   },
   inputStack: {
     gap: 12,
@@ -304,7 +392,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 10,
     backgroundColor: colors.G,
   },

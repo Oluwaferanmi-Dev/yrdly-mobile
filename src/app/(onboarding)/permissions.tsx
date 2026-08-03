@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Location from 'expo-location';
+import * as Notifications from 'expo-notifications';
+import * as ImagePicker from 'expo-image-picker';
 import { Logo, PrimaryBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
 
@@ -31,8 +34,26 @@ export default function PermissionsScreen() {
   const router = useRouter();
   const [perms, setPerms] = useState({ location: false, notifications: false, camera: false });
 
-  const toggle = (key: keyof typeof perms) => {
-    setPerms(prev => ({ ...prev, [key]: !prev[key] }));
+  const togglePermission = async (key: keyof typeof perms) => {
+    if (perms[key]) {
+      setPerms(prev => ({ ...prev, [key]: false }));
+      return;
+    }
+
+    try {
+      if (key === 'location') {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        setPerms(prev => ({ ...prev, location: status === 'granted' }));
+      } else if (key === 'notifications') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        setPerms(prev => ({ ...prev, notifications: status === 'granted' }));
+      } else if (key === 'camera') {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        setPerms(prev => ({ ...prev, camera: status === 'granted' }));
+      }
+    } catch (e) {
+      setPerms(prev => ({ ...prev, [key]: !prev[key] }));
+    }
   };
 
   const items = [
@@ -44,45 +65,47 @@ export default function PermissionsScreen() {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <Logo size={56} />
-          <Text style={styles.titleText}>Enable permissions for the best experience</Text>
-          <Text style={styles.subtitleText}>
-            YRDLY works best with these on. You can change them anytime in Settings.
-          </Text>
-        </View>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.header}>
+            <Logo size={56} />
+            <Text style={styles.titleText}>Enable permissions for the best experience</Text>
+            <Text style={styles.subtitleText}>
+              YRDLY works best with these on. You can change them anytime in Settings.
+            </Text>
+          </View>
 
-        <View style={styles.cardStack}>
-          {items.map(item => (
-            <View
-              key={item.key}
-              style={[
-                styles.permCard,
-                { borderColor: perms[item.key] ? 'rgba(130,219,126,0.25)' : colors.GLASS_BORDER },
-              ]}
-            >
+          <View style={styles.cardStack}>
+            {items.map(item => (
               <View
+                key={item.key}
                 style={[
-                  styles.emojiBadge,
-                  { backgroundColor: perms[item.key] ? 'rgba(130,219,126,0.1)' : 'rgba(255,255,255,0.04)' },
+                  styles.permCard,
+                  { borderColor: perms[item.key] ? 'rgba(130,219,126,0.25)' : colors.GLASS_BORDER },
                 ]}
               >
-                <Text style={{ fontSize: 22 }}>{item.emoji}</Text>
+                <View
+                  style={[
+                    styles.emojiBadge,
+                    { backgroundColor: perms[item.key] ? 'rgba(130,219,126,0.1)' : 'rgba(255,255,255,0.04)' },
+                  ]}
+                >
+                  <Text style={{ fontSize: 22 }}>{item.emoji}</Text>
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.cardTitle}>{item.title}</Text>
+                  <Text style={styles.cardDesc}>{item.desc}</Text>
+                </View>
+
+                <ToggleSwitch value={perms[item.key]} onToggle={() => togglePermission(item.key)} />
               </View>
+            ))}
+          </View>
 
-              <View style={{ flex: 1 }}>
-                <Text style={styles.cardTitle}>{item.title}</Text>
-                <Text style={styles.cardDesc}>{item.desc}</Text>
-              </View>
-
-              <ToggleSwitch value={perms[item.key]} onToggle={() => toggle(item.key)} />
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.bottomActions}>
-          <PrimaryBtn label="Allow Selected & Continue" onClick={() => router.push('/(tabs)')} />
-        </View>
+          <View style={styles.bottomActions}>
+            <PrimaryBtn label="Allow Selected & Continue" onClick={() => router.push('/(tabs)')} />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
@@ -95,14 +118,18 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
+    justifyContent: 'space-between',
   },
   header: {
     alignItems: 'center',
     textAlign: 'center',
     gap: 12,
     marginTop: 20,
-    marginBottom: 32,
+    marginBottom: 24,
   },
   titleText: {
     fontSize: 24,
@@ -119,8 +146,8 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   cardStack: {
-    flex: 1,
     gap: 12,
+    marginBottom: 24,
   },
   permCard: {
     flexDirection: 'row',

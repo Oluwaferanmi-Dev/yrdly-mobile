@@ -539,7 +539,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     height: 74, 
     borderRadius: 37, 
     alignItems: 'center', 
-    justify: 'center'
+    justifyContent: 'center'
   },
   avatarText: { 
     fontSize: 28, 
@@ -677,7 +677,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     padding: 14,
     borderWidth: 1, 
     borderColor: colors.borderLight,
-    justify: 'space-between',
+    justifyContent: 'space-between',
     minHeight: 88,
   },
   actionHeaderRow: {
@@ -692,7 +692,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     borderRadius: 17, 
     backgroundColor: 'rgba(130, 219, 126, 0.12)',
     alignItems: 'center', 
-    justify: 'center',
+    justifyContent: 'center',
   },
   actionTitle: { 
     color: colors.text, 
