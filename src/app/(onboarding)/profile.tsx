@@ -100,6 +100,8 @@ export default function ProfileScreen() {
 
   const [usernameError, setUsernameError] = useState('');
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleNextStep1 = async () => {
     const clean = handle.replace(/^@/, '').trim();
     if (clean) {
@@ -110,10 +112,44 @@ export default function ProfileScreen() {
         return;
       }
     }
+
+    if (user?.id) {
+      setIsSaving(true);
+      try {
+        let finalAvatarUrl: string | undefined = undefined;
+        if (avatarUri) {
+          const uploaded = await AuthService.uploadAvatar(user.id, avatarUri);
+          if (uploaded) finalAvatarUrl = uploaded;
+        }
+
+        await AuthService.updateUserProfile(user.id, {
+          ...(clean ? { username: clean } : {}),
+          ...(bio ? { bio } : {}),
+          ...(finalAvatarUrl ? { avatar_url: finalAvatarUrl } : {}),
+        });
+      } catch (e) {
+        console.error('Error saving profile step 1:', e);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+
     setStep(2);
   };
 
-  const handleCompleteSetup = () => {
+  const handleCompleteSetup = async () => {
+    if (user?.id) {
+      setIsSaving(true);
+      try {
+        await AuthService.updateUserProfile(user.id, {
+          ...(location ? { location: { state: location } } : {}),
+        });
+      } catch (e) {
+        console.error('Error saving profile step 2 location:', e);
+      } finally {
+        setIsSaving(false);
+      }
+    }
     router.push('/(onboarding)/permissions' as any);
   };
 
@@ -209,7 +245,7 @@ export default function ProfileScreen() {
                   </View>
                 </View>
 
-                <PrimaryBtn label="Next: Choose Neighbourhood →" onClick={handleNextStep1} />
+                <PrimaryBtn label="Next: Choose Neighbourhood →" onClick={handleNextStep1} loading={isSaving} />
               </GlassCard>
             ) : (
               <GlassCard>
@@ -272,6 +308,7 @@ export default function ProfileScreen() {
                 <PrimaryBtn
                   label={`Complete Setup & Join${selectedLoc && location ? ' ' + location.split(',')[0] : ''}`}
                   onClick={handleCompleteSetup}
+                  loading={isSaving}
                 />
               </GlassCard>
             )}

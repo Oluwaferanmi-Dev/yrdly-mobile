@@ -274,7 +274,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   id: user.id,
                   name: user.user_metadata?.name || 'User',
                   email: user.email,
-                  profile_completed: true,
+                  profile_completed: false,
                 } as AuthUser;
               } finally {
                 profileCreationInProgress.current = false;

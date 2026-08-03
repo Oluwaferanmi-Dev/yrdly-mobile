@@ -248,6 +248,39 @@ export class AuthService {
     }
   }
 
+  // Upload user avatar image to Supabase Storage or return public URL
+  static async uploadAvatar(userId: string, localUri: string): Promise<string | null> {
+    try {
+      if (!localUri) return null;
+      if (localUri.startsWith('http')) return localUri;
+
+      const ext = localUri.split('.').pop()?.toLowerCase() || 'jpeg';
+      const filePath = `avatars/${userId}-${Date.now()}.${ext}`;
+
+      const response = await fetch(localUri);
+      const blob = await response.blob();
+      const arrayBuffer = await new Response(blob).arrayBuffer();
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, arrayBuffer, {
+          contentType: `image/${ext === 'png' ? 'png' : 'jpeg'}`,
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.log('Supabase avatars storage error, saving URI directly:', uploadError.message);
+        return localUri;
+      }
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      return data.publicUrl;
+    } catch (e) {
+      console.log('Avatar upload fallback to local URI:', e);
+      return localUri;
+    }
+  }
+
   // Create user profile in public.users table
   static async createUserProfile(user: User, name: string) {
     try {

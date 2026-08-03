@@ -57,7 +57,7 @@ export function GlassCard({ children, style }: { children: React.ReactNode; styl
   );
 }
 
-export function PrimaryBtn({ label, onClick, icon, disabled }: { label: string; onClick: () => void; icon?: React.ReactNode; disabled?: boolean }) {
+export function PrimaryBtn({ label, onClick, icon, disabled, loading }: { label: string; onClick: () => void; icon?: React.ReactNode; disabled?: boolean; loading?: boolean }) {
   const [scale] = useState(new Animated.Value(1));
 
   const handlePressIn = () => {
@@ -75,15 +75,15 @@ export function PrimaryBtn({ label, onClick, icon, disabled }: { label: string; 
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={onClick}
-        disabled={disabled}
+        disabled={disabled || loading}
         style={[
           styles.primaryBtn,
-          disabled && { backgroundColor: 'rgba(130,219,126,0.35)', boxShadow: 'none' },
+          (disabled || loading) && { backgroundColor: 'rgba(130,219,126,0.35)', boxShadow: 'none' },
         ]}
       >
         <View style={styles.btnContent}>
           {icon}
-          <Text style={styles.primaryBtnText}>{label}</Text>
+          <Text style={styles.primaryBtnText}>{loading ? 'Saving...' : label}</Text>
         </View>
       </TouchableOpacity>
     </Animated.View>
