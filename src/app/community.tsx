@@ -11,6 +11,7 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
 import Animated, { FadeInUp, FadeInDown, Layout } from 'react-native-reanimated';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 
 type Tab = 'friends' | 'discover';
 

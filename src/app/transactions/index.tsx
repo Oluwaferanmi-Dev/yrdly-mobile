@@ -11,6 +11,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, AMBER } from '../../constants/tokens';
 
 
 
@@ -129,62 +130,62 @@ export default function TransactionsScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.txCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+        style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 20, padding: 14, borderWidth: 1, borderColor: GLASS_BORDER, backgroundColor: SURFACE, marginBottom: 10 }}
         onPress={() => router.push(`/transactions/${tx.id}` as any)}
         activeOpacity={0.85}
       >
         {/* Thumbnail */}
         {thumb ? (
-          <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" />
+          <Image source={{ uri: thumb }} style={{ width: 52, height: 52, borderRadius: 14, marginRight: 14 }} contentFit="cover" />
         ) : (
-          <View style={[styles.thumb, styles.thumbPlaceholder, { backgroundColor: colors.inputBackground }]}>
-            <Feather name="box" size={22} color={colors.textMuted} />
+          <View style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.06)', justifyContent: 'center', alignItems: 'center', marginRight: 14 }}>
+            <Feather name="box" size={20} color={MUTED} />
           </View>
         )}
 
         {/* Info */}
-        <View style={styles.txInfo}>
-          <Text style={[styles.txTitle, { color: colors.text }]} numberOfLines={1}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }} numberOfLines={1}>
             {tx.item?.title || tx.item_title || 'Item'}
           </Text>
-          <Text style={[styles.txCounterparty, { color: colors.textMuted }]}>
+          <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED, marginBottom: 6 }}>
             {tab === 'purchases' ? 'From' : 'To'} {counterparty?.name ?? 'User'}
           </Text>
-          <View style={[styles.statusBadge, { borderColor: meta.dot + '50' }]}>
-            <View style={[styles.statusDot, { backgroundColor: meta.dot }]} />
-            <Text style={[styles.statusText, { color: meta.dot }]}>{meta.label}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, backgroundColor: meta.dot + '15', borderWidth: 1, borderColor: meta.dot + '30' }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: meta.dot }} />
+            <Text style={{ fontFamily: 'Inter', fontWeight: '700', fontSize: 10, color: meta.dot }}>{meta.label}</Text>
           </View>
         </View>
 
         {/* Amount + chevron */}
-        <View style={styles.txRight}>
-          <Text style={[styles.txAmount, { color: colors.text }]}>{formatPrice(tx.amount)}</Text>
-          <Feather name="chevron-right" size={16} color={colors.textMuted} style={{ marginTop: 4 }} />
+        <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 16, color: G }}>{formatPrice(tx.amount)}</Text>
+          <Feather name="chevron-right" size={16} color={MUTED} style={{ marginTop: 4 }} />
         </View>
       </TouchableOpacity>
     );
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: DARK }}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, justifyContent: 'center', alignItems: 'center', borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.06)' }}>
+          <Ionicons name="chevron-back" size={22} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Transactions</Text>
-        <View style={{ width: 40 }} />
+        <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 18, color: TEXT_PRIMARY, flex: 1, textAlign: 'center' }}>Transactions</Text>
+        <View style={{ width: 36 }} />
       </View>
 
       {/* Tabs */}
-      <View style={[styles.tabs, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
+      <View style={{ flexDirection: 'row', paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
         {(['purchases', 'sales'] as Tab[]).map((t) => (
           <TouchableOpacity
             key={t}
-            style={[styles.tab, tab === t && [styles.tabActive, { borderBottomColor: colors.tint }]]}
+            style={[{ flex: 1, paddingVertical: 12, alignItems: 'center' }, tab === t && { borderBottomWidth: 2, borderBottomColor: G }]}
             onPress={() => setTab(t)}
           >
-            <Text style={[styles.tabText, tab === t && styles.tabTextActive, { color: tab === t ? colors.tint : colors.textMuted }]}>
+            <Text style={[{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14 }, { color: tab === t ? G : MUTED }]}>
               {t === 'purchases' ? 'Purchases' : 'Sales'}
             </Text>
           </TouchableOpacity>
@@ -192,8 +193,8 @@ export default function TransactionsScreen() {
       </View>
 
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.tint} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={G} />
         </View>
       ) : (
         <FlatList

@@ -12,6 +12,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 import Animated, { FadeIn, FadeOut, Layout, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { G, GLASS_BORDER, LABEL, TEXT_PRIMARY } from '../../constants/tokens';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -301,57 +302,43 @@ export default function ProfileTab() {
         </TouchableOpacity>
       </PressableCard>
 
-      {/* ── Quick Action Cards ── */}
-      <View style={styles.quickActionsRow}>
-        <PressableCard style={styles.actionCard} onPress={() => router.push('/community')}>
-          <View style={styles.actionHeaderRow}>
-            <View style={styles.actionIconWrapper}>
-              <Ionicons name="people-outline" size={19} color="#82DB7E" />
+      {/* ── Quick Access 2x2 Grid ── */}
+      <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+        <Text style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: '700', color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>Quick Access</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+          <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/community')}>
+            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+              <Ionicons name="people-outline" size={18} color={G} />
             </View>
-            <Feather name="chevron-right" size={14} color={colors.textSecondary} />
-          </View>
-          <Text style={styles.actionTitle}>Community</Text>
-          <Text style={styles.actionSub}>Connections</Text>
-        </PressableCard>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Community</Text>
+            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: LABEL }}>Connections & people</Text>
+          </PressableCard>
 
-        <PressableCard style={styles.actionCard} onPress={() => router.push('/tickets')}>
-          <View style={styles.actionHeaderRow}>
-            <View style={styles.actionIconWrapper}>
-              <MaterialCommunityIcons name="ticket-outline" size={19} color="#82DB7E" />
+          <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/tickets')}>
+            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+              <MaterialCommunityIcons name="ticket-outline" size={18} color={G} />
             </View>
-            <Feather name="chevron-right" size={14} color={colors.textSecondary} />
-          </View>
-          <Text style={styles.actionTitle}>Tickets</Text>
-          <Text style={styles.actionSub}>Your tickets & RSVPs</Text>
-        </PressableCard>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Tickets</Text>
+            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: G }}>2 upcoming</Text>
+          </PressableCard>
 
-        <PressableCard style={styles.actionCard} onPress={() => router.push('/my-events' as any)}>
-          <View style={styles.actionHeaderRow}>
-            <View style={styles.actionIconWrapper}>
-              <Ionicons name="calendar-outline" size={19} color="#82DB7E" />
+          <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/my-events' as any)}>
+            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+              <Ionicons name="calendar-outline" size={18} color={G} />
             </View>
-            <Feather name="chevron-right" size={14} color={colors.textSecondary} />
-          </View>
-          <Text style={styles.actionTitle}>My Events</Text>
-          <Text style={styles.actionSub}>Events created</Text>
-        </PressableCard>
-      </View>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>My Events</Text>
+            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: LABEL }}>Events you run</Text>
+          </PressableCard>
 
-      {/* Business Action (Only for verified sellers) */}
-      {(profile as any)?.verified_seller && (
-        <View style={{ marginTop: -8, marginBottom: 16 }}>
-          <PressableCard style={[styles.actionCard, { flex: 0, width: '32%' }]} onPress={handleManageStore}>
-            <View style={styles.actionHeaderRow}>
-              <View style={[styles.actionIconWrapper, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
-                <Ionicons name="storefront-outline" size={19} color="#82DB7E" />
-              </View>
-              <Feather name="chevron-right" size={14} color={colors.textSecondary} />
+          <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={handleManageStore}>
+            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+              <Ionicons name="storefront-outline" size={18} color={G} />
             </View>
-            <Text style={styles.actionTitle}>My Business</Text>
-            <Text style={styles.actionSub}>Manage store</Text>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>My Business</Text>
+            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: LABEL }}>Business presence</Text>
           </PressableCard>
         </View>
-      )}
+      </View>
 
     </View>
   ), [avatarUri, profile, user, posts.length, followersCount, followingCount, isOnline, formattedLocation, styles, colors, handleManageStore, router]);

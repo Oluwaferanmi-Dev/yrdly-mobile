@@ -23,6 +23,7 @@ import { Event, TicketTier } from '../../../types/events';
 import { getEventById } from '../../../lib/event-service';
 import { api } from '../../../lib/api';
 import { formatPrice } from '../../../lib/utils';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, GOLD, BLUE } from '../../../constants/tokens';
 import { AttendeeAvatars } from '../../../components/AttendeeAvatars';
 import { useAppTheme } from '../../../context/ThemeContext';
 
@@ -541,12 +542,12 @@ export default function EventDetailScreen() {
 
             {!event.location_online && (
               <TouchableOpacity
-                style={[styles.directionsBtn, { backgroundColor: colors.tint }]}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 16, backgroundColor: G, marginTop: 16 }}
                 onPress={getDirections}
                 activeOpacity={0.8}
               >
-                <Feather name="navigation" size={18} color="#FFF" />
-                <Text style={styles.directionsTxt}>Get Directions</Text>
+                <Feather name="navigation" size={18} color="#000" style={{ marginRight: 8 }} />
+                <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 14, color: '#000' }}>Get Directions</Text>
               </TouchableOpacity>
             )}
           </View>

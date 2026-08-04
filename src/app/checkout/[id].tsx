@@ -20,8 +20,8 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { api } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/utils';
-
 import { MARKETPLACE_CONSTANTS } from '../../lib/constants';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, AMBER } from '../../constants/tokens';
 
 const COMMISSION_RATE = MARKETPLACE_CONSTANTS.COMMISSION_RATE; // Kept in sync with backend
 interface ItemDetails {
@@ -290,31 +290,31 @@ export default function CheckoutScreen() {
         </View>
 
         {/* Price breakdown */}
-        <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Order Summary</Text>
-          <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
+        <View style={{ borderRadius: 20, padding: 18, marginBottom: 16, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 12 }}>Order Summary</Text>
+          <View style={{ height: 1, backgroundColor: GLASS_BORDER, marginBottom: 12 }} />
 
-          <View style={styles.row}>
-            <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>Item price</Text>
-            <Text style={[styles.rowValue, { color: colors.text }]}>{formatPrice(item?.price ?? 0)}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={{ fontFamily: 'Inter', fontSize: 13, color: MUTED }}>Item price</Text>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14, color: TEXT_PRIMARY }}>{formatPrice(item?.price ?? 0)}</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>Platform fee</Text>
-            <Text style={[styles.rowValue, { color: colors.tint }]}>{formatPrice(commission)}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={{ fontFamily: 'Inter', fontSize: 13, color: MUTED }}>Platform fee (3%)</Text>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14, color: G }}>{formatPrice(commission)}</Text>
           </View>
-          <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
-          <View style={styles.row}>
-            <Text style={[styles.totalLabel, { color: colors.text }]}>Total</Text>
-            <Text style={[styles.totalValue, { color: colors.tint }]}>{formatPrice((item?.price ?? 0) + commission)}</Text>
+          <View style={{ height: 1, backgroundColor: GLASS_BORDER, marginVertical: 8 }} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 16, color: TEXT_PRIMARY }}>Total</Text>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '900', fontSize: 18, color: G }}>{formatPrice((item?.price ?? 0) + commission)}</Text>
           </View>
         </View>
 
         {/* Escrow explanation */}
-        <View style={[styles.escrowBanner, { backgroundColor: colors.inputBackground }]}>
-          <Feather name="shield" size={22} color={colors.tint} />
-          <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={[styles.escrowTitle, { color: colors.tint }]}>Secure Escrow Protection</Text>
-            <Text style={[styles.escrowBody, { color: colors.textSecondary }]}>
+        <View style={{ flexDirection: 'row', padding: 16, borderRadius: 20, backgroundColor: G + '10', borderWidth: 1, borderColor: G + '25', marginBottom: 20 }}>
+          <Feather name="shield" size={20} color={G} style={{ marginRight: 12 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 14, color: G, marginBottom: 2 }}>Secure Escrow Protection</Text>
+            <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED, lineHeight: 18 }}>
               Your money is held securely until you confirm you've received the item. If anything goes wrong, we'll help resolve it.
             </Text>
           </View>
@@ -322,12 +322,12 @@ export default function CheckoutScreen() {
       </ScrollView>
 
       {/* CTA */}
-      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.borderLight }]}>
-        <TouchableOpacity style={[styles.payBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }]} onPress={handleInitializePayment} activeOpacity={0.85}>
-          <Feather name="lock" size={18} color={colors.card} style={{ marginRight: 8 }} />
-          <Text style={[styles.payBtnText, { color: colors.card }]}>Pay {formatPrice(item?.price ?? 0)} securely</Text>
+      <View style={{ padding: 16, backgroundColor: DARK, borderTopWidth: 1, borderTopColor: GLASS_BORDER }}>
+        <TouchableOpacity style={{ height: 50, borderRadius: 25, backgroundColor: G, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }} onPress={handleInitializePayment} activeOpacity={0.85}>
+          <Feather name="lock" size={16} color="#000" style={{ marginRight: 8 }} />
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 15, color: '#000' }}>Pay {formatPrice(item?.price ?? 0)} securely</Text>
         </TouchableOpacity>
-        <Text style={[styles.poweredBy, { color: colors.textMuted }]}>🔒 Powered by Paystack Secure Payments</Text>
+        <Text style={{ fontFamily: 'Inter', fontSize: 11, color: MUTED, textAlign: 'center', marginTop: 10 }}>🔒 Powered by Paystack Secure Payments</Text>
       </View>
     </SafeAreaView>
   );

@@ -10,6 +10,7 @@ import { AuthService } from '../../lib/auth-service';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
 import { StorageService } from '../../lib/storage-service';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, RED } from '../../constants/tokens';
 
 
 export default function SettingsScreen() {
@@ -251,19 +252,19 @@ export default function SettingsScreen() {
         </View>
 
         {/* Stronger Together Banner */}
-        <View style={[styles.bannerContainer, { backgroundColor: isDarkMode ? '#121A10' : '#E8F5E9', borderColor: 'rgba(130, 225, 87, 0.2)' }]}>
-          <View style={[styles.bannerIconWrap, { backgroundColor: 'rgba(130, 225, 87, 0.15)', borderColor: 'rgba(130, 225, 87, 0.3)' }]}>
-            <Ionicons name="home-outline" size={24} color={colors.tint} />
+        <View style={{ padding: 16, borderRadius: 20, backgroundColor: G + '10', borderWidth: 1, borderColor: G + '25', marginBottom: 20, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ width: 40, height: 40, borderRadius: 14, backgroundColor: G + '18', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
+            <Ionicons name="home-outline" size={22} color={G} />
           </View>
-          <View style={styles.bannerTextWrap}>
-            <Text style={[styles.bannerTitle, { color: colors.tint }]}>Stronger together.</Text>
-            <Text style={[styles.bannerSubtitle, { color: colors.textSecondary }]}>Buy, sell, connect and look out for your neighborhood.</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 15, color: G, marginBottom: 2 }}>Stronger together.</Text>
+            <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Buy, sell, connect and look out for your neighborhood.</Text>
           </View>
         </View>
 
         {/* Commerce & Account */}
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>COMMERCE & ACCOUNT</Text>
-        <View style={[styles.glassCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <Text style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: '700', color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>COMMERCE & ACCOUNT</Text>
+        <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, marginBottom: 20, overflow: 'hidden' }}>
           {[
             { icon: 'bag-handle-outline', label: 'Transactions', subtext: 'Track your orders and activity', route: '/transactions' },
             { icon: 'wallet-outline', label: 'Payouts', subtext: 'Manage your earnings', route: '/settings/payouts' },
@@ -272,71 +273,71 @@ export default function SettingsScreen() {
           ].map((item) => (
             <TouchableOpacity
               key={item.route}
-              style={[styles.navRow, !item.isLast && styles.navRowBorder, !item.isLast && { borderBottomColor: colors.borderLight }]}
+              style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: item.isLast ? 0 : 1, borderBottomColor: GLASS_BORDER }}
               onPress={() => router.push(item.route as any)}
               activeOpacity={0.7}
             >
-              <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
-                <Ionicons name={item.icon as any} size={24} color={colors.tint} />
+              <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                <Ionicons name={item.icon as any} size={20} color={G} />
               </View>
-              <View style={styles.navTextWrap}>
-                <Text style={[styles.navLabel, { color: colors.text }]}>{item.label}</Text>
-                <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>{item.subtext}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>{item.label}</Text>
+                <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>{item.subtext}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+              <Ionicons name="chevron-forward" size={18} color={MUTED} />
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Privacy */}
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>PRIVACY</Text>
-        <View style={[styles.glassCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <Text style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: '700', color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>PRIVACY</Text>
+        <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, marginBottom: 20, overflow: 'hidden' }}>
           <TouchableOpacity
-            style={[styles.navRow, { borderBottomColor: colors.borderLight }]}
+            style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }}
             onPress={() => router.push('/settings/privacy' as any)}
             activeOpacity={0.7}
           >
-            <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
-              <Ionicons name="lock-closed-outline" size={24} color={colors.tint} />
+            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+              <Ionicons name="lock-closed-outline" size={20} color={G} />
             </View>
-            <View style={styles.navTextWrap}>
-              <Text style={[styles.navLabel, { color: colors.text }]}>Privacy & Discoverability</Text>
-              <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>Manage location sharing and visibility</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Privacy & Discoverability</Text>
+              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Manage location sharing and visibility</Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            <Ionicons name="chevron-forward" size={18} color={MUTED} />
           </TouchableOpacity>
         </View>
 
         {/* Preferences */}
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>PREFERENCES</Text>
-        <View style={[styles.glassCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <Text style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: '700', color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>PREFERENCES</Text>
+        <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, marginBottom: 20, overflow: 'hidden' }}>
           <TouchableOpacity
-            style={[styles.navRow, styles.navRowBorder, { borderBottomColor: colors.borderLight }]}
+            style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}
             onPress={() => router.push('/settings/notifications' as any)}
             activeOpacity={0.7}
           >
-            <View style={[styles.iconWrapPlain, { backgroundColor: isDarkMode ? '#222' : '#F5F5F5' }]}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+              <Ionicons name="notifications-outline" size={20} color={TEXT_PRIMARY} />
             </View>
-            <View style={styles.navTextWrap}>
-              <Text style={[styles.navLabel, { color: colors.text }]}>Notifications</Text>
-              <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>Choose what you want to hear</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Notifications</Text>
+              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Choose what you want to hear</Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            <Ionicons name="chevron-forward" size={18} color={MUTED} />
           </TouchableOpacity>
 
-          <View style={styles.navRow}>
-            <View style={[styles.iconWrapPlain, { backgroundColor: isDarkMode ? '#222' : '#F5F5F5' }]}>
-              <Ionicons name="moon-outline" size={24} color={colors.text} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }}>
+            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+              <Ionicons name="moon-outline" size={20} color={TEXT_PRIMARY} />
             </View>
-            <View style={styles.navTextWrap}>
-              <Text style={[styles.navLabel, { color: colors.text }]}>Dark Mode</Text>
-              <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>Keep it easy on your eyes</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Dark Mode</Text>
+              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Keep it easy on your eyes</Text>
             </View>
             <Switch
               value={isDarkMode}
               onValueChange={toggleTheme}
-              trackColor={{ false: '#353534', true: colors.tint }}
+              trackColor={{ false: '#353534', true: G }}
               thumbColor={'#FFFFFF'}
               ios_backgroundColor="#353534"
             />
@@ -344,15 +345,9 @@ export default function SettingsScreen() {
         </View>
 
         {/* Sign Out */}
-        <TouchableOpacity style={[styles.logoutButton, { backgroundColor: isDarkMode ? 'rgba(26, 17, 17, 0.4)' : '#FFF5F5', borderColor: 'rgba(229, 62, 62, 0.2)' }]} onPress={handleSignOut} disabled={authLoading}>
-          <View style={styles.logoutIconWrap}>
-            <Ionicons name="log-out-outline" size={24} color="#E53E3E" />
-          </View>
-          <View style={styles.navTextWrap}>
-            <Text style={[styles.logoutLabel, { color: '#E53E3E' }]}>Sign Out</Text>
-            <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>Log out of your yrdly account</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color="rgba(229, 62, 62, 0.4)" />
+        <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 20, backgroundColor: 'rgba(239, 68, 68, 0.08)', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.2)', marginTop: 8 }} onPress={handleSignOut} disabled={authLoading}>
+          <Ionicons name="log-out-outline" size={20} color={RED} style={{ marginRight: 8 }} />
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 15, color: RED }}>Sign Out</Text>
         </TouchableOpacity>
 
       </ScrollView>

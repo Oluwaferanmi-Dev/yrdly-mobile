@@ -7,6 +7,8 @@ import {
 import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScreenHeader } from '../../components/ScreenHeader';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, GOLD, BLUE } from '../../constants/tokens';
 import { useRouter, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from '../../lib/supabase';
@@ -285,12 +287,12 @@ export default function CatalogTab() {
 
       {/* ── Search + Filter ── */}
       <View style={s.searchRow}>
-        <Animated.View style={[s.searchBox, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight, flex: 1 }]}>
-          <Ionicons name="search-outline" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
+        <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, paddingHorizontal: 14, height: 44, flex: 1 }]}>
+          <Ionicons name="search-outline" size={18} color={LABEL} style={{ marginRight: 8 }} />
           <TextInput
-            style={[s.searchInput, { color: colors.text }]}
-            placeholder="Search"
-            placeholderTextColor={colors.textMuted}
+            style={{ flex: 1, fontFamily: 'Inter', fontSize: 14, color: TEXT_PRIMARY }}
+            placeholder="Search catalog, items & services..."
+            placeholderTextColor={LABEL}
             value={search}
             onChangeText={setSearch}
             onFocus={() => Animated.timing(searchFocus, { toValue: 1, duration: 200, useNativeDriver: false }).start()}

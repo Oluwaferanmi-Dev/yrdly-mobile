@@ -20,6 +20,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 import { formatPrice } from '../../lib/utils';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 
 interface Message {
   id: string;
@@ -536,7 +537,7 @@ function ChatContent() {
           style={[
             styles.bubble, 
             isMine ? styles.bubbleMine : styles.bubbleTheirs,
-            isMine ? { backgroundColor: colors.tint } : { backgroundColor: isDarkMode ? colors.inputBackground : '#E5E5EA' },
+            isMine ? { backgroundColor: G, borderWidth: 0 } : { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER },
             hasMedia && !msgText && { backgroundColor: 'transparent', paddingHorizontal: 0, paddingVertical: 0, paddingBottom: 0 },
             hasMedia && msgText && { paddingHorizontal: 4, paddingVertical: 4, paddingBottom: 6 }
           ]}
@@ -570,20 +571,20 @@ function ChatContent() {
             />
           )}
           {!!msgText && (
-            <Text style={[styles.bubbleText, { color: colors.text }, isMine && { color: colors.card }, hasMedia && { paddingHorizontal: 6 }]}>
+            <Text style={[styles.bubbleText, { color: isMine ? '#000' : TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 14, fontWeight: isMine ? '600' : '400' }, hasMedia && { paddingHorizontal: 6 }]}>
               {msgText}
             </Text>
           )}
           {!!msgText && (
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 2, paddingHorizontal: hasMedia ? 6 : 0 }}>
-              <Text style={[styles.bubbleTime, { color: colors.textMuted }, isMine && { color: 'rgba(255,255,255,0.6)' }]}>
+              <Text style={[styles.bubbleTime, { color: isMine ? 'rgba(0,0,0,0.6)' : MUTED, fontFamily: 'Inter', fontSize: 10 }]}>
                 {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </Text>
               {isMine && (
                 <Ionicons 
                   name={item.is_read ? 'checkmark-done' : 'checkmark'} 
                   size={14} 
-                  color={item.is_read ? '#4ade80' : 'rgba(255,255,255,0.6)'} 
+                  color={item.is_read ? '#000' : 'rgba(0,0,0,0.4)'} 
                   style={{ marginLeft: 4 }} 
                 />
               )}

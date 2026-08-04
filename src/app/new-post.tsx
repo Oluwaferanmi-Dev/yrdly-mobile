@@ -23,6 +23,7 @@ import { ScreenHeader } from '../components/ScreenHeader';
 import { ForSaleForm, type ForSaleFormValues, type PostImage as FSPostImage } from '../components/ForSaleForm';
 import { CreateEventForm, type CreateEventFormValues, type TicketTierInput as CETicketTier } from '../components/CreateEventForm';
 import { GeneralPostForm, type GeneralPostFormValues, type GeneralPostImage } from '../components/GeneralPostForm';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 
 type PostCategory = 'General' | 'For Sale' | 'Event';
 
@@ -428,7 +429,7 @@ export default function CreateTab() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: DARK }]}>
       <ScreenHeader title={category === 'For Sale' ? 'Sell an Item' : category === 'Event' ? 'Create Event' : 'Create Post'} hideIcons />
       <KeyboardAvoidingView
         style={{ flex: 1 }}

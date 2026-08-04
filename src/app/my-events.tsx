@@ -11,6 +11,7 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { getOrganizerEvents } from '../lib/event-service';
 import type { Event } from '../types/events';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 
 export default function MyEventsScreen() {
   const { colors } = useAppTheme();

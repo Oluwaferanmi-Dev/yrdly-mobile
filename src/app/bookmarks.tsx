@@ -9,6 +9,7 @@ import { PostCard } from '../components/PostCard';
 import { EventCard } from '../components/EventCard';
 import { useRouter } from 'expo-router';
 import { PostSkeleton } from '../components/Skeleton';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 
 const { width } = Dimensions.get('window');
 
@@ -93,21 +94,21 @@ export default function BookmarksScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: DARK }]}>
       <ScreenHeader title="Saved Items"  />
       
-      <View style={[styles.tabs, { borderBottomColor: colors.borderLight }]}>
+      <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
         <TouchableOpacity 
-          style={[styles.tab, activeTab === 'posts' && { borderBottomColor: colors.tint, borderBottomWidth: 2 }]} 
+          style={[{ flex: 1, paddingVertical: 12, alignItems: 'center' }, activeTab === 'posts' && { borderBottomWidth: 2, borderBottomColor: G }]} 
           onPress={() => setActiveTab('posts')}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'posts' ? colors.tint : colors.textSecondary, fontWeight: activeTab === 'posts' ? '600' : '500' }]}>Posts & Market</Text>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: activeTab === 'posts' ? '800' : '500', fontSize: 14, color: activeTab === 'posts' ? G : MUTED }}>Posts & Market</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.tab, activeTab === 'events' && { borderBottomColor: colors.tint, borderBottomWidth: 2 }]} 
+          style={[{ flex: 1, paddingVertical: 12, alignItems: 'center' }, activeTab === 'events' && { borderBottomWidth: 2, borderBottomColor: G }]} 
           onPress={() => setActiveTab('events')}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'events' ? colors.tint : colors.textSecondary, fontWeight: activeTab === 'events' ? '600' : '500' }]}>Events</Text>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: activeTab === 'events' ? '800' : '500', fontSize: 14, color: activeTab === 'events' ? G : MUTED }}>Events</Text>
         </TouchableOpacity>
       </View>
 

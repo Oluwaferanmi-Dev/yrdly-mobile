@@ -21,6 +21,7 @@ import { Post, User } from '../../types';
 import { formatPrice, timeAgo } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, GOLD, AMBER } from '../../constants/tokens';
 
 const { width } = Dimensions.get('window');
 
@@ -450,12 +451,12 @@ function MarketplaceDetailContent() {
 
         <View style={styles.contentPadding}>
           {/* Summary Card */}
-          <View style={[styles.card, { backgroundColor: colors.inputBackground }]}>
+          <View style={{ borderRadius: 20, padding: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, marginBottom: 16 }}>
             <View style={styles.titlePriceRow}>
-              <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
+              <Text style={{ flex: 1, fontFamily: 'Outfit', fontWeight: '800', fontSize: 20, color: TEXT_PRIMARY, marginRight: 12 }} numberOfLines={2}>
                 {post.title || post.text || 'Untitled'}
               </Text>
-              <Text style={[styles.price, { color: colors.tint }]}>
+              <Text style={{ fontFamily: 'Outfit', fontWeight: '900', fontSize: 22, color: G }}>
                 {post.price === 0 ? 'FREE' : formatPrice(post.price || 0)}
               </Text>
             </View>

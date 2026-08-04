@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
-import { View, Text, StyleSheet, RefreshControl, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, RefreshControl, TouchableOpacity, Platform, Modal } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
 import { PostCard } from '../../components/PostCard';
@@ -30,6 +30,7 @@ import { AlertBanner } from '../../components/AlertBanner';
 import { PendingFriendRequestsBanner } from '../../components/PendingFriendRequestsBanner';
 import { AlertService, Alert } from '../../lib/alert-service';
 import * as SecureStore from 'expo-secure-store';
+import { G, GLOW, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, RED } from '../../constants/tokens';
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList as any) as any;
 
@@ -70,11 +71,11 @@ const QuickPostBox = memo(() => {
 
   const content = (
     <>
-      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' }}>
+      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: G + '20', borderWidth: 1.5, borderColor: G, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' }}>
         {avatarUri ? (
           <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
         ) : (
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
+          <Text style={{ color: G, fontWeight: 'bold', fontSize: 16 }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
         )}
       </View>
       <TouchableOpacity 
@@ -82,22 +83,22 @@ const QuickPostBox = memo(() => {
         onPress={() => router.push('/new-post' as any)}
         activeOpacity={0.7}
       >
-        <Text style={{ color: colors.textSecondary, fontSize: 15 }} numberOfLines={1} ellipsizeMode="tail">What's happening in your neighborhood?</Text>
+        <Text style={{ color: MUTED, fontSize: 14, fontFamily: 'Inter' }} numberOfLines={1} ellipsizeMode="tail">What's happening in your neighborhood?</Text>
       </TouchableOpacity>
       
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <TouchableOpacity 
-          style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: isDarkMode ? '#2A2A2A' : '#F0F0F0', justifyContent: 'center', alignItems: 'center' }}
+          style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: SURFACE, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: GLASS_BORDER }}
           onPress={() => router.push('/new-post' as any)}
         >
-          <Feather name="image" size={20} color={colors.textSecondary} />
+          <Feather name="image" size={18} color={MUTED} />
         </TouchableOpacity>
         
         <TouchableOpacity 
-          style={{ paddingHorizontal: 20, height: 40, borderRadius: 20, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }}
+          style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: G, justifyContent: 'center', alignItems: 'center' }}
           onPress={() => router.push('/new-post' as any)}
         >
-          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>Post</Text>
+          <Text style={{ color: '#000', fontWeight: '800', fontSize: 14, fontFamily: 'Inter' }}>Post</Text>
         </TouchableOpacity>
       </View>
     </>
@@ -108,18 +109,18 @@ const QuickPostBox = memo(() => {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     borderWidth: 1,
-    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+    borderColor: isDarkMode ? GLASS_BORDER : 'rgba(0, 0, 0, 0.05)',
   };
 
   return (
     <TouchableOpacity 
       activeOpacity={0.9} 
       onPress={() => router.push('/new-post' as any)}
-      style={{ overflow: 'hidden', marginHorizontal: 16, marginTop: 12, marginBottom: 8, borderRadius: 24 }}
+      style={{ overflow: 'hidden', marginHorizontal: 16, marginTop: 12, marginBottom: 8, borderRadius: 20 }}
     >
       {isLiquidGlassSupported ? (
         <LiquidGlassView
-          {...({ intensity: 80, tint: isDarkMode ? 'dark' : 'light', fallbackColor: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)' } as any)}
+          {...({ intensity: 80, tint: isDarkMode ? 'dark' : 'light', fallbackColor: isDarkMode ? GLASS_BG : 'rgba(255, 255, 255, 0.95)' } as any)}
           style={containerStyle}
           pointerEvents="none"
         >
@@ -129,7 +130,7 @@ const QuickPostBox = memo(() => {
         <BlurView
           intensity={80}
           tint={isDarkMode ? 'dark' : 'light'}
-          style={[containerStyle, { backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.4)' : 'rgba(255, 255, 255, 0.5)' }]}
+          style={[containerStyle, { backgroundColor: isDarkMode ? 'rgba(8, 8, 8, 0.74)' : 'rgba(255, 255, 255, 0.5)' }]}
           pointerEvents="none"
         >
           {content}

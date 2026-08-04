@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Linking, FlatList, Alert, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -10,6 +11,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import ImageViewing from 'react-native-image-viewing';
 import type { Business, CatalogItem } from '../../types';
 import { Skeleton } from '../../components/Skeleton';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, GOLD } from '../../constants/tokens';
 
 const { width } = Dimensions.get('window');
 
@@ -317,7 +319,7 @@ export default function BusinessProfileScreen() {
         <View style={s.infoPad}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={[s.nameTxt, { color: colors.text, flexShrink: 1 }]}>{business.name}</Text>
-            <MaterialIcons name="verified" size={20} color="#FBBF24" style={{ marginLeft: 6 }} />
+            <VerifiedBadge size={20} />
           </View>
           <View style={[s.catBadge, { borderColor: colors.borderLight }]}>
             <Text style={[s.catBadgeTxt, { color: colors.textSecondary }]}>{business.category}</Text>
@@ -345,18 +347,18 @@ export default function BusinessProfileScreen() {
           {/* Actions */}
           <View style={s.actionRow}>
             {!isOwner && (
-              <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.tint, flex: 1 }]} onPress={handleMessage}>
+              <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 44, borderRadius: 16, backgroundColor: G, flex: 1, gap: 8 }} onPress={handleMessage}>
                 <Ionicons name="chatbubble-ellipses-outline" size={18} color="#000" />
-                <Text style={[s.actionBtnTxt, { color: '#000' }]}>Message</Text>
+                <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 14, color: '#000' }}>Message</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity 
-              style={[s.actionBtn, { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.tint, flex: isOwner ? 1 : 0, paddingHorizontal: isOwner ? 0 : 20 }]} 
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 44, borderRadius: 16, backgroundColor: 'transparent', borderWidth: 1, borderColor: G, flex: isOwner ? 1 : 0, paddingHorizontal: isOwner ? 0 : 20, gap: 8 }} 
               onPress={handleCall}
               disabled={!business.phone}
             >
-              <Ionicons name="call-outline" size={18} color={business.phone ? colors.tint : colors.textMuted} />
-              {isOwner && <Text style={[s.actionBtnTxt, { color: business.phone ? colors.tint : colors.textMuted }]}>Call</Text>}
+              <Ionicons name="call-outline" size={18} color={business.phone ? G : MUTED} />
+              {isOwner && <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 14, color: business.phone ? G : MUTED }}>Call</Text>}
             </TouchableOpacity>
           </View>
         </View>

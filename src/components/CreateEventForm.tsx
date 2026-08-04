@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppTheme } from '../context/ThemeContext';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 
 export const EVENT_CATEGORIES = ['Party','Music','Sports','Food','Networking','Community','Education','Arts','Tech','Other'];
 

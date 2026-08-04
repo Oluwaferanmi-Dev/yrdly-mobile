@@ -14,6 +14,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, BLUE, AMBER } from '../../constants/tokens';
 
 // ── Types ─────────────────────────────────────────────────────────
 type ConvType = 'friend' | 'marketplace' | 'briefcase';
@@ -280,62 +281,63 @@ export default function MessagesTab() {
     return (
       <Swipeable renderRightActions={renderRightActions} overshootRight={false}>
         <TouchableOpacity
-          style={[styles.convRow, { borderBottomColor: colors.borderLight }]}
+          style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: 'transparent' }}
           onPress={() => router.push({ pathname: '/chat/[id]', params: { id: item.id } })}
           onLongPress={handleLongPress}
-          activeOpacity={1}
+          activeOpacity={0.8}
         >
         {/* Avatar / Item thumbnail */}
-        <View style={styles.avatarContainer}>
+        <View style={{ position: 'relative', marginRight: 14 }}>
           {showItemImage ? (
-            <Image source={{ uri: item.context!.itemImage }} style={styles.avatar} contentFit="cover" />
+            <Image source={{ uri: item.context!.itemImage }} style={{ width: 48, height: 48, borderRadius: 16 }} contentFit="cover" />
           ) : item.participantAvatar ? (
-            <Image source={{ uri: item.participantAvatar }} style={styles.avatar} contentFit="cover" />
+            <Image source={{ uri: item.participantAvatar }} style={{ width: 48, height: 48, borderRadius: 24 }} contentFit="cover" />
           ) : (
-            <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint }]}>
-              <Text style={styles.avatarFallbackText}>
+            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: G + '20', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ color: G, fontFamily: 'Outfit', fontWeight: '800', fontSize: 18 }}>
                 {(item.participantName || 'Unknown').charAt(0).toUpperCase()}
               </Text>
             </View>
           )}
           {/* Type badge */}
           {item.type === 'marketplace' && (
-            <View style={[styles.typeBadge, { backgroundColor: colors.tint, borderColor: colors.card }]}>
-              <Feather name="shopping-cart" size={9} color="#FFF" />
+            <View style={{ position: 'absolute', bottom: -2, right: -2, width: 18, height: 18, borderRadius: 9, backgroundColor: G, borderWidth: 1.5, borderColor: DARK, justifyContent: 'center', alignItems: 'center' }}>
+              <Feather name="shopping-cart" size={9} color="#000" />
             </View>
           )}
           {item.type === 'briefcase' && (
-            <View style={[styles.typeBadge, { backgroundColor: '#1565C0', borderColor: colors.card }]}>
+            <View style={{ position: 'absolute', bottom: -2, right: -2, width: 18, height: 18, borderRadius: 9, backgroundColor: '#3B82F6', borderWidth: 1.5, borderColor: DARK, justifyContent: 'center', alignItems: 'center' }}>
               <Feather name="briefcase" size={9} color="#FFF" />
             </View>
           )}
         </View>
 
         {/* Content */}
-        <View style={styles.convContent}>
-          <View style={styles.convTopRow}>
-            <Text style={[styles.convName, { color: colors.text }, unread && styles.convNameBold]} numberOfLines={1}>
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+            <Text style={[{ fontFamily: 'Outfit', fontSize: 15, color: TEXT_PRIMARY, fontWeight: '600' }, unread && { fontWeight: '800' }]} numberOfLines={1}>
               {item.participantName}
             </Text>
-            <View style={styles.convRight}>
-              <Text style={[styles.convTime, { color: unread ? colors.tint : colors.textMuted }, unread && { fontWeight: 'bold' }]}>
-                {timeLabel(item.timestamp)}
-              </Text>
-              {unread && (
-                <View style={[styles.unreadBadge, { backgroundColor: colors.tint }]}>
-                  <Text style={styles.unreadBadgeText}>{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text>
-                </View>
-              )}
-            </View>
+
+            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: unread ? G : MUTED, fontWeight: unread ? '700' : '400' }}>
+              {timeLabel(item.timestamp)}
+            </Text>
           </View>
           {item.context?.itemTitle && (
-            <Text style={[styles.convItemTitle, { color: colors.tint }]} numberOfLines={1}>
+            <Text style={{ fontFamily: 'Inter', fontSize: 12, color: G, fontWeight: '600', marginBottom: 2 }} numberOfLines={1}>
               Re: {item.context.itemTitle}
             </Text>
           )}
-          <Text style={[styles.convLastMsg, { color: colors.textMuted }, unread && [styles.convLastMsgBold, { color: colors.textSecondary }]]} numberOfLines={1}>
-            {item.lastMessage}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={[{ flex: 1, fontFamily: 'Inter', fontSize: 13, color: MUTED, marginRight: 8 }, unread && { color: TEXT_PRIMARY, fontWeight: '600' }]} numberOfLines={1}>
+              {item.lastMessage}
+            </Text>
+            {unread && (
+              <View style={{ minWidth: 18, height: 18, borderRadius: 9, backgroundColor: G, paddingHorizontal: 5, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ color: '#000', fontSize: 10, fontFamily: 'Outfit', fontWeight: '800' }}>{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text>
+              </View>
+            )}
+          </View>
         </View>
 
         </TouchableOpacity>

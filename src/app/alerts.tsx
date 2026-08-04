@@ -1,20 +1,31 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertService, Alert } from '../lib/alert-service';
 import { AlertBanner } from '../components/AlertBanner';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../context/ThemeContext';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, RED, AMBER, BLUE } from '../constants/tokens';
+
+type SeverityFilter = 'all' | 'urgent' | 'caution' | 'information';
+
+const FILTERS: { key: SeverityFilter; label: string; color: string; bg: string }[] = [
+  { key: 'all',         label: 'All',     color: '#FFFFFF',  bg: 'rgba(255,255,255,0.1)' },
+  { key: 'urgent',      label: 'Urgent',  color: '#EF4444',  bg: 'rgba(183,28,28,0.18)' },
+  { key: 'caution',     label: 'Caution', color: '#FFB74D',  bg: 'rgba(230,81,0,0.15)' },
+  { key: 'information', label: 'Info',    color: '#64B5F6',  bg: 'rgba(33,150,243,0.12)' },
+];
 
 export default function AlertsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useAppTheme();
-  
+
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<SeverityFilter>('all');
 
   const fetchAlerts = useCallback(async () => {
     const fetchedAlerts = await AlertService.getActiveAlerts();
@@ -31,31 +42,56 @@ export default function AlertsScreen() {
     setRefreshing(false);
   }, [fetchAlerts]);
 
+  const filtered = useMemo(() =>
+    activeFilter === 'all' ? alerts : alerts.filter((a: any) => a.severity === activeFilter),
+    [alerts, activeFilter]
+  );
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+    <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, justifyContent: 'center', alignItems: 'center', borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.06)' }}>
+          <Ionicons name="chevron-back" size={22} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Active Alerts</Text>
-        <View style={{ width: 24 }} />
+        <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 18, color: TEXT_PRIMARY }}>Active Alerts</Text>
+        <View style={{ width: 36 }} />
+      </View>
+
+      {/* Severity Filter Pills */}
+      <View style={styles.filterRow}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 8, flexDirection: 'row' }}>
+          {FILTERS.map(f => {
+            const active = activeFilter === f.key;
+            return (
+              <TouchableOpacity
+                key={f.key}
+                onPress={() => setActiveFilter(f.key)}
+                style={{ paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20, borderWidth: 1, backgroundColor: active ? f.bg : SURFACE, borderColor: active ? f.color : GLASS_BORDER }}
+              >
+                <Text style={{ fontFamily: 'Outfit', fontWeight: active ? '700' : '500', fontSize: 13, color: active ? f.color : MUTED }}>
+                  {f.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
       <FlatList
-        data={alerts}
+        data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <AlertBanner 
-            alert={item} 
-            onPress={() => router.push(`/alert/${item.id}` as any)} 
+          <AlertBanner
+            alert={item}
+            onPress={() => router.push(`/alert/${item.id}` as any)}
           />
         )}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
-            onRefresh={onRefresh} 
-            tintColor={colors.tint} 
-            colors={[colors.tint]} 
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.tint}
+            colors={[colors.tint]}
           />
         }
         contentContainerStyle={styles.listContent}
@@ -63,7 +99,11 @@ export default function AlertsScreen() {
           !loading ? (
             <View style={styles.emptyContainer}>
               <Ionicons name="shield-checkmark-outline" size={48} color={colors.textMuted} />
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>There are no active alerts in your area.</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                {activeFilter === 'all'
+                  ? 'There are no active alerts in your area.'
+                  : `No ${activeFilter} alerts right now.`}
+              </Text>
             </View>
           ) : null
         }
@@ -73,9 +113,7 @@ export default function AlertsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -84,17 +122,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 0.5,
   },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
+  backButton: { padding: 8, marginLeft: -8 },
+  headerTitle: { fontFamily: 'Inter-Bold', fontSize: 18 },
+  filterRow: { paddingVertical: 12 },
+  filterContent: { paddingHorizontal: 16, gap: 8, flexDirection: 'row' },
+  filterPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
   },
-  headerTitle: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 18,
-  },
-  listContent: {
-    paddingBottom: 24,
-  },
+  filterLabel: { fontSize: 13, fontWeight: '600' },
+  listContent: { paddingBottom: 24 },
   emptyContainer: {
     padding: 40,
     alignItems: 'center',

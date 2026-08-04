@@ -15,6 +15,7 @@ import { getMyTickets } from '../lib/event-service';
 import { Post } from '../types';
 import { Ticket, Event } from '../types/events';
 import { useAppTheme } from '../context/ThemeContext';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 
 const getTicketStatusInfo = (ticket: Ticket) => {
   const isActiveOrConfirmed = ticket.status === 'PAID';
@@ -122,49 +123,35 @@ export default function TicketsScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.ticketCard, { backgroundColor: colors.card }]}
+        style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 20, padding: 14, borderWidth: 1, borderColor: GLASS_BORDER, backgroundColor: SURFACE, marginBottom: 12 }}
         onPress={() => setSelectedTicket(item)}
         activeOpacity={0.8}
       >
         {/* Image */}
-        <View style={styles.ticketImageWrapper}>
+        <View style={{ width: 60, height: 60, borderRadius: 16, overflow: 'hidden', marginRight: 14 }}>
           {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.ticketImage} contentFit="cover" />
+            <Image source={{ uri: imageUrl }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
           ) : (
-            <View style={[styles.ticketImage, styles.ticketImagePlaceholder, { backgroundColor: colors.inputBackground }]}>
-              <Feather name="calendar" size={28} color={colors.tint} />
+            <View style={{ width: '100%', height: '100%', backgroundColor: G + '15', justifyContent: 'center', alignItems: 'center' }}>
+              <Feather name="calendar" size={24} color={G} />
             </View>
           )}
         </View>
 
         {/* Info */}
-        <View style={styles.ticketInfo}>
-          <Text style={[styles.ticketTitle, { color: colors.text }]} numberOfLines={2}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 4 }} numberOfLines={1}>
             {event?.title || 'Event'}
           </Text>
-          <View style={styles.ticketMeta}>
-            <Feather name="calendar" size={13} color={colors.textMuted} />
-            <Text style={[styles.ticketMetaText, { color: colors.textMuted }]}>{formattedDate}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <Feather name="calendar" size={12} color={MUTED} />
+            <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>{formattedDate}</Text>
           </View>
-          {!!((event as any)?.location || (event as any)?.metadata?.location) && (
-            <View style={styles.ticketMeta}>
-              <Ionicons name="location-outline" size={14} color={colors.textSecondary} style={{ marginTop: 2 }} />
-              <Text style={[styles.eventLocation, { color: colors.textSecondary }]} numberOfLines={1}>
-                {(() => {
-                  const loc = (event as any)?.metadata?.location || (event as any)?.location;
-                  return typeof loc === 'object' && loc !== null 
-                    ? (loc.address || [loc.ward, loc.lga, loc.state].filter(Boolean).join(', ') || 'TBA') 
-                    : (loc || 'TBA');
-                })()}
-              </Text>
-            </View>
-          )}
-          
           {(() => {
             const statusInfo = getTicketStatusInfo(item);
             return (
-              <View style={[styles.statusBadge, statusInfo.isValid ? styles.activeBadge : [styles.usedBadge, { backgroundColor: colors.inputBackground }]]}>
-                <Text style={[styles.statusBadgeText, { color: statusInfo.isExpired ? '#FFA000' : colors.tint }]}>
+              <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, backgroundColor: statusInfo.isValid ? G + '15' : 'rgba(255,255,255,0.06)', alignSelf: 'flex-start' }}>
+                <Text style={{ fontFamily: 'Inter', fontWeight: '700', fontSize: 11, color: statusInfo.isValid ? G : MUTED }}>
                   {statusInfo.text}
                 </Text>
               </View>

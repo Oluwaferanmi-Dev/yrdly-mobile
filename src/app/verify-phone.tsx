@@ -11,6 +11,7 @@ import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass
 import { useAppTheme } from '../context/ThemeContext';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { ErrorMessage } from '../components/ErrorMessage';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 
 const { width, height } = Dimensions.get('window');
 
@@ -66,26 +67,26 @@ export default function VerifyPhoneScreen() {
         <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background === '#121212' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.4)' }]} />
       )}
 
-      <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.text }]}>
-        <TouchableOpacity style={styles.back} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+      <View style={{ width: '100%', borderRadius: 28, padding: 24, alignItems: 'center', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
+        <TouchableOpacity style={{ alignSelf: 'flex-start', marginBottom: 16, padding: 4 }} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
         </TouchableOpacity>
 
-        <View style={[styles.iconRing, { backgroundColor: colors.inputBackground }]}>
-          <Feather name="smartphone" size={36} color={colors.tint} />
+        <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
+          <Feather name="smartphone" size={30} color={G} />
         </View>
 
-        <Text style={[styles.title, { color: colors.text }]}>Verify Phone Number</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+        <Text style={{ fontFamily: 'Outfit', fontSize: 24, fontWeight: '800', textAlign: 'center', color: TEXT_PRIMARY, marginBottom: 8 }}>Verify Phone Number</Text>
+        <Text style={{ fontFamily: 'Inter', fontSize: 13, color: MUTED, textAlign: 'center', lineHeight: 20, marginBottom: 24 }}>
           Enter your Nigerian phone number to receive a verification code.
         </Text>
 
-        <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]}>
-          <Feather name="phone" size={20} color={colors.textMuted} style={styles.inputIcon} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', height: 52, borderRadius: 16, borderWidth: 1, borderColor: GLASS_BORDER, backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 16, marginBottom: 16 }}>
+          <Feather name="phone" size={18} color={LABEL} style={{ marginRight: 12 }} />
           <TextInput
-            style={[styles.input, { color: colors.text }]}
+            style={{ flex: 1, fontFamily: 'Inter', fontSize: 15, fontWeight: '600', color: TEXT_PRIMARY }}
             placeholder="+234 800 000 0000"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={LABEL}
             keyboardType="phone-pad"
             value={phone}
             onChangeText={setPhone}
@@ -95,15 +96,15 @@ export default function VerifyPhoneScreen() {
         <ErrorMessage error={error} />
 
         <TouchableOpacity
-          style={[styles.verifyBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }, loading && styles.verifyBtnDisabled]}
+          style={[{ width: '100%', height: 50, borderRadius: 25, backgroundColor: G, justifyContent: 'center', alignItems: 'center', marginTop: 8 }, loading && { opacity: 0.6 }]}
           onPress={handleSend}
           disabled={loading}
           activeOpacity={0.85}
         >
           {loading ? (
-            <ActivityIndicator color={colors.card} />
+            <ActivityIndicator color="#000" />
           ) : (
-            <Text style={[styles.verifyBtnText, { color: colors.card }]}>Send Code</Text>
+            <Text style={{ fontFamily: 'Outfit', fontSize: 15, fontWeight: '800', color: '#000' }}>Send Code</Text>
           )}
         </TouchableOpacity>
       </View>

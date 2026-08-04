@@ -1,5 +1,5 @@
-import { Tabs } from 'expo-router';
-import { View, Platform, StyleSheet, Text } from 'react-native';
+import { Tabs, useRouter } from 'expo-router';
+import { View, Platform, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Plus } from 'phosphor-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -10,6 +10,9 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-na
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import { G, GLOW_STRONG, GLASS_BG, GLASS_BORDER, DARK, MUTED, RED } from '../../constants/tokens';
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 /** Wraps any tab icon with a spring scale animation on focus */
 function TabIconWrapper({ focused, children }: { focused: boolean; children: React.ReactNode }) {
@@ -26,8 +29,34 @@ function TabIconWrapper({ focused, children }: { focused: boolean; children: Rea
   return <Animated.View style={style}>{children}</Animated.View>;
 }
 
+/** Floating create button with spring press feedback */
+function FloatingCreateButton({ onPress }: { onPress: () => void }) {
+  const scale = useSharedValue(1);
 
-import { useRouter } from 'expo-router';
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.92, { damping: 15, stiffness: 300 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+  };
+
+  return (
+    <AnimatedTouchableOpacity
+      style={[styles.createButton, animatedStyle]}
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={0.9}
+    >
+      <Plus size={26} color="#FFF" weight="bold" />
+    </AnimatedTouchableOpacity>
+  );
+}
 
 const TAB_BAR_HEIGHT = 64;
 
@@ -105,14 +134,14 @@ export default function TabLayout() {
             left: 0,
             right: 0,
             height: tabBarHeight,
-            backgroundColor: isDarkMode ? 'rgba(18, 18, 18, 0.97)' : 'rgba(255, 255, 255, 0.97)',
+            backgroundColor: isDarkMode ? GLASS_BG : 'rgba(255, 255, 255, 0.97)',
             borderTopWidth: StyleSheet.hairlineWidth,
-            borderTopColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+            borderTopColor: isDarkMode ? GLASS_BORDER : 'rgba(0,0,0,0.08)',
             paddingBottom: insets.bottom,
             elevation: 0,
           },
-          tabBarActiveTintColor: colors.tint,
-          tabBarInactiveTintColor: isDarkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.35)',
+          tabBarActiveTintColor: G,
+          tabBarInactiveTintColor: isDarkMode ? MUTED : 'rgba(0,0,0,0.35)',
           tabBarItemStyle: {
             paddingTop: 8,
           },
@@ -124,7 +153,7 @@ export default function TabLayout() {
             title: 'Home',
             tabBarIcon: ({ color, focused }) => (
               <TabIconWrapper focused={focused}>
-                <HomeIcon color={color} size={26} filled={focused} />
+                <HomeIcon color={focused ? G : color} size={26} filled={focused} />
               </TabIconWrapper>
             ),
           }}
@@ -135,7 +164,7 @@ export default function TabLayout() {
             title: 'Explore',
             tabBarIcon: ({ color, focused }) => (
               <TabIconWrapper focused={focused}>
-                <ExploreIcon color={color} size={26} filled={focused} />
+                <ExploreIcon color={focused ? G : color} size={26} filled={focused} />
               </TabIconWrapper>
             ),
           }}
@@ -149,13 +178,11 @@ export default function TabLayout() {
               paddingTop: Platform.OS === 'ios' ? 0 : 4,
             },
             tabBarIcon: () => (
-              <View style={styles.createButton}>
-                <Plus size={26} color="#FFF" weight="bold" />
-              </View>
+              <FloatingCreateButton onPress={() => router.push('/new-post' as any)} />
             ),
           }}
           listeners={{
-            tabPress: (e) => {
+            tabPress: (e: any) => {
               e.preventDefault();
               router.push('/new-post' as any);
             },
@@ -168,7 +195,7 @@ export default function TabLayout() {
             tabBarIcon: ({ color, focused }) => (
               <TabIconWrapper focused={focused}>
                 <View>
-                  <MessagesIcon color={color} size={26} filled={focused} />
+                  <MessagesIcon color={focused ? G : color} size={26} filled={focused} />
                   {unreadMessages > 0 && (
                     <View style={styles.badge}>
                       <Text style={styles.badgeText}>{unreadMessages > 99 ? '99+' : unreadMessages}</Text>
@@ -185,7 +212,7 @@ export default function TabLayout() {
             title: 'Profile',
             tabBarIcon: ({ color, focused }) => (
               <TabIconWrapper focused={focused}>
-                <ProfileIcon color={color} size={26} filled={focused} />
+                <ProfileIcon color={focused ? G : color} size={26} filled={focused} />
               </TabIconWrapper>
             ),
           }}
@@ -200,22 +227,21 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#10B981',
+    backgroundColor: G,
     justifyContent: 'center',
     alignItems: 'center',
-    // Elevate it slightly above the bar
     marginBottom: Platform.OS === 'ios' ? 12 : 8,
-    shadowColor: '#10B981',
+    shadowColor: G,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.45,
-    shadowRadius: 10,
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
     elevation: 8,
   },
   badge: {
     position: 'absolute',
     top: -4,
     right: -8,
-    backgroundColor: '#EF4444',
+    backgroundColor: RED,
     minWidth: 18,
     height: 18,
     borderRadius: 9,
@@ -223,7 +249,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 4,
     borderWidth: 1.5,
-    borderColor: '#000',
+    borderColor: DARK,
   },
   badgeText: {
     color: '#FFF',
@@ -231,5 +257,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 
 

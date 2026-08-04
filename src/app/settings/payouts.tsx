@@ -10,6 +10,7 @@ import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
+import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 
 type PayoutStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
@@ -112,74 +113,74 @@ export default function PayoutsScreen() {
   const renderItem = ({ item }: { item: PayoutRequest }) => {
     const meta = STATUS_META[item.status] ?? STATUS_META.pending;
     return (
-      <View style={[styles.payoutCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-        <View style={styles.payoutLeft}>
-          <View style={[styles.payoutIconWrap, { backgroundColor: meta.bg }]}>
-            <Feather name={meta.icon as any} size={20} color={meta.color} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: GLASS_BORDER, backgroundColor: SURFACE }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: meta.bg, justifyContent: 'center', alignItems: 'center' }}>
+            <Feather name={meta.icon as any} size={18} color={meta.color} />
           </View>
           <View>
-            <Text style={[styles.payoutAmount, { color: colors.text }]}>{formatPrice(item.amount)}</Text>
-            <Text style={[styles.payoutDate, { color: colors.textSecondary }]}>{fmt(item.created_at)}</Text>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 16, color: TEXT_PRIMARY }}>{formatPrice(item.amount)}</Text>
+            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: MUTED }}>{fmt(item.created_at)}</Text>
           </View>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: meta.bg }]}>
-          <Text style={[styles.statusText, { color: meta.color }]}>{meta.label}</Text>
+        <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, backgroundColor: meta.bg }}>
+          <Text style={{ fontFamily: 'Inter', fontWeight: '700', fontSize: 11, color: meta.color }}>{meta.label}</Text>
         </View>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: DARK }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, justifyContent: 'center', alignItems: 'center', borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.06)' }}>
+          <Ionicons name="chevron-back" size={22} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Payouts</Text>
-        <View style={{ width: 40 }} />
+        <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 18, color: TEXT_PRIMARY, flex: 1, textAlign: 'center' }}>Payouts</Text>
+        <View style={{ width: 36 }} />
       </View>
 
       {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color={colors.tint} /></View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={G} /></View>
       ) : (
         <FlatList
           data={payouts}
           keyExtractor={p => p.id}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={colors.tint} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={G} />}
           ListHeaderComponent={
-            <View style={styles.listHeader}>
+            <View style={{ padding: 16 }}>
               {/* Balance card */}
-              <View style={[styles.balanceCard, { backgroundColor: colors.card, borderColor: colors.borderLight, borderWidth: 1 }]}>
-                <View style={styles.balanceIconWrap}>
-                  <Text style={[styles.balanceIconText, { color: colors.tint }]}>₦</Text>
+              <View style={{ borderRadius: 24, padding: 20, marginBottom: 20, alignItems: 'center', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
+                <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+                  <Text style={{ fontFamily: 'Outfit', fontSize: 24, fontWeight: '900', color: G }}>₦</Text>
                 </View>
-                <Text style={[styles.balanceLabel, { color: colors.textMuted }]}>Available Balance</Text>
-                <Text style={[styles.balanceAmount, { color: colors.text }]}>{formatPrice(balance)}</Text>
+                <Text style={{ fontFamily: 'Inter', fontSize: 12, fontWeight: '600', color: LABEL, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Available Balance</Text>
+                <Text style={{ fontFamily: 'Outfit', fontSize: 36, fontWeight: '900', color: TEXT_PRIMARY, marginBottom: 16 }}>{formatPrice(balance)}</Text>
                 <TouchableOpacity
-                  style={[styles.withdrawBtn, { backgroundColor: colors.tint }, (balance <= 0 || requesting) && styles.withdrawBtnDisabled]}
+                  style={[{ backgroundColor: G, borderRadius: 18, paddingVertical: 14, marginBottom: 12, width: '100%', alignItems: 'center' }, (balance <= 0 || requesting) && { opacity: 0.5 }]}
                   onPress={handleRequestPayout}
                   disabled={balance <= 0 || requesting}
                 >
                   {requesting
-                    ? <ActivityIndicator color={colors.background} size="small" />
-                    : <Text style={[styles.withdrawBtnText, { color: colors.background }]}>Withdraw Funds</Text>}
+                    ? <ActivityIndicator color="#000" size="small" />
+                    : <Text style={{ fontFamily: 'Outfit', fontSize: 15, fontWeight: '800', color: '#000' }}>Withdraw Funds</Text>}
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)} style={styles.bankLink}>
-                  <Feather name="briefcase" size={14} color={colors.tint} />
-                  <Text style={[styles.bankLinkText, { color: colors.tint }]}>Manage bank account</Text>
+                <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Feather name="briefcase" size={14} color={G} />
+                  <Text style={{ fontFamily: 'Inter', fontSize: 13, color: G, fontWeight: '600' }}>Manage bank account</Text>
                 </TouchableOpacity>
               </View>
-              <Text style={[styles.historyTitle, { color: colors.text }]}>Payout History</Text>
+              <Text style={{ fontFamily: 'Outfit', fontSize: 16, fontWeight: '800', color: TEXT_PRIMARY, marginBottom: 12, marginLeft: 4 }}>Payout History</Text>
             </View>
           }
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
+          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           ListEmptyComponent={
-            <View style={styles.empty}>
-              <Feather name="credit-card" size={48} color={colors.border} />
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>No payouts yet</Text>
-              <Text style={[styles.emptyBody, { color: colors.textMuted }]}>Funds from completed sales will appear here.</Text>
+            <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+              <Feather name="credit-card" size={44} color={LABEL} style={{ marginBottom: 10 }} />
+              <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 4 }}>No payouts yet</Text>
+              <Text style={{ fontFamily: 'Inter', fontSize: 13, color: MUTED, textAlign: 'center' }}>Funds from completed sales will appear here.</Text>
             </View>
           }
         />

@@ -12,6 +12,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { Post } from '../types';
 import { StorageService } from '../lib/storage-service';
 import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
+import { G, DARK, GLASS_BG, GLASS_BORDER, MUTED, LABEL, TEXT_PRIMARY } from '../constants/tokens';
 
 export interface CommentsBottomSheetProps {
   postId: string | null;
@@ -352,7 +353,9 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
+    fontFamily: 'Outfit',
     fontWeight: 'bold',
     marginBottom: 4,
+    color: TEXT_PRIMARY,
   },
 });

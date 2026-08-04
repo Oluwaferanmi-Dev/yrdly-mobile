@@ -5,14 +5,16 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, w
 import { Image } from 'expo-image';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { useEventListener } from 'expo';
-import { Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
+import { Ionicons, Entypo } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { VerifiedBadge } from './VerifiedBadge';
 import { Post } from '../types';
 import { timeAgo, formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { StorageService } from '../lib/storage-service';
+import { G, GLOW, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, GOLD, BLUE, AMBER } from '../constants/tokens';
 
 const { width } = Dimensions.get('window');
 
@@ -454,12 +456,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
                 {post.user?.name || post.author_name || 'Anonymous'}
               </Text>
               {((post.user as any)?.verified_seller) && (
-                <MaterialIcons 
-                  name="verified" 
-                  size={14} 
-                  color={colors.tint} 
-                  style={{ marginLeft: 4 }} 
-                />
+                <VerifiedBadge size={14} />
               )}
             </View>
             {(post.ward || post.user?.location?.ward) || (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state) ? (
@@ -564,7 +561,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
       {/* Price or Ticket Info */}
       {(post.category === 'For Sale' || post.category === 'Event') && post.price !== undefined && (
-        <Text style={[styles.price, { color: colors.tint }]}>
+        <Text style={[styles.price, { color: G }]}>
           {post.category === 'Event' && (post.price === 0 || !post.price) 
             ? 'FREE' 
             : formatPrice(post.price)}
