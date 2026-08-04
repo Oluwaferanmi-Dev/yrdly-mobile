@@ -141,10 +141,10 @@ export function GlassInput({
 
 export function PasswordStrength({ value }: { value: string }) {
   const reqs = [
-    { label: '8+ chars', met: value.length >= 8 },
-    { label: 'ABC', met: /[A-Z]/.test(value) },
-    { label: '123', met: /[0-9]/.test(value) },
-    { label: '#@$', met: /[^A-Za-z0-9]/.test(value) },
+    { label: '8+ characters', met: value.length >= 8 },
+    { label: 'Uppercase letter (A-Z)', met: /[A-Z]/.test(value) },
+    { label: 'Number (0-9)', met: /[0-9]/.test(value) },
+    { label: 'Special symbol (!@#$)', met: /[^A-Za-z0-9]/.test(value) },
   ];
   const score = reqs.filter(r => r.met).length;
   const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];

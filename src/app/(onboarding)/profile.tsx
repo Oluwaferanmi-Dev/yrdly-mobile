@@ -23,7 +23,35 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { colors, radii } = ONBOARDING_THEME;
 
-const SUGGESTIONS = ['Victoria Island, Lagos', 'Lekki Phase 1, Lagos', 'Surulere, Lagos', 'Ikeja GRA, Lagos'];
+const ALL_NEIGHBOURHOODS = [
+  'Victoria Island, Eti-Osa, Lagos',
+  'Lekki Phase 1, Eti-Osa, Lagos',
+  'Ikeja GRA, Ikeja, Lagos',
+  'Surulere, Surulere, Lagos',
+  'Yaba, Shomolu, Lagos',
+  'Ikoyi, Eti-Osa, Lagos',
+  'Gbagada, Kosofe, Lagos',
+  'Ajah, Eti-Osa, Lagos',
+  'Maryland, Ikeja, Lagos',
+  'Festac Town, Amuwo-Odofin, Lagos',
+  'Alimosho, Alimosho, Lagos',
+  'Magodo, Kosofe, Lagos',
+  'Opebi, Ikeja, Lagos',
+  'Allen Avenue, Ikeja, Lagos',
+  'Maitama, Abuja (FCT)',
+  'Wuse II, Abuja (FCT)',
+  'Gwarinpa, Abuja (FCT)',
+  'Asokoro, Abuja (FCT)',
+  'Jabi, Abuja (FCT)',
+  'Port Harcourt City, Rivers',
+  'Enugu North, Enugu',
+  'Ibadan North, Oyo',
+  'Benin City, Edo',
+  'Calabar Municipal, Cross River',
+  'Abeokuta South, Ogun',
+  'Kaduna North, Kaduna',
+  'Kano Municipal, Kano',
+];
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -283,13 +311,13 @@ export default function ProfileScreen() {
 
                   {location.length > 0 && !selectedLoc && (
                     <View style={styles.suggestionsBox}>
-                      {SUGGESTIONS.filter(s => s.toLowerCase().includes(location.toLowerCase())).map(s => (
+                      {ALL_NEIGHBOURHOODS.filter(s => s.toLowerCase().includes(location.toLowerCase())).slice(0, 6).map(s => (
                         <TouchableOpacity
                           key={s}
                           onPress={() => { setLocation(s); setSelectedLoc(true); }}
                           style={styles.suggestionRow}
                         >
-                          <Ionicons name="location-outline" size={16} color={colors.LABEL} />
+                          <Ionicons name="location-outline" size={16} color={colors.G} />
                           <Text style={styles.suggestionText}>{s}</Text>
                         </TouchableOpacity>
                       ))}
