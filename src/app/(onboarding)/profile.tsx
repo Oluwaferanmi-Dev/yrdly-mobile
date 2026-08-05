@@ -55,7 +55,7 @@ const ALL_NEIGHBOURHOODS = [
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { phoneSkipped } = useLocalSearchParams();
   const [step, setStep] = useState<1 | 2>(1);
 
@@ -63,6 +63,14 @@ export default function ProfileScreen() {
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [handle, setHandle] = useState('');
   const [bio, setBio] = useState('');
+
+  // Auto-populate username from signup / profile if available
+  React.useEffect(() => {
+    const existingUsername = profile?.username || user?.user_metadata?.username;
+    if (existingUsername && !handle) {
+      setHandle(`@${existingUsername.replace(/^@/, '')}`);
+    }
+  }, [profile, user]);
 
   // Step 2 State
   const [location, setLocation] = useState('');
@@ -132,7 +140,9 @@ export default function ProfileScreen() {
 
   const handleNextStep1 = async () => {
     const clean = handle.replace(/^@/, '').trim();
-    if (clean) {
+    const existing = (profile?.username || user?.user_metadata?.username || '').replace(/^@/, '').trim();
+
+    if (clean && clean.toLowerCase() !== existing.toLowerCase()) {
       setUsernameError('');
       const available = await AuthService.checkUsernameAvailability(clean, user?.id);
       if (!available) {
@@ -178,7 +188,7 @@ export default function ProfileScreen() {
         setIsSaving(false);
       }
     }
-    router.push('/(onboarding)/permissions' as any);
+    router.replace('/(tabs)');
   };
 
   return (
