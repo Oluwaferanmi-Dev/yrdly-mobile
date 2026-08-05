@@ -55,7 +55,7 @@ serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         api_key: Deno.env.get('TERMII_API_KEY'),
-        message_type: 'NUMERIC',
+        pin_type: 'NUMERIC',
         to: normalized,
         from: 'N-Alert', // Fallback until Yrdly is approved
         channel: 'dnd',
