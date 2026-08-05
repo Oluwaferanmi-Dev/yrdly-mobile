@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { DARK, G, GLASS_BORDER, LABEL, MUTED, SURFACE } from '../../constants/tokens';
 
-export default function LocationSettingsScreen() {
+export default function BlockedUsersScreen() {
   const router = useRouter();
 
   return (
@@ -14,16 +14,16 @@ export default function LocationSettingsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
           <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
-        <Text style={s.headerTitle}>Location Settings</Text>
+        <Text style={s.headerTitle}>Blocked Users</Text>
         <View style={{ width: 34 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.content}>
         <View style={s.emptyState}>
           <View style={s.iconCircle}>
-            <Feather name="map-pin" size={32} color={LABEL} />
+            <Feather name="shield" size={32} color={LABEL} />
           </View>
-          <Text style={s.emptyTitle}>Location Settings</Text>
+          <Text style={s.emptyTitle}>Blocked Users</Text>
           <Text style={s.emptySub}>This section is currently under construction. Stay tuned for updates!</Text>
         </View>
       </ScrollView>

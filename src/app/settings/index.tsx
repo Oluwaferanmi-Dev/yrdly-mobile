@@ -94,7 +94,7 @@ export default function SettingsScreen() {
             icon={<Feather name="mail" size={16} color="#fff" />} 
             label="Email Address" 
             sub={user?.email || 'No email linked'} 
-            onPress={() => {}} 
+            onPress={() => Alert.alert('Change Email', 'To change your email address, please contact support@yrdly.ng with a valid ID for verification.', [{ text: 'OK' }])} 
           />
         </SettingSection>
 
@@ -102,19 +102,19 @@ export default function SettingsScreen() {
           <SettingRow 
             icon={<Feather name="shopping-bag" size={16} color="#fff" />} 
             label="Transactions" sub="Track your orders & marketplace activity" 
-            onPress={() => router.push('/settings/placeholder?title=Transactions' as any)} 
+            onPress={() => router.push('/transactions' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Ionicons name="wallet-outline" size={18} color="#fff" />} 
             label="Payouts" sub="Manage your earnings & balances" 
-            onPress={() => router.push('/settings/placeholder?title=Payouts' as any)} 
+            onPress={() => router.push('/settings/payouts' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Ionicons name="business-outline" size={18} color="#fff" />} 
             label="Bank Account" sub="Manage your linked payout account" 
-            onPress={() => router.push('/settings/placeholder?title=Bank%20Account' as any)} 
+            onPress={() => router.push('/settings/payout-settings' as any)} 
           />
         </SettingSection>
 
@@ -122,20 +122,20 @@ export default function SettingsScreen() {
           <SettingRow 
             icon={<Feather name="lock" size={16} color="#fff" />} 
             label="Privacy & Discoverability" sub="Manage location sharing and visibility" 
-            onPress={() => router.push('/settings/placeholder?title=Privacy%20%26%20Discoverability' as any)} 
+            onPress={() => router.push('/settings/privacy' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="map-pin" size={16} color="#fff" />} 
             label="Location" sub="Your neighbourhood & location alerts" 
-            onPress={() => router.push('/settings/placeholder?title=Location' as any)} 
+            onPress={() => router.push('/settings/location' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="shield" size={16} color="#fff" />} 
             label="Blocked Users" sub="Manage who can't see or contact you" 
             value={profile?.blocked_users?.length ? String(profile.blocked_users.length) : '0'} 
-            onPress={() => router.push('/settings/placeholder?title=Blocked%20Users' as any)} 
+            onPress={() => router.push('/settings/blocked' as any)} 
           />
         </SettingSection>
 
@@ -143,7 +143,7 @@ export default function SettingsScreen() {
           <SettingRow 
             icon={<Feather name="bell" size={16} color="#fff" />} 
             label="Notifications" sub="Choose what you want to hear" 
-            onPress={() => router.push('/settings/placeholder?title=Notifications' as any)} 
+            onPress={() => router.push('/settings/notifications' as any)} 
           />
           <SettingDivider />
           <SettingRow 
@@ -158,25 +158,25 @@ export default function SettingsScreen() {
             icon={<Feather name="user-plus" size={16} color="#fff" />} 
             label="Invite Neighbours" sub="Invite neighbours to join your community" 
             value="Invite" 
-            onPress={() => router.push('/settings/placeholder?title=Invite%20Neighbours' as any)} 
+            onPress={() => router.push('/settings/invite' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="book-open" size={16} color="#fff" />} 
             label="Neighbourhood Guidelines" sub="What we stand for in every community" 
-            onPress={() => router.push('/settings/placeholder?title=Neighbourhood%20Guidelines' as any)} 
+            onPress={() => router.push('/settings/guidelines' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="help-circle" size={16} color="#fff" />} 
             label="Help Center" sub="FAQs, tutorials and getting support" 
-            onPress={() => router.push('/settings/placeholder?title=Help%20Center' as any)} 
+            onPress={() => router.push('/settings/help' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="flag" size={16} color="#fff" />} 
             label="Report an Issue" sub="Flag a problem or inappropriate content" 
-            onPress={() => router.push('/settings/placeholder?title=Report%20an%20Issue' as any)} 
+            onPress={() => router.push('/settings/report' as any)} 
           />
         </SettingSection>
 
@@ -204,7 +204,7 @@ export default function SettingsScreen() {
               <SettingRow 
                 icon={<Feather name="alert-triangle" size={16} color="#fff" />} 
                 label="Safety Alerts" sub="Create and manage community safety alerts" 
-                onPress={() => router.push('/settings/placeholder?title=Safety%20Alerts' as any)} 
+                onPress={() => router.push('/settings/safety' as any)} 
               />
             </SettingSection>
           </View>

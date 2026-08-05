@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Linking, Alert, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Linking, Alert, Modal, Pressable, Share } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
@@ -119,6 +119,30 @@ export default function BusinessProfileScreen() {
     } catch (e) { console.error(e); }
   }, [business, user, router]);
 
+  const handleShareProfile = async () => {
+    if (!business) return;
+    try {
+      await Share.share({
+        message: `Check out ${business.name} on YRDLY! ${business.category ? `They are a ${business.category}. ` : ''}View their profile here: https://yrdly.app/businesses/${business.id}`,
+        title: `Share ${business.name}`,
+        url: `https://yrdly.app/businesses/${business.id}`
+      });
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  const handleShareItem = async (item: CatalogItem) => {
+    try {
+      await Share.share({
+        message: `Check out "${item.title}" for ₦${item.price.toLocaleString()} at ${business?.name || 'this business'} on YRDLY!`,
+        title: `Share ${item.title}`
+      });
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
   const shortenAddress = (addr: string, len: number) => addr.length > len ? addr.substring(0, len) + '...' : addr;
   const getLocStr = () => {
     if (!business) return '';
@@ -178,7 +202,7 @@ export default function BusinessProfileScreen() {
                       </View>
                       <Text style={[s.sheetActionTxt, { color: G }]}>Inquire / Order via Chat</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[s.sheetActionItem, { borderBottomWidth: 0 }]} onPress={() => setCatalogSheet(null)}>
+                    <TouchableOpacity style={[s.sheetActionItem, { borderBottomWidth: 0 }]} onPress={() => { setCatalogSheet(null); handleShareItem(catalogSheet); }}>
                       <View style={[s.sheetActionIconBox, { backgroundColor: SURFACE }]}>
                         <Ionicons name="share-social-outline" size={16} color={MUTED} />
                       </View>
@@ -295,7 +319,7 @@ export default function BusinessProfileScreen() {
                 <Text style={s.actionBtnPrimaryTxt}>Message</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity style={[s.actionBtn, s.actionBtnSecondary, isOwner && !isCustomerView ? undefined : { flex: 1 }]}>
+            <TouchableOpacity style={[s.actionBtn, s.actionBtnSecondary, isOwner && !isCustomerView ? undefined : { flex: 1 }]} onPress={handleShareProfile}>
               <Ionicons name="share-social" size={16} color={MUTED} style={{ marginRight: 4 }} />
               <Text style={s.actionBtnSecondaryTxt}>Share</Text>
             </TouchableOpacity>

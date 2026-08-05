@@ -181,7 +181,9 @@ export default function AdminDisputesScreen() {
           <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={[s.headerTitle, { color: TEXT_PRIMARY }]}>Disputes</Text>
-        <View style={{ width: 28 }} />
+        <TouchableOpacity onPress={() => router.push('/(admin)/requests' as any)} style={s.backBtn}>
+          <Ionicons name="person-remove-outline" size={20} color={TEXT_PRIMARY} />
+        </TouchableOpacity>
       </View>
 
       {/* Filter pills */}

@@ -1,48 +1,137 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { GLASS_BORDER, SURFACE, LABEL } from '../../constants/tokens';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../hooks/use-supabase-auth';
+import { DARK, G, GLASS_BORDER, LABEL, MUTED, SURFACE } from '../../constants/tokens';
 
 export default function DeleteAccountScreen() {
   const router = useRouter();
+  const { user, signOut } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  const handleDeleteRequest = async () => {
+    if (!user) return;
+    
+    Alert.alert(
+      "Are you absolutely sure?",
+      "This action cannot be undone. All your data, messages, posts, and transactions will be permanently deleted.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete My Account", 
+          style: "destructive",
+          onPress: async () => {
+            setLoading(true);
+            try {
+              // Mark the user profile as delete_requested
+              const { error } = await supabase
+                .from('users')
+                .update({ delete_requested: true, delete_requested_at: new Date().toISOString() })
+                .eq('id', user.id);
+                
+              if (error) throw error;
+              
+
+
+              Alert.alert(
+                "Request Submitted", 
+                "Your account deletion request has been submitted. You will be signed out now. The process will complete within 30 days.",
+                [{ 
+                  text: "OK", 
+                  onPress: () => {
+                    signOut();
+                  }
+                }]
+              );
+            } catch (err: any) {
+              Alert.alert("Error", err.message || "Failed to submit deletion request.");
+              setLoading(false);
+            }
+          }
+        }
+      ]
+    );
+  };
 
   return (
-    <SafeAreaView style={s.root} edges={['top']}>
+    <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <View style={s.header}>
-        <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
           <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Delete Account</Text>
         <View style={{ width: 34 }} />
       </View>
 
-      <View style={s.content}>
-        <View style={s.warningIcon}>
-          <Ionicons name="warning" size={40} color="#ef4444" />
+      <ScrollView contentContainerStyle={s.content}>
+        <View style={s.warningCard}>
+          <View style={s.iconCircle}>
+            <Feather name="alert-triangle" size={32} color="#ef4444" />
+          </View>
+          <Text style={s.warningTitle}>Warning</Text>
+          <Text style={s.warningText}>
+            Submitting an account deletion request will schedule your account and all associated data (posts, messages, transaction history) to be permanently deleted from our servers. 
+          </Text>
+          <Text style={s.warningText}>
+            This action is irreversible. For security reasons, the deletion process may take up to 30 days to complete, but you will lose access to your account immediately.
+          </Text>
         </View>
-        <Text style={s.title}>Request Account Deletion</Text>
-        <Text style={s.subtitle}>
-          Are you sure you want to delete your account? This action cannot be undone. All your posts, events, and marketplace listings will be permanently removed.
-        </Text>
-        <TouchableOpacity style={s.dangerBtn} onPress={() => {}}>
-          <Text style={s.dangerBtnText}>Yes, Delete My Account</Text>
+
+        <TouchableOpacity 
+          style={[s.deleteBtn, loading && { opacity: 0.7 }]} 
+          onPress={handleDeleteRequest}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={s.deleteBtnText}>Request Account Deletion</Text>
+          )}
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505' },
+  root: { flex: 1, backgroundColor: DARK },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
   backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  content: { flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' },
-  warningIcon: { marginBottom: 16 },
-  title: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff', marginBottom: 12, textAlign: 'center' },
-  subtitle: { fontFamily: 'Inter-Regular', fontSize: 15, color: LABEL, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
-  dangerBtn: { backgroundColor: '#ef4444', paddingVertical: 14, paddingHorizontal: 32, borderRadius: 100 },
-  dangerBtnText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' }
+  content: { padding: 20, flexGrow: 1, justifyContent: 'center', paddingBottom: 60 },
+  
+  warningCard: { 
+    backgroundColor: 'rgba(239,68,68,0.05)', 
+    borderWidth: 1, 
+    borderColor: 'rgba(239,68,68,0.2)', 
+    borderRadius: 24, 
+    padding: 24, 
+    alignItems: 'center',
+    marginBottom: 32
+  },
+  iconCircle: { 
+    width: 72, 
+    height: 72, 
+    borderRadius: 36, 
+    backgroundColor: 'rgba(239,68,68,0.1)', 
+    borderWidth: 1, 
+    borderColor: 'rgba(239,68,68,0.3)', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    marginBottom: 20 
+  },
+  warningTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#ef4444', marginBottom: 12 },
+  warningText: { fontFamily: 'Inter', fontSize: 14, color: '#fff', textAlign: 'center', lineHeight: 22, marginBottom: 16 },
+  
+  deleteBtn: {
+    backgroundColor: '#ef4444',
+    height: 54,
+    borderRadius: 27,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 16, color: '#fff' },
 });

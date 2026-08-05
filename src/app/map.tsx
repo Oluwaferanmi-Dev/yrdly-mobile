@@ -19,15 +19,16 @@ const SHEET_H = height * 0.62;
 const PEEK = 110;
 
 type FilterType = 'all' | 'posts' | 'marketplace' | 'events' | 'businesses' | 'friends';
-type MapMarker = { id: string; type: 'friend'|'business'|'event'; lat: number; lng: number; title: string; subtitle?: string; targetId: string; avatar_url?: string };
+type MapMarker = { id: string; type: 'friend'|'business'|'event'|'marketplace'|'post'; lat: number; lng: number; title: string; subtitle?: string; targetId: string; avatar_url?: string };
 type ActivityItem = { id: string; kind: 'post'|'market'|'event'|'biz'; title: string; subtitle: string; image?: string; time: string; meta?: string; route: string; lat?: number; lng?: number; };
 
 const FILTERS: { key: FilterType; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
   { key: 'all', label: 'All', icon: 'apps', color: '#82DB7E' },
-  { key: 'posts', label: 'Posts', icon: 'chatbubble', color: '#82DB7E' },
+  { key: 'marketplace', label: 'Marketplace', icon: 'pricetag', color: '#82DB7E' },
   { key: 'friends', label: 'Friends', icon: 'people', color: '#82DB7E' },
   { key: 'events', label: 'Events', icon: 'calendar', color: '#82DB7E' },
   { key: 'businesses', label: 'Businesses', icon: 'briefcase', color: '#82DB7E' },
+  { key: 'posts', label: 'Posts', icon: 'chatbubble', color: '#82DB7E' },
 ];
 
 const PIN_COLORS: Record<string, string> = {
@@ -121,6 +122,7 @@ export default function MapScreen() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [selectedPin, setSelectedPin] = useState<MapMarker | null>(null);
   const [search, setSearch] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   const regionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sc = useMemo(() => new Supercluster({ radius: 50, maxZoom: 16 }), []);
@@ -228,6 +230,19 @@ export default function MapScreen() {
       if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `biz-${b.id}`, type: 'business', lat, lng, title: b.name || 'Business', subtitle: b.location?.address || '', targetId: b.id });
     });
 
+    // Marketplace items
+    const { data: mkt } = await supabase.from('posts')
+      .select('id,title,price,images,event_location')
+      .eq('category','For Sale')
+      .or('is_sold.eq.false,is_sold.is.null')
+      .not('event_location','is',null)
+      .limit(30);
+    (mkt || []).forEach((p: any) => {
+      const lat = parseFloat(p.event_location?.lat ?? p.event_location?.geopoint?.latitude);
+      const lng = parseFloat(p.event_location?.lng ?? p.event_location?.geopoint?.longitude);
+      if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `mkt-${p.id}`, type: 'marketplace', lat, lng, title: p.title || 'Item for Sale', subtitle: p.price ? `₦${Number(p.price).toLocaleString()}` : 'Contact for price', targetId: p.id, avatar_url: p.images?.[0] });
+    });
+
     setAllMarkers(found);
     setLoading(false);
   };
@@ -280,6 +295,8 @@ export default function MapScreen() {
       if (filter === 'friends') return m.type === 'friend';
       if (filter === 'events') return m.type === 'event';
       if (filter === 'businesses') return m.type === 'business';
+      if (filter === 'marketplace') return m.type === 'marketplace';
+      if (filter === 'posts') return m.type === 'post';
       return true;
     });
     if (!search.trim()) return byFilter;
@@ -343,6 +360,7 @@ export default function MapScreen() {
               onPress={() => setSelectedPin(selectedPin?.id === m.id ? null : m)}>
               {m.type==='friend' ? <FriendMarker avatar_url={m.avatar_url} />
                 : m.type==='business' ? <IconMarker icon="storefront-outline" color="#3B82F6" bg="rgba(59,130,246,0.15)" />
+                : m.type==='marketplace' ? <IconMarker icon="pricetag-outline" color="#82DB7E" bg="rgba(130,219,126,0.15)" />
                 : <IconMarker icon="calendar-outline" color="#F59E0B" bg="rgba(245,158,11,0.15)" />}
             </Marker>
           );
@@ -355,13 +373,31 @@ export default function MapScreen() {
           <TouchableOpacity style={s.iconBtn} onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={22} color="#fff" />
           </TouchableOpacity>
-          <View style={s.locationPill}>
-            <Ionicons name="location" size={12} color="#82DB7E" />
-            <Text style={s.locationPillTxt}>{areaName}, Lagos</Text>
-          </View>
-          <TouchableOpacity style={s.iconBtn} onPress={() => {}}>
-            <Ionicons name="search" size={18} color="rgba(255,255,255,0.7)" />
-          </TouchableOpacity>
+          {showSearch ? (
+            <View style={s.searchInputWrap}>
+              <TextInput 
+                style={s.searchInput}
+                placeholder="Search map..."
+                placeholderTextColor={MUTED}
+                value={search}
+                onChangeText={setSearch}
+                autoFocus
+              />
+              <TouchableOpacity onPress={() => { setShowSearch(false); setSearch(''); }}>
+                <Ionicons name="close-circle" size={18} color={MUTED} />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={s.locationPill}>
+              <Ionicons name="location" size={12} color="#82DB7E" />
+              <Text style={s.locationPillTxt}>{areaName}, Lagos</Text>
+            </View>
+          )}
+          {!showSearch && (
+            <TouchableOpacity style={s.iconBtn} onPress={() => setShowSearch(true)}>
+              <Ionicons name="search" size={18} color="rgba(255,255,255,0.7)" />
+            </TouchableOpacity>
+          )}
         </View>
 
         <FlatList
@@ -419,10 +455,11 @@ export default function MapScreen() {
               if (selectedPin.type === 'friend') router.push(`/profile/${selectedPin.targetId}`);
               else if (selectedPin.type === 'event') router.push(`/events/${selectedPin.targetId}`);
               else if (selectedPin.type === 'business') router.push(`/businesses/${selectedPin.targetId}` as any);
+              else if (selectedPin.type === 'marketplace') router.push(`/marketplace/${selectedPin.targetId}` as any);
               setSelectedPin(null);
             }}
           >
-            <Text style={s.previewActionTxt}>View {selectedPin.type === 'friend' ? 'Profile' : selectedPin.type === 'event' ? 'Event' : 'Business'}</Text>
+            <Text style={s.previewActionTxt}>View {selectedPin.type === 'friend' ? 'Profile' : selectedPin.type === 'event' ? 'Event' : selectedPin.type === 'business' ? 'Business' : 'Item'}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -437,6 +474,8 @@ const s = StyleSheet.create({
   iconBtn: { width:36, height:36, borderRadius:18, backgroundColor:'rgba(0,0,0,0.5)', alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'rgba(255,255,255,0.12)' },
   locationPill: { flex:1, flexDirection:'row', alignItems:'center', backgroundColor:'rgba(0,0,0,0.5)', borderRadius:14, paddingHorizontal:12, paddingVertical:8, borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
   locationPillTxt: { color:'#fff', fontWeight:'600', fontSize:13, marginLeft:6, fontFamily: 'Inter-SemiBold' },
+  searchInputWrap: { flex:1, flexDirection:'row', alignItems:'center', backgroundColor:'rgba(0,0,0,0.7)', borderRadius:14, paddingHorizontal:12, paddingVertical:8, borderWidth:1, borderColor:GLASS_BORDER },
+  searchInput: { flex:1, color:'#fff', fontFamily:'Inter-Regular', fontSize:13, marginRight:8, padding:0 },
   chip: { flexDirection:'row', alignItems:'center', paddingHorizontal:14, height: 30, borderRadius:15, backgroundColor:'rgba(0,0,0,0.55)', borderWidth:1, borderColor:'rgba(255,255,255,0.12)' },
   chipTxt: { fontSize:12, fontFamily: 'Inter-Medium' },
   recenterBtn: { position:'absolute', right:16, width:42, height:42, borderRadius:21, backgroundColor:'rgba(0,0,0,0.7)', borderWidth:1, borderColor:'rgba(255,255,255,0.12)', alignItems:'center', justifyContent:'center', zIndex:10 },
