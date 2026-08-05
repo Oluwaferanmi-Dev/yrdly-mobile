@@ -37,13 +37,38 @@ export default function Profile1Screen() {
   React.useEffect(() => {
     const existingUsername = profile?.username || user?.user_metadata?.username;
     if (existingUsername && !handle) {
-      setHandle(`@${existingUsername.replace(/^@/, '')}`);
+      setHandle(`${existingUsername.replace(/^@/, '')}`);
     }
     const existingName = profile?.name || user?.user_metadata?.name;
     if (existingName && !name) {
       setName(existingName);
     }
   }, [profile, user]);
+
+  React.useEffect(() => {
+    const checkAvailability = async () => {
+      const clean = handle.replace(/^@/, '').trim();
+      const existing = (profile?.username || user?.user_metadata?.username || '').replace(/^@/, '').trim();
+      
+      if (!clean || clean.toLowerCase() === existing.toLowerCase()) {
+        setUsernameError('');
+        return;
+      }
+      
+      const available = await AuthService.checkUsernameAvailability(clean, user?.id);
+      if (!available) {
+        setUsernameError(`The username @${clean} is already taken. Please choose another.`);
+      } else {
+        setUsernameError('');
+      }
+    };
+
+    const delayDebounceFn = setTimeout(() => {
+      checkAvailability();
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [handle, profile, user]);
 
   const handlePickAvatar = async () => {
     try {
@@ -179,9 +204,9 @@ export default function Profile1Screen() {
                 />
                 
                 <GlassInput
-                  placeholder="@username"
+                  placeholder="username"
                   value={handle}
-                  onChange={v => setHandle(v.startsWith('@') ? v : '@' + v)}
+                  onChange={v => setHandle(v.replace(/^@/, ''))}
                   icon={<Ionicons name="at-outline" size={18} color={colors.LABEL} />}
                 />
 

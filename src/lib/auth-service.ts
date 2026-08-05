@@ -59,7 +59,7 @@ export class AuthService {
   }
 
   // Sign up with email and password
-  static async signUp(email: string, password: string, name: string, username: string) {
+  static async signUp(email: string, password: string, name: string, username?: string) {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,

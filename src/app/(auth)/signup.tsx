@@ -28,7 +28,6 @@ export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('');
   const [error, setError] = useState('');
 
   const isPasswordStrong = (pw: string) => {
@@ -53,7 +52,7 @@ export default function SignUpScreen() {
   };
 
   const handleSignUp = async () => {
-    if (!email || !password || !name || !username) {
+    if (!email || !password || !name) {
       setError('Please fill in all required fields');
       return;
     }
@@ -64,14 +63,8 @@ export default function SignUpScreen() {
     }
 
     setError('');
-    const cleanUsername = username.replace(/^@/, '').trim();
-    const isAvailable = await AuthService.checkUsernameAvailability(cleanUsername);
-    if (!isAvailable) {
-      setError(`The username @${cleanUsername} is already taken. Please choose another.`);
-      return;
-    }
 
-    const { error: err, session } = await signUp(email, password, name, username);
+    const { error: err, session } = await signUp(email, password, name);
     if (err) {
       if (err.message.toLowerCase().includes('already registered') || err.message.toLowerCase().includes('already in use')) {
         try {
@@ -121,12 +114,6 @@ export default function SignUpScreen() {
                   value={name}
                   onChange={setName}
                   icon={<Ionicons name="person-outline" size={18} color={colors.LABEL} />}
-                />
-                <GlassInput
-                  placeholder="Username (e.g. johndoe)"
-                  value={username}
-                  onChange={setUsername}
-                  icon={<Ionicons name="at-outline" size={18} color={colors.LABEL} />}
                 />
                 <GlassInput
                   type="email"

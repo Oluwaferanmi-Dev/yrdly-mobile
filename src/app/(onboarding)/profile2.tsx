@@ -100,6 +100,7 @@ export default function Profile2Screen() {
       try {
         await AuthService.updateUserProfile(user.id, {
           ...(location ? { location: { state: location } } : {}),
+          profile_completed: true,
         });
       } catch (e) {
         console.error('Error saving profile step 2 location:', e);
