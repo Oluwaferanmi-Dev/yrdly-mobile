@@ -52,12 +52,16 @@ export default function OtherUserProfileScreen() {
   const [followingCount, setFollowingCount] = useState(0);
   const [reviews, setReviews] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'posts' | 'reviews'>('posts');
+  const [avatarError, setAvatarError] = useState(false);
 
   const fetchProfileAndPosts = useCallback(async () => {
     if (!id) return;
     try {
       const { data: pData } = await supabase.from('users').select('*').eq('id', id).maybeSingle();
-      if (pData) setProfile(pData);
+      if (pData) {
+        setProfile(pData);
+        setAvatarError(false); // Reset error state on new fetch
+      }
 
       if (currentUser) {
         const { data: fData } = await supabase
@@ -256,8 +260,13 @@ export default function OtherUserProfileScreen() {
         <View style={styles.profileHero}>
           <View style={styles.heroTopRow}>
             <View style={styles.avatarWrap}>
-              {profile.avatar_url ? (
-                <Image source={{ uri: profile.avatar_url }} style={styles.avatarImg} contentFit="cover" />
+              {(profile.avatar_url && !avatarError) ? (
+                <Image 
+                  source={{ uri: profile.avatar_url }} 
+                  style={styles.avatarImg} 
+                  contentFit="cover" 
+                  onError={() => setAvatarError(true)}
+                />
               ) : (
                 <View style={[styles.avatarImg, styles.avatarFallback]}>
                   <Text style={styles.avatarFallbackTxt}>{profile.name ? profile.name.charAt(0).toUpperCase() : '?'}</Text>

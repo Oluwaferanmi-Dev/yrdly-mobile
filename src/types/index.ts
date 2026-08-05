@@ -24,6 +24,8 @@ export interface Business {
   ward?: string | null;
   rating?: number;
   review_count?: number;
+  view_count?: number;
+  followers_count?: number;
   hours?: string;
   phone?: string;
   email?: string;

@@ -23,6 +23,7 @@ export default function CreateCatalogItemScreen() {
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState(CATS[0]);
   const [inStock, setInStock] = useState(true);
+  const [quantity, setQuantity] = useState('1');
   
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
@@ -44,6 +45,7 @@ export default function CreateCatalogItemScreen() {
       setPrice(String(data.price || ''));
       setCategory(data.category || CATS[0]);
       setInStock(data.in_stock ?? true);
+      setQuantity(String(data.quantity ?? 1));
       let imgs: string[] = [];
       if (Array.isArray(data.images)) imgs = data.images;
       else if (typeof data.images === 'string') { try { imgs = JSON.parse(data.images); } catch (_) {} }
@@ -84,7 +86,7 @@ export default function CreateCatalogItemScreen() {
         price: parseFloat(price) || 0,
         category,
         in_stock: inStock,
-        quantity: inStock ? 1 : 0,
+        quantity: parseInt(quantity, 10) || 0,
       };
 
       let targetItemId = itemId;
@@ -248,6 +250,21 @@ export default function CreateCatalogItemScreen() {
             />
           </View>
           
+          {/* Quantity */}
+          {inStock && (
+            <View style={s.fieldBlock}>
+              <Text style={s.fieldLabel}>Inventory Count (Quantity)</Text>
+              <TextInput 
+                style={s.input} 
+                value={quantity} 
+                onChangeText={setQuantity} 
+                placeholder="0" 
+                placeholderTextColor={MUTED} 
+                keyboardType="numeric" 
+                selectionColor={G}
+              />
+            </View>
+          )}
         </ScrollView>
 
         <View style={s.bottomArea}>

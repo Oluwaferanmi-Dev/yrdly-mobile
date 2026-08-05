@@ -158,25 +158,25 @@ export default function SettingsScreen() {
             icon={<Feather name="user-plus" size={16} color="#fff" />} 
             label="Invite Neighbours" sub="Invite neighbours to join your community" 
             value="Invite" 
-            onPress={() => {}} 
+            onPress={() => router.push('/settings/invite' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="book-open" size={16} color="#fff" />} 
             label="Neighbourhood Guidelines" sub="What we stand for in every community" 
-            onPress={() => {}} 
+            onPress={() => router.push('/settings/guidelines' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="help-circle" size={16} color="#fff" />} 
             label="Help Center" sub="FAQs, tutorials and getting support" 
-            onPress={() => {}} 
+            onPress={() => router.push('/settings/help' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="flag" size={16} color="#fff" />} 
             label="Report an Issue" sub="Flag a problem or inappropriate content" 
-            onPress={() => {}} 
+            onPress={() => router.push('/settings/report' as any)} 
           />
         </SettingSection>
 
@@ -222,7 +222,7 @@ export default function SettingsScreen() {
             icon={<Feather name="trash-2" size={16} color="#ef4444" />} 
             label="Request Account Deletion" sub="We'll process your request within 30 days" 
             danger chevron={false} 
-            onPress={() => {}} 
+            onPress={() => router.push('/settings/delete-account' as any)} 
           />
         </SettingSection>
 

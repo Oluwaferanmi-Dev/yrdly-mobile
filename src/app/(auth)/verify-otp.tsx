@@ -142,12 +142,12 @@ const styles = StyleSheet.create({
   otpRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: 6,
   },
   otpBox: {
-    width: 46,
+    flex: 1,
     height: 58,
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1.5,
     textAlign: 'center',
     color: '#FFFFFF',

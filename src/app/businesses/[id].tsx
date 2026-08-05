@@ -22,6 +22,7 @@ export default function BusinessProfileScreen() {
   const [business, setBusiness] = useState<Business | null>(null);
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [inquiriesCount, setInquiriesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   
   const [activeTab, setActiveTab] = useState<Tab>('catalog');
@@ -62,7 +63,17 @@ export default function BusinessProfileScreen() {
       const { data } = await supabase.from('business_reviews').select(`*, users!business_reviews_user_id_fkey(name, avatar_url)`).eq('business_id', id).order('created_at', { ascending: false });
       if (data) setReviews(data);
     };
-    fetchBusiness(); fetchCatalog(); fetchReviews();
+    const fetchInquiries = async () => {
+      const { count } = await supabase.from('conversations').select('*', { count: 'exact', head: true }).eq('item_id', id);
+      if (count !== null) setInquiriesCount(count);
+    };
+    const trackView = async () => {
+      if (user && business?.owner_id && user.id !== business.owner_id) {
+        // Run RPC if it exists, otherwise we'd need to fetch and update but let's do a simple update for now
+        // Assuming we fetched it, we increment the local copy and update the db
+      }
+    };
+    fetchBusiness(); fetchCatalog(); fetchReviews(); fetchInquiries();
   }, [id]);
 
   useEffect(() => {
@@ -71,8 +82,20 @@ export default function BusinessProfileScreen() {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'businesses', filter: `id=eq.${id}` }, (payload) => {
         if (payload.new) setBusiness(prev => prev ? { ...prev, ...(payload.new as Partial<Business>) } : prev);
       }).subscribe();
+
+    // Increment view count if not owner
+    if (business && user && business.owner_id !== user.id) {
+      supabase.rpc('increment_business_view', { business_id: id }).then(({ error }) => {
+        if (error) {
+          // Fallback if RPC doesn't exist
+          const newCount = ((business as any).view_count || 0) + 1;
+          supabase.from('businesses').update({ view_count: newCount }).eq('id', id).then();
+        }
+      });
+    }
+
     return () => { supabase.removeChannel(channel); };
-  }, [id]);
+  }, [id, business?.owner_id, user?.id]);
 
   const handleDeactivate = useCallback(() => {
     setMenuVisible(false);
@@ -240,7 +263,7 @@ export default function BusinessProfileScreen() {
           {/* Stats row */}
           <View style={s.statsRow}>
             <View style={s.statItem}>
-              <Text style={s.statVal}>{(business as any).followers_count || '1.2k'}</Text>
+              <Text style={s.statVal}>{(business as any).followers_count || '0'}</Text>
               <Text style={s.statLabel}>Followers</Text>
             </View>
             <View style={s.statItem}>
@@ -375,8 +398,8 @@ export default function BusinessProfileScreen() {
             <View style={{ gap: 12 }}>
               {[
                 { l: 'Total Catalog Items', v: catalogItems.length.toString(), icon: '📦' },
-                { l: 'Profile Views (30d)', v: '1,247', icon: '👁️' },
-                { l: 'Inquiries Received', v: '34', icon: '💬' },
+                { l: 'Profile Views', v: ((business as any).view_count || 0).toLocaleString(), icon: '👁️' },
+                { l: 'Inquiries Received', v: inquiriesCount.toString(), icon: '💬' },
                 { l: 'Average Rating', v: `${business.rating?.toFixed(1) || '0'} ★`, icon: '⭐' },
               ].map(sItem => (
                 <View key={sItem.l} style={s.analyticsCard}>

@@ -96,7 +96,7 @@ function RootNavigationGuard() {
       const needsProfile = !profile.profile_completed;
 
       if (needsProfile) {
-        if (!inOnboarding) router.replace('/(onboarding)/profile');
+        if (!inOnboarding) router.replace('/(onboarding)/profile1');
       } else {
         // Onboarding complete — redirect out of auth/onboarding/root to tabs
         const isRoot = (segments as any).length === 0 || (segments[0] as string) === 'index' || (segments[0] as string) === '';

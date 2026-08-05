@@ -99,7 +99,8 @@ function ChatContent() {
   const isFocused = useIsFocused();
 
   const [meta, setMeta] = useState<ConversationMeta | null>(null);
-  const [otherUser, setOtherUser] = useState<{ name: string; avatar_url: string | null } | null>(null);
+  const [otherUser, setOtherUser] = useState<{ name: string; avatar_url: string | null; username?: string | null } | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState('');
@@ -179,10 +180,13 @@ function ChatContent() {
       if (paramParticipantId) {
         const { data: u } = await supabase
           .from('users')
-          .select('name, avatar_url')
+          .select('name, avatar_url, username')
           .eq('id', paramParticipantId)
           .single();
-        if (u) setOtherUser(u);
+        if (u) {
+          setOtherUser(u);
+          setAvatarError(false);
+        }
       }
       setLoading(false);
       return;
@@ -199,10 +203,13 @@ function ChatContent() {
       if (otherId) {
         const { data: u } = await supabase
           .from('users')
-          .select('name, avatar_url')
+          .select('name, avatar_url, username')
           .eq('id', otherId)
           .single();
-        if (u) setOtherUser(u);
+        if (u) {
+          setOtherUser(u);
+          setAvatarError(false);
+        }
       }
     }
     setLoading(false);
@@ -614,8 +621,13 @@ function ChatContent() {
             if (otherId) router.push(`/profile/${otherId}` as any);
           }}
         >
-          {otherUser?.avatar_url ? (
-            <Image source={{ uri: otherUser.avatar_url }} style={{ width: 38, height: 38, borderRadius: 19 }} contentFit="cover" />
+          {(otherUser?.avatar_url && !avatarError) ? (
+            <Image 
+              source={{ uri: otherUser.avatar_url }} 
+              style={{ width: 38, height: 38, borderRadius: 19 }} 
+              contentFit="cover" 
+              onError={() => setAvatarError(true)}
+            />
           ) : (
             <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: G + '20', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
               <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: G }}>{title.charAt(0).toUpperCase()}</Text>
@@ -623,7 +635,7 @@ function ChatContent() {
           )}
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>{title}</Text>
-            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>@user</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>@{otherUser?.username || 'user'}</Text>
           </View>
         </TouchableOpacity>
 
@@ -785,7 +797,7 @@ const styles = StyleSheet.create({
   contextImage: { width: 44, height: 44, borderRadius: 8, marginRight: 10 },
   contextTitle: { fontSize: 13, fontWeight: '600' },
   contextPrice: { fontSize: 14, fontWeight: 'bold', marginTop: 2 },
-  msgListContent: { padding: 16, paddingBottom: 8, flexGrow: 1 },
+  msgListContent: { padding: 16, paddingBottom: 8, flexGrow: 1, justifyContent: 'flex-end' },
   msgRow: { marginVertical: 4 },
   msgRowLeft: { alignItems: 'flex-start' },
   msgRowRight: { alignItems: 'flex-end' },

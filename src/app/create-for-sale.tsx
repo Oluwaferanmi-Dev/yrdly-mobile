@@ -304,14 +304,40 @@ export default function CreateForSaleScreen() {
         {step === 3 && (
           <View style={styles.formGroup}>
             <Text style={styles.stepTitle}>Review & Publish</Text>
-            <Text style={styles.stepDesc}>Make sure everything looks accurate.</Text>
+            <Text style={styles.stepDesc}>Make sure everything looks accurate before posting.</Text>
             
             <View style={styles.reviewCard}>
-              <Text style={styles.reviewTitle}>{title || 'Untitled Item'}</Text>
-              <Text style={styles.reviewPrice}>₦{parseFloat(price || '0').toLocaleString()}</Text>
-              <Text style={styles.reviewMeta}>{category} · {condition}</Text>
-              <Text style={styles.reviewMeta}>Location: {location || 'Neighbourhood'}</Text>
-              {desc ? <Text style={styles.reviewDesc}>{desc}</Text> : null}
+              {attachedFiles.length > 0 ? (
+                <Image source={{ uri: attachedFiles[0].uri }} style={styles.reviewImage} contentFit="cover" />
+              ) : (
+                <View style={[styles.reviewImage, { backgroundColor: SURFACE, justifyContent: 'center', alignItems: 'center' }]}>
+                  <Feather name="image" size={32} color={MUTED} />
+                </View>
+              )}
+              <View style={styles.reviewContent}>
+                <Text style={styles.reviewTitle}>{title || 'Untitled Item'}</Text>
+                <Text style={styles.reviewPrice}>₦{parseFloat(price || '0').toLocaleString()}</Text>
+                
+                <View style={styles.reviewMetaRow}>
+                  <View style={styles.reviewBadge}>
+                    <Text style={styles.reviewBadgeText}>{category || 'Category'}</Text>
+                  </View>
+                  <View style={styles.reviewBadge}>
+                    <Text style={styles.reviewBadgeText}>{condition || 'Condition'}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.reviewLocationRow}>
+                  <Ionicons name="location-outline" size={16} color={MUTED} />
+                  <Text style={styles.reviewLocationText}>{location || 'Neighbourhood'}</Text>
+                </View>
+                
+                {desc ? (
+                  <View style={styles.reviewDescBox}>
+                    <Text style={styles.reviewDescText} numberOfLines={3}>{desc}</Text>
+                  </View>
+                ) : null}
+              </View>
             </View>
           </View>
         )}
@@ -503,14 +529,61 @@ const styles = StyleSheet.create({
     backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: GLASS_BORDER,
-    borderRadius: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  reviewImage: {
+    width: '100%',
+    height: 200,
+  },
+  reviewContent: {
     padding: 16,
     gap: 8,
   },
-  reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  reviewPrice: { fontFamily: 'Outfit-ExtraBold', fontSize: 20, color: G },
-  reviewMeta: { fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED },
-  reviewDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: '#ccc', marginTop: 8 },
+  reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff' },
+  reviewPrice: { fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: G },
+  reviewMetaRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  reviewBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  reviewBadgeText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 12,
+    color: '#ccc',
+  },
+  reviewLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  reviewLocationText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: MUTED,
+  },
+  reviewDescBox: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+  },
+  reviewDescText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: '#aaa',
+    lineHeight: 20,
+  },
   footer: {
     paddingHorizontal: 20,
     paddingTop: 12,

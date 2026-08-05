@@ -287,7 +287,6 @@ export default function ProfileTab() {
               <MaterialCommunityIcons name="ticket-outline" size={18} color={G} />
             </View>
             <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Tickets</Text>
-            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: G }}>2 upcoming</Text>
           </PressableCard>
 
           <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/my-events' as any)}>

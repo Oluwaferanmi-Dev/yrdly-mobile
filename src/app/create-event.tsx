@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Switch } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Switch, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -11,6 +11,8 @@ import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-na
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { StorageService, MobileFile } from '../lib/storage-service';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const STEPS = ['Basic Info', 'Date & Time', 'Location', 'Tickets', 'Cover Photo', 'Review'];
 const CATEGORIES = ['Party / Social', 'Sports & Fitness', 'Workshop', 'Concert / Music', 'Community / Meetup', 'Religious', 'Business', 'Other'];
@@ -26,16 +28,19 @@ export default function CreateEventScreen() {
   const [eventCategory, setEventCategory] = useState('');
   const [desc, setDesc] = useState('');
   
-  const [dateStr, setDateStr] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [eventDate, setEventDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [startTime, setStartTime] = useState<Date>(new Date());
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [endTime, setEndTime] = useState<Date>(new Date());
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   
   const [venue, setVenue] = useState('');
   const [area, setArea] = useState('');
   const [isOnline, setIsOnline] = useState(false);
   const [onlineLink, setOnlineLink] = useState('');
   
-  const [coverFile, setCoverFile] = useState<MobileFile | null>(null);
+  const [attachedFiles, setAttachedFiles] = useState<MobileFile[]>([]);
   
   const [tiers, setTiers] = useState<Array<{ name: string; price: string; isFree: boolean; capacity: string }>>([
     { name: 'Standard Ticket', price: '0', isFree: true, capacity: '100' }
@@ -61,7 +66,7 @@ export default function CreateEventScreen() {
     width: `${progress.value * 100}%`,
   }));
 
-  const pickCover = async () => {
+  const pickImages = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
@@ -71,21 +76,20 @@ export default function CreateEventScreen() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [16, 9],
+        allowsMultipleSelection: true,
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets && result.assets[0]) {
-        const asset = result.assets[0];
-        setCoverFile({
+      if (!result.canceled && result.assets) {
+        const newFiles: MobileFile[] = result.assets.map(asset => ({
           uri: asset.uri,
-          name: asset.fileName || `cover_${Date.now()}.jpg`,
+          name: asset.fileName || `event_${Date.now()}.jpg`,
           type: asset.mimeType || 'image/jpeg',
-        });
+        }));
+        setAttachedFiles(prev => [...prev, ...newFiles]);
       }
     } catch (e) {
-      console.error('Pick cover error:', e);
+      console.error('Pick image error:', e);
     }
   };
 
@@ -108,7 +112,7 @@ export default function CreateEventScreen() {
 
   const canNext = [
     eventName.trim() && eventCategory,
-    dateStr.trim() && startTime.trim(),
+    true, // date/time always valid due to Date object
     isOnline ? true : (venue.trim() && area.trim()),
     tiers.length > 0 && tiers.every(t => t.name.trim()),
     true,
@@ -127,19 +131,21 @@ export default function CreateEventScreen() {
 
       setPublishing(true);
       try {
-        let coverUrl = '';
-        if (coverFile) {
-          const { url, error: uploadErr } = await StorageService.uploadPostImage(user.id, coverFile);
-          if (!uploadErr && url) {
-            coverUrl = url;
-          }
+        let imageUrls: string[] = [];
+        if (attachedFiles.length > 0) {
+          const uploadedImages = await Promise.all(
+            attachedFiles.map((file) => StorageService.uploadPostImage(user.id, file))
+          );
+          imageUrls = uploadedImages.map(res => res.url).filter(Boolean) as string[];
         }
+        
+        const coverUrl = imageUrls.length > 0 ? imageUrls[0] : '';
 
         const userLoc = profile.location as { state?: string; lga?: string; ward?: string } | undefined;
         
         // Parse start and end time ISOs safely
-        const startISO = new Date(`${dateStr}T${startTime}:00`).toISOString();
-        const endISO = endTime ? new Date(`${dateStr}T${endTime}:00`).toISOString() : undefined;
+        const startISO = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), startTime.getHours(), startTime.getMinutes()).toISOString();
+        const endISO = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), endTime.getHours(), endTime.getMinutes()).toISOString();
 
         const { data: newEvent, error: eventErr } = await supabase
           .from('events')
@@ -149,6 +155,7 @@ export default function CreateEventScreen() {
             category: eventCategory,
             description: desc.trim(),
             cover_image_url: coverUrl,
+            image_urls: imageUrls,
             start_time: startISO,
             end_time: endISO,
             location_address: venue.trim() || (isOnline ? 'Online Event' : 'TBA'),
@@ -186,10 +193,10 @@ export default function CreateEventScreen() {
           title: eventName.trim(),
           text: desc.trim(),
           event_date: startISO,
-          event_time: startTime,
+          event_time: startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
           event_location: { address: venue.trim() },
           event_link: `/events/${newEvent.id}`,
-          image_urls: coverUrl ? [coverUrl] : [],
+          image_urls: imageUrls,
           state: userLoc?.state || null,
           lga: userLoc?.lga || null,
           ward: userLoc?.ward || null,
@@ -299,32 +306,53 @@ export default function CreateEventScreen() {
             <Text style={styles.stepTitle}>Date & Time</Text>
             <Text style={styles.stepDesc}>When is your event taking place?</Text>
 
-            <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="2026-09-15"
-              placeholderTextColor={MUTED}
-              value={dateStr}
-              onChangeText={setDateStr}
-            />
+            <Text style={styles.label}>Event Date</Text>
+            <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+              <Text style={{ color: '#fff' }}>{eventDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={eventDate}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) setEventDate(selectedDate);
+                }}
+              />
+            )}
 
-            <Text style={styles.label}>Start Time (HH:MM e.g. 18:00)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="18:00"
-              placeholderTextColor={MUTED}
-              value={startTime}
-              onChangeText={setStartTime}
-            />
+            <Text style={styles.label}>Start Time</Text>
+            <TouchableOpacity style={styles.input} onPress={() => setShowStartTimePicker(true)}>
+              <Text style={{ color: '#fff' }}>{startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
+            </TouchableOpacity>
+            {showStartTimePicker && (
+              <DateTimePicker
+                value={startTime}
+                mode="time"
+                display="default"
+                onChange={(event, selectedTime) => {
+                  setShowStartTimePicker(false);
+                  if (selectedTime) setStartTime(selectedTime);
+                }}
+              />
+            )}
 
-            <Text style={styles.label}>End Time (Optional)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="22:00"
-              placeholderTextColor={MUTED}
-              value={endTime}
-              onChangeText={setEndTime}
-            />
+            <Text style={styles.label}>End Time</Text>
+            <TouchableOpacity style={styles.input} onPress={() => setShowEndTimePicker(true)}>
+              <Text style={{ color: '#fff' }}>{endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
+            </TouchableOpacity>
+            {showEndTimePicker && (
+              <DateTimePicker
+                value={endTime}
+                mode="time"
+                display="default"
+                onChange={(event, selectedTime) => {
+                  setShowEndTimePicker(false);
+                  if (selectedTime) setEndTime(selectedTime);
+                }}
+              />
+            )}
           </View>
         )}
 
@@ -352,13 +380,45 @@ export default function CreateEventScreen() {
             ) : (
               <>
                 <Text style={styles.label}>Venue Address</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="e.g. 12 Community Hall Way"
-                  placeholderTextColor={MUTED}
-                  value={venue}
-                  onChangeText={setVenue}
-                />
+                <View style={{ zIndex: 10 }}>
+                  <GooglePlacesAutocomplete
+                    placeholder="Search for a venue or location"
+                    onPress={(data, details = null) => {
+                      setVenue(data.description);
+                      if (data.terms && data.terms.length > 1) {
+                        setArea(data.terms[data.terms.length - 2].value);
+                      }
+                    }}
+                    query={{
+                      key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+                      language: 'en',
+                      components: 'country:ng', // Limit to Nigeria
+                    }}
+                    styles={{
+                      textInput: styles.input,
+                      listView: {
+                        backgroundColor: SURFACE,
+                        borderRadius: 12,
+                        marginTop: 8,
+                        borderWidth: 1,
+                        borderColor: GLASS_BORDER,
+                      },
+                      row: {
+                        backgroundColor: SURFACE,
+                        padding: 13,
+                        height: 44,
+                        flexDirection: 'row',
+                      },
+                      description: {
+                        color: '#fff',
+                      },
+                    }}
+                    textInputProps={{
+                      placeholderTextColor: MUTED,
+                      onChangeText: (text) => setVenue(text),
+                    }}
+                  />
+                </View>
 
                 <Text style={styles.label}>Neighbourhood / Area</Text>
                 <TextInput
@@ -389,33 +449,38 @@ export default function CreateEventScreen() {
                   )}
                 </View>
 
+                <Text style={styles.tierLabel}>Ticket Tier Name</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Tier Name (e.g. Early Bird)"
+                  placeholder="e.g. Early Bird, VIP, Standard Entry"
                   placeholderTextColor={MUTED}
                   value={tier.name}
                   onChangeText={v => updateTier(idx, 'name', v)}
                 />
 
                 <View style={styles.switchRow}>
-                  <Text style={{ fontFamily: 'Inter-Medium', color: '#ccc', fontSize: 14 }}>Free Ticket</Text>
+                  <Text style={{ fontFamily: 'Inter-Medium', color: '#ccc', fontSize: 14 }}>Is this a Free Ticket?</Text>
                   <Switch value={tier.isFree} onValueChange={v => updateTier(idx, 'isFree', v)} trackColor={{ false: SURFACE, true: G }} />
                 </View>
 
                 {!tier.isFree && (
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Price (₦)"
-                    placeholderTextColor={MUTED}
-                    keyboardType="numeric"
-                    value={tier.price}
-                    onChangeText={v => updateTier(idx, 'price', v)}
-                  />
+                  <>
+                    <Text style={styles.tierLabel}>Price (₦)</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="e.g. 5000"
+                      placeholderTextColor={MUTED}
+                      keyboardType="numeric"
+                      value={tier.price}
+                      onChangeText={v => updateTier(idx, 'price', v)}
+                    />
+                  </>
                 )}
 
+                <Text style={styles.tierLabel}>Total Capacity</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Total Capacity (e.g. 100)"
+                  placeholder="How many tickets are available? (e.g. 100)"
                   placeholderTextColor={MUTED}
                   keyboardType="numeric"
                   value={tier.capacity}
@@ -433,23 +498,30 @@ export default function CreateEventScreen() {
 
         {step === 4 && (
           <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Cover Photo</Text>
-            <Text style={styles.stepDesc}>Upload an eye-catching banner image.</Text>
+            <Text style={styles.stepTitle}>Photos</Text>
+            <Text style={styles.stepDesc}>Add multiple photos of the event or past events.</Text>
 
-            {coverFile ? (
-              <View style={styles.coverPreviewBox}>
-                <Image source={{ uri: coverFile.uri }} style={styles.coverImg} />
-                <TouchableOpacity style={styles.removeCover} onPress={() => setCoverFile(null)}>
-                  <Ionicons name="close-circle" size={24} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity style={styles.uploadCoverBox} onPress={pickCover}>
-                <Ionicons name="image-outline" size={36} color={G} />
-                <Text style={{ fontFamily: 'Outfit-Bold', color: '#fff', fontSize: 16 }}>Upload Cover Image</Text>
-                <Text style={{ fontFamily: 'Inter-Regular', color: MUTED, fontSize: 12 }}>16:9 Aspect Ratio Recommended</Text>
+            <View style={styles.photosGrid}>
+              {attachedFiles.map((file, i) => (
+                <View key={i} style={[styles.photoBox, i === 0 && { borderWidth: 2, borderColor: G }]}>
+                  <Image source={{ uri: file.uri }} style={styles.photoImg} />
+                  {i === 0 && (
+                    <View style={styles.coverBadge}>
+                      <Text style={styles.coverBadgeText}>COVER</Text>
+                    </View>
+                  )}
+                  <TouchableOpacity 
+                    style={styles.removePhoto}
+                    onPress={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))}
+                  >
+                    <Ionicons name="close-circle" size={18} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              <TouchableOpacity style={styles.addPhotoBox} onPress={pickImages}>
+                <Feather name="camera" size={24} color={LABEL} />
               </TouchableOpacity>
-            )}
+            </View>
           </View>
         )}
 
@@ -459,10 +531,44 @@ export default function CreateEventScreen() {
             <Text style={styles.stepDesc}>Verify details before publishing live.</Text>
 
             <View style={styles.reviewCard}>
-              <Text style={styles.reviewTitle}>{eventName}</Text>
-              <Text style={styles.reviewMeta}>{eventCategory} · {dateStr} at {startTime}</Text>
-              <Text style={styles.reviewMeta}>{isOnline ? 'Online Event' : venue}</Text>
-              <Text style={{ fontFamily: 'Outfit-Bold', color: G, marginTop: 8 }}>{tiers.length} Ticket Tier(s)</Text>
+              {attachedFiles.length > 0 ? (
+                <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.reviewImageScroll}>
+                  {attachedFiles.map((file, idx) => (
+                    <Image key={idx} source={{ uri: file.uri }} style={styles.reviewImage} contentFit="cover" />
+                  ))}
+                </ScrollView>
+              ) : (
+                <View style={[styles.reviewImage, { backgroundColor: SURFACE, justifyContent: 'center', alignItems: 'center' }]}>
+                  <Feather name="image" size={32} color={MUTED} />
+                </View>
+              )}
+              
+              <View style={styles.reviewContent}>
+                <Text style={styles.reviewTitle}>{eventName || 'Untitled Event'}</Text>
+                
+                <View style={styles.reviewMetaRow}>
+                  <View style={styles.reviewBadge}>
+                    <Text style={styles.reviewBadgeText}>{eventCategory || 'Category'}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.reviewLocationRow}>
+                  <Feather name="calendar" size={16} color={G} />
+                  <Text style={styles.reviewLocationText}>
+                    {eventDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} at {startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  </Text>
+                </View>
+
+                <View style={styles.reviewLocationRow}>
+                  <Ionicons name="location-outline" size={16} color={MUTED} />
+                  <Text style={styles.reviewLocationText}>{isOnline ? 'Online Event' : (venue || 'Location TBA')}</Text>
+                </View>
+
+                <View style={styles.reviewLocationRow}>
+                  <Ionicons name="ticket-outline" size={16} color={MUTED} />
+                  <Text style={[styles.reviewLocationText, { color: '#ccc' }]}>{tiers.length} Ticket Tier(s)</Text>
+                </View>
+              </View>
             </View>
           </View>
         )}
@@ -573,6 +679,7 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 8,
   },
+  tierLabel: { fontFamily: 'Inter-Medium', fontSize: 13, color: '#ccc', marginTop: 12, marginBottom: 8 },
   addTierBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -584,39 +691,97 @@ const styles = StyleSheet.create({
     borderColor: GLASS_BORDER,
     gap: 8,
   },
-  uploadCoverBox: {
-    height: 180,
-    borderRadius: 16,
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
+  photosGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
-  coverPreviewBox: {
-    height: 180,
+  photoBox: {
+    width: (Dimensions.get('window').width - 40 - 16) / 3,
+    aspectRatio: 1,
     borderRadius: 16,
     overflow: 'hidden',
     position: 'relative',
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
-  coverImg: { width: '100%', height: '100%' },
-  removeCover: {
+  photoImg: { width: '100%', height: '100%' },
+  coverBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    bottom: 5,
+    alignSelf: 'center',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    backgroundColor: G,
+  },
+  coverBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 9, color: DARK },
+  removePhoto: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+  },
+  addPhotoBox: {
+    width: (Dimensions.get('window').width - 40 - 16) / 3,
+    aspectRatio: 1,
+    borderRadius: 16,
+    backgroundColor: SURFACE,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   reviewCard: {
     backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: GLASS_BORDER,
-    borderRadius: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  reviewImageScroll: {
+    width: '100%',
+    height: 200,
+  },
+  reviewImage: {
+    width: Dimensions.get('window').width - 40,
+    height: 200,
+  },
+  reviewContent: {
     padding: 16,
-    gap: 6,
+    gap: 8,
   },
   reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff' },
-  reviewMeta: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED },
+  reviewMetaRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  reviewBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  reviewBadgeText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 12,
+    color: '#ccc',
+  },
+  reviewLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  reviewLocationText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: MUTED,
+  },
   footer: {
     paddingHorizontal: 20,
     paddingTop: 12,

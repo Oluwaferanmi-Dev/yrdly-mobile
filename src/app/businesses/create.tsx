@@ -9,6 +9,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { StorageService } from '../../lib/storage-service';
 import * as ImagePicker from 'expo-image-picker';
 import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
+import { OpeningHoursPicker } from '../../components/OpeningHoursPicker';
 
 const CATS = ['Food & Catering', 'Restaurant', 'Shopping', 'Beauty & Salon', 'Local Services', 'Tech & Repair'];
 
@@ -25,6 +26,7 @@ export default function BusinessEditScreen() {
   const [hours, setHours] = useState('');
   
   const [coverUri, setCoverUri] = useState<string | null>(null);
+  const [logoUri, setLogoUri] = useState<string | null>(null);
   
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(!!id);
@@ -43,6 +45,7 @@ export default function BusinessEditScreen() {
             setCategory(data.category || CATS[0]);
             setHours(data.hours || '');
             setCoverUri(data.cover_image || data.image_urls?.[0] || null);
+            setLogoUri(data.logo || null);
           }
         } catch (e) {
           console.error(e);
@@ -68,12 +71,25 @@ export default function BusinessEditScreen() {
     }
   };
 
+  const pickLogo = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setLogoUri(result.assets[0].uri);
+    }
+  };
+
   const handleSave = async () => {
     if (!name.trim()) return Alert.alert('Error', 'Name is required');
     
     setLoading(true);
     try {
       let finalCover = coverUri;
+      let finalLogo = logoUri;
       let businessId = id;
       
       const payload = {
@@ -101,12 +117,19 @@ export default function BusinessEditScreen() {
         if (error) throw error;
       }
 
-      // Upload image if it's a local file (file://)
       if (businessId && coverUri && coverUri.startsWith('file://')) {
         const { url } = await StorageService.uploadBusinessImage(businessId, { uri: coverUri, name: 'cover.jpg', type: 'image/jpeg' });
         if (url) {
           finalCover = url;
           await supabase.from('businesses').update({ cover_image: url }).eq('id', businessId);
+        }
+      }
+
+      if (businessId && logoUri && logoUri.startsWith('file://')) {
+        const { url } = await StorageService.uploadBusinessImage(businessId, { uri: logoUri, name: 'logo.jpg', type: 'image/jpeg' });
+        if (url) {
+          finalLogo = url;
+          await supabase.from('businesses').update({ logo: url }).eq('id', businessId);
         }
       }
 
@@ -160,6 +183,20 @@ export default function BusinessEditScreen() {
             </TouchableOpacity>
           </View>
 
+          {/* Logo */}
+          <View style={s.logoSection}>
+            <View style={s.logoWrap}>
+              <Image source={{ uri: logoUri || 'https://via.placeholder.com/150' }} style={s.logoImg} contentFit="cover" />
+              <TouchableOpacity style={s.changeLogoBtn} onPress={pickLogo}>
+                <Ionicons name="camera" size={16} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <View style={{ flex: 1, marginLeft: 16 }}>
+              <Text style={s.logoLabel}>Business Logo</Text>
+              <Text style={s.logoDesc}>This will be displayed on your profile and catalog.</Text>
+            </View>
+          </View>
+
           {/* Form Fields */}
           <View style={s.fieldBlock}>
             <Text style={s.fieldLabel}>Business Name</Text>
@@ -178,7 +215,7 @@ export default function BusinessEditScreen() {
 
           <View style={s.fieldBlock}>
             <Text style={s.fieldLabel}>Opening Hours</Text>
-            <TextInput style={s.input} value={hours} onChangeText={setHours} placeholder="e.g. Mon–Sat: 9am – 8pm" placeholderTextColor={MUTED} />
+            <OpeningHoursPicker value={hours} onChange={setHours} />
           </View>
 
           <View style={s.fieldBlock}>
@@ -234,6 +271,13 @@ const s = StyleSheet.create({
   coverOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
   changeCoverBadge: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)' },
   changeCoverTxt: { fontFamily: 'Outfit-Bold', fontSize: 13, color: '#fff' },
+  
+  logoSection: { flexDirection: 'row', alignItems: 'center' },
+  logoWrap: { width: 80, height: 80, borderRadius: 40, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, overflow: 'hidden' },
+  logoImg: { width: '100%', height: '100%' },
+  changeLogoBtn: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.5)', height: 26, alignItems: 'center', justifyContent: 'center' },
+  logoLabel: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff', marginBottom: 4 },
+  logoDesc: { fontFamily: 'Inter', fontSize: 12, color: MUTED },
   
   fieldBlock: {},
   fieldLabel: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: LABEL, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
