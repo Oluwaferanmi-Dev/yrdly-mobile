@@ -262,7 +262,7 @@ export class AuthService {
       const arrayBuffer = await new Response(blob).arrayBuffer();
 
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
+        .from('user-avatars')
         .upload(filePath, arrayBuffer, {
           contentType: `image/${ext === 'png' ? 'png' : 'jpeg'}`,
           upsert: true,
@@ -273,7 +273,7 @@ export class AuthService {
         return localUri;
       }
 
-      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const { data } = supabase.storage.from('user-avatars').getPublicUrl(filePath);
       return data.publicUrl;
     } catch (e) {
       console.log('Avatar upload fallback to local URI:', e);

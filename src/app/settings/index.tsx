@@ -102,19 +102,19 @@ export default function SettingsScreen() {
           <SettingRow 
             icon={<Feather name="shopping-bag" size={16} color="#fff" />} 
             label="Transactions" sub="Track your orders & marketplace activity" 
-            onPress={() => router.push('/transactions' as any)} 
+            onPress={() => router.push('/settings/placeholder?title=Transactions' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Ionicons name="wallet-outline" size={18} color="#fff" />} 
             label="Payouts" sub="Manage your earnings & balances" 
-            onPress={() => router.push('/settings/payouts' as any)} 
+            onPress={() => router.push('/settings/placeholder?title=Payouts' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Ionicons name="business-outline" size={18} color="#fff" />} 
             label="Bank Account" sub="Manage your linked payout account" 
-            onPress={() => router.push('/settings/payout-settings' as any)} 
+            onPress={() => router.push('/settings/placeholder?title=Bank%20Account' as any)} 
           />
         </SettingSection>
 
@@ -122,20 +122,20 @@ export default function SettingsScreen() {
           <SettingRow 
             icon={<Feather name="lock" size={16} color="#fff" />} 
             label="Privacy & Discoverability" sub="Manage location sharing and visibility" 
-            onPress={() => router.push('/settings/privacy' as any)} 
+            onPress={() => router.push('/settings/placeholder?title=Privacy%20%26%20Discoverability' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="map-pin" size={16} color="#fff" />} 
             label="Location" sub="Your neighbourhood & location alerts" 
-            onPress={() => router.push('/settings/location' as any)} 
+            onPress={() => router.push('/settings/placeholder?title=Location' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="shield" size={16} color="#fff" />} 
             label="Blocked Users" sub="Manage who can't see or contact you" 
             value={profile?.blocked_users?.length ? String(profile.blocked_users.length) : '0'} 
-            onPress={() => {}} 
+            onPress={() => router.push('/settings/placeholder?title=Blocked%20Users' as any)} 
           />
         </SettingSection>
 
@@ -143,7 +143,7 @@ export default function SettingsScreen() {
           <SettingRow 
             icon={<Feather name="bell" size={16} color="#fff" />} 
             label="Notifications" sub="Choose what you want to hear" 
-            onPress={() => router.push('/settings/notifications' as any)} 
+            onPress={() => router.push('/settings/placeholder?title=Notifications' as any)} 
           />
           <SettingDivider />
           <SettingRow 
@@ -158,25 +158,25 @@ export default function SettingsScreen() {
             icon={<Feather name="user-plus" size={16} color="#fff" />} 
             label="Invite Neighbours" sub="Invite neighbours to join your community" 
             value="Invite" 
-            onPress={() => router.push('/settings/invite' as any)} 
+            onPress={() => router.push('/settings/placeholder?title=Invite%20Neighbours' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="book-open" size={16} color="#fff" />} 
             label="Neighbourhood Guidelines" sub="What we stand for in every community" 
-            onPress={() => router.push('/settings/guidelines' as any)} 
+            onPress={() => router.push('/settings/placeholder?title=Neighbourhood%20Guidelines' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="help-circle" size={16} color="#fff" />} 
             label="Help Center" sub="FAQs, tutorials and getting support" 
-            onPress={() => router.push('/settings/help' as any)} 
+            onPress={() => router.push('/settings/placeholder?title=Help%20Center' as any)} 
           />
           <SettingDivider />
           <SettingRow 
             icon={<Feather name="flag" size={16} color="#fff" />} 
             label="Report an Issue" sub="Flag a problem or inappropriate content" 
-            onPress={() => router.push('/settings/report' as any)} 
+            onPress={() => router.push('/settings/placeholder?title=Report%20an%20Issue' as any)} 
           />
         </SettingSection>
 
@@ -204,7 +204,7 @@ export default function SettingsScreen() {
               <SettingRow 
                 icon={<Feather name="alert-triangle" size={16} color="#fff" />} 
                 label="Safety Alerts" sub="Create and manage community safety alerts" 
-                onPress={() => {}} 
+                onPress={() => router.push('/settings/placeholder?title=Safety%20Alerts' as any)} 
               />
             </SettingSection>
           </View>
@@ -240,14 +240,14 @@ const s = StyleSheet.create({
   headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
 
   section: { marginBottom: 24 },
-  sectionTitle: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: LABEL, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginLeft: 4 },
-  sectionCard: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 22, overflow: 'hidden' },
+  sectionTitle: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: LABEL, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10, marginLeft: 6 },
+  sectionCard: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 24, overflow: 'hidden' },
   
-  divider: { height: 1, backgroundColor: GLASS_BORDER, marginLeft: 64 },
+  divider: { height: 1, backgroundColor: GLASS_BORDER, marginLeft: 66 },
   
-  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14 },
-  iconBox: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  rowMid: { flex: 1, paddingLeft: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16 },
+  iconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+  rowMid: { flex: 1, paddingLeft: 14, paddingRight: 8 },
   rowLabel: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
   rowSub: { fontFamily: 'Inter', fontSize: 12, color: MUTED, marginTop: 2 },
   rowValue: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },

@@ -11,10 +11,12 @@ import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-na
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { StorageService, MobileFile } from '../lib/storage-service';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { DateTimePickerModal } from '../components/DateTimePickerModal';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { EventCard } from '../components/EventCard';
+import { ImageCarousel } from '../components/ImageCarousel';
 
-const STEPS = ['Basic Info', 'Date & Time', 'Location', 'Tickets', 'Cover Photo', 'Review'];
+const STEPS = ['Basic Info', 'Date & Time', 'Location', 'Tickets', 'Photos', 'Review'];
 const CATEGORIES = ['Party / Social', 'Sports & Fitness', 'Workshop', 'Concert / Music', 'Community / Meetup', 'Religious', 'Business', 'Other'];
 
 export default function CreateEventScreen() {
@@ -310,49 +312,37 @@ export default function CreateEventScreen() {
             <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
               <Text style={{ color: '#fff' }}>{eventDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</Text>
             </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePicker
-                value={eventDate}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  setShowDatePicker(false);
-                  if (selectedDate) setEventDate(selectedDate);
-                }}
-              />
-            )}
+            <DateTimePickerModal
+              visible={showDatePicker}
+              mode="date"
+              value={eventDate}
+              onConfirm={(d) => { setEventDate(d); setShowDatePicker(false); }}
+              onCancel={() => setShowDatePicker(false)}
+            />
 
             <Text style={styles.label}>Start Time</Text>
             <TouchableOpacity style={styles.input} onPress={() => setShowStartTimePicker(true)}>
               <Text style={{ color: '#fff' }}>{startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
             </TouchableOpacity>
-            {showStartTimePicker && (
-              <DateTimePicker
-                value={startTime}
-                mode="time"
-                display="default"
-                onChange={(event, selectedTime) => {
-                  setShowStartTimePicker(false);
-                  if (selectedTime) setStartTime(selectedTime);
-                }}
-              />
-            )}
+            <DateTimePickerModal
+              visible={showStartTimePicker}
+              mode="time"
+              value={startTime}
+              onConfirm={(d) => { setStartTime(d); setShowStartTimePicker(false); }}
+              onCancel={() => setShowStartTimePicker(false)}
+            />
 
             <Text style={styles.label}>End Time</Text>
             <TouchableOpacity style={styles.input} onPress={() => setShowEndTimePicker(true)}>
               <Text style={{ color: '#fff' }}>{endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
             </TouchableOpacity>
-            {showEndTimePicker && (
-              <DateTimePicker
-                value={endTime}
-                mode="time"
-                display="default"
-                onChange={(event, selectedTime) => {
-                  setShowEndTimePicker(false);
-                  if (selectedTime) setEndTime(selectedTime);
-                }}
-              />
-            )}
+            <DateTimePickerModal
+              visible={showEndTimePicker}
+              mode="time"
+              value={endTime}
+              onConfirm={(d) => { setEndTime(d); setShowEndTimePicker(false); }}
+              onCancel={() => setShowEndTimePicker(false)}
+            />
           </View>
         )}
 
@@ -435,56 +425,56 @@ export default function CreateEventScreen() {
 
         {step === 3 && (
           <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Ticket Tiers</Text>
-            <Text style={styles.stepDesc}>Configure free or paid entry options.</Text>
+            <Text style={styles.stepTitle}>Tickets</Text>
+            <Text style={styles.stepDesc}>Add the ticket tiers available for your event.</Text>
 
-            {tiers.map((tier, idx) => (
+            {tiers.map((t, idx) => (
               <View key={idx} style={styles.tierCard}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ fontFamily: 'Outfit-Bold', color: '#fff', fontSize: 16 }}>Tier #{idx + 1}</Text>
+                  <Text style={{ fontFamily: 'Outfit-Bold', color: '#fff', fontSize: 16 }}>Ticket Tier {idx + 1}</Text>
                   {tiers.length > 1 && (
-                    <TouchableOpacity onPress={() => removeTier(idx)}>
-                      <Ionicons name="trash-outline" size={18} color="#FF6B6B" />
+                    <TouchableOpacity onPress={() => removeTier(idx)} style={{ padding: 4 }}>
+                      <Feather name="trash-2" size={18} color="#ef4444" />
                     </TouchableOpacity>
                   )}
                 </View>
 
-                <Text style={styles.tierLabel}>Ticket Tier Name</Text>
+                <Text style={styles.tierLabel}>Ticket Name (e.g. Early Bird, VIP)</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="e.g. Early Bird, VIP, Standard Entry"
-                  placeholderTextColor={MUTED}
-                  value={tier.name}
-                  onChangeText={v => updateTier(idx, 'name', v)}
+                  placeholder="e.g. VIP Access"
+                  placeholderTextColor="rgba(255,255,255,0.3)"
+                  value={t.name}
+                  onChangeText={(val) => updateTier(idx, 'name', val)}
                 />
 
                 <View style={styles.switchRow}>
                   <Text style={{ fontFamily: 'Inter-Medium', color: '#ccc', fontSize: 14 }}>Is this a Free Ticket?</Text>
-                  <Switch value={tier.isFree} onValueChange={v => updateTier(idx, 'isFree', v)} trackColor={{ false: SURFACE, true: G }} />
+                  <Switch value={t.isFree} onValueChange={(val) => updateTier(idx, 'isFree', val)} trackColor={{ false: SURFACE, true: G }} />
                 </View>
 
-                {!tier.isFree && (
+                {!t.isFree && (
                   <>
-                    <Text style={styles.tierLabel}>Price (₦)</Text>
+                    <Text style={styles.tierLabel}>Ticket Price (₦)</Text>
                     <TextInput
                       style={styles.input}
                       placeholder="e.g. 5000"
-                      placeholderTextColor={MUTED}
+                      placeholderTextColor="rgba(255,255,255,0.3)"
                       keyboardType="numeric"
-                      value={tier.price}
-                      onChangeText={v => updateTier(idx, 'price', v)}
+                      value={t.price}
+                      onChangeText={(val) => updateTier(idx, 'price', val)}
                     />
                   </>
                 )}
 
-                <Text style={styles.tierLabel}>Total Capacity</Text>
+                <Text style={styles.tierLabel}>Total Number of Tickets Available</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="How many tickets are available? (e.g. 100)"
-                  placeholderTextColor={MUTED}
+                  placeholder="e.g. 100"
+                  placeholderTextColor="rgba(255,255,255,0.3)"
                   keyboardType="numeric"
-                  value={tier.capacity}
-                  onChangeText={v => updateTier(idx, 'capacity', v)}
+                  value={t.capacity}
+                  onChangeText={(val) => updateTier(idx, 'capacity', val)}
                 />
               </View>
             ))}
@@ -499,28 +489,30 @@ export default function CreateEventScreen() {
         {step === 4 && (
           <View style={styles.formGroup}>
             <Text style={styles.stepTitle}>Photos</Text>
-            <Text style={styles.stepDesc}>Add multiple photos of the event or past events.</Text>
+            <Text style={styles.stepDesc}>Add eye-catching photos for your event. The first photo will be the cover.</Text>
 
             <View style={styles.photosGrid}>
-              {attachedFiles.map((file, i) => (
-                <View key={i} style={[styles.photoBox, i === 0 && { borderWidth: 2, borderColor: G }]}>
-                  <Image source={{ uri: file.uri }} style={styles.photoImg} />
+              {attachedFiles.map((f, i) => (
+                <View key={i} style={styles.photoBox}>
+                  <Image source={{ uri: f.uri }} style={styles.photoImg} />
                   {i === 0 && (
                     <View style={styles.coverBadge}>
                       <Text style={styles.coverBadgeText}>COVER</Text>
                     </View>
                   )}
-                  <TouchableOpacity 
-                    style={styles.removePhoto}
-                    onPress={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))}
-                  >
-                    <Ionicons name="close-circle" size={18} color="#fff" />
+                  <TouchableOpacity style={styles.removePhoto} onPress={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))}>
+                    <View style={{ backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: 4 }}>
+                      <Feather name="x" size={14} color="#fff" />
+                    </View>
                   </TouchableOpacity>
                 </View>
               ))}
-              <TouchableOpacity style={styles.addPhotoBox} onPress={pickImages}>
-                <Feather name="camera" size={24} color={LABEL} />
-              </TouchableOpacity>
+              {attachedFiles.length < 5 && (
+                <TouchableOpacity style={styles.addPhotoBox} onPress={pickImages}>
+                  <Feather name="image" size={24} color={LABEL} />
+                  <Text style={{ color: LABEL, fontSize: 12, marginTop: 4, fontFamily: 'Inter-Regular' }}>Add Photo</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         )}
@@ -528,46 +520,92 @@ export default function CreateEventScreen() {
         {step === 5 && (
           <View style={styles.formGroup}>
             <Text style={styles.stepTitle}>Review & Publish</Text>
-            <Text style={styles.stepDesc}>Verify details before publishing live.</Text>
+            <Text style={styles.stepDesc}>Verify details before publishing live. Here's a preview of how it will look:</Text>
 
-            <View style={styles.reviewCard}>
+            <View style={{ marginTop: 10, borderRadius: 20, overflow: 'hidden', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
               {attachedFiles.length > 0 ? (
-                <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.reviewImageScroll}>
-                  {attachedFiles.map((file, idx) => (
-                    <Image key={idx} source={{ uri: file.uri }} style={styles.reviewImage} contentFit="cover" />
-                  ))}
-                </ScrollView>
+                <ImageCarousel 
+                  imageUrls={attachedFiles.map(f => f.uri)} 
+                  height={250} 
+                  autoPlay={false} 
+                />
               ) : (
-                <View style={[styles.reviewImage, { backgroundColor: SURFACE, justifyContent: 'center', alignItems: 'center' }]}>
-                  <Feather name="image" size={32} color={MUTED} />
+                <View style={[styles.placeholderImage, { backgroundColor: 'rgba(0,0,0,0.2)', height: 250, justifyContent: 'center', alignItems: 'center' }]}>
+                  <Ionicons name="calendar-outline" size={64} color={LABEL} />
                 </View>
               )}
               
-              <View style={styles.reviewContent}>
-                <Text style={styles.reviewTitle}>{eventName || 'Untitled Event'}</Text>
-                
-                <View style={styles.reviewMetaRow}>
-                  <View style={styles.reviewBadge}>
-                    <Text style={styles.reviewBadgeText}>{eventCategory || 'Category'}</Text>
+              <View style={{ padding: 16 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 22, color: TEXT_PRIMARY, flex: 1 }}>{eventName.trim() || 'Untitled Event'}</Text>
+                  <View style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
+                    <Text style={{ color: '#F59E0B', fontSize: 10, fontFamily: 'Inter-Bold', textTransform: 'uppercase' }}>Preview</Text>
                   </View>
                 </View>
-                
-                <View style={styles.reviewLocationRow}>
-                  <Feather name="calendar" size={16} color={G} />
-                  <Text style={styles.reviewLocationText}>
-                    {eventDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} at {startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                  </Text>
+
+                <View style={{ gap: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.15)', justifyContent: 'center', alignItems: 'center' }}>
+                      <Feather name="calendar" size={18} color={G} />
+                    </View>
+                    <View>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: LABEL, fontSize: 12 }}>Date</Text>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: TEXT_PRIMARY, fontSize: 14 }}>
+                        {eventDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.15)', justifyContent: 'center', alignItems: 'center' }}>
+                      <Feather name="clock" size={18} color={G} />
+                    </View>
+                    <View>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: LABEL, fontSize: 12 }}>Time</Text>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: TEXT_PRIMARY, fontSize: 14 }}>
+                        {startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.15)', justifyContent: 'center', alignItems: 'center' }}>
+                      <Feather name={isOnline ? "video" : "map-pin"} size={18} color={G} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: LABEL, fontSize: 12 }}>{isOnline ? 'Platform' : 'Location'}</Text>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: TEXT_PRIMARY, fontSize: 14 }} numberOfLines={2}>
+                        {isOnline ? 'Online Event' : (venue.trim() || 'Location TBA')}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
 
-                <View style={styles.reviewLocationRow}>
-                  <Ionicons name="location-outline" size={16} color={MUTED} />
-                  <Text style={styles.reviewLocationText}>{isOnline ? 'Online Event' : (venue || 'Location TBA')}</Text>
-                </View>
+                {desc.trim().length > 0 && (
+                  <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' }}>
+                    <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 8 }}>About this event</Text>
+                    <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: LABEL, lineHeight: 22 }}>
+                      {desc.trim()}
+                    </Text>
+                  </View>
+                )}
 
-                <View style={styles.reviewLocationRow}>
-                  <Ionicons name="ticket-outline" size={16} color={MUTED} />
-                  <Text style={[styles.reviewLocationText, { color: '#ccc' }]}>{tiers.length} Ticket Tier(s)</Text>
-                </View>
+                {tiers.length > 0 && (
+                  <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' }}>
+                    <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 8 }}>Tickets</Text>
+                    {tiers.map((t, idx) => (
+                      <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: t.isFree ? G : 'rgba(255,255,255,0.05)' }}>
+                        <View>
+                          <Text style={{ fontFamily: 'Inter-SemiBold', color: TEXT_PRIMARY, fontSize: 14 }}>{t.name || `Tier ${idx + 1}`}</Text>
+                          <Text style={{ fontFamily: 'Inter-Regular', color: LABEL, fontSize: 12, marginTop: 2 }}>{t.capacity || 0} Available</Text>
+                        </View>
+                        <Text style={{ fontFamily: 'Outfit-Bold', color: t.isFree ? G : TEXT_PRIMARY, fontSize: 16 }}>
+                          {t.isFree ? 'FREE' : `₦${t.price || 0}`}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
             </View>
           </View>

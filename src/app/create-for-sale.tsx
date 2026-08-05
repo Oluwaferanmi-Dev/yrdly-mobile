@@ -11,6 +11,8 @@ import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-na
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { StorageService, MobileFile } from '../lib/storage-service';
+import { MarketplaceItemCard } from '../components/MarketplaceItemCard';
+import { ImageCarousel } from '../components/ImageCarousel';
 
 const STEPS = ['Photos', 'Details', 'Description', 'Review'];
 const CATEGORIES = ['Fashion', 'Electronics', 'Home & Living', 'Vehicles', 'Food', 'Gaming', 'Books', 'Beauty', 'Services', 'Other'];
@@ -306,37 +308,55 @@ export default function CreateForSaleScreen() {
             <Text style={styles.stepTitle}>Review & Publish</Text>
             <Text style={styles.stepDesc}>Make sure everything looks accurate before posting.</Text>
             
-            <View style={styles.reviewCard}>
+            <View style={{ marginTop: 10, borderRadius: 20, overflow: 'hidden', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
               {attachedFiles.length > 0 ? (
-                <Image source={{ uri: attachedFiles[0].uri }} style={styles.reviewImage} contentFit="cover" />
+                <ImageCarousel 
+                  imageUrls={attachedFiles.map(f => f.uri)} 
+                  height={300} 
+                  autoPlay={false} 
+                />
               ) : (
-                <View style={[styles.reviewImage, { backgroundColor: SURFACE, justifyContent: 'center', alignItems: 'center' }]}>
-                  <Feather name="image" size={32} color={MUTED} />
+                <View style={[styles.placeholderImage, { backgroundColor: 'rgba(0,0,0,0.2)', height: 300, justifyContent: 'center', alignItems: 'center' }]}>
+                  <Feather name="image" size={64} color={LABEL} />
                 </View>
               )}
-              <View style={styles.reviewContent}>
-                <Text style={styles.reviewTitle}>{title || 'Untitled Item'}</Text>
-                <Text style={styles.reviewPrice}>₦{parseFloat(price || '0').toLocaleString()}</Text>
-                
-                <View style={styles.reviewMetaRow}>
-                  <View style={styles.reviewBadge}>
-                    <Text style={styles.reviewBadgeText}>{category || 'Category'}</Text>
-                  </View>
-                  <View style={styles.reviewBadge}>
-                    <Text style={styles.reviewBadgeText}>{condition || 'Condition'}</Text>
+              
+              <View style={{ padding: 16 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                  <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 24, color: TEXT_PRIMARY, flex: 1, paddingRight: 12 }}>{title.trim() || 'Untitled Item'}</Text>
+                  <View style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
+                    <Text style={{ color: '#F59E0B', fontSize: 10, fontFamily: 'Inter-Bold', textTransform: 'uppercase' }}>Preview</Text>
                   </View>
                 </View>
-                
-                <View style={styles.reviewLocationRow}>
-                  <Ionicons name="location-outline" size={16} color={MUTED} />
-                  <Text style={styles.reviewLocationText}>{location || 'Neighbourhood'}</Text>
-                </View>
-                
-                {desc ? (
-                  <View style={styles.reviewDescBox}>
-                    <Text style={styles.reviewDescText} numberOfLines={3}>{desc}</Text>
+
+                <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 28, color: G, marginBottom: 16 }}>
+                  ₦{price || '0'}
+                </Text>
+
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                  <View style={{ backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+                    <Text style={{ fontFamily: 'Inter-Medium', color: '#ccc', fontSize: 13 }}>{condition || 'Used'}</Text>
                   </View>
-                ) : null}
+                  <View style={{ backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+                    <Text style={{ fontFamily: 'Inter-Medium', color: '#ccc', fontSize: 13 }}>{category || 'Other'}</Text>
+                  </View>
+                </View>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 12 }}>
+                  <Feather name="map-pin" size={16} color={LABEL} />
+                  <Text style={{ fontFamily: 'Inter-Regular', color: LABEL, fontSize: 14 }}>
+                    {profile?.location?.lga || 'TBA'}, {profile?.location?.state || 'TBA'}
+                  </Text>
+                </View>
+
+                {desc.trim().length > 0 && (
+                  <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' }}>
+                    <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 8 }}>Description</Text>
+                    <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#aaa', lineHeight: 22 }}>
+                      {desc.trim()}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
           </View>

@@ -222,7 +222,7 @@ function ChatContent() {
       .from('messages')
       .select('*')
       .eq('conversation_id', id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: true });
 
     if (!error && data) {
       setMessages(data as Message[]);
@@ -344,7 +344,9 @@ function ChatContent() {
         return;
       }
 
-      setTimeout(() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true }), 100);
+      // We append locally so it shows immediately
+      setMessages(prev => [...prev, payload as Message]);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (e) {
       console.error('Send message error:', e);
       setInputText(body); // restore on failure
@@ -447,7 +449,8 @@ function ChatContent() {
         return;
       }
 
-      setTimeout(() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true }), 100);
+      setMessages(prev => [...prev, payload as Message]);
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch(e) {
       console.error('Upload media error:', e);
     } finally {
@@ -621,7 +624,7 @@ function ChatContent() {
             if (otherId) router.push(`/profile/${otherId}` as any);
           }}
         >
-          {(otherUser?.avatar_url && !avatarError) ? (
+          {(otherUser?.avatar_url && !avatarError && !otherUser.avatar_url.startsWith('file://')) ? (
             <Image 
               source={{ uri: otherUser.avatar_url }} 
               style={{ width: 38, height: 38, borderRadius: 19 }} 
@@ -635,7 +638,7 @@ function ChatContent() {
           )}
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>{title}</Text>
-            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>@{otherUser?.username || 'user'}</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>@{otherUser?.username || otherUser?.name || 'user'}</Text>
           </View>
         </TouchableOpacity>
 
@@ -723,7 +726,16 @@ function ChatContent() {
             renderItem={renderMessage}
             contentContainerStyle={styles.msgListContent}
             showsVerticalScrollIndicator={false}
-            inverted
+            onContentSizeChange={() => {
+              if (messagesWithDates.length > 0) {
+                setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 50);
+              }
+            }}
+            onLayout={() => {
+              if (messagesWithDates.length > 0) {
+                setTimeout(() => flatListRef.current?.scrollToEnd({ animated: false }), 50);
+              }
+            }}
           />
         )}
 
@@ -797,7 +809,7 @@ const styles = StyleSheet.create({
   contextImage: { width: 44, height: 44, borderRadius: 8, marginRight: 10 },
   contextTitle: { fontSize: 13, fontWeight: '600' },
   contextPrice: { fontSize: 14, fontWeight: 'bold', marginTop: 2 },
-  msgListContent: { padding: 16, paddingBottom: 8, flexGrow: 1, justifyContent: 'flex-end' },
+  msgListContent: { padding: 16, paddingBottom: 8, flexGrow: 1, justifyContent: 'flex-start' },
   msgRow: { marginVertical: 4 },
   msgRowLeft: { alignItems: 'flex-start' },
   msgRowRight: { alignItems: 'flex-end' },

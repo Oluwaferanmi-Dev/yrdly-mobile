@@ -45,13 +45,13 @@ export default function BusinessProfileScreen() {
             const { data: uData } = await supabase.from('users').select('name, avatar_url').eq('id', bData.owner_id).single();
             if (uData) oData = uData;
           }
-          setBusiness({
-            ...bData,
-            owner_name: oData?.name || bData.owner_name || "Unknown Owner",
-            owner_avatar: oData?.avatar_url || bData.owner_avatar,
-            cover_image: bData.cover_image || bData.image_urls?.[0],
-            logo: bData.logo || bData.owner_avatar,
-          });
+            setBusiness({
+              ...bData,
+              owner_name: oData?.name || bData.owner_name || "Unknown Owner",
+              owner_avatar: oData?.avatar_url || bData.owner_avatar,
+              cover_image: bData.cover_image || bData.image_urls?.[0],
+              logo: bData.logo_url || bData.logo || bData.owner_avatar,
+            });
         }
       } catch (e) { console.error(e); } finally { setLoading(false); }
     };
@@ -398,6 +398,7 @@ export default function BusinessProfileScreen() {
             <View style={{ gap: 12 }}>
               {[
                 { l: 'Total Catalog Items', v: catalogItems.length.toString(), icon: '📦' },
+                { l: 'Total Units in Stock', v: catalogItems.reduce((acc, item) => acc + (item.inventory_count || 0), 0).toString(), icon: '🛒' },
                 { l: 'Profile Views', v: ((business as any).view_count || 0).toLocaleString(), icon: '👁️' },
                 { l: 'Inquiries Received', v: inquiriesCount.toString(), icon: '💬' },
                 { l: 'Average Rating', v: `${business.rating?.toFixed(1) || '0'} ★`, icon: '⭐' },

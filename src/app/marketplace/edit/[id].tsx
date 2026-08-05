@@ -1,17 +1,28 @@
 import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
+import {
+  View, Text, StyleSheet, TextInput, TouchableOpacity,
+  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { usePosts } from '../../../hooks/use-posts';
+import { StorageService } from '../../../lib/storage-service';
 import { parseSafePrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
 import { Post } from '../../../types';
-import { api } from '../../../lib/api';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+
+const GOOGLE_MAPS_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
+const CATEGORIES = ['Electronics', 'Furniture', 'Clothing', 'Vehicles', 'Home Goods', 'Sports', 'Other'];
+const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
 
 export default function EditMarketplaceItemScreen() {
   const { colors } = useAppTheme();
@@ -19,15 +30,21 @@ export default function EditMarketplaceItemScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const { deletePost } = usePosts();
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { deletePost } = usePosts();
 
+  // Form State
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [price, setPrice] = useState('');
+  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [condition, setCondition] = useState(CONDITIONS[0]);
+  const [address, setAddress] = useState('');
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<string[]>([]);
 
   const fetchPost = useCallback(async () => {
     if (!id || user === undefined) return;
@@ -47,6 +64,17 @@ export default function EditMarketplaceItemScreen() {
       setTitle(data.title || '');
       setText(data.text || '');
       setPrice(data.price?.toString() || '');
+      setCategory(data.category || CATEGORIES[0]);
+      setCondition(data.condition || CONDITIONS[0]);
+      setAddress(data.location?.address || '');
+
+      let imgs: string[] = [];
+      if (Array.isArray(data.media_urls)) {
+        imgs = data.media_urls;
+      } else if (typeof data.media_urls === 'string') {
+        try { imgs = JSON.parse(data.media_urls); } catch (_) {}
+      }
+      setExistingImages(imgs);
     }
     setLoading(false);
   }, [id, user]);
@@ -55,9 +83,32 @@ export default function EditMarketplaceItemScreen() {
     fetchPost();
   }, [fetchPost]);
 
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setNewImages(prev => [...prev, ...result.assets.map(a => a.uri)]);
+    }
+  };
+
+  const removeExistingImage = (idx: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeNewImage = (idx: number) => {
+    setNewImages(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const handleUpdate = async () => {
-    if (!text.trim() && !title.trim()) {
-      Alert.alert('Missing Details', 'Please provide a title or description.');
+    if (!title.trim() || !price.trim()) {
+      Alert.alert('Missing Details', 'Please provide a title and price.');
+      return;
+    }
+    if (existingImages.length === 0 && newImages.length === 0) {
+      Alert.alert('Missing Image', 'Please provide at least one image for your listing.');
       return;
     }
 
@@ -67,40 +118,26 @@ export default function EditMarketplaceItemScreen() {
     try {
       const parsedPrice = parseSafePrice(price);
 
-      if (parsedPrice > 0) {
-        try {
-          const { account } = await api.get('/api/seller/setup-account');
-          if (!account || !account.isVerified) {
-            Alert.alert(
-              'Bank Account Required',
-              'Marketplace items with a price require a verified bank account. Go to Settings → Bank Account to link yours.',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Open Settings', onPress: () => router.push('/settings/payout-settings' as any) },
-              ]
-            );
-            setIsSubmitting(false);
-            return;
-          }
-        } catch (e) {
-          console.warn('Bank account verification failed', e);
-          Alert.alert(
-            'Bank Account Required',
-            'Marketplace items with a price require a verified bank account. Go to Settings → Bank Account to link yours.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Open Settings', onPress: () => router.push('/settings/payout-settings' as any) },
-            ]
-          );
-          setIsSubmitting(false);
-          return;
-        }
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < newImages.length; i++) {
+        const { url } = await StorageService.uploadPostMedia(user!.id, {
+          uri: newImages[i],
+          type: 'image/jpeg',
+          name: `edit_${id}_${Date.now()}_${i}.jpg`
+        });
+        if (url) uploadedUrls.push(url);
       }
+
+      const finalImages = [...existingImages, ...uploadedUrls];
 
       const updateData = {
         title: title.trim(),
         text: text.trim(),
         price: parsedPrice,
+        category,
+        condition,
+        media_urls: finalImages,
+        location: address.trim() ? { address: address.trim() } : post?.location,
       };
 
       const { error } = await supabase
@@ -111,12 +148,8 @@ export default function EditMarketplaceItemScreen() {
       if (error) throw error;
 
       Alert.alert('Updated! 🎉', 'Your listing has been successfully updated.', [
-        {
-          text: 'OK',
-          onPress: () => {
-            router.back();
-          },
-        },
+        { text: 'View Listing', onPress: () => router.replace(`/marketplace/${id}` as any) },
+        { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (e: any) {
       console.error('Post update error:', e);
@@ -132,8 +165,8 @@ export default function EditMarketplaceItemScreen() {
       'Are you sure you want to delete this listing? This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
+        {
+          text: 'Delete',
           style: 'destructive',
           onPress: async () => {
             if (id) {
@@ -157,89 +190,273 @@ export default function EditMarketplaceItemScreen() {
   if (!post) {
     return (
       <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
-        <Text style={[styles.errorText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Listing not found</Text>
+        <Text style={{ color: TEXT_PRIMARY, fontFamily: 'Outfit' }}>Listing not found</Text>
       </SafeAreaView>
     );
   }
 
+  const combinedImages = [
+    ...existingImages.map(u => ({ url: u, isNew: false })),
+    ...newImages.map(u => ({ url: u, isNew: true }))
+  ];
+
+  const isReady = title.trim() && price.trim() && (existingImages.length > 0 || newImages.length > 0);
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top']}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
+          <Ionicons name="chevron-back" size={20} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Edit Listing</Text>
-        <View style={{ width: 40 }} />
+        <View style={{ flex: 1, paddingHorizontal: 12 }}>
+          <Text style={styles.headerTitle}>Edit Listing</Text>
+          <Text style={styles.headerSub}>{post.title}</Text>
+        </View>
+        <TouchableOpacity
+          onPress={handleUpdate}
+          disabled={isSubmitting || !isReady}
+          style={[styles.saveBtn, (!isReady || isSubmitting) && { opacity: 0.5 }]}
+        >
+          {isSubmitting
+            ? <ActivityIndicator size="small" color={DARK} />
+            : <Text style={styles.saveBtnTxt}>Save</Text>
+          }
+        </TouchableOpacity>
       </View>
 
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 50 : 0}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Form Fields (Borderless) */}
-          <View style={styles.formGroup}>
-            <TextInput
-              style={[styles.inputTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}
-              placeholder="Give it a title (optional)"
-              placeholderTextColor={LABEL}
-              value={title}
-              onChangeText={setTitle}
-            />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
 
+          {/* ── Photos Section ── */}
+          <View style={styles.sectionHeader}>
+            <MaterialIcons name="photo-library" size={18} color={G} />
+            <Text style={styles.sectionTitle}>Photos</Text>
+            <Text style={styles.sectionHint}>{combinedImages.length}/10</Text>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 10, paddingBottom: 4 }}
+          >
+            {combinedImages.map((img, i) => (
+              <View key={i} style={styles.photoBox}>
+                <Image source={{ uri: img.url }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
+                {i === 0 && (
+                  <View style={styles.coverBadge}>
+                    <Text style={styles.coverBadgeTxt}>Cover</Text>
+                  </View>
+                )}
+                <TouchableOpacity
+                  style={styles.removePhotoBtn}
+                  onPress={() => {
+                    if (img.isNew) {
+                      const newIdx = newImages.indexOf(img.url);
+                      removeNewImage(newIdx);
+                    } else {
+                      const oldIdx = existingImages.indexOf(img.url);
+                      removeExistingImage(oldIdx);
+                    }
+                  }}
+                >
+                  <Ionicons name="close-circle" size={22} color="#EF4444" />
+                </TouchableOpacity>
+              </View>
+            ))}
+
+            {combinedImages.length < 10 && (
+              <TouchableOpacity style={styles.addPhotoBtn} onPress={pickImage}>
+                <Ionicons name="add" size={28} color={LABEL} />
+                <Text style={{ fontFamily: 'Inter', fontSize: 11, color: LABEL, marginTop: 4 }}>Add</Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+
+          {/* ── Details Section ── */}
+          <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+            <Feather name="tag" size={16} color={G} />
+            <Text style={styles.sectionTitle}>Details</Text>
+          </View>
+
+          <View style={styles.card}>
+            {/* Title */}
+            <View style={styles.fieldBlock}>
+              <Text style={styles.fieldLabel}>TITLE</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="What are you selling?"
+                placeholderTextColor={MUTED}
+                value={title}
+                onChangeText={setTitle}
+              />
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* Price */}
+            <View style={styles.fieldBlock}>
+              <Text style={styles.fieldLabel}>PRICE (₦)</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 22, color: G, marginRight: 8 }}>₦</Text>
+                <TextInput
+                  style={[styles.input, { flex: 1, fontFamily: 'Outfit-Bold', fontSize: 18, color: G, borderColor: 'rgba(130,219,126,0.2)' }]}
+                  placeholder="0"
+                  placeholderTextColor={MUTED}
+                  value={price}
+                  onChangeText={setPrice}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* ── Category ── */}
+          <View style={[styles.sectionHeader, { marginTop: 20 }]}>
+            <Ionicons name="grid-outline" size={16} color={G} />
+            <Text style={styles.sectionTitle}>Category</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
+            {CATEGORIES.map(c => {
+              const active = category === c;
+              return (
+                <TouchableOpacity
+                  key={c}
+                  onPress={() => setCategory(c)}
+                  style={[styles.chipBtn, { backgroundColor: active ? 'rgba(130,219,126,0.15)' : SURFACE, borderColor: active ? G : GLASS_BORDER }]}
+                >
+                  <Text style={[styles.chipTxt, { color: active ? G : MUTED }]}>{c}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          {/* ── Condition ── */}
+          <View style={[styles.sectionHeader, { marginTop: 20 }]}>
+            <Feather name="activity" size={16} color={G} />
+            <Text style={styles.sectionTitle}>Condition</Text>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {CONDITIONS.map(c => {
+              const active = condition === c;
+              return (
+                <TouchableOpacity
+                  key={c}
+                  onPress={() => setCondition(c)}
+                  style={[styles.chipBtn, { backgroundColor: active ? 'rgba(130,219,126,0.15)' : SURFACE, borderColor: active ? G : GLASS_BORDER }]}
+                >
+                  <Text style={[styles.chipTxt, { color: active ? G : MUTED }]}>{c}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* ── Description ── */}
+          <View style={[styles.sectionHeader, { marginTop: 20 }]}>
+            <Feather name="align-left" size={16} color={G} />
+            <Text style={styles.sectionTitle}>Description</Text>
+          </View>
+          <View style={styles.card}>
             <TextInput
-              style={[styles.inputBody, { color: TEXT_PRIMARY, fontFamily: 'Inter' }]}
-              placeholder="Describe your item..."
-              placeholderTextColor={LABEL}
+              style={[styles.input, styles.textarea, { borderWidth: 0, backgroundColor: 'transparent', padding: 0 }]}
+              placeholder="Describe your item in detail — include brand, specs, defects, etc."
+              placeholderTextColor={MUTED}
               value={text}
               onChangeText={setText}
               multiline
               textAlignVertical="top"
             />
+          </View>
 
-            <TextInput
-              style={[styles.inputPrice, { color: G, borderBottomColor: GLASS_BORDER, fontFamily: 'Outfit' }]}
-              placeholder="Price (₦)"
-              placeholderTextColor={LABEL}
-              value={price}
-              onChangeText={setPrice}
-              keyboardType="numeric"
+          {/* ── Location ── */}
+          <View style={[styles.sectionHeader, { marginTop: 20 }]}>
+            <Ionicons name="location-outline" size={16} color={G} />
+            <Text style={styles.sectionTitle}>Location</Text>
+          </View>
+          <View style={[styles.card, { padding: 0, overflow: 'hidden', zIndex: 10 }]}>
+            <GooglePlacesAutocomplete
+              placeholder={address || 'Search for a location in Nigeria...'}
+              onPress={(data) => {
+                setAddress(data.description);
+              }}
+              query={{
+                key: GOOGLE_MAPS_KEY,
+                language: 'en',
+                components: 'country:ng',
+              }}
+              styles={{
+                textInputContainer: {
+                  backgroundColor: 'transparent',
+                  borderBottomWidth: 0,
+                },
+                textInput: {
+                  height: 50,
+                  backgroundColor: 'transparent',
+                  color: TEXT_PRIMARY,
+                  fontSize: 15,
+                  fontFamily: 'Inter',
+                  paddingHorizontal: 16,
+                },
+                listView: {
+                  backgroundColor: '#111111',
+                  borderWidth: 1,
+                  borderColor: GLASS_BORDER,
+                  borderRadius: 14,
+                  marginHorizontal: 8,
+                  marginBottom: 8,
+                },
+                row: {
+                  backgroundColor: 'transparent',
+                  padding: 13,
+                  borderBottomWidth: 1,
+                  borderBottomColor: GLASS_BORDER,
+                },
+                description: {
+                  color: TEXT_PRIMARY,
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                },
+                poweredContainer: { display: 'none' },
+              }}
+              fetchDetails={false}
+              enablePoweredByContainer={false}
+              textInputProps={{
+                placeholderTextColor: address ? TEXT_PRIMARY : MUTED,
+                selectionColor: G,
+              }}
             />
           </View>
+          {address ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6, paddingHorizontal: 2 }}>
+              <Ionicons name="checkmark-circle" size={14} color={G} />
+              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }} numberOfLines={1}>{address}</Text>
+            </View>
+          ) : null}
 
-          {/* Notice about media */}
-          <View style={[styles.noticeContainer, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
-            <Ionicons name="information-circle-outline" size={20} color={MUTED} />
-            <Text style={[styles.noticeText, { color: MUTED, fontFamily: 'Inter' }]}>
-              Media editing is currently disabled. Please create a new listing to change photos.
-            </Text>
-          </View>
+          {/* ── Delete ── */}
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete} disabled={isSubmitting}>
+            <Feather name="trash-2" size={16} color="#EF4444" style={{ marginRight: 8 }} />
+            <Text style={styles.deleteButtonText}>Delete Listing</Text>
+          </TouchableOpacity>
 
-          {/* Submit Button */}
-          <TouchableOpacity 
-            style={[styles.submitButton, { backgroundColor: G }, isSubmitting && styles.submitButtonDisabled]} 
+          {/* ── Save (bottom) ── */}
+          <TouchableOpacity
+            style={[styles.saveBottomBtn, (!isReady || isSubmitting) && { opacity: 0.5 }]}
             onPress={handleUpdate}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isReady}
           >
-            {isSubmitting ? (
-              <ActivityIndicator color="#000000" />
-            ) : (
-              <Text style={[styles.submitButtonText, { color: '#000000', fontFamily: 'Outfit' }]}>Save Changes</Text>
-            )}
+            {isSubmitting
+              ? <ActivityIndicator size="small" color={DARK} />
+              : <>
+                  <Feather name="check" size={18} color={DARK} />
+                  <Text style={styles.saveBottomTxt}>Save Changes</Text>
+                </>
+            }
           </TouchableOpacity>
-
-          {/* Delete Button */}
-          <TouchableOpacity 
-            style={[styles.deleteButton, { borderColor: '#EF4444' }]} 
-            onPress={handleDelete}
-            disabled={isSubmitting}
-          >
-            <Feather name="trash-2" size={18} color="#EF4444" style={{ marginRight: 8 }} />
-            <Text style={[styles.deleteButtonText, { fontFamily: 'Outfit' }]}>Delete Listing</Text>
-          </TouchableOpacity>
-          
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -247,95 +464,89 @@ export default function EditMarketplaceItemScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1 },
+  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+
+  header: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 12,
+    borderBottomWidth: 1, borderBottomColor: GLASS_BORDER,
   },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  backBtn: {
+    width: 36, height: 36, borderRadius: 12,
+    backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER,
+    alignItems: 'center', justifyContent: 'center',
   },
-  errorText: {
-    fontSize: 16,
-    fontWeight: '600',
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 17, color: TEXT_PRIMARY },
+  headerSub: { fontFamily: 'Inter', fontSize: 12, color: MUTED, marginTop: 1 },
+  saveBtn: {
+    paddingHorizontal: 18, paddingVertical: 9,
+    borderRadius: 14, backgroundColor: G,
   },
-  header: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    paddingHorizontal: 16, 
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+  saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: DARK },
+
+  scrollContent: { padding: 20, paddingBottom: 60, zIndex: 1 },
+
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  sectionTitle: { fontFamily: 'Outfit-Bold', fontSize: 15, color: TEXT_PRIMARY, flex: 1 },
+  sectionHint: { fontFamily: 'Inter', fontSize: 12, color: LABEL },
+
+  card: {
+    backgroundColor: SURFACE, borderRadius: 16,
+    borderWidth: 1, borderColor: GLASS_BORDER,
+    padding: 16, marginBottom: 4,
   },
-  backBtn: { width: 40, alignItems: 'flex-start' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
+  divider: { height: 1, backgroundColor: GLASS_BORDER, marginVertical: 14 },
+
+  photoBox: {
+    width: 120, height: 120, borderRadius: 14,
+    overflow: 'hidden', backgroundColor: SURFACE,
   },
-  formGroup: {
-    marginBottom: 24,
+  removePhotoBtn: {
+    position: 'absolute', top: 4, right: 4,
+    backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 11,
   },
-  inputTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    paddingVertical: 4,
-    marginBottom: 8,
+  coverBadge: {
+    position: 'absolute', bottom: 6, left: 6,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6,
   },
-  inputBody: {
-    fontSize: 18,
-    minHeight: 120,
-    paddingVertical: 4,
-    lineHeight: 24,
+  coverBadgeTxt: { color: '#fff', fontSize: 10, fontFamily: 'Inter-Bold' },
+  addPhotoBtn: {
+    width: 120, height: 120, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)', borderStyle: 'dashed',
+    alignItems: 'center', justifyContent: 'center',
   },
-  inputPrice: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    paddingVertical: 12,
-    marginTop: 8,
+
+  fieldBlock: { marginBottom: 4 },
+  fieldLabel: { fontFamily: 'Inter-SemiBold', fontSize: 11, color: LABEL, letterSpacing: 0.8, marginBottom: 8 },
+  input: {
+    backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER,
+    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13,
+    color: TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 15,
   },
-  noticeContainer: {
-    flexDirection: 'row',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 24,
+  textarea: { height: 110, textAlignVertical: 'top' },
+
+  chipBtn: {
+    paddingHorizontal: 16, paddingVertical: 9,
+    borderRadius: 20, borderWidth: 1,
   },
-  noticeText: {
-    flex: 1,
-    fontSize: 14,
-    marginLeft: 8,
-    lineHeight: 20,
-  },
-  submitButton: {
-    paddingVertical: 16,
-    borderRadius: 30,
-    alignItems: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  submitButtonDisabled: {
-    opacity: 0.7,
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  chipTxt: { fontFamily: 'Inter-SemiBold', fontSize: 13 },
+
   deleteButton: {
-    paddingVertical: 16,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    marginTop: 16,
-    borderWidth: 1,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 15, borderRadius: 16,
+    borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)',
+    backgroundColor: 'rgba(239,68,68,0.05)',
+    marginTop: 24, marginBottom: 12,
   },
-  deleteButtonText: {
-    color: '#FF3B30',
-    fontSize: 16,
-    fontWeight: 'bold',
+  deleteButtonText: { color: '#EF4444', fontFamily: 'Outfit-Bold', fontSize: 15 },
+
+  saveBottomBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: G, borderRadius: 18,
+    paddingVertical: 16, marginBottom: 8,
   },
+  saveBottomTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },
 });

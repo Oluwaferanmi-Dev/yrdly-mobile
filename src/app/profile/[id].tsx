@@ -260,7 +260,7 @@ export default function OtherUserProfileScreen() {
         <View style={styles.profileHero}>
           <View style={styles.heroTopRow}>
             <View style={styles.avatarWrap}>
-              {(profile.avatar_url && !avatarError) ? (
+              {(profile.avatar_url && !avatarError && !profile.avatar_url.startsWith('file://')) ? (
                 <Image 
                   source={{ uri: profile.avatar_url }} 
                   style={styles.avatarImg} 

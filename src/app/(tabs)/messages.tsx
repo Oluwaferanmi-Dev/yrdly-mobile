@@ -122,7 +122,7 @@ export default function MessagesTab() {
             type: convType,
             participantId: otherId || '',
             participantName: otherUser?.name || c.context?.itemTitle || 'Neighbour',
-            participantAvatar: otherUser?.avatar_url || null,
+            participantAvatar: (otherUser?.avatar_url && !otherUser.avatar_url.startsWith('file://')) ? otherUser.avatar_url : null,
             lastMessage: c.last_message || 'Tap to chat',
             timestamp: c.updated_at || c.created_at,
             unreadCount: unreadCounts[c.id] || 0,
@@ -294,7 +294,7 @@ export default function MessagesTab() {
             >
               {/* Avatar */}
               <View style={styles.avatarWrapper}>
-                {item.participantAvatar ? (
+                {item.participantAvatar && !item.participantAvatar.startsWith('file://') ? (
                   <Image source={{ uri: item.participantAvatar }} style={styles.avatarImg} contentFit="cover" />
                 ) : (
                   <View style={styles.avatarPlaceholder}>
