@@ -14,7 +14,7 @@ export default function WithdrawSuccessScreen() {
     <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
       <View style={s.content}>
         <LottieView
-          source={require('../../../assets/animations/success-check.json')}
+          source={require('../../../assets/success.json')}
           autoPlay
           loop={false}
           style={s.lottie}
