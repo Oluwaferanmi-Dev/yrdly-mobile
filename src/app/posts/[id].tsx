@@ -288,7 +288,7 @@ function PostDetailContent() {
       >
         {loading && !post ? (
           <View style={styles.center}>
-            <ActivityIndicator size="large" color={colors.tint} />
+            <ActivityIndicator size="large" color={G} />
           </View>
         ) : (
           <FlatList
@@ -301,17 +301,17 @@ function PostDetailContent() {
                 {post ? (
                   <PostCard post={post} isVisible={isFocused} />
                 ) : (
-                  <ActivityIndicator size="small" color={colors.tint} style={{ padding: 20 }} />
+                  <ActivityIndicator size="small" color={G} style={{ padding: 20 }} />
                 )}
-                <Text style={[styles.commentsTitle, { color: colors.text }]}>Comments ({post?.comment_count || 0})</Text>
+                <Text style={[styles.commentsTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Comments ({post?.comment_count || 0})</Text>
               </View>
             }
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Feather name="message-square" size={40} color={colors.border} />
-                <Text style={[styles.emptyText, { color: colors.textMuted }]}>No comments yet. Be the first!</Text>
+                <Feather name="message-square" size={40} color={LABEL} />
+                <Text style={[styles.emptyText, { color: MUTED, fontFamily: 'Inter' }]}>No comments yet. Be the first!</Text>
               </View>
             }
           />

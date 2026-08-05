@@ -511,7 +511,7 @@ function ChatContent() {
     if (item.isDateHeader) {
       return (
         <View style={{ alignItems: 'center', marginVertical: 12 }}>
-          <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '500' }}>
+          <Text style={{ color: MUTED, fontSize: 12, fontWeight: '500', fontFamily: 'Inter' }}>
             {item.dateText}
           </Text>
         </View>
@@ -662,7 +662,7 @@ function ChatContent() {
       {/* Item context banner (for marketplace chats) */}
       {meta?.item_title && (
         <TouchableOpacity 
-          style={[styles.contextBanner, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]}
+          style={[styles.contextBanner, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
           onPress={() => {
             if (meta?.item_id) {
               router.push(`/marketplace/${meta.item_id}`);
@@ -671,12 +671,12 @@ function ChatContent() {
           activeOpacity={0.7}
         >
           {meta.item_image && (
-            <Image source={{ uri: meta.item_image }} style={[styles.contextImage, { backgroundColor: colors.inputBackground }]} contentFit="cover" />
+            <Image source={{ uri: meta.item_image }} style={[styles.contextImage, { backgroundColor: SURFACE }]} contentFit="cover" />
           )}
           <View style={{ flex: 1 }}>
-            <Text style={[styles.contextTitle, { color: colors.text }]} numberOfLines={1}>{meta.item_title}</Text>
+            <Text style={[styles.contextTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]} numberOfLines={1}>{meta.item_title}</Text>
             {typeof meta.item_price === 'number' && (
-              <Text style={[styles.contextPrice, { color: colors.tint }]}>
+              <Text style={[styles.contextPrice, { color: G, fontFamily: 'Outfit' }]}>
                 {meta.item_price === 0 ? 'FREE' : formatPrice(meta.item_price)}
               </Text>
             )}
@@ -691,11 +691,11 @@ function ChatContent() {
         {/* Messages */}
         {loading ? (
           <View style={styles.center}>
-            <ActivityIndicator size="large" color={colors.tint} />
+            <ActivityIndicator size="large" color={G} />
           </View>
         ) : messagesWithDates.length === 0 ? (
           <View style={styles.center}>
-            <Text style={[styles.emptyText, { color: colors.textMuted }]}>No messages yet. Say hi! 👋</Text>
+            <Text style={[styles.emptyText, { color: MUTED, fontFamily: 'Inter' }]}>No messages yet. Say hi! 👋</Text>
           </View>
         ) : (
           <FlatList
@@ -710,31 +710,31 @@ function ChatContent() {
         )}
 
         {/* Input */}
-        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: SURFACE, paddingBottom: keyboardVisible ? 10 : Math.max(insets.bottom, 10) }]}>
+        <View style={[styles.inputRow, { borderTopColor: GLASS_BORDER, backgroundColor: SURFACE, paddingBottom: keyboardVisible ? 10 : Math.max(insets.bottom, 10) }]}>
           <TouchableOpacity style={styles.attachBtn} onPress={pickMedia} disabled={uploadingMedia}>
             {uploadingMedia ? (
-              <ActivityIndicator size="small" color={colors.tint} />
+              <ActivityIndicator size="small" color={G} />
             ) : (
-              <Feather name="plus-circle" size={28} color={colors.tint} />
+              <Feather name="plus-circle" size={28} color={G} />
             )}
           </TouchableOpacity>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+            style={[styles.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY, fontFamily: 'Inter' }]}
             placeholder="Type a message..."
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={LABEL}
             value={inputText}
             onChangeText={setInputText}
             multiline
             onSubmitEditing={sendMessage}
           />
           <TouchableOpacity
-            style={[styles.sendBtn, { backgroundColor: colors.tint }, !inputText.trim() && [styles.sendBtnDisabled, { backgroundColor: colors.textMuted }]]}
+            style={[styles.sendBtn, { backgroundColor: G }, !inputText.trim() && [styles.sendBtnDisabled, { backgroundColor: 'rgba(255,255,255,0.1)' }]]}
             onPress={sendMessage}
             disabled={!inputText.trim() || sending}
           >
             {sending
-              ? <ActivityIndicator size="small" color={colors.card} />
-              : <Feather name="send" size={20} color={colors.card} />
+              ? <ActivityIndicator size="small" color="#000000" />
+              : <Feather name="send" size={20} color="#000000" />
             }
           </TouchableOpacity>
         </View>
