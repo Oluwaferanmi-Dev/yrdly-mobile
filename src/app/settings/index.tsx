@@ -178,13 +178,14 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+      {/* Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 14 }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
+          <Ionicons name="chevron-back" size={20} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
-        <TouchableOpacity onPress={handleSave} disabled={saving || uploadingImage} style={styles.headerIconBtn}>
-          {saving ? <ActivityIndicator size="small" color={colors.tint} /> : <Text style={[styles.saveText, { color: colors.tint }]}>Save</Text>}
+        <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF' }}>Settings</Text>
+        <TouchableOpacity onPress={handleSave} disabled={saving} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: G, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 13, color: DARK }}>{saving ? 'Saving...' : 'Save'}</Text>
         </TouchableOpacity>
       </View>
 

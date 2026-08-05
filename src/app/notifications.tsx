@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../constants/tokens';
+import { DARK, SURFACE, GLASS_BORDER, G, MUTED, LABEL } from '../constants/tokens';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, useWindowDimensions,
@@ -421,7 +421,7 @@ export default function NotificationsScreen() {
         <TouchableOpacity
           style={[
             styles.card, 
-            { backgroundColor: isUnread ? colors.card + '90' : colors.card, borderColor: colors.borderLight }
+            { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderRadius: 16, borderWidth: 1 }
           ]}
           onPress={() => handleNotificationPress(item)}
           onLongPress={() => handleLongPress(item)}

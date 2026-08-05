@@ -287,37 +287,37 @@ export default function CatalogTab() {
 
       {/* ── Search + Filter ── */}
       <View style={s.searchRow}>
-        <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, paddingHorizontal: 14, height: 44, flex: 1 }]}>
-          <Ionicons name="search-outline" size={18} color={LABEL} style={{ marginRight: 8 }} />
+        <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 24, paddingHorizontal: 16, height: 48, flex: 1 }]}>
+          <Ionicons name="search-outline" size={18} color={G} style={{ marginRight: 10 }} />
           <TextInput
-            style={{ flex: 1, fontFamily: 'Inter', fontSize: 14, color: TEXT_PRIMARY }}
+            style={{ flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: '#FFFFFF' }}
             placeholder="Search catalog, items & services..."
-            placeholderTextColor={LABEL}
+            placeholderTextColor={MUTED}
             value={search}
             onChangeText={setSearch}
             onFocus={() => Animated.timing(searchFocus, { toValue: 1, duration: 200, useNativeDriver: false }).start()}
             onBlur={() => Animated.timing(searchFocus, { toValue: 0, duration: 200, useNativeDriver: false }).start()}
           />
         </Animated.View>
-        <TouchableOpacity style={[s.filterBtn, { backgroundColor: '#111111', borderColor: GLASS_BORDER }]}
+        <TouchableOpacity style={[s.filterBtn, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderRadius: 18, width: 48, height: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1 }]}
           onPress={() => setFilterVisible(true)}>
           <Ionicons name="options-outline" size={20} color={TEXT_PRIMARY} />
         </TouchableOpacity>
       </View>
 
       {/* ── Pill Tabs ── */}
-      <View style={[s.tabBar, { backgroundColor: '#111111', borderColor: GLASS_BORDER }]}>
-        <Animated.View style={[s.tabIndicator, { width: TAB_W, transform: [{ translateX: tabIndicatorX }], backgroundColor: G }]} />
+      <View style={[s.tabBar, { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: GLASS_BORDER, borderRadius: 24 }]}>
+        <Animated.View style={[s.tabIndicator, { width: TAB_W, transform: [{ translateX: tabIndicatorX }], backgroundColor: G, borderRadius: 20 }]} />
         {TABS.map((tab) => {
           const active = activeTab === tab;
           return (
             <TouchableOpacity key={tab} style={[s.tab, { width: TAB_W }]} onPress={() => switchTab(tab)} activeOpacity={0.7}>
               <Ionicons
                 name={tab === 'Marketplace' ? 'bag-outline' : tab === 'Events' ? 'calendar-outline' : 'storefront-outline'}
-                size={14} color={active ? '#0B0D0B' : LABEL}
+                size={14} color={active ? DARK : MUTED}
                 style={{ marginRight: 4 }}
               />
-              <Text style={[s.tabTxt, { color: active ? '#0B0D0B' : LABEL }]}>{tab}</Text>
+              <Text style={[s.tabTxt, { color: active ? DARK : MUTED, fontFamily: active ? 'Outfit-Bold' : 'Inter-Regular' }]}>{tab}</Text>
             </TouchableOpacity>
           );
         })}

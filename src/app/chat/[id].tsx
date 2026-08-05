@@ -602,31 +602,31 @@ function ChatContent() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
+          <Ionicons name="chevron-back" size={20} color={TEXT_PRIMARY} />
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.headerCenter}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, justifyContent: 'center', marginHorizontal: 8 }}
           onPress={() => {
             const otherId = meta?.participant_ids?.find((pid: string) => pid !== user?.id);
             if (otherId) router.push(`/profile/${otherId}` as any);
           }}
         >
           {otherUser?.avatar_url ? (
-            <Image source={{ uri: otherUser.avatar_url }} style={styles.headerAvatar} contentFit="cover" />
+            <Image source={{ uri: otherUser.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18 }} contentFit="cover" />
           ) : (
-            <View style={[styles.headerAvatar, styles.headerAvatarFallback, { backgroundColor: colors.tint }]}>
-              <Text style={[styles.headerAvatarText, { color: colors.card }]}>{title.charAt(0).toUpperCase()}</Text>
+            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: G + '20', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15, color: G }}>{title.charAt(0).toUpperCase()}</Text>
             </View>
           )}
-          <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>{title}</Text>
+          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF' }} numberOfLines={1}>{title}</Text>
         </TouchableOpacity>
 
         {Boolean(meta?.participant_ids?.find((pid: string) => pid !== user?.id)) && (
           <TouchableOpacity 
-            style={{ width: 40, alignItems: 'flex-end', justifyContent: 'center' }}
+            style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
             onPress={() => {
               Alert.alert(
                 'Options',
@@ -648,14 +648,13 @@ function ChatContent() {
                         console.error(e);
                         Alert.alert('Error', 'Failed to block user.');
                       }
-                    }
-                  } },
-                ],
-                { cancelable: true }
+                    }}
+                  }
+                ]
               );
             }}
           >
-            <Ionicons name="ellipsis-vertical" size={20} color={colors.text} />
+            <Ionicons name="ellipsis-horizontal" size={18} color={MUTED} />
           </TouchableOpacity>
         )}
       </View>

@@ -417,25 +417,31 @@ export default function MessagesTab() {
   }, [friendsList, modalSearch]);
 
   return (
-    <View style={[styles.container, { backgroundColor: DARK }]}>
-      <ScreenHeader
-        title="Messages"
-        rightContent={
-          <TouchableOpacity style={{ marginLeft: 12 }} onPress={openNewChatModal}>
-            <Feather name="edit" size={22} color={TEXT_PRIMARY} />
-          </TouchableOpacity>
-        }
-      />
-      {/* Search */}
-      <View style={[styles.searchContainer, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: GLASS_BORDER }]}>
-        <Feather name="search" size={18} color={LABEL} style={styles.searchIcon} />
-        <TextInput
-          style={[styles.searchInput, { color: TEXT_PRIMARY }]}
-          placeholder="Search messages"
-          placeholderTextColor={LABEL}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+    <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
+      {/* Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 8 }}>
+        <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 22, color: '#FFFFFF' }}>Messages</Text>
+        <TouchableOpacity
+          style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
+          onPress={openNewChatModal}
+          activeOpacity={0.7}
+        >
+          <Feather name="edit" size={18} color={MUTED} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Search Bar */}
+      <View style={{ paddingHorizontal: 20, marginVertical: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, paddingHorizontal: 14, height: 44 }}>
+          <Feather name="search" size={18} color={LABEL} style={{ marginRight: 8 }} />
+          <TextInput
+            style={{ flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: TEXT_PRIMARY }}
+            placeholder="Search messages..."
+            placeholderTextColor={LABEL}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
       </View>
 
       {/* Filter tabs */}

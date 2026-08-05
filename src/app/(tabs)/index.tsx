@@ -64,63 +64,43 @@ const FeedPostItem = memo(({
 
 const QuickPostBox = memo(() => {
   const { user, profile } = useAuth();
-  const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
 
   const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
-
-  const content = (
-    <>
-      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: G + '20', borderWidth: 1.5, borderColor: G, justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' }}>
-        {avatarUri ? (
-          <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
-        ) : (
-          <Text style={{ color: G, fontWeight: 'bold', fontSize: 16 }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
-        )}
-      </View>
-      <TouchableOpacity 
-        style={{ flex: 1, height: 44, justifyContent: 'center' }}
-        onPress={() => router.push('/new-post' as any)}
-        activeOpacity={0.7}
-      >
-        <Text style={{ color: MUTED, fontSize: 14, fontFamily: 'Inter' }} numberOfLines={1} ellipsizeMode="tail">What's happening in your neighborhood?</Text>
-      </TouchableOpacity>
-      
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <TouchableOpacity 
-          style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: SURFACE, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: GLASS_BORDER }}
-          onPress={() => router.push('/new-post' as any)}
-        >
-          <Feather name="image" size={18} color={MUTED} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: G, justifyContent: 'center', alignItems: 'center' }}
-          onPress={() => router.push('/new-post' as any)}
-        >
-          <Text style={{ color: '#000', fontWeight: '800', fontSize: 14, fontFamily: 'Inter' }}>Post</Text>
-        </TouchableOpacity>
-      </View>
-    </>
-  );
-
-  const containerStyle = {
-    padding: 12,
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-  };
 
   return (
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={() => router.push('/new-post' as any)}
-      style={{ overflow: 'hidden', marginHorizontal: 16, marginTop: 12, marginBottom: 8, borderRadius: 24 }}
+      style={{
+        marginHorizontal: 20,
+        marginTop: 12,
+        marginBottom: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        backgroundColor: 'rgba(255,255,255,0.04)',
+        borderWidth: 1,
+        borderColor: GLASS_BORDER,
+        borderRadius: 24,
+      }}
     >
-      <View style={containerStyle}>
-        {content}
+      <View style={{ width: 38, height: 38, borderRadius: 19, borderWidth: 2, borderColor: G, overflow: 'hidden', flexShrink: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)' }}>
+        {avatarUri ? (
+          <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
+        ) : (
+          <Text style={{ color: G, fontWeight: '700', fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
+        )}
+      </View>
+
+      <Text style={{ flex: 1, color: 'rgba(255,255,255,0.28)', fontSize: 14, fontFamily: 'Inter-Regular' }} numberOfLines={1}>
+        What's happening in your neighbourhood?
+      </Text>
+
+      <View style={{ height: 32, paddingHorizontal: 14, borderRadius: 16, backgroundColor: G, justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+        <Text style={{ color: DARK, fontWeight: '700', fontSize: 13, fontFamily: 'Outfit-Bold' }}>Post</Text>
       </View>
     </TouchableOpacity>
   );

@@ -173,134 +173,102 @@ export default function ProfileTab() {
     <View style={styles.headerContainer}>
       
       {/* ── Top Header Navigation Bar ── */}
-      <View style={styles.navHeader}>
-        {router.canGoBack() ? (
-          <TouchableOpacity 
-            style={styles.headerBackBtn}
-            onPress={() => router.back()}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="chevron-back" size={24} color={colors.text} />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.navSpacer} />
-        )}
-
-        <Text style={styles.navTitle}>Profile</Text>
-
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 8 }}>
+        <View style={{ width: 38 }} />
+        <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF' }}>Profile</Text>
         <TouchableOpacity 
-          style={styles.settingsBtn}
+          style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
           onPress={() => router.push('/settings')}
           activeOpacity={0.7}
         >
-          <Ionicons name="settings-outline" size={20} color={colors.text} />
+          <Ionicons name="settings-outline" size={18} color={MUTED} />
         </TouchableOpacity>
       </View>
 
-      {/* ── Hero Profile Floating Card ── */}
-      <PressableCard style={styles.heroCard} activeOpacity={0.98}>
-        {/* Top Info Row: Avatar + Name & Username + Edit Profile Button */}
-        <View style={styles.heroTopRow}>
-          <TouchableOpacity 
-            style={styles.avatarWrapper}
-            onPress={() => router.push('/profile/edit')}
-            activeOpacity={0.9}
-          >
-            <View style={styles.avatarRingBorder}>
-              {avatarUri ? (
-                <Image 
-                  source={{ uri: avatarUri }} 
-                  style={styles.avatarImage} 
-                  contentFit="cover"
-                  transition={200}
-                />
-              ) : (
-                <View style={[styles.avatarPlaceholder, { backgroundColor: colors.tint + '1F' }]}>
-                  <Text style={[styles.avatarText, { color: colors.tint }]}>
-                    {profile?.name ? profile.name.charAt(0).toUpperCase() : user?.email ? user.email.charAt(0).toUpperCase() : '?'}
-                  </Text>
-                </View>
-              )}
+      {/* ── Identity Block (No cover) ── */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16, marginBottom: 16 }}>
+          <View style={{ position: 'relative' }}>
+            <View style={{ width: 80, height: 80, borderRadius: 40, padding: 3, borderWidth: 2, borderColor: G, justifyContent: 'center', alignItems: 'center' }}>
+              <View style={{ width: '100%', height: '100%', borderRadius: 40, overflow: 'hidden', backgroundColor: DARK }}>
+                {avatarUri ? (
+                  <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+                ) : (
+                  <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: SURFACE }}>
+                    <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 24, color: G }}>
+                      {profile?.name ? profile.name.charAt(0).toUpperCase() : '?'}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
-            {isOnline && <View style={styles.onlineBadgeDot} />}
-          </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => router.push('/profile/edit')}
+              style={{ position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: G, borderWidth: 2, borderColor: DARK, justifyContent: 'center', alignItems: 'center' }}
+            >
+              <Ionicons name="camera-outline" size={12} color={DARK} />
+            </TouchableOpacity>
+          </View>
 
-          <View style={styles.heroInfoCol}>
-            <View style={styles.nameRow}>
-              <Text style={styles.displayName} numberOfLines={1}>
+          <View style={{ flex: 1, paddingTop: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 20, color: '#FFFFFF' }} numberOfLines={1}>
                 {profile?.name || user?.user_metadata?.name || 'Anonymous'}
               </Text>
               {(profile as any)?.verified_seller && (
-                <MaterialIcons name="verified" size={18} color="#82DB7E" style={{ marginLeft: 4 }} />
+                <MaterialIcons name="verified" size={18} color={G} />
               )}
             </View>
-
-            <Text style={styles.handleText}>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL, marginBottom: 6 }}>
               @{(profile as any)?.handle || (profile as any)?.username || user?.email?.split('@')[0] || 'user'}
             </Text>
-
-            {(profile as any)?.role_tag ? (
-              <View style={styles.roleTagPill}>
-                <Text style={styles.roleTagText}>{(profile as any).role_tag}</Text>
+            {formattedLocation && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Ionicons name="location-outline" size={13} color={MUTED} />
+                <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: MUTED }}>{formattedLocation}</Text>
               </View>
-            ) : (profile as any)?.verified_seller ? (
-              <View style={styles.roleTagPill}>
-                <Text style={styles.roleTagText}>Verified Seller</Text>
-              </View>
-            ) : null}
+            )}
           </View>
-
-
         </View>
 
-        {/* Stats Row: Posts | Followers | Following */}
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{posts.length}</Text>
-            <Text style={styles.statLabel}>Posts</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <TouchableOpacity 
-            style={styles.statItem} 
-            onPress={() => router.push(`/network/${user?.id}?mode=followers` as any)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.statValue}>{followersCount}</Text>
-            <Text style={styles.statLabel}>Followers</Text>
-          </TouchableOpacity>
-          <View style={styles.statDivider} />
-          <TouchableOpacity 
-            style={styles.statItem}
-            onPress={() => router.push(`/network/${user?.id}?mode=following` as any)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.statValue}>{followingCount}</Text>
-            <Text style={styles.statLabel}>Following</Text>
-          </TouchableOpacity>
-        </View>
+        {!!profile?.bio && (
+          <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: 'rgba(255,255,255,0.68)', lineHeight: 22, marginBottom: 16 }}>
+            {profile.bio}
+          </Text>
+        )}
 
-        {/* Bio */}
-        {profile?.bio ? (
-          <Text style={styles.bioText}>{profile.bio}</Text>
-        ) : null}
-
-        {/* Location */}
-        {formattedLocation ? (
-          <View style={styles.locationRow}>
-            <Ionicons name="location-outline" size={15} color="#82DB7E" />
-            <Text style={styles.locationText}>{formattedLocation}</Text>
-          </View>
-        ) : null}
-
-        {/* Instagram-style Edit Profile row */}
         <TouchableOpacity 
-          style={styles.editProfileBtn} 
+          style={{ height: 36, paddingHorizontal: 20, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', alignSelf: 'flex-start' }} 
           onPress={() => router.push('/profile/edit')}
           activeOpacity={0.8}
         >
-          <Text style={styles.editProfileText}>Edit profile</Text>
+          <Text style={{ color: MUTED, fontSize: 13, fontFamily: 'Inter-Medium', fontWeight: '500' }}>Edit Profile</Text>
         </TouchableOpacity>
-      </PressableCard>
+      </View>
+
+      {/* ── Stats Bar ── */}
+      <View style={{ flexDirection: 'row', marginHorizontal: 20, marginBottom: 20, borderTopWidth: 1, borderBottomWidth: 1, borderColor: GLASS_BORDER, paddingVertical: 16 }}>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 22, color: '#FFFFFF' }}>{posts.length}</Text>
+          <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 }}>Posts</Text>
+        </View>
+        <View style={{ width: 1, height: '100%', backgroundColor: GLASS_BORDER }} />
+        <TouchableOpacity 
+          style={{ flex: 1, alignItems: 'center' }}
+          onPress={() => router.push(`/network/${user?.id}?mode=followers` as any)}
+        >
+          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 22, color: '#FFFFFF' }}>{followersCount}</Text>
+          <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 }}>Followers</Text>
+        </TouchableOpacity>
+        <View style={{ width: 1, height: '100%', backgroundColor: GLASS_BORDER }} />
+        <TouchableOpacity 
+          style={{ flex: 1, alignItems: 'center' }}
+          onPress={() => router.push(`/network/${user?.id}?mode=following` as any)}
+        >
+          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 22, color: '#FFFFFF' }}>{followingCount}</Text>
+          <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 }}>Following</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* ── Quick Access 2x2 Grid ── */}
       <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>

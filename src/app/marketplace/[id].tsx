@@ -564,27 +564,30 @@ function MarketplaceDetailContent() {
       </Animated.ScrollView>
 
       {/* Sticky Bottom Bar */}
-      <View style={[styles.stickyFooter, { backgroundColor: DARK, borderTopColor: colors.borderLight }]}>
-        <SafeAreaView edges={['bottom']} style={{ flexDirection: 'row', width: '100%', paddingBottom: Platform.OS === 'ios' ? 0 : 16 }}>
+      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: DARK, borderTopWidth: 1, borderTopColor: GLASS_BORDER, paddingHorizontal: 16, paddingVertical: 12, zIndex: 100 }}>
+        <SafeAreaView edges={['bottom']} style={{ flexDirection: 'row', width: '100%', gap: 12 }}>
           {isOwner ? (
             <TouchableOpacity 
-              style={[styles.actionButton, styles.editButton, { backgroundColor: colors.inputBackground }]}
+              style={{ flex: 1, height: 54, borderRadius: 27, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
               onPress={() => router.push(`/marketplace/edit/${post.id}`)}
             >
-              <Text style={[styles.editButtonText, { color: colors.text }]}>Edit Item</Text>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF' }}>Edit Item</Text>
             </TouchableOpacity>
           ) : (
             <>
-              <TouchableOpacity style={[styles.messageButton, { borderColor: colors.tint, backgroundColor: colors.inputBackground }]} onPress={handleMessageSeller}>
-                <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.tint} />
-                <Text style={[styles.messageButtonText, { color: colors.tint }]}>Message</Text>
+              <TouchableOpacity 
+                style={{ flex: 1, height: 54, borderRadius: 27, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 }}
+                onPress={handleMessageSeller}
+              >
+                <Ionicons name="chatbubble-ellipses-outline" size={20} color={G} />
+                <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15, color: G }}>Message</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.buyButton, { backgroundColor: colors.tint }]}
+                style={{ flex: 1, height: 54, borderRadius: 27, backgroundColor: G, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 }}
                 onPress={() => router.push({ pathname: '/checkout/[id]', params: { id: post.id, type: 'marketplace' } })}
               >
-                <Ionicons name="bag-check-outline" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                <Text style={styles.buyButtonText}>Buy Now</Text>
+                <Ionicons name="bag-check-outline" size={20} color={DARK} />
+                <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15, color: DARK }}>Buy Now</Text>
               </TouchableOpacity>
             </>
           )}

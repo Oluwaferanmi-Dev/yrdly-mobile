@@ -421,73 +421,68 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
   return (
     <TouchableOpacity
-      activeOpacity={0.9}
+      activeOpacity={0.95}
       onPress={onPress}
-      style={[
-        styles.container, 
-        { 
-          backgroundColor: SURFACE,
-          borderColor: GLASS_BORDER,
-          borderRadius: 24,
-          borderWidth: 1,
-        }
-      ]}
+      style={{
+        paddingTop: 18,
+        paddingBottom: 4,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.05)',
+      }}
     >
       {/* Header */}
-      <View style={styles.header}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12 }}>
         <TouchableOpacity 
-          style={styles.authorRow}
+          style={{ flexDirection: 'row', alignItems: 'flex-start', flex: 1, marginRight: 10 }}
           onPress={(e) => {
             e.stopPropagation();
             router.push(`/profile/${post.user_id}` as any);
           }}
         >
-          <View style={[styles.avatar, { width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: post.user_id === currentUser?.id ? G : 'rgba(255,255,255,0.1)', backgroundColor: G + '15' }]}>
+          <View style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: post.user_id === currentUser?.id ? G : 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.05)', overflow: 'hidden', flexShrink: 0 }}>
             {post.user?.avatar_url || post.author_image ? (
               <Image source={{ uri: StorageService.getOptimizedImageUrl(post.user?.avatar_url || post.author_image || null, 150) || '' }} style={styles.avatarImage} />
             ) : (
-              <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 16, color: G }}>
-                {getInitials(post.user?.name || post.author_name)}
-              </Text>
+              <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: G }}>
+                  {getInitials(post.user?.name || post.author_name)}
+                </Text>
+              </View>
             )}
           </View>
-          <View style={[styles.authorText, { flex: 1, marginLeft: 10 }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 15, color: TEXT_PRIMARY, flexShrink: 1 }} numberOfLines={1}>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>
                 {post.user?.name || post.author_name || 'Anonymous'}
               </Text>
               {((post.user as any)?.verified_seller) && (
-                <VerifiedBadge size={14} />
+                <VerifiedBadge size={15} />
               )}
             </View>
-            {(post.ward || post.user?.location?.ward) || (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state) ? (
-              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: LABEL, marginTop: 1 }} numberOfLines={1}>
-                {[post.ward || post.user?.location?.ward, (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state)].filter(Boolean).join(', ')} • {timeAgo(post.timestamp || post.created_at)}
+            <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginTop: 2 }}>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>
+                {[post.ward || post.user?.location?.ward, (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state)].filter(Boolean).join(', ') || '@neighbour'}
               </Text>
-            ) : (
-              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: LABEL, marginTop: 1 }} numberOfLines={1}>
+              <Text style={{ color: LABEL, fontSize: 10, marginHorizontal: 4 }}>·</Text>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>
                 {timeAgo(post.timestamp || post.created_at)}
               </Text>
-            )}
+            </View>
           </View>
         </TouchableOpacity>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: GLASS_BORDER }}>
-            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 11, color: MUTED }}>
-              {post.category || 'General'}
-            </Text>
-          </View>
-          <TouchableOpacity onPress={(e) => { e.stopPropagation(); handleMoreOptions(); }}>
-            <Ionicons name="ellipsis-horizontal" size={20} color={MUTED} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity 
+          onPress={(e) => { e.stopPropagation(); handleMoreOptions(); }}
+          style={{ padding: 4, marginTop: 2 }}
+        >
+          <Ionicons name="ellipsis-horizontal" size={20} color={LABEL} />
+        </TouchableOpacity>
       </View>
 
-      {/* Content */}
-      <View style={styles.content}>
+      {/* Title & Body Text */}
+      <View style={{ paddingHorizontal: 20, marginBottom: (urls.length > 0 || post.video_url) ? 14 : 0 }}>
         {!!post.title && (
-          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 6 }}>{post.title}</Text>
+          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF', marginBottom: 6 }}>{post.title}</Text>
         )}
         {!!post.text && (() => {
           const maxLength = 180;
@@ -495,12 +490,12 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           const displayText = isExpanded || !shouldTruncate ? post.text : post.text.slice(0, maxLength) + "…";
           return (
             <View>
-              <Text style={{ fontFamily: 'Inter', fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 22 }}>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 15, color: 'rgba(255,255,255,0.82)', lineHeight: 24 }}>
                 {displayText}
               </Text>
               {shouldTruncate && (
                 <TouchableOpacity onPress={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} style={{ marginTop: 4 }}>
-                  <Text style={{ fontFamily: 'Inter', fontWeight: '700', fontSize: 13, color: G }}>
+                  <Text style={{ fontFamily: 'Inter-SemiBold', fontWeight: '600', fontSize: 13, color: MUTED }}>
                     {isExpanded ? 'Show less' : 'Read more'}
                   </Text>
                 </TouchableOpacity>
@@ -512,7 +507,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
       {/* Video */}
       {post.video_url && (
-        <View style={[styles.imageContainer, { width: imageDisplayWidth, aspectRatio: 4/5, backgroundColor: '#000', borderRadius: 16, overflow: 'hidden', marginBottom: 12 }]}>
+        <View style={{ marginHorizontal: 20, borderRadius: 16, overflow: 'hidden', aspectRatio: 4/3, backgroundColor: '#000', marginBottom: 12 }}>
           <PostVideo 
             post={post} 
             isVisible={isVisible} 
@@ -522,16 +517,16 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         </View>
       )}
 
-      {/* Images */}
+      {/* Images Carousel */}
       {urls.length > 0 && (
-        <View style={{ position: 'relative', marginBottom: 12 }}>
+        <View style={{ position: 'relative', marginHorizontal: 20, marginBottom: 12 }}>
           <ScrollView
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             scrollEventThrottle={16}
             onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-              const slide = Math.round(e.nativeEvent.contentOffset.x / imageDisplayWidth);
+              const slide = Math.round(e.nativeEvent.contentOffset.x / (width - 40));
               if (slide !== activeImageIndex) setActiveImageIndex(slide);
             }}
           >
@@ -540,7 +535,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
                 key={index.toString()}
                 activeOpacity={0.95}
                 onPress={() => handleImageTap(index)}
-                style={[styles.imageContainer, { backgroundColor: SURFACE, width: imageDisplayWidth, aspectRatio: 4/3, borderRadius: 16, overflow: 'hidden' }]}
+                style={{ width: width - 40, aspectRatio: 4/3, borderRadius: 16, overflow: 'hidden', backgroundColor: SURFACE }}
               >
                 <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
                 
@@ -560,20 +555,22 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         </View>
       )}
 
-      {/* Price or Ticket Info */}
+      {/* Price / Category badge if applicable */}
       {(post.category === 'For Sale' || post.category === 'Event') && post.price !== undefined && (
-        <Text style={{ fontFamily: 'Outfit', fontWeight: '900', fontSize: 18, color: G, marginBottom: 8 }}>
-          {post.category === 'Event' && (post.price === 0 || !post.price) 
-            ? 'FREE' 
-            : formatPrice(post.price)}
-        </Text>
+        <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
+          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 16, color: G }}>
+            {post.category === 'Event' && (post.price === 0 || !post.price) 
+              ? 'FREE' 
+              : formatPrice(post.price)}
+          </Text>
+        </View>
       )}
 
-      {/* Engagement Row */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: GLASS_BORDER, paddingTop: 10, marginTop: 4 }}>
-        <View style={[styles.actionRow, { flex: 1 }]}>
+      {/* Action Row */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 14, paddingBottom: 10, paddingHorizontal: 20 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 24 }}>
           <TouchableOpacity 
-            style={[styles.actionButton, isLiked && { backgroundColor: G + '15', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 }]} 
+            style={{ flexDirection: 'row', alignItems: 'center' }} 
             onPress={(e) => { e.stopPropagation(); handleLike(); }}
           >
             <Ionicons
@@ -581,35 +578,41 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               size={20}
               color={isLiked ? G : MUTED}
             />
-            <Text style={{ fontFamily: 'Outfit', fontWeight: isLiked ? '800' : '600', fontSize: 13, color: isLiked ? G : MUTED, marginLeft: 6 }}>
-              {likesCount > 0 ? likesCount : ''}
-            </Text>
+            {likesCount > 0 && (
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: isLiked ? G : MUTED, marginLeft: 6 }}>
+                {likesCount}
+              </Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.actionButton, { marginLeft: 16 }]} 
+            style={{ flexDirection: 'row', alignItems: 'center' }} 
             onPress={(e) => { e.stopPropagation(); if (onComment) onComment(); }}
           >
             <Ionicons name="chatbubble-ellipses-outline" size={19} color={MUTED} />
-            <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 13, color: MUTED, marginLeft: 6 }}>
-              {post.comment_count > 0 ? post.comment_count : ''}
-            </Text>
+            {post.comment_count > 0 && (
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED, marginLeft: 6 }}>
+                {post.comment_count}
+              </Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.actionButton, { marginLeft: 16 }]} 
+            style={{ flexDirection: 'row', alignItems: 'center' }} 
             onPress={(e) => { e.stopPropagation(); handleShare(); }}
           >
             <Entypo name="forward" size={19} color={MUTED} />
-            <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 13, color: MUTED, marginLeft: 6 }}>
-              {shareCount > 0 ? shareCount : ''}
-            </Text>
+            {shareCount > 0 && (
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED, marginLeft: 6 }}>
+                {shareCount}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity 
-          style={styles.actionButton} 
           onPress={(e) => { e.stopPropagation(); handleBookmark(); }}
+          style={{ padding: 2 }}
         >
           <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={19} color={isBookmarked ? G : MUTED} />
         </TouchableOpacity>
