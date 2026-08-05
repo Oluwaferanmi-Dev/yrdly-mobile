@@ -496,12 +496,12 @@ export default function MessagesTab() {
             </View>
 
             {/* Friend Search */}
-            <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground || colors.card, borderColor: colors.borderLight, marginHorizontal: 0, marginBottom: 16 }]}>
-              <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
+            <View style={[styles.searchContainer, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, marginHorizontal: 0, marginBottom: 16 }]}>
+              <Feather name="search" size={18} color={LABEL} style={styles.searchIcon} />
               <TextInput
-                style={[styles.searchInput, { color: colors.text }]}
+                style={[styles.searchInput, { color: TEXT_PRIMARY, fontFamily: 'Inter' }]}
                 placeholder="Search friends..."
-                placeholderTextColor={colors.textMuted}
+                placeholderTextColor={LABEL}
                 value={modalSearch}
                 onChangeText={setModalSearch}
               />
@@ -510,11 +510,11 @@ export default function MessagesTab() {
             {/* Friends list */}
             {friendsLoading ? (
               <View style={{ padding: 40, alignItems: 'center' }}>
-                <ActivityIndicator size="small" color={colors.tint} />
+                <ActivityIndicator size="small" color={G} />
               </View>
             ) : filteredModalFriends.length === 0 ? (
               <View style={{ padding: 40, alignItems: 'center' }}>
-                <Text style={{ color: colors.textMuted, fontSize: 14 }}>
+                <Text style={{ color: MUTED, fontSize: 14, fontFamily: 'Inter' }}>
                   {modalSearch ? 'No friends match search' : 'No friends found'}
                 </Text>
               </View>
@@ -524,14 +524,14 @@ export default function MessagesTab() {
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                   <TouchableOpacity
-                    style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.borderLight }}
+                    style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}
                     onPress={() => handleStartChatWithFriend(item)}
                   >
                     {item.avatar_url ? (
                       <Image source={{ uri: item.avatar_url }} style={{ width: 44, height: 44, borderRadius: 22, marginRight: 12 }} />
                     ) : (
-                      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                        <Text style={{ color: '#FFF', fontWeight: 'bold', fontSize: 16 }}>
+                      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(130, 219, 126, 0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                        <Text style={{ color: G, fontWeight: 'bold', fontSize: 16, fontFamily: 'Outfit' }}>
                           {(item.name || 'U').charAt(0).toUpperCase()}
                         </Text>
                       </View>

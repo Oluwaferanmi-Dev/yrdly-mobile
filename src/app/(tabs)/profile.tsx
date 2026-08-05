@@ -514,39 +514,58 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
 
   heroInfoCol: {
     flex: 1,
+    borderRadius: 48,
+    borderWidth: 2,
+    borderColor: G,
+    marginBottom: 12,
+    position: 'relative',
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: SURFACE,
+  },
+  cameraBadge: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    backgroundColor: G,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: DARK,
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 2,
   },
-  nameRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginBottom: 2 
-  },
-  displayName: { 
+  name: {
     color: TEXT_PRIMARY,
     fontFamily: 'Outfit',
-    fontSize: 22, 
+    fontSize: 20,
     fontWeight: '800',
+    marginBottom: 2,
     letterSpacing: -0.3,
   },
-  handleText: { 
+  handle: {
+    color: LABEL,
+    fontFamily: 'Inter',
+    fontSize: 13,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  bio: {
     color: MUTED,
     fontFamily: 'Inter',
-    fontSize: 14, 
-    fontWeight: '500',
-    marginBottom: 6,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 24,
+    marginTop: 6,
   },
-  roleTagPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(130, 219, 126, 0.12)',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(130, 219, 126, 0.3)',
-  },
-  roleTagText: {
-    color: '#82DB7E',
+  memberSinceText: {
+    color: LABEL,
+    fontFamily: 'Inter',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -557,12 +576,13 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
     marginTop: 14,
   },
   editProfileText: {
-    color: colors.text,
+    color: TEXT_PRIMARY,
+    fontFamily: 'Outfit',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -604,7 +624,8 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
 
   // ── Bio & Location ──
   bioText: { 
-    color: colors.text, 
+    color: TEXT_PRIMARY, 
+    fontFamily: 'Inter',
     fontSize: 14, 
     lineHeight: 20, 
     fontWeight: '400',
@@ -617,7 +638,8 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     marginTop: 2,
   },
   locationText: {
-    color: colors.textSecondary,
+    color: MUTED,
+    fontFamily: 'Inter',
     fontSize: 13,
     fontWeight: '500',
   },
@@ -635,7 +657,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     borderRadius: 20, 
     padding: 14,
     borderWidth: 1, 
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
     justifyContent: 'space-between',
     minHeight: 88,
   },
@@ -654,13 +676,15 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   actionTitle: { 
-    color: colors.text, 
+    color: TEXT_PRIMARY, 
+    fontFamily: 'Outfit',
     fontSize: 13, 
     fontWeight: '700',
     marginBottom: 2 
   },
   actionSub: { 
-    color: colors.textSecondary, 
+    color: MUTED, 
+    fontFamily: 'Inter',
     fontSize: 11,
     fontWeight: '400',
   },
@@ -705,13 +729,15 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: 20 
   },
   emptyHeadline: { 
-    color: colors.text, 
+    color: TEXT_PRIMARY, 
+    fontFamily: 'Outfit',
     fontSize: 18, 
     fontWeight: '700', 
     marginBottom: 6 
   },
   emptySub: { 
-    color: colors.textSecondary, 
+    color: MUTED, 
+    fontFamily: 'Inter',
     fontSize: 14, 
     textAlign: 'center', 
     marginBottom: 20 
