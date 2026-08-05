@@ -1,73 +1,210 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { G, DARK, SURFACE, GLASS_BORDER, LABEL, MUTED } from '../constants/tokens';
+import * as ImagePicker from 'expo-image-picker';
+import { G, DARK, SURFACE, GLASS_BORDER, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 import * as Haptics from 'expo-haptics';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/use-supabase-auth';
+import { StorageService, MobileFile } from '../lib/storage-service';
 
-type TicketTier = { id: number; name: string; price: string; qty: string; desc: string; expanded: boolean };
-
-const STEPS = ['Cover', 'Details', 'Date & Time', 'Location', 'Tickets', 'Review'];
-const CATEGORIES = ['Party', 'Music', 'Sports', 'Food', 'Networking', 'Community', 'Arts', 'Tech'];
-const COVER_ID = '1540575861846-d775fab174ef';
+const STEPS = ['Basic Info', 'Date & Time', 'Location', 'Tickets', 'Cover Photo', 'Review'];
+const CATEGORIES = ['Party / Social', 'Sports & Fitness', 'Workshop', 'Concert / Music', 'Community / Meetup', 'Religious', 'Business', 'Other'];
 
 export default function CreateEventScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user, profile } = useAuth();
   const [step, setStep] = useState(0);
 
+  // Form State
   const [eventName, setEventName] = useState('');
-  const [eventDesc, setEventDesc] = useState('');
   const [eventCategory, setEventCategory] = useState('');
+  const [desc, setDesc] = useState('');
+  
   const [dateStr, setDateStr] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  
   const [venue, setVenue] = useState('');
   const [area, setArea] = useState('');
+  const [isOnline, setIsOnline] = useState(false);
+  const [onlineLink, setOnlineLink] = useState('');
   
-  const [tiers, setTiers] = useState<TicketTier[]>([
-    { id: 1, name: 'General Admission', price: '0', qty: '', desc: '', expanded: true }
+  const [coverFile, setCoverFile] = useState<MobileFile | null>(null);
+  
+  const [tiers, setTiers] = useState<Array<{ name: string; price: string; isFree: boolean; capacity: string }>>([
+    { name: 'Standard Ticket', price: '0', isFree: true, capacity: '100' }
   ]);
-  const [nextTierId, setNextTierId] = useState(2);
 
   const [publishing, setPublishing] = useState(false);
   const [published, setPublished] = useState(false);
 
-  const progress = useSharedValue(1 / STEPS.length);
+  const progress = useSharedValue(0.16);
 
   React.useEffect(() => {
     progress.value = withTiming((step + 1) / STEPS.length);
   }, [step]);
 
-  const animatedProgressStyle = useAnimatedStyle(() => {
-    return {
-      width: `${progress.value * 100}%`,
-    };
-  });
+  React.useEffect(() => {
+    if (profile?.location) {
+      const locStr = [profile.location.ward, profile.location.lga, profile.location.state].filter(Boolean).join(', ');
+      if (locStr) setArea(locStr);
+    }
+  }, [profile]);
+
+  const animatedProgressStyle = useAnimatedStyle(() => ({
+    width: `${progress.value * 100}%`,
+  }));
+
+  const pickCover = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Please grant permission to access your photo library.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]) {
+        const asset = result.assets[0];
+        setCoverFile({
+          uri: asset.uri,
+          name: asset.fileName || `cover_${Date.now()}.jpg`,
+          type: asset.mimeType || 'image/jpeg',
+        });
+      }
+    } catch (e) {
+      console.error('Pick cover error:', e);
+    }
+  };
+
+  const addTier = () => {
+    setTiers(prev => [...prev, { name: 'VIP Ticket', price: '1000', isFree: false, capacity: '50' }]);
+  };
+
+  const removeTier = (index: number) => {
+    if (tiers.length <= 1) return;
+    setTiers(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateTier = (index: number, field: string, value: any) => {
+    setTiers(prev => prev.map((t, i) => {
+      if (i !== index) return t;
+      if (field === 'isFree') return { ...t, isFree: value, price: value ? '0' : t.price };
+      return { ...t, [field]: value };
+    }));
+  };
 
   const canNext = [
-    true,
     eventName.trim() && eventCategory,
     dateStr.trim() && startTime.trim(),
-    venue.trim() && area.trim(),
+    isOnline ? true : (venue.trim() && area.trim()),
     tiers.length > 0 && tiers.every(t => t.name.trim()),
+    true,
     true,
   ][step];
 
-  const handleNext = () => {
+  const handleNext = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (step < STEPS.length - 1) {
       setStep(s => s + 1);
     } else {
+      if (!user || !profile) {
+        Alert.alert('Authentication required', 'Please sign in to create an event.');
+        return;
+      }
+
       setPublishing(true);
-      setTimeout(() => {
+      try {
+        let coverUrl = '';
+        if (coverFile) {
+          const { urls, error: uploadErr } = await StorageService.uploadPostImages(user.id, [coverFile], 'event_images');
+          if (!uploadErr && urls && urls.length > 0) {
+            coverUrl = urls[0];
+          }
+        }
+
+        const userLoc = profile.location as { state?: string; lga?: string; ward?: string } | undefined;
+        
+        // Parse start and end time ISOs safely
+        const startISO = new Date(`${dateStr}T${startTime}:00`).toISOString();
+        const endISO = endTime ? new Date(`${dateStr}T${endTime}:00`).toISOString() : undefined;
+
+        const { data: newEvent, error: eventErr } = await supabase
+          .from('events')
+          .insert({
+            organizer_id: user.id,
+            title: eventName.trim(),
+            category: eventCategory,
+            description: desc.trim(),
+            cover_image_url: coverUrl,
+            start_time: startISO,
+            end_time: endISO,
+            location_address: venue.trim() || (isOnline ? 'Online Event' : 'TBA'),
+            location_online: isOnline,
+            online_link: isOnline ? onlineLink.trim() : null,
+            state: userLoc?.state || null,
+            lga: userLoc?.lga || null,
+            ward: userLoc?.ward || null,
+            status: 'PUBLISHED',
+          })
+          .select()
+          .single();
+
+        if (eventErr || !newEvent) {
+          throw new Error(eventErr?.message || 'Failed to create event.');
+        }
+
+        // Insert ticket tiers
+        const tierInserts = tiers.map(t => ({
+          event_id: newEvent.id,
+          name: t.name.trim(),
+          price: t.isFree ? 0 : (parseFloat(t.price) || 0),
+          capacity: t.capacity ? parseInt(t.capacity) : null,
+          sold: 0,
+        }));
+
+        await supabase.from('ticket_tiers').insert(tierInserts);
+
+        // Create feed post for the event
+        await supabase.from('posts').insert({
+          user_id: user.id,
+          author_name: profile.name || 'Organizer',
+          author_image: profile.avatar_url || '',
+          category: 'Event',
+          title: eventName.trim(),
+          text: desc.trim(),
+          event_date: startISO,
+          event_time: startTime,
+          event_location: { address: venue.trim() },
+          event_link: `/events/${newEvent.id}`,
+          image_urls: coverUrl ? [coverUrl] : [],
+          state: userLoc?.state || null,
+          lga: userLoc?.lga || null,
+          ward: userLoc?.ward || null,
+          timestamp: new Date().toISOString(),
+          liked_by: [],
+          comment_count: 0,
+        });
+
         setPublishing(false);
         setPublished(true);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }, 1600);
+      } catch (err: any) {
+        setPublishing(false);
+        Alert.alert('Error', err?.message || 'Failed to create event. Please check inputs.');
+      }
     }
   };
 
@@ -79,31 +216,19 @@ export default function CreateEventScreen() {
     }
   };
 
-  const updateTier = (id: number, patch: Partial<TicketTier>) => {
-    setTiers(ts => ts.map(t => t.id === id ? { ...t, ...patch } : t));
-  };
-  const deleteTier = (id: number) => setTiers(ts => ts.filter(t => t.id !== id));
-  const addTier = () => {
-    setTiers(ts => [...ts, { id: nextTierId, name: '', price: '0', qty: '', desc: '', expanded: true }]);
-    setNextTierId(n => n + 1);
-  };
-
   if (published) {
     return (
-      <View style={[styles.successContainer, { backgroundColor: '#050505' }]}>
+      <View style={[styles.successContainer, { backgroundColor: DARK }]}>
         <View style={styles.successIcon}>
-          <Feather name="check" size={34} color={G} />
+          <Feather name="calendar" size={34} color={G} />
         </View>
         <Text style={styles.successTitle}>Event Published!</Text>
-        <Text style={styles.successDesc}>Your event is now live on YRDLY.</Text>
+        <Text style={styles.successDesc}>Your event is live and neighbours can now get tickets.</Text>
         <TouchableOpacity 
           style={styles.btnPrimary}
-          onPress={() => router.replace('/(tabs)/profile')}
+          onPress={() => router.replace('/(tabs)/catalog')}
         >
-          <Text style={styles.btnPrimaryText}>View My Events</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
-          <Text style={styles.btnText}>Back to Feed</Text>
+          <Text style={styles.btnPrimaryText}>Explore Events</Text>
         </TouchableOpacity>
       </View>
     );
@@ -111,7 +236,7 @@ export default function CreateEventScreen() {
 
   return (
     <KeyboardAvoidingView 
-      style={[styles.container, { backgroundColor: '#050505', paddingTop: insets.top }]}
+      style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.header}>
@@ -130,164 +255,232 @@ export default function CreateEventScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         {step === 0 && (
-          <View>
-            <Text style={styles.stepTitle}>Cover Image</Text>
-            <Text style={styles.stepDesc}>A 16:9 banner that represents your event.</Text>
-            <View style={styles.coverBox}>
-              <Image source={{ uri: `https://images.unsplash.com/photo-${COVER_ID}?w=700&h=394&fit=crop&auto=format&q=80` }} style={styles.coverImg} />
-              <TouchableOpacity style={styles.coverOverlay}>
-                <View style={styles.changeCoverBadge}>
-                  <Text style={styles.changeCoverText}>Change Cover</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.formGroup}>
+            <Text style={styles.stepTitle}>Basic Info</Text>
+            <Text style={styles.stepDesc}>Give your event a clear name and category.</Text>
+
+            <Text style={styles.label}>Event Title</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Block Party & BBQ"
+              placeholderTextColor={MUTED}
+              value={eventName}
+              onChangeText={setEventName}
+            />
+
+            <Text style={styles.label}>Category</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+              {CATEGORIES.map(cat => (
+                <TouchableOpacity
+                  key={cat}
+                  style={[styles.chip, eventCategory === cat && styles.chipActive]}
+                  onPress={() => setEventCategory(cat)}
+                >
+                  <Text style={[styles.chipText, eventCategory === cat && styles.chipTextActive]}>{cat}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Tell guests what to expect..."
+              placeholderTextColor={MUTED}
+              multiline
+              numberOfLines={4}
+              value={desc}
+              onChangeText={setDesc}
+            />
           </View>
         )}
 
         {step === 1 && (
-          <View style={{ gap: 20 }}>
-            <View>
-              <Text style={styles.fieldLabel}>Event Name</Text>
-              <TextInput style={styles.input} value={eventName} onChangeText={setEventName} placeholder="What's your event called?" placeholderTextColor={MUTED} />
-            </View>
-            <View>
-              <Text style={styles.fieldLabel}>Description</Text>
-              <TextInput style={[styles.input, styles.textArea]} value={eventDesc} onChangeText={setEventDesc} placeholder="What should people know about it?" placeholderTextColor={MUTED} multiline textAlignVertical="top" />
-            </View>
-            <View>
-              <Text style={styles.fieldLabel}>Category</Text>
-              <View style={styles.pillContainer}>
-                {CATEGORIES.map(c => {
-                  const isSelected = eventCategory === c;
-                  return (
-                    <TouchableOpacity key={c} onPress={() => setEventCategory(c)} style={[styles.pill, isSelected && styles.pillSelected]}>
-                      <Text style={[styles.pillText, isSelected && styles.pillTextSelected]}>{c}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
+          <View style={styles.formGroup}>
+            <Text style={styles.stepTitle}>Date & Time</Text>
+            <Text style={styles.stepDesc}>When is your event taking place?</Text>
+
+            <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="2026-09-15"
+              placeholderTextColor={MUTED}
+              value={dateStr}
+              onChangeText={setDateStr}
+            />
+
+            <Text style={styles.label}>Start Time (HH:MM e.g. 18:00)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="18:00"
+              placeholderTextColor={MUTED}
+              value={startTime}
+              onChangeText={setStartTime}
+            />
+
+            <Text style={styles.label}>End Time (Optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="22:00"
+              placeholderTextColor={MUTED}
+              value={endTime}
+              onChangeText={setEndTime}
+            />
           </View>
         )}
 
         {step === 2 && (
-          <View style={{ gap: 20 }}>
-            <View>
-              <Text style={styles.fieldLabel}>Date</Text>
-              <TextInput style={styles.input} value={dateStr} onChangeText={setDateStr} placeholder="e.g. Oct 31, 2026" placeholderTextColor={MUTED} />
+          <View style={styles.formGroup}>
+            <Text style={styles.stepTitle}>Location</Text>
+            <Text style={styles.stepDesc}>Where can attendees find your event?</Text>
+
+            <View style={styles.switchRow}>
+              <Text style={{ fontFamily: 'Inter-Medium', color: '#fff', fontSize: 15 }}>Online Event</Text>
+              <Switch value={isOnline} onValueChange={setIsOnline} trackColor={{ false: SURFACE, true: G }} />
             </View>
-            <View style={styles.rowInputs}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.fieldLabel}>Starts</Text>
-                <TextInput style={styles.input} value={startTime} onChangeText={setStartTime} placeholder="9:00 PM" placeholderTextColor={MUTED} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.fieldLabel}>Ends (Optional)</Text>
-                <TextInput style={styles.input} value={endTime} onChangeText={setEndTime} placeholder="2:00 AM" placeholderTextColor={MUTED} />
-              </View>
-            </View>
+
+            {isOnline ? (
+              <>
+                <Text style={styles.label}>Stream / Meeting Link</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="https://zoom.us/j/..."
+                  placeholderTextColor={MUTED}
+                  value={onlineLink}
+                  onChangeText={setOnlineLink}
+                />
+              </>
+            ) : (
+              <>
+                <Text style={styles.label}>Venue Address</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g. 12 Community Hall Way"
+                  placeholderTextColor={MUTED}
+                  value={venue}
+                  onChangeText={setVenue}
+                />
+
+                <Text style={styles.label}>Neighbourhood / Area</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g. Ikeja, Lagos"
+                  placeholderTextColor={MUTED}
+                  value={area}
+                  onChangeText={setArea}
+                />
+              </>
+            )}
           </View>
         )}
 
         {step === 3 && (
-          <View style={{ gap: 20 }}>
-            <View>
-              <Text style={styles.fieldLabel}>Venue Name</Text>
-              <TextInput style={styles.input} value={venue} onChangeText={setVenue} placeholder="e.g. Landmark Beach" placeholderTextColor={MUTED} />
-            </View>
-            <View>
-              <Text style={styles.fieldLabel}>Area / Neighbourhood</Text>
-              <TextInput style={styles.input} value={area} onChangeText={setArea} placeholder="e.g. Victoria Island" placeholderTextColor={MUTED} />
-            </View>
-          </View>
-        )}
+          <View style={styles.formGroup}>
+            <Text style={styles.stepTitle}>Ticket Tiers</Text>
+            <Text style={styles.stepDesc}>Configure free or paid entry options.</Text>
 
-        {step === 4 && (
-          <View style={{ gap: 20 }}>
-            <View>
-              <Text style={styles.stepTitle}>Tickets</Text>
-              <Text style={styles.stepDesc}>Add free or paid ticket tiers.</Text>
-            </View>
-            {tiers.map((t, idx) => (
-              <View key={t.id} style={styles.ticketTierCard}>
-                <View style={styles.ticketTierHeader}>
-                  <Text style={styles.ticketTierTitle}>Tier {idx + 1}</Text>
+            {tiers.map((tier, idx) => (
+              <View key={idx} style={styles.tierCard}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ fontFamily: 'Outfit-Bold', color: '#fff', fontSize: 16 }}>Tier #{idx + 1}</Text>
                   {tiers.length > 1 && (
-                    <TouchableOpacity onPress={() => deleteTier(t.id)}>
-                      <Feather name="trash-2" size={16} color="#ef4444" />
+                    <TouchableOpacity onPress={() => removeTier(idx)}>
+                      <Ionicons name="trash-outline" size={18} color="#FF6B6B" />
                     </TouchableOpacity>
                   )}
                 </View>
-                <View style={{ gap: 12 }}>
-                  <TextInput style={styles.input} value={t.name} onChangeText={v => updateTier(t.id, { name: v })} placeholder="Ticket Name (e.g. VIP)" placeholderTextColor={MUTED} />
-                  <View style={styles.rowInputs}>
-                    <View style={{ flex: 1 }}>
-                      <TextInput style={styles.input} value={t.price} onChangeText={v => updateTier(t.id, { price: v })} placeholder="Price (0 for free)" placeholderTextColor={MUTED} keyboardType="numeric" />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <TextInput style={styles.input} value={t.qty} onChangeText={v => updateTier(t.id, { qty: v })} placeholder="Qty (Optional)" placeholderTextColor={MUTED} keyboardType="numeric" />
-                    </View>
-                  </View>
-                  <TextInput style={styles.input} value={t.desc} onChangeText={v => updateTier(t.id, { desc: v })} placeholder="Description (Optional)" placeholderTextColor={MUTED} />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Tier Name (e.g. Early Bird)"
+                  placeholderTextColor={MUTED}
+                  value={tier.name}
+                  onChangeText={v => updateTier(idx, 'name', v)}
+                />
+
+                <View style={styles.switchRow}>
+                  <Text style={{ fontFamily: 'Inter-Medium', color: '#ccc', fontSize: 14 }}>Free Ticket</Text>
+                  <Switch value={tier.isFree} onValueChange={v => updateTier(idx, 'isFree', v)} trackColor={{ false: SURFACE, true: G }} />
                 </View>
+
+                {!tier.isFree && (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Price (₦)"
+                    placeholderTextColor={MUTED}
+                    keyboardType="numeric"
+                    value={tier.price}
+                    onChangeText={v => updateTier(idx, 'price', v)}
+                  />
+                )}
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Total Capacity (e.g. 100)"
+                  placeholderTextColor={MUTED}
+                  keyboardType="numeric"
+                  value={tier.capacity}
+                  onChangeText={v => updateTier(idx, 'capacity', v)}
+                />
               </View>
             ))}
+
             <TouchableOpacity style={styles.addTierBtn} onPress={addTier}>
-              <Feather name="plus" size={16} color={G} />
-              <Text style={styles.addTierText}>Add Ticket Tier</Text>
+              <Ionicons name="add" size={20} color={G} />
+              <Text style={{ fontFamily: 'Outfit-Bold', color: G, fontSize: 14 }}>Add Ticket Tier</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {step === 5 && (
-          <View style={{ gap: 20 }}>
-            <View>
-              <Text style={styles.stepTitle}>Review</Text>
-              <Text style={styles.stepDesc}>This is how your event will appear on the feed.</Text>
-            </View>
-            
-            <View style={styles.previewCard}>
-              <View style={styles.previewCoverBox}>
-                <Image source={{ uri: `https://images.unsplash.com/photo-${COVER_ID}?w=600&h=338&fit=crop&auto=format&q=85` }} style={styles.previewMainImage} />
-                <View style={styles.previewDateBadge}>
-                  <Text style={styles.previewDateText}>OCT</Text>
-                  <Text style={styles.previewDateNum}>31</Text>
-                </View>
-              </View>
-              <View style={styles.previewContent}>
-                <Text style={styles.previewTitle}>{eventName || 'Event Name'}</Text>
-                <View style={styles.previewMeta}>
-                  <Feather name="map-pin" size={12} color={LABEL} />
-                  <Text style={styles.previewMetaText}>{venue || 'Venue'}, {area || 'Area'}</Text>
-                </View>
-                <View style={[styles.previewMeta, { marginTop: 4 }]}>
-                  <Feather name="clock" size={12} color={LABEL} />
-                  <Text style={styles.previewMetaText}>{startTime || 'Time'}</Text>
-                </View>
-              </View>
-              <View style={styles.previewHostRow}>
-                <Image source={{ uri: "https://images.unsplash.com/photo-1563132337-f159f484226c?w=40&h=40&fit=crop&auto=format" }} style={styles.previewAvatar} />
-                <Text style={styles.previewHostText}>Hosted by <Text style={{ color: '#fff' }}>You</Text></Text>
-              </View>
-            </View>
+        {step === 4 && (
+          <View style={styles.formGroup}>
+            <Text style={styles.stepTitle}>Cover Photo</Text>
+            <Text style={styles.stepDesc}>Upload an eye-catching banner image.</Text>
 
-            <View style={styles.reminderBox}>
-              <Feather name="info" size={16} color={G} />
-              <Text style={styles.reminderText}>Your event will be published to the community feed immediately.</Text>
+            {coverFile ? (
+              <View style={styles.coverPreviewBox}>
+                <Image source={{ uri: coverFile.uri }} style={styles.coverImg} />
+                <TouchableOpacity style={styles.removeCover} onPress={() => setCoverFile(null)}>
+                  <Ionicons name="close-circle" size={24} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.uploadCoverBox} onPress={pickCover}>
+                <Ionicons name="image-outline" size={36} color={G} />
+                <Text style={{ fontFamily: 'Outfit-Bold', color: '#fff', fontSize: 16 }}>Upload Cover Image</Text>
+                <Text style={{ fontFamily: 'Inter-Regular', color: MUTED, fontSize: 12 }}>16:9 Aspect Ratio Recommended</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {step === 5 && (
+          <View style={styles.formGroup}>
+            <Text style={styles.stepTitle}>Review & Publish</Text>
+            <Text style={styles.stepDesc}>Verify details before publishing live.</Text>
+
+            <View style={styles.reviewCard}>
+              <Text style={styles.reviewTitle}>{eventName}</Text>
+              <Text style={styles.reviewMeta}>{eventCategory} · {dateStr} at {startTime}</Text>
+              <Text style={styles.reviewMeta}>{isOnline ? 'Online Event' : venue}</Text>
+              <Text style={{ fontFamily: 'Outfit-Bold', color: G, marginTop: 8 }}>{tiers.length} Ticket Tier(s)</Text>
             </View>
           </View>
         )}
       </ScrollView>
 
-      <View style={[styles.bottomBar, { paddingBottom: insets.bottom || 20 }]}>
-        <TouchableOpacity 
-          style={[styles.continueBtn, !canNext && styles.continueBtnDisabled]}
-          disabled={!canNext}
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+        <TouchableOpacity
+          style={[styles.btnPrimary, !canNext && styles.btnDisabled]}
+          disabled={!canNext || publishing}
           onPress={handleNext}
         >
-          <Text style={[styles.continueBtnText, !canNext && styles.continueBtnTextDisabled]}>
-            {publishing ? 'Publishing…' : step < STEPS.length - 1 ? 'Continue' : 'Publish Event'}
-          </Text>
+          {publishing ? (
+            <ActivityIndicator size="small" color={DARK} />
+          ) : (
+            <Text style={styles.btnPrimaryText}>
+              {step === STEPS.length - 1 ? 'Publish Event' : 'Continue'}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -299,200 +492,147 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 10,
   },
   backBtn: {
     width: 36,
     height: 36,
-    borderRadius: 12,
+    borderRadius: 18,
     backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTextContainer: { flex: 1 },
   headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  headerSubtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 },
+  headerSubtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: MUTED },
   progressBarBg: {
-    marginHorizontal: 20,
-    marginTop: 14,
     height: 3,
-    borderRadius: 2,
     backgroundColor: 'rgba(255,255,255,0.08)',
+    width: '100%',
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 2,
     backgroundColor: G,
   },
-  scrollContent: { paddingHorizontal: 20, paddingVertical: 20, paddingBottom: 40 },
-  stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 17, color: '#fff', marginBottom: 4 },
-  stepDesc: { fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL, marginBottom: 20 },
-  
-  coverBox: {
-    width: '100%',
-    aspectRatio: 16/9,
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: '#111',
-    position: 'relative',
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
   },
-  coverImg: { width: '100%', height: '100%' },
-  coverOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  changeCoverBadge: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-  },
-  changeCoverText: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff' },
-  
-  fieldLabel: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 12,
-    color: LABEL,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 8,
-  },
+  stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff', marginBottom: 4 },
+  stepDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED, marginBottom: 20 },
+  formGroup: { gap: 12 },
+  label: { fontFamily: 'Inter-Medium', fontSize: 13, color: '#ccc', marginTop: 8 },
   input: {
-    width: '100%',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 16,
     backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: GLASS_BORDER,
-    color: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontFamily: 'Inter-Regular',
     fontSize: 15,
+    color: '#fff',
   },
-  textArea: { minHeight: 120 },
-  pillContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  pill: {
-    paddingHorizontal: 14,
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  chip: {
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: 20,
     backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: GLASS_BORDER,
+    marginRight: 8,
   },
-  pillSelected: {
-    backgroundColor: 'rgba(130,219,126,0.15)',
-    borderColor: 'rgba(130,219,126,0.35)',
+  chipActive: {
+    backgroundColor: G + '20',
+    borderColor: G,
   },
-  pillText: { fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED },
-  pillTextSelected: { color: G },
-  rowInputs: { flexDirection: 'row', gap: 12 },
-  
-  ticketTierCard: {
+  chipText: { fontFamily: 'Inter-Medium', fontSize: 13, color: MUTED },
+  chipTextActive: { color: G },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  tierCard: {
     backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: GLASS_BORDER,
     borderRadius: 16,
     padding: 16,
+    gap: 10,
+    marginBottom: 8,
   },
-  ticketTierHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  ticketTierTitle: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff' },
   addTierBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
     paddingVertical: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(130,219,126,0.3)',
-    borderStyle: 'dashed',
-    backgroundColor: 'rgba(130,219,126,0.05)',
-  },
-  addTierText: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: G },
-
-  previewCard: {
-    backgroundColor: '#0f0f0f',
+    borderRadius: 14,
+    backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: GLASS_BORDER,
-    borderRadius: 20,
+    gap: 8,
+  },
+  uploadCoverBox: {
+    height: 180,
+    borderRadius: 16,
+    backgroundColor: SURFACE,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  coverPreviewBox: {
+    height: 180,
+    borderRadius: 16,
     overflow: 'hidden',
+    position: 'relative',
   },
-  previewCoverBox: { position: 'relative', width: '100%', aspectRatio: 16/9 },
-  previewMainImage: { width: '100%', height: '100%' },
-  previewDateBadge: {
+  coverImg: { width: '100%', height: '100%' },
+  removeCover: {
     position: 'absolute',
-    top: 12,
-    left: 12,
-    width: 48,
-    height: 52,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 12,
+    top: 10,
+    right: 10,
+  },
+  reviewCard: {
+    backgroundColor: SURFACE,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: GLASS_BORDER,
+    borderRadius: 16,
+    padding: 16,
+    gap: 6,
   },
-  previewDateText: { fontFamily: 'Outfit-Bold', fontSize: 10, color: '#fff' },
-  previewDateNum: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff', marginTop: -2 },
-  previewContent: { paddingHorizontal: 16, paddingVertical: 12 },
-  previewTitle: { fontFamily: 'Outfit-Bold', fontSize: 17, color: '#fff', marginBottom: 8 },
-  previewMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  previewMetaText: { fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL },
-  previewHostRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: GLASS_BORDER,
-  },
-  previewAvatar: { width: 24, height: 24, borderRadius: 12 },
-  previewHostText: { fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL },
-
-  reminderBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(130,219,126,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(130,219,126,0.15)',
-    borderRadius: 14,
-  },
-  reminderText: { fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED, lineHeight: 20, flex: 1 },
-
-  bottomBar: {
+  reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff' },
+  reviewMeta: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED },
+  footer: {
     paddingHorizontal: 20,
-    paddingTop: 14,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: GLASS_BORDER,
+    backgroundColor: DARK,
   },
-  continueBtn: {
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 18,
+  btnPrimary: {
     backgroundColor: G,
-    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: 'center',
+    justify.content: 'center',
   },
-  continueBtnDisabled: { backgroundColor: 'rgba(130,219,126,0.2)' },
-  continueBtnText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },
-  continueBtnTextDisabled: { color: 'rgba(130,219,126,0.4)' },
-
+  btnDisabled: { opacity: 0.4 },
+  btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },
   successContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -512,13 +652,4 @@ const styles = StyleSheet.create({
   },
   successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: '#fff', textAlign: 'center' },
   successDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED, textAlign: 'center', lineHeight: 22 },
-  btnPrimary: {
-    marginTop: 8,
-    paddingHorizontal: 40,
-    paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: G,
-  },
-  btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 15, color: DARK },
-  btnText: { fontFamily: 'Inter-Regular', fontSize: 14, color: LABEL, marginTop: 8 },
 });
