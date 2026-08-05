@@ -13,6 +13,23 @@ import { PostHogProvider } from 'posthog-react-native';
 import { setAudioModeAsync } from 'expo-audio';
 import { OfflineBanner } from '../components/OfflineBanner';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { useFonts } from 'expo-font';
+import {
+  Outfit_300Light,
+  Outfit_400Regular,
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+  Outfit_800ExtraBold,
+  Outfit_900Black,
+} from '@expo-google-fonts/outfit';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+import { View } from 'react-native';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // already hidden, ignore
@@ -111,6 +128,33 @@ function RootNavigationGuard() {
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 export default function Layout() {
+  const [fontsLoaded] = useFonts({
+    Outfit: Outfit_400Regular,
+    'Outfit-Light': Outfit_300Light,
+    'Outfit-Regular': Outfit_400Regular,
+    'Outfit-Medium': Outfit_500Medium,
+    'Outfit-SemiBold': Outfit_600SemiBold,
+    'Outfit-Bold': Outfit_700Bold,
+    'Outfit-ExtraBold': Outfit_800ExtraBold,
+    'Outfit-Black': Outfit_900Black,
+    Inter: Inter_400Regular,
+    'Inter-Regular': Inter_400Regular,
+    'Inter-Medium': Inter_500Medium,
+    'Inter-SemiBold': Inter_600SemiBold,
+    'Inter-Bold': Inter_700Bold,
+  });
+
+  // Keep splash screen visible until fonts are ready
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return <View style={{ flex: 1, backgroundColor: '#050505' }} />;
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PostHogProvider apiKey={process.env.EXPO_PUBLIC_POSTHOG_KEY!} options={{ host: process.env.EXPO_PUBLIC_POSTHOG_HOST }}>

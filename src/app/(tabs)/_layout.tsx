@@ -126,26 +126,30 @@ export default function TabLayout() {
     <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
-          headerShown: false,
-          tabBarShowLabel: false,
-          tabBarStyle: {
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: tabBarHeight,
-            backgroundColor: isDarkMode ? GLASS_BG : 'rgba(255, 255, 255, 0.97)',
-            borderTopWidth: StyleSheet.hairlineWidth,
-            borderTopColor: isDarkMode ? GLASS_BORDER : 'rgba(0,0,0,0.08)',
-            paddingBottom: insets.bottom,
-            elevation: 0,
-          },
-          tabBarActiveTintColor: G,
-          tabBarInactiveTintColor: isDarkMode ? MUTED : 'rgba(0,0,0,0.35)',
-          tabBarItemStyle: {
-            paddingTop: 8,
-          },
-        }}
+            headerShown: false,
+            tabBarShowLabel: true,
+            tabBarStyle: {
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: tabBarHeight,
+              backgroundColor: 'rgba(12,12,12,0.97)',
+              borderTopWidth: 1,
+              borderTopColor: 'rgba(255,255,255,0.08)',
+              paddingBottom: insets.bottom,
+              elevation: 0,
+            },
+            tabBarActiveTintColor: G,
+            tabBarInactiveTintColor: 'rgba(255,255,255,0.42)',
+            tabBarLabelStyle: {
+              fontFamily: 'Inter',
+              fontSize: 10,
+            },
+            tabBarItemStyle: {
+              paddingTop: 8,
+            },
+          }}
       >
         <Tabs.Screen
           name="index"
@@ -241,19 +245,20 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -8,
-    backgroundColor: RED,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
+    backgroundColor: G,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: 3,
     borderWidth: 1.5,
     borderColor: DARK,
   },
   badgeText: {
-    color: '#FFF',
-    fontSize: 10,
+    color: DARK,
+    fontSize: 9,
+    fontFamily: 'Outfit',
     fontWeight: 'bold',
   },
 });
