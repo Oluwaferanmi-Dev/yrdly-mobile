@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
@@ -14,7 +14,6 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../context/ThemeContext';
 import { formatPrice } from '../../lib/utils';
 
 const QUICK_AMOUNTS = [5000, 10000, 25000, 50000];
@@ -22,7 +21,6 @@ const QUICK_AMOUNTS = [5000, 10000, 25000, 50000];
 export default function WithdrawScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { colors } = useAppTheme();
 
   const [balance, setBalance] = useState(0);
   const [amount, setAmount] = useState('');
@@ -122,7 +120,7 @@ export default function WithdrawScreen() {
     return (
       <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
         <View style={s.center}>
-          <ActivityIndicator size="large" color={colors.tint} />
+          <ActivityIndicator size="large" color={G} />
         </View>
       </SafeAreaView>
     );
@@ -133,69 +131,69 @@ export default function WithdrawScreen() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
 
         {/* Header */}
-        <View style={[s.header, { borderBottomColor: colors.borderLight }]}>
+        <View style={[s.header, { borderBottomColor: GLASS_BORDER }]}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={28} color={colors.text} />
+            <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[s.headerTitle, { color: colors.text }]}>Withdraw Funds</Text>
+          <Text style={[s.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Withdraw Funds</Text>
           <View style={{ width: 28 }} />
         </View>
 
         <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
           {/* Balance card */}
-          <View style={[s.balanceCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-            <View style={[s.balanceIcon, { backgroundColor: colors.tint + '18' }]}>
-              <Text style={[s.balanceIconText, { color: colors.tint }]}>₦</Text>
+          <View style={[s.balanceCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+            <View style={[s.balanceIcon, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
+              <Text style={[s.balanceIconText, { color: G, fontFamily: 'Outfit' }]}>₦</Text>
             </View>
-            <Text style={[s.balanceLabel, { color: colors.textMuted }]}>Available Balance</Text>
-            <Text style={[s.balanceAmount, { color: colors.text }]}>{formatPrice(balance)}</Text>
+            <Text style={[s.balanceLabel, { color: MUTED, fontFamily: 'Inter' }]}>Available Balance</Text>
+            <Text style={[s.balanceAmount, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{formatPrice(balance)}</Text>
           </View>
 
           {/* Bank account */}
           {bankInfo ? (
-            <View style={[s.bankCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-              <Feather name="credit-card" size={18} color={colors.tint} />
+            <View style={[s.bankCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+              <Feather name="credit-card" size={18} color={G} />
               <View style={{ flex: 1 }}>
-                <Text style={[s.bankName, { color: colors.text }]}>{bankInfo.bank_name}</Text>
-                <Text style={[s.bankAccount, { color: colors.textMuted }]}>
+                <Text style={[s.bankName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{bankInfo.bank_name}</Text>
+                <Text style={[s.bankAccount, { color: MUTED, fontFamily: 'Inter' }]}>
                   {bankInfo.account_number} · {bankInfo.account_name}
                 </Text>
               </View>
               <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)}>
-                <Text style={[s.changeLink, { color: colors.tint }]}>Change</Text>
+                <Text style={[s.changeLink, { color: G, fontFamily: 'Outfit' }]}>Change</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity
-              style={[s.bankCard, { backgroundColor: SURFACE, borderColor: colors.tint + '55', borderStyle: 'dashed' }]}
+              style={[s.bankCard, { backgroundColor: SURFACE, borderColor: 'rgba(130, 219, 126, 0.35)', borderStyle: 'dashed' }]}
               onPress={() => router.push('/settings/payout-settings' as any)}
             >
-              <Feather name="plus-circle" size={18} color={colors.tint} />
-              <Text style={[s.bankName, { color: colors.tint }]}>Add Bank Account</Text>
+              <Feather name="plus-circle" size={18} color={G} />
+              <Text style={[s.bankName, { color: G, fontFamily: 'Outfit' }]}>Add Bank Account</Text>
             </TouchableOpacity>
           )}
 
           {/* Amount input */}
           <View style={s.inputSection}>
-            <Text style={[s.inputLabel, { color: colors.textMuted }]}>Amount to withdraw</Text>
-            <View style={[s.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: numericAmount > 0 ? colors.tint : colors.borderLight }]}>
-              <Text style={[s.nairaSign, { color: colors.textMuted }]}>₦</Text>
+            <Text style={[s.inputLabel, { color: MUTED, fontFamily: 'Inter' }]}>Amount to withdraw</Text>
+            <View style={[s.inputWrapper, { backgroundColor: SURFACE, borderColor: numericAmount > 0 ? G : GLASS_BORDER }]}>
+              <Text style={[s.nairaSign, { color: MUTED, fontFamily: 'Outfit' }]}>₦</Text>
               <TextInput
                 value={amount}
                 onChangeText={v => setAmount(formatAmountInput(v))}
                 keyboardType="numeric"
                 placeholder="0"
-                placeholderTextColor={colors.textMuted}
-                style={[s.input, { color: colors.text }]}
+                placeholderTextColor={LABEL}
+                style={[s.input, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}
                 maxLength={12}
               />
             </View>
             {numericAmount > 0 && numericAmount < 500 && (
-              <Text style={[s.hint, { color: '#EF4444' }]}>Minimum withdrawal is ₦500</Text>
+              <Text style={[s.hint, { color: '#EF4444', fontFamily: 'Inter' }]}>Minimum withdrawal is ₦500</Text>
             )}
             {numericAmount > balance && (
-              <Text style={[s.hint, { color: '#EF4444' }]}>Amount exceeds available balance</Text>
+              <Text style={[s.hint, { color: '#EF4444', fontFamily: 'Inter' }]}>Amount exceeds available balance</Text>
             )}
           </View>
 
@@ -208,12 +206,12 @@ export default function WithdrawScreen() {
                 style={[
                   s.quickChip,
                   {
-                    backgroundColor: numericAmount === q ? colors.tint + '22' : colors.card,
-                    borderColor: numericAmount === q ? colors.tint : colors.borderLight,
+                    backgroundColor: numericAmount === q ? 'rgba(130, 219, 126, 0.15)' : SURFACE,
+                    borderColor: numericAmount === q ? G : GLASS_BORDER,
                   },
                 ]}
               >
-                <Text style={[s.quickChipText, { color: numericAmount === q ? colors.tint : colors.textSecondary }]}>
+                <Text style={[s.quickChipText, { color: numericAmount === q ? G : MUTED, fontFamily: 'Outfit' }]}>
                   ₦{(q / 1000).toFixed(0)}k
                 </Text>
               </TouchableOpacity>
@@ -221,15 +219,15 @@ export default function WithdrawScreen() {
             {balance > 0 && (
               <TouchableOpacity
                 onPress={() => setAmount(Math.floor(balance).toLocaleString('en-NG'))}
-                style={[s.quickChip, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
+                style={[s.quickChip, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
               >
-                <Text style={[s.quickChipText, { color: colors.textSecondary }]}>All</Text>
+                <Text style={[s.quickChipText, { color: MUTED, fontFamily: 'Outfit' }]}>All</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {/* Fee note */}
-          <Text style={[s.feeNote, { color: colors.textMuted }]}>
+          <Text style={[s.feeNote, { color: MUTED, fontFamily: 'Inter' }]}>
             Processing fee: ₦50 · Arrives within 1–2 business days
           </Text>
 
@@ -237,9 +235,9 @@ export default function WithdrawScreen() {
           <TouchableOpacity
             onPress={openConfirm}
             disabled={!isValid}
-            style={[s.ctaBtn, { backgroundColor: isValid ? colors.tint : colors.borderLight }]}
+            style={[s.ctaBtn, { backgroundColor: isValid ? G : GLASS_BORDER }]}
           >
-            <Text style={[s.ctaBtnText, { color: isValid ? '#000' : colors.textMuted }]}>
+            <Text style={[s.ctaBtnText, { color: isValid ? '#000000' : LABEL, fontFamily: 'Outfit' }]}>
               Continue
             </Text>
           </TouchableOpacity>
@@ -253,29 +251,29 @@ export default function WithdrawScreen() {
         <Modal transparent animationType="none" visible={showConfirm} onRequestClose={closeConfirm}>
           <Animated.View style={[s.overlay, overlayStyle]}>
             <TouchableOpacity style={StyleSheet.absoluteFill} onPress={closeConfirm} activeOpacity={1} />
-            <Animated.View style={[s.confirmSheet, { backgroundColor: SURFACE }, confirmStyle]}>
-              <View style={[s.handle, { backgroundColor: colors.borderLight }]} />
+            <Animated.View style={[s.confirmSheet, { backgroundColor: DARK, borderColor: GLASS_BORDER, borderWidth: 1 }, confirmStyle]}>
+              <View style={[s.handle, { backgroundColor: GLASS_BORDER }]} />
 
-              <Text style={[s.confirmTitle, { color: colors.text }]}>Confirm Withdrawal</Text>
+              <Text style={[s.confirmTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Confirm Withdrawal</Text>
 
-              <View style={[s.confirmRow, { borderColor: colors.borderLight }]}>
-                <Text style={[s.confirmLabel, { color: colors.textMuted }]}>Amount</Text>
-                <Text style={[s.confirmValue, { color: colors.text }]}>₦{numericAmount.toLocaleString('en-NG')}</Text>
+              <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
+                <Text style={[s.confirmLabel, { color: MUTED, fontFamily: 'Inter' }]}>Amount</Text>
+                <Text style={[s.confirmValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>₦{numericAmount.toLocaleString('en-NG')}</Text>
               </View>
-              <View style={[s.confirmRow, { borderColor: colors.borderLight }]}>
-                <Text style={[s.confirmLabel, { color: colors.textMuted }]}>Fee</Text>
-                <Text style={[s.confirmValue, { color: colors.text }]}>₦50</Text>
+              <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
+                <Text style={[s.confirmLabel, { color: MUTED, fontFamily: 'Inter' }]}>Fee</Text>
+                <Text style={[s.confirmValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>₦50</Text>
               </View>
-              <View style={[s.confirmRow, { borderColor: colors.borderLight }]}>
-                <Text style={[s.confirmLabel, { color: colors.textMuted }]}>You receive</Text>
-                <Text style={[s.confirmValue, { color: colors.tint }]}>
+              <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
+                <Text style={[s.confirmLabel, { color: MUTED, fontFamily: 'Inter' }]}>You receive</Text>
+                <Text style={[s.confirmValue, { color: G, fontFamily: 'Outfit' }]}>
                   ₦{Math.max(0, numericAmount - 50).toLocaleString('en-NG')}
                 </Text>
               </View>
               {bankInfo && (
-                <View style={[s.confirmRow, { borderColor: colors.borderLight }]}>
-                  <Text style={[s.confirmLabel, { color: colors.textMuted }]}>To</Text>
-                  <Text style={[s.confirmValue, { color: colors.text }]} numberOfLines={1}>
+                <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
+                  <Text style={[s.confirmLabel, { color: MUTED, fontFamily: 'Inter' }]}>To</Text>
+                  <Text style={[s.confirmValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]} numberOfLines={1}>
                     {bankInfo.bank_name} · {bankInfo.account_number}
                   </Text>
                 </View>
@@ -284,16 +282,16 @@ export default function WithdrawScreen() {
               <TouchableOpacity
                 onPress={handleWithdraw}
                 disabled={submitting}
-                style={[s.confirmBtn, { backgroundColor: colors.tint }]}
+                style={[s.confirmBtn, { backgroundColor: G }]}
               >
                 {submitting
                   ? <ActivityIndicator size="small" color="#000" />
-                  : <Text style={s.confirmBtnText}>Withdraw Now</Text>
+                  : <Text style={[s.confirmBtnText, { fontFamily: 'Outfit' }]}>Withdraw Now</Text>
                 }
               </TouchableOpacity>
 
               <TouchableOpacity onPress={closeConfirm} style={s.cancelBtn}>
-                <Text style={[s.cancelText, { color: colors.textMuted }]}>Cancel</Text>
+                <Text style={[s.cancelText, { color: MUTED, fontFamily: 'Inter' }]}>Cancel</Text>
               </TouchableOpacity>
             </Animated.View>
           </Animated.View>

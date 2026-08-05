@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -10,13 +10,11 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { api } from '../../lib/api';
 import banksData from '../../data/nigerian-banks.json';
-import { useAppTheme } from '../../context/ThemeContext';
 
 interface Bank { code: string; name: string }
 const BANKS: Bank[] = banksData as Bank[];
 
 export default function PayoutSettingsScreen() {
-  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
   const [existing, setExisting] = useState<any>(null);
@@ -83,21 +81,21 @@ export default function PayoutSettingsScreen() {
   const canSave = selectedBank && accountNumber.length === 10 && !!resolvedName && !resolving;
   return (
     <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
-      <View style={[s.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity onPress={() => router.back()} style={s.back}><Ionicons name="chevron-back" size={28} color={colors.text} /></TouchableOpacity>
-        <Text style={[s.title, { color: colors.text }]}>Bank Account</Text>
+      <View style={[s.header, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
+        <TouchableOpacity onPress={() => router.back()} style={s.back}><Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} /></TouchableOpacity>
+        <Text style={[s.title, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Bank Account</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
-        {loading ? <ActivityIndicator color={colors.tint} style={{ marginTop: 32 }} /> : existing ? (
-          <View style={[s.existingCard, { backgroundColor: SURFACE, borderColor: colors.borderLight, borderWidth: 1 }]}>
+        {loading ? <ActivityIndicator color={G} style={{ marginTop: 32 }} /> : existing ? (
+          <View style={[s.existingCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
             <View style={s.existingRow}>
-              <View style={[s.iconWrap, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}><Feather name="briefcase" size={22} color={colors.tint} /></View>
+              <View style={[s.iconWrap, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}><Feather name="briefcase" size={22} color={G} /></View>
               <View style={{ flex: 1 }}>
-                <Text style={[s.existingName, { color: colors.text }]}>{existing.account_name}</Text>
-                <Text style={[s.existingDetail, { color: colors.textSecondary }]}>{existing.bank_name} · ****{existing.account_number.slice(-4)}</Text>
+                <Text style={[s.existingName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{existing.account_name}</Text>
+                <Text style={[s.existingDetail, { color: MUTED, fontFamily: 'Inter' }]}>{existing.bank_name} · ****{existing.account_number.slice(-4)}</Text>
                 <View style={[s.badge, existing.verification_status === 'verified' ? s.badgeOk : s.badgePending]}>
-                  <Text style={[s.badgeText, { color: existing.verification_status === 'verified' ? colors.tint : '#E65100' }]}>
+                  <Text style={[s.badgeText, { color: existing.verification_status === 'verified' ? G : '#E65100', fontFamily: 'Inter' }]}>
                     {existing.verification_status === 'verified' ? '✓ Verified' : '⏳ Pending verification'}
                   </Text>
                 </View>
@@ -106,53 +104,53 @@ export default function PayoutSettingsScreen() {
           </View>
         ) : null}
 
-        <Text style={[s.sectionTitle, { color: colors.text }]}>{existing ? 'Replace Bank Account' : 'Add Bank Account'}</Text>
+        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{existing ? 'Replace Bank Account' : 'Add Bank Account'}</Text>
         {existing && (
           <View style={s.warnBox}>
             <Feather name="alert-circle" size={15} color="#E65100" />
-            <Text style={s.warnText}>Changing your bank account triggers a 24-hour hold on new payouts.</Text>
+            <Text style={[s.warnText, { fontFamily: 'Inter' }]}>Changing your bank account triggers a 24-hour hold on new payouts.</Text>
           </View>
         )}
 
-        <Text style={[s.label, { color: colors.textMuted }]}>Bank *</Text>
-        <TouchableOpacity style={[s.selector, { backgroundColor: SURFACE, borderColor: colors.borderLight }, selectedBank && { borderColor: colors.tint }]} onPress={() => { setBankSearch(''); setBankModal(true); }}>
-          <Text style={[s.selectorText, { color: colors.text }, !selectedBank && { color: colors.textMuted }]}>{selectedBank?.name ?? 'Select your bank'}</Text>
-          <Feather name="chevron-down" size={18} color={selectedBank ? colors.tint : colors.textMuted} />
+        <Text style={[s.label, { color: LABEL, fontFamily: 'Inter' }]}>Bank *</Text>
+        <TouchableOpacity style={[s.selector, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, selectedBank && { borderColor: G }]} onPress={() => { setBankSearch(''); setBankModal(true); }}>
+          <Text style={[s.selectorText, { color: TEXT_PRIMARY, fontFamily: 'Inter' }, !selectedBank && { color: LABEL }]}>{selectedBank?.name ?? 'Select your bank'}</Text>
+          <Feather name="chevron-down" size={18} color={selectedBank ? G : LABEL} />
         </TouchableOpacity>
 
-        <Text style={[s.label, { color: colors.textMuted, marginTop: 16 }]}>Account Number *</Text>
+        <Text style={[s.label, { color: LABEL, fontFamily: 'Inter', marginTop: 16 }]}>Account Number *</Text>
         <TextInput
-          style={[s.input, { backgroundColor: SURFACE, borderColor: colors.borderLight, color: colors.text }, accountNumber.length === 10 && { borderColor: colors.tint }]}
+          style={[s.input, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, color: TEXT_PRIMARY, fontFamily: 'Inter' }, accountNumber.length === 10 && { borderColor: G }]}
           value={accountNumber}
           onChangeText={v => { setAccountNumber(v.replace(/\D/g, '').slice(0, 10)); setResolvedName(''); }}
           placeholder="10-digit account number"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={LABEL}
           keyboardType="number-pad"
           maxLength={10}
         />
 
-        {resolving && <View style={s.resolveRow}><ActivityIndicator size="small" color={colors.tint} /><Text style={[s.resolveText, { color: colors.textMuted }]}>Verifying…</Text></View>}
+        {resolving && <View style={s.resolveRow}><ActivityIndicator size="small" color={G} /><Text style={[s.resolveText, { color: MUTED, fontFamily: 'Inter' }]}>Verifying…</Text></View>}
         {!resolving && resolvedName ? (
-          <View style={s.resolveRow}><Feather name="check-circle" size={18} color={colors.tint} /><Text style={[s.resolvedName, { color: colors.tint }]}>{resolvedName}</Text></View>
+          <View style={s.resolveRow}><Feather name="check-circle" size={18} color={G} /><Text style={[s.resolvedName, { color: G, fontFamily: 'Outfit' }]}>{resolvedName}</Text></View>
         ) : null}
         {!resolving && accountNumber.length === 10 && !resolvedName && (
-          <View style={s.resolveRow}><Feather name="x-circle" size={18} color="#E53935" /><Text style={{ color: '#E53935', fontSize: 13 }}>Account not found.</Text></View>
+          <View style={s.resolveRow}><Feather name="x-circle" size={18} color="#E53935" /><Text style={{ color: '#E53935', fontSize: 13, fontFamily: 'Inter' }}>Account not found.</Text></View>
         )}
 
-        <TouchableOpacity style={[s.saveBtn, { backgroundColor: colors.tint }, !canSave && s.saveBtnOff]} onPress={handleSave} disabled={!canSave || saving}>
-          {saving ? <ActivityIndicator color={colors.background} /> : <Text style={[s.saveBtnText, { color: colors.background }]}>Save Bank Account</Text>}
+        <TouchableOpacity style={[s.saveBtn, { backgroundColor: G }, !canSave && s.saveBtnOff]} onPress={handleSave} disabled={!canSave || saving}>
+          {saving ? <ActivityIndicator color="#000000" /> : <Text style={[s.saveBtnText, { color: '#000000', fontFamily: 'Outfit' }]}>Save Bank Account</Text>}
         </TouchableOpacity>
       </ScrollView>
 
       <Modal visible={bankModal} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={[s.modal, { backgroundColor: DARK }]}>
-          <View style={[s.modalHeader, { borderBottomColor: colors.borderLight }]}>
-            <Text style={[s.modalTitle, { color: colors.text }]}>Select Bank</Text>
-            <TouchableOpacity onPress={() => setBankModal(false)}><Feather name="x" size={24} color={colors.text} /></TouchableOpacity>
+          <View style={[s.modalHeader, { borderBottomColor: GLASS_BORDER }]}>
+            <Text style={[s.modalTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Select Bank</Text>
+            <TouchableOpacity onPress={() => setBankModal(false)}><Feather name="x" size={24} color={TEXT_PRIMARY} /></TouchableOpacity>
           </View>
-          <View style={[s.searchBox, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-            <Feather name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
-            <TextInput style={[s.searchInput, { color: colors.text }]} value={bankSearch} onChangeText={setBankSearch} placeholder="Search banks…" placeholderTextColor={colors.textMuted} autoFocus />
+          <View style={[s.searchBox, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+            <Feather name="search" size={18} color={LABEL} style={{ marginRight: 8 }} />
+            <TextInput style={[s.searchInput, { color: TEXT_PRIMARY, fontFamily: 'Inter' }]} value={bankSearch} onChangeText={setBankSearch} placeholder="Search banks…" placeholderTextColor={LABEL} autoFocus />
           </View>
           <FlatList
             data={filteredBanks}
@@ -162,11 +160,11 @@ export default function PayoutSettingsScreen() {
                 style={[s.bankItem, selectedBank?.code === item.code && s.bankItemSel]}
                 onPress={() => { setSelectedBank(item); setResolvedName(''); setBankModal(false); }}
               >
-                <Text style={[s.bankName, { color: colors.text }, selectedBank?.code === item.code && { color: colors.tint, fontWeight: '700' }]}>{item.name}</Text>
-                {selectedBank?.code === item.code && <Feather name="check" size={18} color={colors.tint} />}
+                <Text style={[s.bankName, { color: TEXT_PRIMARY, fontFamily: 'Inter' }, selectedBank?.code === item.code && { color: G, fontWeight: '700' }]}>{item.name}</Text>
+                {selectedBank?.code === item.code && <Feather name="check" size={18} color={G} />}
               </TouchableOpacity>
             )}
-            ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: colors.borderLight, marginLeft: 20 }} />}
+            ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: GLASS_BORDER, marginLeft: 20 }} />}
             keyboardShouldPersistTaps="handled"
           />
         </SafeAreaView>

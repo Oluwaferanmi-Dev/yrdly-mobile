@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import {
@@ -9,10 +9,8 @@ import { useRouter } from 'expo-router';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { LocationPicker, LocationValue } from '../../components/LocationPicker';
-import { useAppTheme } from '../../context/ThemeContext';
 
 export default function LocationSettingsScreen() {
-  const { colors } = useAppTheme();
   const router = useRouter();
   const { profile, updateProfile } = useAuth();
   const [location, setLocation] = useState<LocationValue>({
@@ -60,50 +58,50 @@ export default function LocationSettingsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Location</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Location</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Current location */}
         {location.state ? (
-          <View style={[styles.currentCard, { backgroundColor: SURFACE, borderColor: colors.borderLight, borderWidth: 1 }]}>
-            <View style={[styles.currentIcon, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
-              <Ionicons name="location-outline" size={22} color={colors.tint} />
+          <View style={[styles.currentCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
+            <View style={[styles.currentIcon, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
+              <Ionicons name="location-outline" size={22} color={G} />
             </View>
             <View>
-              <Text style={[styles.currentLabel, { color: colors.textMuted }]}>Current Location</Text>
-              <Text style={[styles.currentValue, { color: colors.text }]}>
+              <Text style={[styles.currentLabel, { color: MUTED, fontFamily: 'Inter' }]}>Current Location</Text>
+              <Text style={[styles.currentValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>
                 {location.lga ? `${location.lga}, ` : ''}{location.state}
               </Text>
             </View>
           </View>
         ) : null}
 
-        <Text style={[styles.info, { color: colors.textMuted }]}>
+        <Text style={[styles.info, { color: MUTED, fontFamily: 'Inter' }]}>
           Your location determines which posts, events, marketplace items, and neighbours you see.
         </Text>
 
         <LocationPicker value={location} onChange={(l) => { setLocation(l); setSaved(false); }} />
 
         <TouchableOpacity
-          style={[styles.saveBtn, { backgroundColor: colors.tint }, (!hasChanges || saving) && styles.saveBtnDisabled]}
+          style={[styles.saveBtn, { backgroundColor: G }, (!hasChanges || saving) && styles.saveBtnDisabled]}
           onPress={handleSave}
           disabled={!hasChanges || saving}
         >
           {saving ? (
-            <ActivityIndicator color={colors.background} />
+            <ActivityIndicator color="#000000" />
           ) : saved ? (
             <>
-              <Feather name="check-circle" size={20} color={colors.background} style={{ marginRight: 8 }} />
-              <Text style={[styles.saveBtnText, { color: colors.background }]}>Location Updated!</Text>
+              <Feather name="check-circle" size={20} color="#000000" style={{ marginRight: 8 }} />
+              <Text style={[styles.saveBtnText, { color: '#000000', fontFamily: 'Outfit' }]}>Location Updated!</Text>
             </>
           ) : (
-            <Text style={[styles.saveBtnText, { color: colors.background }]}>Save Location</Text>
+            <Text style={[styles.saveBtnText, { color: '#000000', fontFamily: 'Outfit' }]}>Save Location</Text>
           )}
         </TouchableOpacity>
       </ScrollView>

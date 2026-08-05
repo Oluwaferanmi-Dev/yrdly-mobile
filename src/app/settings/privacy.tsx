@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,12 +6,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { AuthService } from '../../lib/auth-service';
-import { useAppTheme } from '../../context/ThemeContext';
 
 export default function PrivacySettingsScreen() {
   const router = useRouter();
   const { user, profile } = useAuth();
-  const { colors, isDarkMode } = useAppTheme();
 
   const [shareLocation, setShareLocation] = useState<boolean>(false);
   const [discoverable, setDiscoverable] = useState<boolean>(true);
@@ -55,35 +53,35 @@ export default function PrivacySettingsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Privacy & Discoverability</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Privacy & Discoverability</Text>
         <View style={styles.headerIconBtn} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>LOCATION PRIVACY</Text>
-        <View style={[styles.glassCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-          <View style={[styles.navRow, { borderBottomColor: colors.borderLight }]}>
-            <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
-              <Ionicons name="location-outline" size={24} color={colors.tint} />
+        <Text style={[styles.sectionHeader, { color: LABEL, fontFamily: 'Inter' }]}>LOCATION PRIVACY</Text>
+        <View style={[styles.glassCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+          <View style={[styles.navRow, { borderBottomColor: GLASS_BORDER }]}>
+            <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
+              <Ionicons name="location-outline" size={24} color={G} />
             </View>
             <View style={styles.navTextWrap}>
-              <Text style={[styles.navLabel, { color: colors.text }]}>Share Location with Friends</Text>
-              <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>
+              <Text style={[styles.navLabel, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Share Location with Friends</Text>
+              <Text style={[styles.navSubtext, { color: MUTED, fontFamily: 'Inter' }]}>
                 Let mutual friends see you on the map
               </Text>
             </View>
             {savingLocation ? (
-              <ActivityIndicator size="small" color={colors.tint} />
+              <ActivityIndicator size="small" color={G} />
             ) : (
               <Switch
                 value={shareLocation}
                 onValueChange={handleShareLocationToggle}
-                trackColor={{ false: '#353534', true: colors.tint }}
+                trackColor={{ false: '#353534', true: G }}
                 thumbColor={'#FFFFFF'}
                 ios_backgroundColor="#353534"
               />
@@ -91,25 +89,25 @@ export default function PrivacySettingsScreen() {
           </View>
         </View>
 
-        <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>COMMUNITY VISIBILITY</Text>
-        <View style={[styles.glassCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-          <View style={[styles.navRow, { borderBottomColor: colors.borderLight }]}>
-            <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
-              <Ionicons name="compass-outline" size={24} color={colors.tint} />
+        <Text style={[styles.sectionHeader, { color: LABEL, fontFamily: 'Inter' }]}>COMMUNITY VISIBILITY</Text>
+        <View style={[styles.glassCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+          <View style={[styles.navRow, { borderBottomColor: GLASS_BORDER }]}>
+            <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
+              <Ionicons name="compass-outline" size={24} color={G} />
             </View>
             <View style={styles.navTextWrap}>
-              <Text style={[styles.navLabel, { color: colors.text }]}>Allow Neighbors to Discover Me</Text>
-              <Text style={[styles.navSubtext, { color: colors.textSecondary }]}>
+              <Text style={[styles.navLabel, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Allow Neighbors to Discover Me</Text>
+              <Text style={[styles.navSubtext, { color: MUTED, fontFamily: 'Inter' }]}>
                 When enabled, your profile may appear in other users' Discover tab based on your location.
               </Text>
             </View>
             {savingDiscoverable ? (
-              <ActivityIndicator size="small" color={colors.tint} />
+              <ActivityIndicator size="small" color={G} />
             ) : (
               <Switch
                 value={discoverable}
                 onValueChange={handleDiscoverableToggle}
-                trackColor={{ false: '#353534', true: colors.tint }}
+                trackColor={{ false: '#353534', true: G }}
                 thumbColor={'#FFFFFF'}
                 ios_backgroundColor="#353534"
               />
@@ -118,9 +116,9 @@ export default function PrivacySettingsScreen() {
         </View>
 
         <View style={styles.infoContainer}>
-          <Ionicons name="information-circle-outline" size={20} color={colors.textSecondary} style={{ marginRight: 8, marginTop: 2 }} />
-          <Text style={[styles.infoText, { color: colors.textSecondary }]}>
-            Disabling discovery prevents new people from finding you in the Community tab, but existing friends will still see you on their friends list.
+          <Ionicons name="information-circle-outline" size={18} color={MUTED} style={styles.infoIcon} />
+          <Text style={[styles.infoText, { color: MUTED, fontFamily: 'Inter' }]}>
+            We value your privacy. Your exact GPS coordinates are never broadcast to the public — only coarse location (State and LGA) is used for local discovery.
           </Text>
         </View>
 
@@ -130,52 +128,83 @@ export default function PrivacySettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0B0D0B' },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  container: {
+    flex: 1,
   },
-  headerIconBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' },
-  
-  content: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 24 },
-  
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  headerIconBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  content: {
+    padding: 16,
+  },
   sectionHeader: {
-    color: '#A6A6A6', fontSize: 12, fontWeight: '700',
-    letterSpacing: 1.2, marginLeft: 8, marginBottom: 12,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    marginTop: 16,
+    marginBottom: 8,
+    marginLeft: 4,
   },
   glassCard: {
-    backgroundColor: '#1C1C1C',
-    borderRadius: 24,
-    borderColor: 'rgba(255,255,255,0.06)', borderWidth: 1,
-    marginBottom: 24,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 16,
     overflow: 'hidden',
   },
   navRow: {
-    flexDirection: 'row', alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 16,
   },
   iconGlow: {
-    width: 40, height: 40, borderRadius: 20,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 16,
-    backgroundColor: 'rgba(130, 225, 87, 0.1)',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  navTextWrap: { flex: 1, marginRight: 16 },
-  navLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  navSubtext: { color: '#A6A6A6', fontSize: 13, lineHeight: 18 },
-  
+  navTextWrap: {
+    flex: 1,
+    marginRight: 12,
+  },
+  navLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  navSubtext: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
   infoContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    padding: 16,
-    borderRadius: 12,
+    alignItems: 'flex-start',
     marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  infoIcon: {
+    marginRight: 8,
+    marginTop: 2,
   },
   infoText: {
     flex: 1,
-    fontSize: 13,
-    lineHeight: 20,
-  }
+    fontSize: 12,
+    lineHeight: 18,
+  },
 });

@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import {
@@ -8,7 +8,6 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../context/ThemeContext';
 
 interface NotificationSettings {
   messages: boolean;
@@ -62,7 +61,6 @@ const NOTIFICATION_GROUPS = [
 ];
 
 export default function NotificationsScreen() {
-  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
@@ -106,48 +104,48 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Notifications</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.tint} />
+          <ActivityIndicator size="large" color={G} />
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={[styles.intro, { color: colors.textMuted }]}>
+          <Text style={[styles.intro, { color: MUTED, fontFamily: 'Inter' }]}>
             Choose which notifications you receive. These apply to both push and in-app notifications.
           </Text>
 
           {NOTIFICATION_GROUPS.map((group) => (
             <View key={group.title} style={styles.group}>
-              <Text style={[styles.groupTitle, { color: colors.textMuted }]}>{group.title.toUpperCase()}</Text>
-              <View style={[styles.groupCard, { backgroundColor: SURFACE, borderColor: colors.borderLight, borderWidth: 1 }]}>
+              <Text style={[styles.groupTitle, { color: LABEL, fontFamily: 'Inter' }]}>{group.title.toUpperCase()}</Text>
+              <View style={[styles.groupCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
                 {group.items.map((item, index) => (
                   <View
                     key={item.key}
-                    style={[styles.row, index < group.items.length - 1 && [styles.rowDivider, { borderBottomColor: colors.borderLight }]]}
+                    style={[styles.row, index < group.items.length - 1 && [styles.rowDivider, { borderBottomColor: GLASS_BORDER }]]}
                   >
-                    <View style={[styles.iconWrap, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
-                      <Feather name={item.icon as any} size={20} color={colors.tint} />
+                    <View style={[styles.iconWrap, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
+                      <Feather name={item.icon as any} size={20} color={G} />
                     </View>
                     <View style={styles.rowInfo}>
-                      <Text style={[styles.rowLabel, { color: colors.text }]}>{item.label}</Text>
-                      <Text style={[styles.rowDesc, { color: colors.textMuted }]}>{item.desc}</Text>
+                      <Text style={[styles.rowLabel, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{item.label}</Text>
+                      <Text style={[styles.rowDesc, { color: MUTED, fontFamily: 'Inter' }]}>{item.desc}</Text>
                     </View>
                     {saving === item.key ? (
-                      <ActivityIndicator size="small" color={colors.tint} />
+                      <ActivityIndicator size="small" color={G} />
                     ) : (
                       <Switch
                         value={settings[item.key]}
                         onValueChange={(v) => handleToggle(item.key, v)}
-                        trackColor={{ false: 'rgba(150,150,150,0.3)', true: 'rgba(130, 225, 87, 0.4)' }}
-                        thumbColor={settings[item.key] ? colors.tint : '#FFFFFF'}
+                        trackColor={{ false: 'rgba(150,150,150,0.3)', true: 'rgba(130, 219, 126, 0.4)' }}
+                        thumbColor={settings[item.key] ? G : '#FFFFFF'}
                         ios_backgroundColor="rgba(150,150,150,0.3)"
                       />
                     )}

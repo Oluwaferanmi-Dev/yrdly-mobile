@@ -192,17 +192,17 @@ export default function SettingsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         
         {/* Profile Card */}
-        <View style={[styles.profileCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+        <View style={[styles.profileCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
           <TouchableOpacity style={styles.avatarWrapper} onPress={handlePickImage} disabled={uploadingImage}>
             {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={[styles.avatarImage, { borderColor: colors.borderLight }]} />
+              <Image source={{ uri: avatarUrl }} style={[styles.avatarImage, { borderColor: GLASS_BORDER }]} />
             ) : (
-              <View style={[styles.avatarPlaceholder, { borderColor: colors.borderLight, backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
-                <Ionicons name="person" size={32} color={colors.tint} />
+              <View style={[styles.avatarPlaceholder, { borderColor: GLASS_BORDER, backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
+                <Ionicons name="person" size={32} color={G} />
               </View>
             )}
-            <View style={[styles.editBadge, { backgroundColor: colors.tint, borderColor: colors.card }]}>
-              <Ionicons name="pencil" size={12} color={colors.background} />
+            <View style={[styles.editBadge, { backgroundColor: G, borderColor: DARK }]}>
+              <Ionicons name="pencil" size={12} color="#000000" />
             </View>
             {uploadingImage && (
               <View style={styles.uploadOverlay}>
@@ -213,41 +213,41 @@ export default function SettingsScreen() {
 
           <View style={styles.profileInfo}>
             <TextInput
-              style={[styles.nameInput, { color: colors.text }]}
+              style={[styles.nameInput, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}
               value={name}
               onChangeText={setName}
               placeholder="Your Name"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={LABEL}
             />
             {hasLegalName ? (
               <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 6}}>
-                <Ionicons name="shield-checkmark" size={12} color={colors.tint} style={{marginRight: 4}} />
-                <Text style={{fontSize: 12, color: colors.textMuted, fontWeight: '500'}}>
+                <Ionicons name="shield-checkmark" size={12} color={G} style={{marginRight: 4}} />
+                <Text style={{fontSize: 12, color: MUTED, fontWeight: '500', fontFamily: 'Inter'}}>
                   {legalName}
                 </Text>
               </View>
             ) : (
               <TextInput
-                style={[styles.bioInput, { color: colors.text, marginBottom: 6, fontSize: 13 }]}
+                style={[styles.bioInput, { color: TEXT_PRIMARY, marginBottom: 6, fontSize: 13, fontFamily: 'Inter' }]}
                 value={legalName}
                 onChangeText={setLegalName}
                 placeholder="Add Legal Name (Required for Payouts)"
-                placeholderTextColor={colors.tint}
+                placeholderTextColor={G}
               />
             )}
             <View style={styles.locationBadgeRow}>
-              <Ionicons name="location" size={12} color={colors.tint} style={{marginRight: 4}} />
+              <Ionicons name="location" size={12} color={G} style={{marginRight: 4}} />
               <TextInput
-                style={[styles.bioInput, { color: colors.textSecondary }]}
+                style={[styles.bioInput, { color: MUTED, fontFamily: 'Inter' }]}
                 value={bio}
                 onChangeText={setBio}
                 placeholder="Add a bio or location..."
-                placeholderTextColor={colors.textMuted}
+                placeholderTextColor={LABEL}
               />
             </View>
             <View style={styles.memberBadge}>
-              <Ionicons name="people" size={12} color={colors.tint} style={{marginRight: 6}} />
-              <Text style={[styles.memberBadgeText, { color: colors.tint }]}>Yrdly member</Text>
+              <Ionicons name="people" size={12} color={G} style={{marginRight: 6}} />
+              <Text style={[styles.memberBadgeText, { color: G, fontFamily: 'Outfit' }]}>Yrdly member</Text>
             </View>
           </View>
         </View>

@@ -1,15 +1,13 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
-import { useAppTheme } from '../../context/ThemeContext';
 
 export default function WithdrawSuccessScreen() {
   const router = useRouter();
-  const { colors } = useAppTheme();
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
@@ -21,14 +19,14 @@ export default function WithdrawSuccessScreen() {
           style={s.lottie}
         />
 
-        <Text style={[s.title, { color: colors.text }]}>Withdrawal Processing</Text>
-        <Text style={[s.subtitle, { color: colors.textSecondary }]}>
+        <Text style={[s.title, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Withdrawal Processing</Text>
+        <Text style={[s.subtitle, { color: MUTED, fontFamily: 'Inter' }]}>
           Your withdrawal request has been submitted successfully. Funds will arrive in your bank account within 1–2 business days.
         </Text>
 
-        <View style={[s.infoCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-          <Feather name="info" size={18} color={colors.tint} />
-          <Text style={[s.infoText, { color: colors.textMuted }]}>
+        <View style={[s.infoCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+          <Feather name="info" size={18} color={G} />
+          <Text style={[s.infoText, { color: MUTED, fontFamily: 'Inter' }]}>
             You will receive a push notification once the transfer is completed by our payment partner.
           </Text>
         </View>
@@ -36,10 +34,10 @@ export default function WithdrawSuccessScreen() {
 
       <View style={s.footer}>
         <TouchableOpacity
-          style={[s.button, { backgroundColor: colors.tint }]}
+          style={[s.button, { backgroundColor: G }]}
           onPress={() => router.replace('/settings/payouts' as any)}
         >
-          <Text style={s.buttonText}>Back to Payouts</Text>
+          <Text style={[s.buttonText, { color: '#000000', fontFamily: 'Outfit' }]}>Back to Payouts</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
