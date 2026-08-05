@@ -345,7 +345,7 @@ function MarketplaceDetailContent() {
   if (loading) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: DARK }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={G} />
       </View>
     );
   }
@@ -353,9 +353,9 @@ function MarketplaceDetailContent() {
   if (!post) {
     return (
       <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
-        <Text style={[styles.errorText, { color: colors.text }]}>Item not found</Text>
-        <TouchableOpacity style={[styles.backBtnWrapper, { backgroundColor: colors.inputBackground }]} onPress={() => router.back()}>
-          <Text style={[styles.backBtnText, { color: colors.text }]}>Go Back</Text>
+        <Text style={[styles.errorText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Item not found</Text>
+        <TouchableOpacity style={[styles.backBtnWrapper, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }]} onPress={() => router.back()}>
+          <Text style={[styles.backBtnText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Go Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -433,7 +433,7 @@ function MarketplaceDetailContent() {
             <View style={styles.galleryControls}>
               <View style={styles.paginationDots}>
                 {mediaItems.map((_, i) => (
-                  <View key={i} style={[styles.carouselDot, activeScrollIndex === i ? [styles.activeDot, { backgroundColor: colors.tint }] : styles.inactiveDot]} />
+                  <View key={i} style={[styles.carouselDot, activeScrollIndex === i ? [styles.activeDot, { backgroundColor: G }] : styles.inactiveDot]} />
                 ))}
               </View>
               {mediaItems.length > 1 && (
@@ -444,8 +444,8 @@ function MarketplaceDetailContent() {
             </View>
           </Animated.View>
         ) : (
-          <View style={[styles.placeholderImage, { backgroundColor: colors.borderLight }]}>
-            <Ionicons name="image-outline" size={64} color={colors.textMuted} />
+          <View style={[styles.placeholderImage, { backgroundColor: SURFACE }]}>
+            <Ionicons name="image-outline" size={64} color={LABEL} />
           </View>
         )}
 
@@ -463,13 +463,13 @@ function MarketplaceDetailContent() {
             
             <View style={styles.metaRow}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.timestamp, { color: colors.textMuted }]}>
+                <Text style={[styles.timestamp, { color: MUTED, fontFamily: 'Inter' }]}>
                   Posted {timeAgo(post.timestamp)}
                 </Text>
                 {(post.state || post.lga) && (
                   <View style={styles.locationRow}>
-                    <Ionicons name="location-outline" size={16} color={colors.tint} />
-                    <Text style={[styles.locationText, { color: colors.textSecondary }]}>
+                    <Ionicons name="location-outline" size={16} color={G} />
+                    <Text style={[styles.locationText, { color: MUTED, fontFamily: 'Inter' }]}>
                       {post.lga ? `${post.lga}, ` : ''}{post.state || 'Location'}
                     </Text>
                   </View>
@@ -477,26 +477,26 @@ function MarketplaceDetailContent() {
               </View>
               <TouchableOpacity onPress={handleToggleLike} style={[styles.favouriteBtn, { backgroundColor: DARK }]}>
                 <Animated.View style={animatedHeartStyle}>
-                  <Ionicons name={isLiked ? "heart" : "heart-outline"} size={22} color={isLiked ? colors.tint : colors.text} />
+                  <Ionicons name={isLiked ? "heart" : "heart-outline"} size={22} color={isLiked ? G : TEXT_PRIMARY} />
                 </Animated.View>
-                {likeCount > 0 && <Text style={[styles.likeCountText, { color: colors.textSecondary }]}>{likeCount}</Text>}
+                {likeCount > 0 && <Text style={[styles.likeCountText, { color: MUTED, fontFamily: 'Inter' }]}>{likeCount}</Text>}
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Description Card */}
           {post.text && (
-            <View style={[styles.card, { backgroundColor: colors.inputBackground }]}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Description</Text>
+            <View style={[styles.card, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }]}>
+              <Text style={[styles.sectionTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Description</Text>
               <Text 
-                style={[styles.description, { color: colors.textSecondary }]} 
+                style={[styles.description, { color: MUTED, fontFamily: 'Inter' }]} 
                 numberOfLines={descriptionExpanded ? undefined : 5}
               >
                 {post.text}
               </Text>
               {post.text.length > 200 && (
                 <TouchableOpacity onPress={() => setDescriptionExpanded(!descriptionExpanded)} style={{ marginTop: 8 }}>
-                  <Text style={[styles.readMoreText, { color: colors.tint }]}>
+                  <Text style={[styles.readMoreText, { color: G, fontFamily: 'Outfit' }]}>
                     {descriptionExpanded ? 'Show Less' : 'Read More'}
                   </Text>
                 </TouchableOpacity>
@@ -506,57 +506,57 @@ function MarketplaceDetailContent() {
 
           {/* Premium Seller Card */}
           <TouchableOpacity 
-            style={[styles.card, { backgroundColor: colors.inputBackground }]}
+            style={[styles.card, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }]}
             onPress={() => router.push(`/profile/${post.user_id}` as any)}
             activeOpacity={0.8}
           >
             <View style={styles.sellerHeader}>
-              <View style={[styles.avatar, { backgroundColor: colors.tint }]}>
+              <View style={[styles.avatar, { backgroundColor: G }]}>
                 {postUser?.avatar_url || post.author_image ? (
                   <Image source={{ uri: postUser?.avatar_url || post.author_image }} style={styles.avatarImage} />
                 ) : (
-                  <Text style={styles.avatarText}>
+                  <Text style={[styles.avatarText, { fontFamily: 'Outfit' }]}>
                     {postUser?.name ? postUser.name.charAt(0).toUpperCase() : 'U'}
                   </Text>
                 )}
               </View>
               <View style={styles.sellerInfo}>
-                <Text style={[styles.sellerName, { color: colors.text }]}>{postUser?.name || post.author_name || 'Unknown Seller'}</Text>
+                <Text style={[styles.sellerName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{postUser?.name || post.author_name || 'Unknown Seller'}</Text>
                 <View style={styles.ratingRow}>
-                  <Ionicons name="star" size={14} color={colors.tint} />
-                  <Text style={[styles.ratingText, { color: colors.textSecondary }]}>
-                    {postUser?.rating?.toFixed(1) || '0.0'} <Text style={{ color: colors.textMuted }}>({postUser?.review_count || 0} reviews)</Text>
+                  <Ionicons name="star" size={14} color={G} />
+                  <Text style={[styles.ratingText, { color: MUTED, fontFamily: 'Inter' }]}>
+                    {postUser?.rating?.toFixed(1) || '0.0'} <Text style={{ color: LABEL }}>({postUser?.review_count || 0} reviews)</Text>
                   </Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              <Ionicons name="chevron-forward" size={20} color={LABEL} />
             </View>
 
-            <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
+            <View style={[styles.divider, { backgroundColor: GLASS_BORDER }]} />
 
             <View style={styles.statsRow}>
               <View style={styles.statColumn}>
                 <Ionicons 
                   name={postUser?.verified_seller ? "shield-checkmark" : "shield-outline"} 
                   size={20} 
-                  color={postUser?.verified_seller ? colors.tint : colors.textMuted} 
+                  color={postUser?.verified_seller ? G : LABEL} 
                 />
-                <Text style={[styles.statValue, { color: postUser?.verified_seller ? colors.text : colors.textMuted }]}>
+                <Text style={[styles.statValue, { color: postUser?.verified_seller ? TEXT_PRIMARY : LABEL, fontFamily: 'Outfit' }]}>
                   {postUser?.verified_seller ? 'Verified' : 'Unverified'}
                 </Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Seller</Text>
+                <Text style={[styles.statLabel, { color: LABEL, fontFamily: 'Inter' }]}>Seller</Text>
               </View>
-              <View style={[styles.statDivider, { backgroundColor: colors.borderLight }]} />
+              <View style={[styles.statDivider, { backgroundColor: GLASS_BORDER }]} />
               <View style={styles.statColumn}>
-                <Ionicons name="cube-outline" size={20} color={colors.textSecondary} />
-                <Text style={[styles.statValue, { color: colors.text }]}>{itemsSold}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Items sold</Text>
+                <Ionicons name="cube-outline" size={20} color={MUTED} />
+                <Text style={[styles.statValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{itemsSold}</Text>
+                <Text style={[styles.statLabel, { color: LABEL, fontFamily: 'Inter' }]}>Items sold</Text>
               </View>
-              <View style={[styles.statDivider, { backgroundColor: colors.borderLight }]} />
+              <View style={[styles.statDivider, { backgroundColor: GLASS_BORDER }]} />
               <View style={styles.statColumn}>
-                <Ionicons name="time-outline" size={20} color={colors.textSecondary} />
-                <Text style={[styles.statValue, { color: colors.text }]}>{joinedDate || 'Recent'}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Joined</Text>
+                <Ionicons name="time-outline" size={20} color={MUTED} />
+                <Text style={[styles.statValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{joinedDate || 'Recent'}</Text>
+                <Text style={[styles.statLabel, { color: LABEL, fontFamily: 'Inter' }]}>Joined</Text>
               </View>
             </View>
           </TouchableOpacity>

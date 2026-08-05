@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -149,7 +149,7 @@ export default function EditMarketplaceItemScreen() {
   if (loading) {
     return (
       <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={G} />
       </SafeAreaView>
     );
   }
@@ -157,7 +157,7 @@ export default function EditMarketplaceItemScreen() {
   if (!post) {
     return (
       <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
-        <Text style={[styles.errorText, { color: colors.text }]}>Listing not found</Text>
+        <Text style={[styles.errorText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Listing not found</Text>
       </SafeAreaView>
     );
   }
@@ -165,11 +165,11 @@ export default function EditMarketplaceItemScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Edit Listing</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Edit Listing</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -182,17 +182,17 @@ export default function EditMarketplaceItemScreen() {
           {/* Form Fields (Borderless) */}
           <View style={styles.formGroup}>
             <TextInput
-              style={[styles.inputTitle, { color: colors.text }]}
+              style={[styles.inputTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}
               placeholder="Give it a title (optional)"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={LABEL}
               value={title}
               onChangeText={setTitle}
             />
 
             <TextInput
-              style={[styles.inputBody, { color: colors.text }]}
+              style={[styles.inputBody, { color: TEXT_PRIMARY, fontFamily: 'Inter' }]}
               placeholder="Describe your item..."
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={LABEL}
               value={text}
               onChangeText={setText}
               multiline
@@ -200,9 +200,9 @@ export default function EditMarketplaceItemScreen() {
             />
 
             <TextInput
-              style={[styles.inputPrice, { color: colors.tint, borderBottomColor: colors.borderLight }]}
+              style={[styles.inputPrice, { color: G, borderBottomColor: GLASS_BORDER, fontFamily: 'Outfit' }]}
               placeholder="Price (₦)"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={LABEL}
               value={price}
               onChangeText={setPrice}
               keyboardType="numeric"
@@ -210,34 +210,34 @@ export default function EditMarketplaceItemScreen() {
           </View>
 
           {/* Notice about media */}
-          <View style={[styles.noticeContainer, { backgroundColor: colors.inputBackground }]}>
-            <Ionicons name="information-circle-outline" size={20} color={colors.textSecondary} />
-            <Text style={[styles.noticeText, { color: colors.textSecondary }]}>
+          <View style={[styles.noticeContainer, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
+            <Ionicons name="information-circle-outline" size={20} color={MUTED} />
+            <Text style={[styles.noticeText, { color: MUTED, fontFamily: 'Inter' }]}>
               Media editing is currently disabled. Please create a new listing to change photos.
             </Text>
           </View>
 
           {/* Submit Button */}
           <TouchableOpacity 
-            style={[styles.submitButton, { backgroundColor: colors.tint, shadowColor: colors.tint }, isSubmitting && styles.submitButtonDisabled]} 
+            style={[styles.submitButton, { backgroundColor: G }, isSubmitting && styles.submitButtonDisabled]} 
             onPress={handleUpdate}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
-              <ActivityIndicator color="#FFF" />
+              <ActivityIndicator color="#000000" />
             ) : (
-              <Text style={styles.submitButtonText}>Save Changes</Text>
+              <Text style={[styles.submitButtonText, { color: '#000000', fontFamily: 'Outfit' }]}>Save Changes</Text>
             )}
           </TouchableOpacity>
 
           {/* Delete Button */}
           <TouchableOpacity 
-            style={[styles.deleteButton, { borderColor: '#FF3B30' }]} 
+            style={[styles.deleteButton, { borderColor: '#EF4444' }]} 
             onPress={handleDelete}
             disabled={isSubmitting}
           >
-            <Feather name="trash-2" size={18} color="#FF3B30" style={{ marginRight: 8 }} />
-            <Text style={styles.deleteButtonText}>Delete Listing</Text>
+            <Feather name="trash-2" size={18} color="#EF4444" style={{ marginRight: 8 }} />
+            <Text style={[styles.deleteButtonText, { fontFamily: 'Outfit' }]}>Delete Listing</Text>
           </TouchableOpacity>
           
         </ScrollView>

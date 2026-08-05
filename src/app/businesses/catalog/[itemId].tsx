@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Dimensions, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -352,7 +352,7 @@ export default function CatalogItemScreen() {
               {images.map((_, idx) => (
                 <View 
                   key={idx} 
-                  style={[s.dot, { backgroundColor: idx === currentImageIndex ? colors.tint : 'rgba(255,255,255,0.5)' }]} 
+                  style={[s.dot, { backgroundColor: idx === currentImageIndex ? G : 'rgba(255,255,255,0.5)' }]} 
                 />
               ))}
             </View>
@@ -363,22 +363,22 @@ export default function CatalogItemScreen() {
           {/* Item Title & Price */}
           <View style={s.headerRow}>
             <View style={{ flex: 1 }}>
-              <Text style={[s.titleTxt, { color: colors.text }]}>{item.title}</Text>
+              <Text style={[s.titleTxt, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{item.title}</Text>
               {!!item.category && (
-                <View style={[s.catBadge, { borderColor: colors.borderLight }]}>
-                  <Text style={[s.catBadgeTxt, { color: colors.textSecondary }]}>{item.category}</Text>
+                <View style={[s.catBadge, { borderColor: GLASS_BORDER }]}>
+                  <Text style={[s.catBadgeTxt, { color: MUTED, fontFamily: 'Inter' }]}>{item.category}</Text>
                 </View>
               )}
             </View>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text style={[s.priceTxt, { color: colors.tint }]}>₦{item.price.toLocaleString()}</Text>
+              <Text style={[s.priceTxt, { color: G, fontFamily: 'Outfit' }]}>₦{item.price.toLocaleString()}</Text>
               {!item.in_stock || (item.quantity !== undefined && item.quantity <= 0) ? (
-                <View style={[s.outOfStockBadge, { backgroundColor: '#FEE2E2' }]}>
-                  <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: '700' }}>Out of Stock</Text>
+                <View style={[s.outOfStockBadge, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
+                  <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: '700', fontFamily: 'Inter' }}>Out of Stock</Text>
                 </View>
               ) : item.quantity !== undefined ? (
-                <View style={[s.outOfStockBadge, { backgroundColor: colors.tint + '18' }]}>
-                  <Text style={{ color: colors.tint, fontSize: 12, fontWeight: '700' }}>
+                <View style={[s.outOfStockBadge, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
+                  <Text style={{ color: G, fontSize: 12, fontWeight: '700', fontFamily: 'Inter' }}>
                     {item.quantity <= 3 ? `Only ${item.quantity} left!` : `${item.quantity} in stock`}
                   </Text>
                 </View>
@@ -390,58 +390,58 @@ export default function CatalogItemScreen() {
             <>
               <TouchableOpacity 
                 onPress={handleRestock}
-                style={{ backgroundColor: colors.tint + '20', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start', marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                style={{ backgroundColor: 'rgba(130, 219, 126, 0.15)', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start', marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
               >
-                <Ionicons name="refresh-outline" size={16} color={colors.tint} />
-                <Text style={{ color: colors.tint, fontSize: 12, fontWeight: '700' }}>Restock / Update Quantity</Text>
+                <Ionicons name="refresh-outline" size={16} color={G} />
+                <Text style={{ color: G, fontSize: 12, fontWeight: '700', fontFamily: 'Outfit' }}>Restock / Update Quantity</Text>
               </TouchableOpacity>
 
               {/* Edit & Delete row */}
               <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
                 <TouchableOpacity
                   onPress={handleEditItem}
-                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: colors.inputBackground, borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: colors.borderLight }}
+                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: SURFACE, borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: GLASS_BORDER }}
                 >
-                  <Ionicons name="create-outline" size={16} color={colors.text} />
-                  <Text style={{ color: colors.text, fontSize: 12, fontWeight: '700' }}>Edit Item</Text>
+                  <Ionicons name="create-outline" size={16} color={TEXT_PRIMARY} />
+                  <Text style={{ color: TEXT_PRIMARY, fontSize: 12, fontWeight: '700', fontFamily: 'Outfit' }}>Edit Item</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleDeleteItem}
-                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#FEE2E2', borderRadius: 12, paddingVertical: 10 }}
+                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'rgba(239, 68, 68, 0.15)', borderRadius: 12, paddingVertical: 10 }}
                 >
                   <Ionicons name="trash-outline" size={16} color="#EF4444" />
-                  <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: '700' }}>Delete Item</Text>
+                  <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: '700', fontFamily: 'Outfit' }}>Delete Item</Text>
                 </TouchableOpacity>
               </View>
             </>
           )}
 
           {!!item.description && (
-            <Text style={[s.descTxt, { color: colors.textSecondary }]}>{item.description}</Text>
+            <Text style={[s.descTxt, { color: MUTED, fontFamily: 'Inter' }]}>{item.description}</Text>
           )}
 
           {/* Business Info Card */}
           {business && (
             <TouchableOpacity 
-              style={[s.bizCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
+              style={[s.bizCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
               onPress={() => router.push(`/businesses/${business.id}` as any)}
             >
               {business.logo ? (
                 <Image source={{ uri: business.logo }} style={s.bizLogo} contentFit="cover" />
               ) : (
-                <View style={[s.bizLogo, { backgroundColor: colors.borderLight, justifyContent: 'center', alignItems: 'center' }]}>
-                  <Ionicons name="storefront" size={24} color={colors.textMuted} />
+                <View style={[s.bizLogo, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1, justifyContent: 'center', alignItems: 'center' }]}>
+                  <Ionicons name="storefront" size={24} color={LABEL} />
                 </View>
               )}
               <View style={{ flex: 1 }}>
-                <Text style={[s.bizName, { color: colors.text }]}>{business.name}</Text>
+                <Text style={[s.bizName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{business.name}</Text>
                 <View style={s.bizMetaRow}>
                   <Ionicons name="star" size={14} color="#FBBF24" />
-                  <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13, marginLeft: 4 }}>{business.rating?.toFixed(1) || "0.0"}</Text>
-                  <Text style={{ color: colors.textMuted, fontSize: 13, marginLeft: 6 }}>• {business.category}</Text>
+                  <Text style={{ color: TEXT_PRIMARY, fontWeight: '700', fontSize: 13, marginLeft: 4, fontFamily: 'Inter' }}>{business.rating?.toFixed(1) || "0.0"}</Text>
+                  <Text style={{ color: LABEL, fontSize: 13, marginLeft: 6, fontFamily: 'Inter' }}>• {business.category}</Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              <Ionicons name="chevron-forward" size={20} color={LABEL} />
             </TouchableOpacity>
           )}
 
@@ -450,30 +450,30 @@ export default function CatalogItemScreen() {
             <View style={s.actionRow}>
               {!isOwner && (
                 <TouchableOpacity
-                  style={[s.primaryBtn, { backgroundColor: colors.tint, flex: 1 }]}
+                  style={[s.primaryBtn, { backgroundColor: G, flex: 1 }]}
                   onPress={handleBuy}
                   disabled={!item.in_stock}
                 >
-                  <Ionicons name="bag-handle-outline" size={20} color="#000" style={{ marginRight: 8 }} />
-                  <Text style={[s.primaryBtnTxt, { color: '#000' }]}>{item.in_stock ? 'Buy Now' : 'Out of Stock'}</Text>
+                  <Ionicons name="bag-handle-outline" size={20} color="#000000" style={{ marginRight: 8 }} />
+                  <Text style={[s.primaryBtnTxt, { color: '#000000', fontFamily: 'Outfit' }]}>{item.in_stock ? 'Buy Now' : 'Out of Stock'}</Text>
                 </TouchableOpacity>
               )}
 
               {business?.phone && (
                 <TouchableOpacity
-                  style={[s.outlineBtn, { borderColor: colors.borderLight, width: 50 }]}
+                  style={[s.outlineBtn, { borderColor: GLASS_BORDER, width: 50, backgroundColor: SURFACE }]}
                   onPress={handleCall}
                 >
-                  <Ionicons name="call-outline" size={20} color={colors.tint} />
+                  <Ionicons name="call-outline" size={20} color={G} />
                 </TouchableOpacity>
               )}
             </View>
           )}
 
           {!isOwner && business && (
-            <TouchableOpacity style={[s.outlineBtn, { borderColor: colors.borderLight, marginTop: 12 }]} onPress={handleMessage}>
-              <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.text} />
-              <Text style={[s.outlineBtnTxt, { color: colors.text, marginLeft: 8 }]}>Message about Item</Text>
+            <TouchableOpacity style={[s.outlineBtn, { borderColor: GLASS_BORDER, backgroundColor: SURFACE, marginTop: 12 }]} onPress={handleMessage}>
+              <Ionicons name="chatbubble-ellipses-outline" size={18} color={TEXT_PRIMARY} />
+              <Text style={[s.outlineBtnTxt, { color: TEXT_PRIMARY, marginLeft: 8, fontFamily: 'Outfit' }]}>Message about Item</Text>
             </TouchableOpacity>
           )}
 
