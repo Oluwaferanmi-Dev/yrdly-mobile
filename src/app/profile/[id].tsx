@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
@@ -189,7 +189,7 @@ export default function OtherUserProfileScreen() {
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={G} />
       </SafeAreaView>
     );
   }
@@ -197,11 +197,11 @@ export default function OtherUserProfileScreen() {
   if (!profile) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-        <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+        <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={28} color={colors.text} />
+            <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Profile Not Found</Text>
+          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Profile Not Found</Text>
         </View>
       </SafeAreaView>
     );
@@ -211,19 +211,19 @@ export default function OtherUserProfileScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="chevron-back" size={28} color={colors.text} />
+            <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitleLeft, { color: colors.text }]} numberOfLines={1}>
+          <Text style={[styles.headerTitleLeft, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]} numberOfLines={1}>
             {profile.username || profile.name}
           </Text>
           {profile.verified_seller && (
             <MaterialIcons 
               name="verified" 
               size={16} 
-              color={colors.tint}
+              color={G}
             />
           )}
         </View>
@@ -247,7 +247,7 @@ export default function OtherUserProfileScreen() {
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="ellipsis-horizontal" size={22} color={colors.text} />
+            <Ionicons name="ellipsis-horizontal" size={22} color={TEXT_PRIMARY} />
           </TouchableOpacity>
         )}
       </View>
@@ -257,13 +257,13 @@ export default function OtherUserProfileScreen() {
           <Image source={{ uri: profile.cover_url }} style={styles.cover} contentFit="cover" />
         )}
 
-        <View style={[styles.profileHeader, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
+        <View style={[styles.profileHeader, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
           <View style={styles.avatarRow}>
             {profile.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={[styles.avatar, { borderColor: colors.background, backgroundColor: SURFACE }, !profile.cover_url && { marginTop: 0 }]} contentFit="cover" />
+              <Image source={{ uri: profile.avatar_url }} style={[styles.avatar, { borderColor: DARK, backgroundColor: SURFACE }, !profile.cover_url && { marginTop: 0 }]} contentFit="cover" />
             ) : (
-              <View style={[styles.avatar, styles.avatarFallback, { borderColor: colors.background, backgroundColor: colors.tint }, !profile.cover_url && { marginTop: 0 }]}>
-                <Text style={[styles.avatarFallbackText, { color: colors.background }]}>
+              <View style={[styles.avatar, styles.avatarFallback, { borderColor: DARK, backgroundColor: G }, !profile.cover_url && { marginTop: 0 }]}>
+                <Text style={[styles.avatarFallbackText, { color: '#000000', fontFamily: 'Outfit' }]}>
                   {profile.name ? profile.name.charAt(0).toUpperCase() : '?'}
                 </Text>
               </View>
@@ -271,55 +271,55 @@ export default function OtherUserProfileScreen() {
             
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.text }]}>{posts.length}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Posts</Text>
+                <Text style={[styles.statValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{posts.length}</Text>
+                <Text style={[styles.statLabel, { color: LABEL, fontFamily: 'Inter' }]}>Posts</Text>
               </View>
               <TouchableOpacity 
                 style={styles.statItem}
                 onPress={() => router.push(`/network/${profile.id}?mode=followers` as any)}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.statValue, { color: colors.text }]}>{followersCount}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Followers</Text>
+                <Text style={[styles.statValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{followersCount}</Text>
+                <Text style={[styles.statLabel, { color: LABEL, fontFamily: 'Inter' }]}>Followers</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.statItem}
                 onPress={() => router.push(`/network/${profile.id}?mode=following` as any)}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.statValue, { color: colors.text }]}>{followingCount}</Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Following</Text>
+                <Text style={[styles.statValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{followingCount}</Text>
+                <Text style={[styles.statLabel, { color: LABEL, fontFamily: 'Inter' }]}>Following</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-            <Text style={[styles.name, { color: colors.text }]}>{profile.name}</Text>
+            <Text style={[styles.name, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{profile.name}</Text>
             {(profile.verified_seller) && (
-              <MaterialIcons name="verified" size={16} color={colors.tint} style={{ marginLeft: 6 }} />
+              <MaterialIcons name="verified" size={16} color={G} style={{ marginLeft: 6 }} />
             )}
           </View>
-          <Text style={{ color: colors.textSecondary, marginBottom: 8, fontSize: 14 }}>@{profile.username || 'user'}</Text>
+          <Text style={{ color: MUTED, marginBottom: 8, fontSize: 14, fontFamily: 'Inter' }}>@{profile.username || 'user'}</Text>
           
           {(profile.review_count ?? 0) > 0 && (
             <View style={styles.ratingRow}>
               <FontAwesome name="star" size={14} color="#FFD700" />
-              <Text style={[styles.ratingText, { color: colors.text }]}>
+              <Text style={[styles.ratingText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>
                 {profile.rating?.toFixed(1) || '0.0'}
               </Text>
-              <Text style={[styles.reviewCount, { color: colors.textMuted }]}>
+              <Text style={[styles.reviewCount, { color: LABEL, fontFamily: 'Inter' }]}>
                 ({profile.review_count} reviews)
               </Text>
             </View>
           )}
           
-          {profile.bio && <Text style={[styles.bio, { color: colors.textSecondary }]}>{profile.bio}</Text>}
+          {profile.bio && <Text style={[styles.bio, { color: MUTED, fontFamily: 'Inter' }]}>{profile.bio}</Text>}
 
           <View style={{ flexDirection: 'column', gap: 6, marginTop: profile.bio ? 8 : 0, marginBottom: 8 }}>
             {profile.email && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Ionicons name="mail-outline" size={14} color="#82DB7E" />
-                <Text style={{ color: colors.textSecondary, fontSize: 13 }} numberOfLines={1}>{profile.email}</Text>
+                <Ionicons name="mail-outline" size={14} color={G} />
+                <Text style={{ color: MUTED, fontSize: 13, fontFamily: 'Inter' }} numberOfLines={1}>{profile.email}</Text>
               </View>
             )}
             {profile.location && (
@@ -330,8 +330,8 @@ export default function OtherUserProfileScreen() {
                   if (locStr) Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(locStr)}`);
                 }}
               >
-                <Ionicons name="location-outline" size={14} color="#82DB7E" />
-                <Text style={{ color: colors.textSecondary, fontSize: 13, textDecorationLine: 'underline' }}>
+                <Ionicons name="location-outline" size={14} color={G} />
+                <Text style={{ color: MUTED, fontSize: 13, textDecorationLine: 'underline', fontFamily: 'Inter' }}>
                   {[profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ')}
                 </Text>
               </TouchableOpacity>
@@ -341,60 +341,60 @@ export default function OtherUserProfileScreen() {
           {currentUser?.id !== profile.id && (
             <View style={styles.actionRow}>
               <TouchableOpacity
-                style={[styles.btnFollow, isFollowing && [styles.btnFollowing, { backgroundColor: colors.inputBackground }], { backgroundColor: isFollowing ? colors.inputBackground : colors.tint }]}
+                style={[styles.btnFollow, { backgroundColor: isFollowing ? SURFACE : G, borderWidth: isFollowing ? 1 : 0, borderColor: GLASS_BORDER }]}
                 onPress={handleToggleFollow}
                 disabled={followLoading}
               >
                 {followLoading ? (
-                  <ActivityIndicator size="small" color={isFollowing ? colors.text : '#FFF'} />
+                  <ActivityIndicator size="small" color={isFollowing ? TEXT_PRIMARY : '#000000'} />
                 ) : (
-                  <Text style={[styles.btnFollowText, isFollowing && [styles.btnFollowingText, { color: colors.text }]]}>
+                  <Text style={[styles.btnFollowText, { color: isFollowing ? TEXT_PRIMARY : '#000000', fontFamily: 'Outfit' }]}>
                     {isFollowing ? 'Following' : 'Follow'}
                   </Text>
                 )}
               </TouchableOpacity>
 
               {friendship.status === 'none' && (
-                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: colors.tint + '15' }]} onPress={friendship.addFriend} disabled={friendship.isLoading}>
-                  {friendship.isLoading ? <ActivityIndicator size="small" color={colors.tint} /> : <Feather name="user-plus" size={18} color={colors.tint} />}
-                  <Text style={[styles.btnMessageText, { color: colors.tint }]}>Add Friend</Text>
+                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]} onPress={friendship.addFriend} disabled={friendship.isLoading}>
+                  {friendship.isLoading ? <ActivityIndicator size="small" color={G} /> : <Feather name="user-plus" size={18} color={G} />}
+                  <Text style={[styles.btnMessageText, { color: G, fontFamily: 'Outfit' }]}>Add Friend</Text>
                 </TouchableOpacity>
               )}
 
               {friendship.status === 'request_sent' && (
-                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: colors.inputBackground }]} disabled>
-                  <Feather name="clock" size={18} color={colors.textSecondary} />
-                  <Text style={[styles.btnMessageText, { color: colors.textSecondary }]}>Requested</Text>
+                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }]} disabled>
+                  <Feather name="clock" size={18} color={MUTED} />
+                  <Text style={[styles.btnMessageText, { color: MUTED, fontFamily: 'Inter' }]}>Requested</Text>
                 </TouchableOpacity>
               )}
 
               {friendship.status === 'request_received' && (
                 <View style={{ flex: 1, flexDirection: 'row', gap: 8 }}>
                   <TouchableOpacity
-                    style={[styles.btnMessage, { backgroundColor: colors.tint, flex: 1 }]}
+                    style={[styles.btnMessage, { backgroundColor: G, flex: 1 }]}
                     onPress={friendship.acceptRequest}
                     disabled={friendship.isLoading}
                   >
                     {friendship.isLoading
-                      ? <ActivityIndicator size="small" color="#fff" />
-                      : <Feather name="check" size={18} color="#fff" />}
-                    <Text style={[styles.btnMessageText, { color: '#fff' }]}>Accept</Text>
+                      ? <ActivityIndicator size="small" color="#000" />
+                      : <Feather name="check" size={18} color="#000" />}
+                    <Text style={[styles.btnMessageText, { color: '#000', fontFamily: 'Outfit' }]}>Accept</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.btnMessage, { backgroundColor: colors.inputBackground, flex: 1 }]}
+                    style={[styles.btnMessage, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, flex: 1 }]}
                     onPress={friendship.declineRequest}
                     disabled={friendship.isLoading}
                   >
-                    <Feather name="x" size={18} color={colors.textSecondary} />
-                    <Text style={[styles.btnMessageText, { color: colors.textSecondary }]}>Decline</Text>
+                    <Feather name="x" size={18} color={MUTED} />
+                    <Text style={[styles.btnMessageText, { color: MUTED, fontFamily: 'Inter' }]}>Decline</Text>
                   </TouchableOpacity>
                 </View>
               )}
 
               {friendship.status === 'friends' && (
-                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: colors.tint + '15' }]} onPress={handleMessage}>
-                  <Feather name="message-circle" size={18} color={colors.tint} />
-                  <Text style={[styles.btnMessageText, { color: colors.tint }]}>Message</Text>
+                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]} onPress={handleMessage}>
+                  <Feather name="message-circle" size={18} color={G} />
+                  <Text style={[styles.btnMessageText, { color: G, fontFamily: 'Outfit' }]}>Message</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -403,16 +403,16 @@ export default function OtherUserProfileScreen() {
 
         <View style={styles.tabsContainer}>
           <TouchableOpacity 
-            style={[styles.tabBtn, activeTab === 'posts' && { borderBottomColor: colors.tint, borderBottomWidth: 2 }]} 
+            style={[styles.tabBtn, activeTab === 'posts' && { borderBottomColor: G, borderBottomWidth: 2 }]} 
             onPress={() => setActiveTab('posts')}
           >
-            <Text style={[styles.tabText, { color: activeTab === 'posts' ? colors.tint : colors.textMuted }]}>Posts</Text>
+            <Text style={[styles.tabText, { color: activeTab === 'posts' ? G : LABEL, fontFamily: 'Outfit' }]}>Posts</Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.tabBtn, activeTab === 'reviews' && { borderBottomColor: colors.tint, borderBottomWidth: 2 }]} 
+            style={[styles.tabBtn, activeTab === 'reviews' && { borderBottomColor: G, borderBottomWidth: 2 }]} 
             onPress={() => setActiveTab('reviews')}
           >
-            <Text style={[styles.tabText, { color: activeTab === 'reviews' ? colors.tint : colors.textMuted }]}>Reviews</Text>
+            <Text style={[styles.tabText, { color: activeTab === 'reviews' ? G : LABEL, fontFamily: 'Outfit' }]}>Reviews</Text>
           </TouchableOpacity>
         </View>
 
@@ -434,9 +434,9 @@ export default function OtherUserProfileScreen() {
                 })
               ) : (
                 <View style={[styles.emptyState, { width: '100%' }]}>
-                  <Feather name="image" size={40} color={colors.border} />
-                  <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No posts yet</Text>
-                  <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>{profile.name} hasn't posted anything.</Text>
+                  <Feather name="image" size={40} color={LABEL} />
+                  <Text style={[styles.emptyTitle, { color: MUTED, fontFamily: 'Outfit' }]}>No posts yet</Text>
+                  <Text style={[styles.emptySubtitle, { color: LABEL, fontFamily: 'Inter' }]}>{profile.name} hasn't posted anything.</Text>
                 </View>
               )}
             </View>
@@ -444,33 +444,33 @@ export default function OtherUserProfileScreen() {
             <View style={styles.reviewsList}>
               {reviews.length > 0 ? (
                 reviews.map(review => (
-                  <View key={review.id} style={[styles.reviewCard, { backgroundColor: SURFACE, borderBottomColor: colors.borderLight }]}>
+                  <View key={review.id} style={[styles.reviewCard, { backgroundColor: SURFACE, borderBottomColor: GLASS_BORDER }]}>
                     <View style={styles.reviewHeader}>
                       <Image source={{ uri: review.buyer?.avatar_url }} style={styles.reviewerAvatar} />
                       <View style={styles.reviewerInfo}>
-                        <Text style={[styles.reviewerName, { color: colors.text }]}>{review.buyer?.name}</Text>
+                        <Text style={[styles.reviewerName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{review.buyer?.name}</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                           <FontAwesome name="star" size={12} color="#FFD700" />
-                          <Text style={[styles.reviewRatingText, { color: colors.text }]}> {review.rating}</Text>
+                          <Text style={[styles.reviewRatingText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}> {review.rating}</Text>
                         </View>
                       </View>
                       {review.verified_purchase && (
                         <View style={styles.verifiedBadge}>
-                          <Feather name="check-circle" size={12} color={colors.tint} />
-                          <Text style={[styles.verifiedText, { color: colors.tint }]}>Verified</Text>
+                          <Feather name="check-circle" size={12} color={G} />
+                          <Text style={[styles.verifiedText, { color: G, fontFamily: 'Inter' }]}>Verified</Text>
                         </View>
                       )}
                     </View>
                     {review.comment ? (
-                      <Text style={[styles.reviewComment, { color: colors.textSecondary }]}>{review.comment}</Text>
+                      <Text style={[styles.reviewComment, { color: MUTED, fontFamily: 'Inter' }]}>{review.comment}</Text>
                     ) : null}
                   </View>
                 ))
               ) : (
                 <View style={[styles.emptyState, { width: '100%' }]}>
-                  <Feather name="star" size={40} color={colors.border} />
-                  <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No reviews yet</Text>
-                  <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>{profile.name} doesn't have any reviews.</Text>
+                  <Feather name="star" size={40} color={LABEL} />
+                  <Text style={[styles.emptyTitle, { color: MUTED, fontFamily: 'Outfit' }]}>No reviews yet</Text>
+                  <Text style={[styles.emptySubtitle, { color: LABEL, fontFamily: 'Inter' }]}>{profile.name} doesn't have any reviews.</Text>
                 </View>
               )}
             </View>

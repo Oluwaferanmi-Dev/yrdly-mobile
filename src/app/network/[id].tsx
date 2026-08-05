@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -66,50 +66,50 @@ export default function NetworkScreen() {
 
   const renderUser = ({ item }: { item: any }) => (
     <TouchableOpacity
-      style={[styles.userRow, { borderBottomColor: colors.borderLight }]}
+      style={[styles.userRow, { borderBottomColor: GLASS_BORDER }]}
       onPress={() => router.push(`/profile/${item.id}` as any)}
     >
       {item.avatar_url ? (
         <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
       ) : (
-        <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint }]}>
-          <Text style={styles.avatarFallbackText}>
+        <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: G }]}>
+          <Text style={[styles.avatarFallbackText, { color: '#000000', fontFamily: 'Outfit' }]}>
             {item.name ? item.name.charAt(0).toUpperCase() : '?'}
           </Text>
         </View>
       )}
-      <Text style={[styles.userName, { color: colors.text }]}>{item.name}</Text>
+      <Text style={[styles.userName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{item.name}</Text>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Network</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Network</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <View style={[styles.tabs, { borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.tabs, { borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'followers' && { borderBottomColor: colors.tint, borderBottomWidth: 2 }]}
+          style={[styles.tab, activeTab === 'followers' && { borderBottomColor: G, borderBottomWidth: 2 }]}
           onPress={() => setActiveTab('followers')}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'followers' ? colors.tint : colors.textSecondary }]}>Followers</Text>
+          <Text style={[styles.tabText, { color: activeTab === 'followers' ? G : LABEL, fontFamily: 'Outfit' }]}>Followers</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'following' && { borderBottomColor: colors.tint, borderBottomWidth: 2 }]}
+          style={[styles.tab, activeTab === 'following' && { borderBottomColor: G, borderBottomWidth: 2 }]}
           onPress={() => setActiveTab('following')}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'following' ? colors.tint : colors.textSecondary }]}>Following</Text>
+          <Text style={[styles.tabText, { color: activeTab === 'following' ? G : LABEL, fontFamily: 'Outfit' }]}>Following</Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={colors.tint} />
+          <ActivityIndicator size="large" color={G} />
         </View>
       ) : (
         <FlatList
@@ -120,7 +120,7 @@ export default function NetworkScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              <Text style={[styles.emptyText, { color: MUTED, fontFamily: 'Inter' }]}>
                 {activeTab === 'followers' ? 'No followers yet.' : 'Not following anyone yet.'}
               </Text>
             </View>
