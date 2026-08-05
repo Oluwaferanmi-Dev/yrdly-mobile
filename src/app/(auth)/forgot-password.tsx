@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     textAlign: 'center',
     maxWidth: 270,
-    fontFamily: 'Inter-Regular',
   },
   sentBox: {
     alignItems: 'center',

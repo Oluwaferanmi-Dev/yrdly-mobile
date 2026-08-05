@@ -168,7 +168,7 @@ export interface User {
   created_at?: string;
   review_count?: number;
   rating?: number;
-  verified_seller?: boolean;
+  phone_verified?: boolean;
   locationUpdatedAt?: string;
   notificationSettings?: NotificationSettings;
   timestamp?: string;

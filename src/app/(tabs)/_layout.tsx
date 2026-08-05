@@ -271,7 +271,6 @@ export default function TabLayout() {
             ),
           }}
         />
-        />
       </Tabs>
 
       <CreateMenuOverlay 

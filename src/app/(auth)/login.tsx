@@ -135,7 +135,7 @@ export default function LoginScreen() {
 
               <View style={styles.crossLinkRow}>
                 <Text style={styles.crossLinkText}>Don't have an account? </Text>
-                <TouchableOpacity onPress={() => { router.push('/(auth)/signup'); }}>
+                <TouchableOpacity onPress={() => { router.push('/(auth)/signup' as any); }}>
                   <Text style={styles.crossLinkAction}>Sign up</Text>
                 </TouchableOpacity>
               </View>

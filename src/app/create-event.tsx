@@ -343,7 +343,6 @@ const styles = StyleSheet.create({
   },
   coverImg: { width: '100%', height: '100%' },
   coverOverlay: {
-    position: 'absolute',
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',

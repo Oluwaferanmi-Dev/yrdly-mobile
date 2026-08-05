@@ -6,6 +6,9 @@ export interface Alert {
   type: 'amber' | 'missing_person' | 'community_safety';
   title: string;
   description: string;
+  status?: 'active' | 'resolved' | 'expired';
+  severity?: 'low' | 'medium' | 'high' | 'critical';
+  area?: string;
   subject_name?: string;
   subject_age?: number;
   subject_photo_url?: string;
