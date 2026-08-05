@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SceneBg, ProgressPills, PrimaryBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { Ionicons } from '@expo/vector-icons';
 
 const { colors } = ONBOARDING_THEME;
 
@@ -70,7 +71,11 @@ export default function TourScreen() {
           <Text style={styles.headline}>{currentSlide.headline}</Text>
           <Text style={styles.description}>{currentSlide.description}</Text>
           <View style={{ marginTop: 8 }}>
-            <PrimaryBtn label={currentSlide.cta} onClick={advance} />
+            <PrimaryBtn 
+              label={currentSlide.cta} 
+              onClick={advance} 
+              icon={<Ionicons name={isLast ? 'home' : 'arrow-forward'} size={18} color="#111" />}
+            />
           </View>
         </View>
       </SafeAreaView>

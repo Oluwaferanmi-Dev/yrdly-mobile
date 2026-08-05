@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Logo, SceneBg, PrimaryBtn, SecondaryBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { Ionicons } from '@expo/vector-icons';
 
 const { colors } = ONBOARDING_THEME;
 
@@ -42,7 +43,11 @@ export default function WelcomeScreen() {
         </View>
 
         <View style={styles.bottomActions}>
-          <PrimaryBtn label="Get Started" onClick={() => router.push('/(onboarding)/tour')} />
+          <PrimaryBtn 
+            label="Get Started" 
+            onClick={() => router.push('/(onboarding)/tour')} 
+            icon={<Ionicons name="arrow-forward" size={18} color="#111" />}
+          />
           <SecondaryBtn label="Already have an account? Sign in" onClick={() => router.push('/(auth)/login')} />
         </View>
       </SafeAreaView>

@@ -36,7 +36,7 @@ export default function VerifyOtpScreen() {
   };
 
   const handleVerify = () => {
-    router.push('/(onboarding)/profile' as any);
+    router.push('/(onboarding)/profile1' as any);
   };
 
   const filled = digits.every(d => d !== '');
