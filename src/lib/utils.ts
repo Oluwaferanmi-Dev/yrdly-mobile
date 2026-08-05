@@ -33,11 +33,16 @@ export function timeAgo(date: Date | string | null | undefined): string {
 }
 
 export function formatPrice(amount: number): string {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    maximumFractionDigits: 0,
-  }).format(amount);
+  try {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch (e) {
+    const rounded = Math.round(amount);
+    return `₦${rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+  }
 }
 
 export function parseSafePrice(priceVal: string | number | undefined | null): number {
