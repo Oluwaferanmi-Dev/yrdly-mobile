@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { DARK, SURFACE } from '../constants/tokens';
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';

@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { DARK, SURFACE } from '../constants/tokens';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, useWindowDimensions,

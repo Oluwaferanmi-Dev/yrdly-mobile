@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert as RNAlert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';

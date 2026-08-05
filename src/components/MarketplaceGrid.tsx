@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { DARK, SURFACE } from '../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, Text, Alert, RefreshControl } from 'react-native';
 import { MarketplaceItemCard } from './MarketplaceItemCard';

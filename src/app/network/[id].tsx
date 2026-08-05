@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';

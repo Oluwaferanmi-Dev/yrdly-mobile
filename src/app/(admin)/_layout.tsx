@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { DARK, SURFACE } from '../../constants/tokens';
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Redirect, Slot } from 'expo-router';
