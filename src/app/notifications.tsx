@@ -2,7 +2,7 @@ import { DARK, SURFACE, GLASS_BORDER, G, MUTED, LABEL, TEXT_PRIMARY } from '../c
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, useWindowDimensions,
-  RefreshControl,
+  RefreshControl, ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
@@ -12,10 +12,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
-import { Swipeable } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing
-} from 'react-native-reanimated';
+import { AlertBanner } from '../components/AlertBanner';
 
 interface Notification {
   id: string;
@@ -31,7 +28,7 @@ interface Notification {
   related_id?: string;
 }
 
-const FILTER_TABS = ['All', 'Unread', 'Messages', 'Activity'];
+const FILTER_TABS = ['All', 'Alerts', 'Community', 'Unread', 'Marketplace', 'Events'];
 
 function timeAgo(dateString: string) {
   try {
@@ -52,36 +49,6 @@ function timeAgo(dateString: string) {
   }
 }
 
-// Custom Skeleton Component
-const SkeletonCard = () => {
-  const { colors } = useAppTheme();
-  const opacity = useSharedValue(0.3);
-
-  useEffect(() => {
-    opacity.value = withRepeat(
-      withSequence(
-        withTiming(0.7, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0.3, { duration: 800, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      true
-    );
-  }, []);
-
-  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
-
-  return (
-    <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, animStyle]}>
-      <View style={[styles.avatar, { backgroundColor: GLASS_BORDER }]} />
-      <View style={styles.contentContainer}>
-        <View style={{ height: 16, width: '60%', backgroundColor: GLASS_BORDER, borderRadius: 4, marginBottom: 8 }} />
-        <View style={{ height: 12, width: '80%', backgroundColor: GLASS_BORDER, borderRadius: 4, marginBottom: 8 }} />
-        <View style={{ height: 10, width: '30%', backgroundColor: GLASS_BORDER, borderRadius: 4 }} />
-      </View>
-    </Animated.View>
-  );
-};
-
 export default function NotificationsScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
@@ -100,7 +67,7 @@ export default function NotificationsScreen() {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(50); // Keep reasonable limit for performance
+        .limit(50);
 
       if (error || !data) return;
 
@@ -113,62 +80,16 @@ export default function NotificationsScreen() {
         }
       }
 
-      // Collect transaction IDs to fetch item images (supports both posts and catalog_items)
-      const txIds = Array.from(new Set(data.map((n: any) => n.related_id || n.data?.transactionId).filter(Boolean)));
-      let txImageMap = new Map();
-      if (txIds.length > 0) {
-        const { data: txs } = await supabase
-          .from('escrow_transactions')
-          .select('id, item_type, post_item:posts(image_urls, image_url), catalog_item:catalog_items(images)')
-          .in('id', txIds);
-        if (txs) {
-          txs.forEach((tx: any) => {
-            let img: string | null = null;
-            if (tx.item_type === 'catalog_item') {
-              const catItem = Array.isArray(tx.catalog_item) ? tx.catalog_item[0] : tx.catalog_item;
-              const imgs = catItem?.images;
-              img = Array.isArray(imgs) ? imgs[0] : (typeof imgs === 'string' ? imgs : null);
-            } else {
-              const postItem = Array.isArray(tx.post_item) ? tx.post_item[0] : tx.post_item;
-              const imgUrls = postItem?.image_urls;
-              img = Array.isArray(imgUrls) ? imgUrls[0] : (postItem?.image_url || null);
-            }
-            if (img) txImageMap.set(tx.id, img);
-          });
-        }
-      }
-
-      // Collect item IDs (for marketplace notifications)
-      const postIds = Array.from(new Set(data.map(n => n.data?.itemId || n.data?.post_id).filter(Boolean)));
-      let postImageMap = new Map();
-      if (postIds.length > 0) {
-        const { data: posts } = await supabase
-          .from('posts')
-          .select('id, image_urls')
-          .in('id', postIds);
-        if (posts) {
-          posts.forEach((p: any) => {
-            const img = Array.isArray(p.image_urls) ? p.image_urls[0] : null;
-            if (img) postImageMap.set(p.id, img);
-          });
-        }
-      }
-
       const formatted = data.map((notif: any) => {
         const sId = notif.sender_id || notif.data?.from_user_id;
         const sender = sId ? senderMap.get(sId) : null;
-        
-        // Resolve item image
-        const txId = notif.related_id || notif.data?.transactionId;
-        const pId = notif.data?.itemId || notif.data?.post_id;
-        const itemImage = (txId && txImageMap.get(txId)) || (pId && postImageMap.get(pId)) || notif.data?.item_image;
 
         return {
           id: notif.id,
           type: notif.type,
           title: notif.title,
           message: notif.message,
-          data: { ...notif.data, item_image: itemImage },
+          data: notif.data,
           is_read: notif.is_read,
           created_at: notif.created_at,
           from_user_id: sId,
@@ -192,399 +113,137 @@ export default function NotificationsScreen() {
 
     if (!user) return;
     const channel = supabase
-      .channel('notifications_mobile')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-        () => fetchNotifications() // re-fetch to get enriched data
-      )
+      .channel('notifications_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => fetchNotifications())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
-  const handleToggleReadStatus = async (id: string, currentStatus: boolean) => {
-    await supabase.from('notifications').update({ is_read: !currentStatus }).eq('id', id);
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: !currentStatus } : n)));
-  };
-
-  const handleDelete = async (id: string) => {
-    await supabase.from('notifications').delete().eq('id', id);
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
-
-  const handleMarkAllRead = async () => {
-    const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
-    if (unreadIds.length === 0) return;
-    await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-  };
-
-  const handleNotificationPress = (notification: Notification) => {
-    if (!notification.is_read) handleToggleReadStatus(notification.id, false);
-
-    switch (notification.type) {
-      case 'message':
-      case 'message_reaction': {
-        const cid = notification.related_id || notification.data?.conversation_id;
-        if (cid) router.push(`/chat/${cid}`);
-        break;
-      }
-      case 'post_like':
-      case 'post_share': {
-        const pid = notification.related_id || notification.data?.post_id;
-        if (pid) router.push(`/posts/${pid}`);
-        break;
-      }
-      case 'post_comment': {
-        const pid = notification.related_id || notification.data?.post_id;
-        if (pid) router.push(`/posts/${pid}?focusComments=true`);
-        break;
-      }
-      case 'event_invite': {
-        const eid = notification.related_id || notification.data?.event_id;
-        if (eid) router.push(`/events/${eid}`);
-        break;
-      }
-      case 'new_follower':
-      case 'friend_request': {
-        const uid = notification.data?.from_user_id || notification.from_user_id;
-        if (uid) router.push(`/profile/${uid}` as any);
-        break;
-      }
-      case 'ticket':
-      case 'ticket_purchase':
-      case 'ticket_confirmed':
-      case 'event_rsvp': {
-        router.push('/tickets');
-        break;
-      }
-      case 'purchase':
-      case 'escrow':
-      case 'payment_successful':
-      case 'item_shipped':
-      case 'delivery_confirmed':
-      case 'funds_released':
-      case 'dispute_opened':
-      case 'dispute_resolved': {
-        const txId = notification.related_id || notification.data?.transactionId || notification.data?.transaction_id;
-        if (txId) {
-          router.push(`/transactions/${txId}`);
-        } else {
-          router.push('/transactions');
-        }
-        break;
-      }
-      // Payout IDs are not escrow transaction IDs — go to transactions list
-      case 'payout_processed':
-      case 'payout_failed': {
-        router.push('/transactions');
-        break;
-      }
-      case 'review':
-      case 'business_review':
-      case 'business_review_received': {
-        // related_id is the reviewId; businessId lives in data
-        const bizId = notification.data?.businessId || notification.data?.business_id;
-        if (bizId) {
-          router.push(`/businesses/${bizId}` as any);
-        }
-        break;
-      }
-      case 'marketplace_item_sold':
-      case 'marketplace_item_interest': {
-        const pid = notification.related_id || notification.data?.itemId;
-        if (pid) router.push(`/posts/${pid}`);
-        break;
-      }
-      default: {
-        // Generic fallback — only navigate if the related_id looks like a transaction
-        if (notification.related_id && notification.data?.transactionId) {
-          router.push(`/transactions/${notification.data.transactionId}`);
-        } else if (notification.related_id) {
-          // Don't blindly navigate — just go to transactions list
-          router.push('/transactions');
-        }
-        break;
-      }
-    }
-  };
-
-  const handleLongPress = (notification: Notification) => {
-    Alert.alert(
-      'Options',
-      'Choose an action',
-      [
-        { text: 'View Sender Profile', onPress: () => {
-          const uid = notification.from_user_id || notification.data?.from_user_id;
-          if (uid) router.push(`/profile/${uid}` as any);
-        }},
-        { text: notification.is_read ? 'Mark as Unread' : 'Mark as Read', onPress: () => handleToggleReadStatus(notification.id, notification.is_read) },
-        { text: 'Delete Notification', onPress: () => handleDelete(notification.id), style: 'destructive' },
-        { text: 'Cancel', style: 'cancel' }
-      ]
-    );
+  const markAllRead = async () => {
+    if (!user) return;
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id);
   };
 
   const filteredNotifications = useMemo(() => {
-    switch (activeFilter) {
-      case 'Unread':
-        return notifications.filter((n) => !n.is_read);
-      case 'Messages':
-        return notifications.filter((n) => n.type === 'message' || n.type === 'message_reaction');
-      case 'Activity':
-        return notifications.filter((n) =>
-          ['post_like', 'post_comment', 'post_share', 'event_invite', 'new_follower'].includes(n.type)
-        );
-      default:
-        return notifications;
-    }
+    return notifications.filter(n => {
+      if (activeFilter === 'Unread') return !n.is_read;
+      if (activeFilter === 'Alerts') return n.type.includes('alert') || n.type.includes('safety');
+      if (activeFilter === 'Community') return ['friend_request', 'friend_accept', 'new_follower', 'post_like', 'post_comment'].includes(n.type);
+      if (activeFilter === 'Marketplace') return n.type.includes('marketplace') || n.type.includes('escrow') || n.type.includes('transaction');
+      if (activeFilter === 'Events') return n.type.includes('event') || n.type.includes('ticket');
+      return true;
+    });
   }, [notifications, activeFilter]);
 
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
-
-  const renderIcon = (type: string) => {
-    switch (type) {
-      case 'message':
-      case 'message_reaction':
-        return <Ionicons name="chatbubble" size={14} color="#60A5FA" />;
-      case 'post_like':
-        return <Ionicons name="heart" size={14} color="#F87171" />;
-      case 'post_comment':
-        return <Ionicons name="chatbubble" size={14} color="#60A5FA" />;
-      case 'event_invite':
-      case 'event_rsvp':
-        return <Ionicons name="calendar" size={14} color="#FB923C" />;
-      case 'ticket':
-      case 'ticket_purchase':
-      case 'ticket_confirmed':
-        return <Ionicons name="ticket" size={14} color="#A78BFA" />;
-      case 'new_follower':
-      case 'friend_request':
-        return <Ionicons name="person-add" size={14} color="#34D399" />;
-      case 'payment_successful':
-      case 'funds_released':
-        return <Ionicons name="cash" size={14} color="#34D399" />;
-      case 'payout_processed':
-        return <Ionicons name="wallet" size={14} color="#34D399" />;
-      case 'payout_failed':
-        return <Ionicons name="wallet" size={14} color="#F87171" />;
-      case 'item_shipped':
-        return <Ionicons name="cube" size={14} color="#60A5FA" />;
-      case 'delivery_confirmed':
-        return <Ionicons name="checkmark-done" size={14} color="#34D399" />;
-      case 'review':
-      case 'business_review':
-      case 'business_review_received':
-        return <Ionicons name="star" size={14} color="#FBBF24" />;
-      case 'marketplace_item_sold':
-      case 'marketplace_item_interest':
-        return <Ionicons name="cart" size={14} color="#FBBF24" />;
-      default:
-        return <Ionicons name="notifications" size={14} color={MUTED} />;
-    }
-  };
-
-  const renderRightActions = (item: Notification) => (
-    <View style={styles.swipeRightActionContainer}>
-      <TouchableOpacity 
-        style={[styles.swipeAction, { backgroundColor: '#60A5FA' }]} 
-        onPress={() => handleToggleReadStatus(item.id, item.is_read)}
-      >
-        <Feather name={item.is_read ? "eye-off" : "eye"} size={24} color="#FFF" />
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderLeftActions = (item: Notification) => (
-    <View style={styles.swipeLeftActionContainer}>
-      <TouchableOpacity 
-        style={[styles.swipeAction, { backgroundColor: '#EF4444' }]} 
-        onPress={() => handleDelete(item.id)}
-      >
-        <Feather name="trash-2" size={24} color="#FFF" />
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderItem = ({ item }: { item: Notification }) => {
-    const isUnread = !item.is_read;
-
-    return (
-      <Swipeable
-        renderRightActions={() => renderRightActions(item)}
-        renderLeftActions={() => renderLeftActions(item)}
-        friction={2}
-        rightThreshold={40}
-        leftThreshold={40}
-      >
-        <TouchableOpacity
-          style={[
-            styles.card, 
-            { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderRadius: 16, borderWidth: 1 }
-          ]}
-          onPress={() => handleNotificationPress(item)}
-          onLongPress={() => handleLongPress(item)}
-          activeOpacity={0.8}
-        >
-          <View style={styles.avatarContainer}>
-            {item.from_user_avatar ? (
-              <Image source={{ uri: item.from_user_avatar }} style={styles.avatar} contentFit="cover" />
-            ) : (
-              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
-                <Text style={[styles.avatarFallbackText, { color: G }]}>
-                  {item.from_user_name ? item.from_user_name.charAt(0).toUpperCase() : 
-                    (item.type === 'payment_successful' ? '💰' : 
-                     item.type === 'payout_processed' ? '💳' :
-                     item.type === 'payout_failed' ? '❌' :
-                     item.type === 'item_shipped' ? '📦' : 
-                     item.type === 'delivery_confirmed' ? '✅' : 
-                     item.type === 'funds_released' ? '💸' :
-                     item.type === 'ticket_confirmed' || item.type === 'ticket_purchase' || item.type === 'ticket' ? '🎟️' :
-                     item.type === 'business_review_received' || item.type === 'review' || item.type === 'business_review' ? '⭐' :
-                     item.type.includes('marketplace') ? '🛒' : '🔔')}
-                </Text>
-              </View>
-            )}
-            <View style={[styles.typeIconBadge, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-              {renderIcon(item.type)}
-            </View>
-          </View>
-
-          <View style={styles.contentContainer}>
-            <Text style={[styles.messageText, { color: isUnread ? TEXT_PRIMARY : MUTED }]}>
-              <Text style={[styles.boldText, { color: TEXT_PRIMARY }]}>{item.from_user_name || item.title} </Text>
-              {item.from_user_name ? item.message : ''}
-            </Text>
-            {!item.from_user_name && (
-              <Text style={[styles.subMessageText, { color: MUTED }]}>{item.message}</Text>
-            )}
-            <Text style={[styles.timeText, { color: LABEL }]}>{timeAgo(item.created_at)}</Text>
-          </View>
-
-          <View style={styles.rightContent}>
-            {item.data?.item_image ? (
-              <Image source={{ uri: item.data.item_image }} style={styles.thumbnail} contentFit="cover" />
-            ) : (
-              <Feather name="chevron-right" size={20} color={LABEL} />
-            )}
-            {isUnread && <View style={[styles.unreadDot, { backgroundColor: G }]} />}
-          </View>
-        </TouchableOpacity>
-      </Swipeable>
-    );
-  };
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
-      {/* Premium Header */}
+    <SafeAreaView style={{ flex: 1, backgroundColor: DARK }}>
+      
+      {/* ── Detail Header (Figma 1:1 Matching) ── */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Feather name="arrow-left" size={24} color={TEXT_PRIMARY} />
-          </TouchableOpacity>
-          
-          <View>
-            <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Activity</Text>
-          </View>
-          
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TouchableOpacity 
-              style={[styles.markAllBtn, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }]}
-              onPress={() => router.push('/alerts')}
-            >
-              <Ionicons name="warning-outline" size={20} color={TEXT_PRIMARY} />
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.markAllBtn, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }]}
-              onPress={handleMarkAllRead}
-            >
-              <Ionicons name="checkmark-done" size={20} color={G} />
-            </TouchableOpacity>
-          </View>
-        </View>
-        <Text style={[styles.headerSubtitle, { color: MUTED }]}>Everything happening around your account</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="chevron-back" size={20} color={TEXT_PRIMARY} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Notifications</Text>
+        <TouchableOpacity onPress={markAllRead} style={styles.markReadBtn}>
+          <Text style={styles.markReadText}>Mark Read</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Pill Filters */}
-      <View style={styles.filterContainer}>
+      {/* ── Filter Pills (Figma 1:1 Matching) ── */}
+      <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           data={FILTER_TABS}
-          keyExtractor={(item) => item}
-          contentContainerStyle={{ paddingHorizontal: 16 }}
+          keyExtractor={item => item}
+          contentContainerStyle={{ gap: 8 }}
           renderItem={({ item }) => {
-            const isActive = activeFilter === item;
+            const active = activeFilter === item;
             return (
               <TouchableOpacity
                 style={[
-                  styles.filterPill, 
-                  { backgroundColor: isActive ? G : SURFACE, borderWidth: 1, borderColor: isActive ? G : GLASS_BORDER }
+                  styles.filterPill,
+                  active && styles.filterPillActive
                 ]}
                 onPress={() => setActiveFilter(item)}
-                activeOpacity={0.8}
               >
-                <Text style={[
-                  styles.filterPillText, 
-                  { color: isActive ? '#000000' : TEXT_PRIMARY }
-                ]}>
+                <Text style={[styles.filterPillText, active && styles.filterPillTextActive]}>
                   {item}
                 </Text>
-                {item === 'Unread' && unreadCount > 0 && (
-                  <View style={[styles.filterBadge, { backgroundColor: isActive ? 'rgba(0,0,0,0.2)' : G }]}>
-                    <Text style={[styles.filterBadgeText, { color: isActive ? '#000' : '#FFF' }]}>
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </Text>
-                  </View>
-                )}
               </TouchableOpacity>
             );
           }}
         />
       </View>
 
-      {/* List */}
+      {/* Alert Banner for Safety */}
+      <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
+        <AlertBanner />
+      </View>
+
+      {/* ── Notifications List ── */}
       {loading ? (
-        <View style={styles.listContent}>
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={G} />
         </View>
       ) : filteredNotifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <View style={[styles.emptyIconCircle, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
-            <Feather name="bell" size={48} color={LABEL} />
+          <View style={styles.emptyIconCircle}>
+            <Ionicons name="notifications-off-outline" size={32} color={LABEL} />
           </View>
-          <Text style={[styles.emptyTitle, { color: TEXT_PRIMARY }]}>No notifications yet</Text>
-          <Text style={[styles.emptySubtitle, { color: MUTED }]}>
-            When people interact with you, you'll see everything here.
-          </Text>
-          <TouchableOpacity 
-            style={[styles.exploreBtn, { backgroundColor: G }]}
-            onPress={() => router.push('/(tabs)/' as any)}
-          >
-            <Text style={[styles.exploreBtnText, { color: '#000000' }]}>Explore YRDLY</Text>
-          </TouchableOpacity>
+          <Text style={styles.emptyTitle}>No notifications</Text>
+          <Text style={styles.emptySubtitle}>You're all caught up with your neighbourhood updates.</Text>
         </View>
       ) : (
         <FlashList
           data={filteredNotifications}
-          keyExtractor={(item: any) => item.id}
-          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          estimatedItemSize={70}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchNotifications(true)} tintColor={G} />}
           contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          {...({ estimatedItemSize: 90 } as any)}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => fetchNotifications(true)}
-              tintColor={G}
-            />
-          }
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.notifRow,
+                !item.is_read && { backgroundColor: 'rgba(130,219,126,0.03)' }
+              ]}
+              onPress={() => {
+                if (!item.is_read) {
+                  supabase.from('notifications').update({ is_read: true }).eq('id', item.id);
+                  setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n));
+                }
+                if (item.type.includes('event')) router.push('/events');
+                else if (item.type.includes('marketplace') || item.type.includes('escrow')) router.push('/transactions');
+                else if (item.type === 'friend_request') router.push('/community');
+                else if (item.related_id) router.push(`/posts/${item.related_id}`);
+              }}
+            >
+              <View style={styles.avatarWrapper}>
+                {item.from_user_avatar ? (
+                  <Image source={{ uri: item.from_user_avatar }} style={styles.avatarImg} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Ionicons name="notifications" size={18} color={G} />
+                  </View>
+                )}
+                {!item.is_read && <View style={styles.unreadDot} />}
+              </View>
+
+              <View style={styles.notifContent}>
+                <View style={styles.notifTopRow}>
+                  <Text style={[styles.notifTitle, !item.is_read && { fontFamily: 'Outfit-Bold' }]} numberOfLines={1}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.timeText}>{timeAgo(item.created_at)}</Text>
+                </View>
+                <Text style={[styles.notifMsg, !item.is_read && { color: TEXT_PRIMARY }]} numberOfLines={2}>
+                  {item.message}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
         />
       )}
     </SafeAreaView>
@@ -592,91 +251,109 @@ export default function NotificationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   header: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 20,
-  },
-  headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 14,
   },
-  backBtn: { width: 40, alignItems: 'flex-start' },
-  headerTitle: { fontSize: 24, fontFamily: 'Outfit-ExtraBold', flex: 1, textAlign: 'center' },
-  headerSubtitle: { fontSize: 14, fontFamily: 'Inter-Regular', textAlign: 'center', marginTop: 4 },
-  markAllBtn: { 
-    width: 40, height: 40, borderRadius: 20, 
-    justifyContent: 'center', alignItems: 'center' 
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#111111',
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  markAllPlaceholder: { width: 40 },
-  filterContainer: { paddingBottom: 16 },
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: TEXT_PRIMARY },
+  markReadBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+  },
+  markReadText: { fontFamily: 'Inter-Medium', fontSize: 12, color: G },
   filterPill: {
-    flexDirection: 'row', alignItems: 'center', 
-    paddingHorizontal: 20, paddingVertical: 10,
-    borderRadius: 24, marginRight: 10,
+    height: 32,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  filterPillText: { fontSize: 14, fontFamily: 'Inter-Bold' },
-  filterBadge: {
-    borderRadius: 12, minWidth: 20, height: 20,
-    justifyContent: 'center', alignItems: 'center', 
-    marginLeft: 6, paddingHorizontal: 6,
+  filterPillActive: {
+    backgroundColor: 'rgba(130,219,126,0.1)',
+    borderColor: 'rgba(130,219,126,0.25)',
   },
-  filterBadgeText: { fontSize: 11, fontFamily: 'Inter-Bold' },
-  listContent: { paddingHorizontal: 16, paddingBottom: 40 },
-  card: {
-    flexDirection: 'row', alignItems: 'center', 
-    padding: 16, marginBottom: 12,
-    borderRadius: 16, borderWidth: 1,
+  filterPillText: { fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL },
+  filterPillTextActive: { fontFamily: 'Inter-SemiBold', color: G },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  listContent: { paddingBottom: 40 },
+  notifRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.04)',
+    gap: 14,
   },
-  avatarContainer: { position: 'relative', marginRight: 14 },
-  avatar: { width: 52, height: 52, borderRadius: 26 },
-  avatarFallback: { justifyContent: 'center', alignItems: 'center' },
-  avatarFallbackText: { fontSize: 20, fontFamily: 'Outfit-Bold' },
-  typeIconBadge: {
-    position: 'absolute', bottom: -2, right: -2,
-    borderRadius: 12, padding: 3, borderWidth: 2,
-    justifyContent: 'center', alignItems: 'center',
+  avatarWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    position: 'relative',
   },
-  contentContainer: { flex: 1, marginRight: 8 },
-  messageText: { fontSize: 15, lineHeight: 21, fontFamily: 'Inter-Regular' },
-  boldText: { fontFamily: 'Inter-Bold' },
-  subMessageText: { fontSize: 14, marginTop: 2, fontFamily: 'Inter-Regular' },
-  timeText: { fontSize: 13, marginTop: 6, fontFamily: 'Inter-Regular' },
-  rightContent: { flexDirection: 'row', alignItems: 'center', paddingLeft: 8 },
-  thumbnail: { width: 44, height: 44, borderRadius: 8 },
-  unreadDot: { 
-    width: 10, height: 10, borderRadius: 5, 
-    marginLeft: 12, marginTop: -20 // Offset slightly
+  avatarImg: { width: '100%', height: '100%', borderRadius: 22 },
+  avatarPlaceholder: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 22,
+    backgroundColor: 'rgba(130,219,126,0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  emptyContainer: { 
-    flex: 1, justifyContent: 'center', alignItems: 'center', 
-    padding: 32, marginTop: -60 
+  unreadDot: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: G,
+    borderWidth: 2,
+    borderColor: DARK,
+  },
+  notifContent: { flex: 1 },
+  notifTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
+  notifTitle: { fontFamily: 'Outfit-SemiBold', fontSize: 15, color: '#FFFFFF', flex: 1 },
+  timeText: { fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL },
+  notifMsg: { fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED, lineHeight: 18 },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingTop: 80,
   },
   emptyIconCircle: {
-    width: 96, height: 96, borderRadius: 48,
-    justifyContent: 'center', alignItems: 'center',
-    marginBottom: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  emptyTitle: { fontSize: 20, fontFamily: 'Outfit-Bold', marginBottom: 8 },
-  emptySubtitle: { fontSize: 15, fontFamily: 'Inter-Regular', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
-  exploreBtn: { 
-    paddingHorizontal: 24, paddingVertical: 14, 
-    borderRadius: 24 
-  },
-  exploreBtnText: { color: '#000', fontSize: 16, fontFamily: 'Inter-Bold' },
-  swipeRightActionContainer: {
-    width: 70, height: '100%', marginBottom: 12,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  swipeLeftActionContainer: {
-    width: 70, height: '100%', marginBottom: 12,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  swipeAction: {
-    width: 50, height: 50, borderRadius: 25,
-    justifyContent: 'center', alignItems: 'center',
-  }
+  emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#FFFFFF', marginBottom: 6 },
+  emptySubtitle: { fontFamily: 'Inter-Regular', fontSize: 14, color: LABEL, textAlign: 'center', lineHeight: 20 },
 });
