@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   },
   verifyBannerTitle: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: 'Inter-Bold',
     color: colors.WARNING,
   },
   verifyBannerDesc: {
@@ -395,6 +395,7 @@ const styles = StyleSheet.create({
     color: colors.LABEL,
     marginTop: 2,
     lineHeight: 16,
+    fontFamily: 'Inter-Regular',
   },
   verifyNowBtn: {
     paddingHorizontal: 10,
@@ -405,25 +406,26 @@ const styles = StyleSheet.create({
   },
   verifyNowText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Inter-Bold',
     color: colors.DARK,
   },
   errorText: {
     color: colors.DANGER,
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     textAlign: 'center',
     marginBottom: 4,
   },
   cardTitle: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: 'Outfit-ExtraBold',
     color: '#FFFFFF',
   },
   cardSubtitle: {
     fontSize: 14,
     color: colors.LABEL,
     lineHeight: 22,
+    fontFamily: 'Inter-Regular',
   },
   titleBox: {
     gap: 4,
@@ -459,6 +461,7 @@ const styles = StyleSheet.create({
   avatarHintText: {
     fontSize: 12,
     color: colors.LABEL,
+    fontFamily: 'Inter-Regular',
   },
   plusBadge: {
     position: 'absolute',
@@ -491,6 +494,7 @@ const styles = StyleSheet.create({
   bioInput: {
     color: '#FFFFFF',
     fontSize: 15,
+    fontFamily: 'Inter-Regular',
   },
   bioCounter: {
     position: 'absolute',
@@ -498,6 +502,7 @@ const styles = StyleSheet.create({
     right: 12,
     fontSize: 11,
     color: colors.LABEL,
+    fontFamily: 'Inter-Regular',
   },
   gpsPill: {
     flexDirection: 'row',
@@ -510,7 +515,7 @@ const styles = StyleSheet.create({
   },
   gpsText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: colors.DARK,
   },
   suggestionsBox: {
@@ -537,6 +542,7 @@ const styles = StyleSheet.create({
   suggestionText: {
     color: '#FFFFFF',
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
   },
   privacyCard: {
     flexDirection: 'row',
@@ -554,5 +560,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.LABEL,
     lineHeight: 18,
+    fontFamily: 'Inter-Regular',
   },
 });

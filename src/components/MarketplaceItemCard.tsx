@@ -129,8 +129,8 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
                 : <Text style={s.avatarTxt}>{sellerName.charAt(0).toUpperCase()}</Text>}
             </View>
             <Text style={[s.sellerName, { color: colors.textSecondary }]} numberOfLines={1}>{sellerName}</Text>
-            {(item.user as any)?.is_verified && (
-              <Ionicons name="checkmark-circle" size={12} color="#22c55e" style={{ marginLeft: 2 }} />
+            {(item.user as any)?.phone_verified && (
+              <Ionicons name="checkmark-circle" size={12} color={G} style={{ marginLeft: 2 }} />
             )}
           </TouchableOpacity>
 

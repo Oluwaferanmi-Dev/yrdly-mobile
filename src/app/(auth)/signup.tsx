@@ -7,25 +7,38 @@ import {
   SceneBg,
   GlassCard,
   GlassInput,
+  PasswordStrength,
   PrimaryBtn,
   Divider,
   SocialRow,
 } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
+import { AuthService } from '@/lib/auth-service';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/use-supabase-auth';
 import { Ionicons } from '@expo/vector-icons';
 
 const { colors } = ONBOARDING_THEME;
 
-export default function LoginScreen() {
+export default function SignUpScreen() {
   const router = useRouter();
-  const { signIn, signInWithGoogle, signInWithApple, loading } = useAuth();
+  const { signUp, signInWithGoogle, signInWithApple, loading } = useAuth();
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState('');
   const [error, setError] = useState('');
+
+  const isPasswordStrong = (pw: string) => {
+    return (
+      pw.length >= 8 &&
+      /[A-Z]/.test(pw) &&
+      /[0-9]/.test(pw) &&
+      /[^A-Za-z0-9]/.test(pw)
+    );
+  };
 
   const handleGoogle = async () => {
     setError('');
@@ -39,16 +52,28 @@ export default function LoginScreen() {
     if (err) setError(err.message);
   };
 
-  const handleSignIn = async () => {
-    if (!email || !password) {
+  const handleSignUp = async () => {
+    if (!email || !password || !name || !username) {
       setError('Please fill in all required fields');
       return;
     }
 
+    if (!isPasswordStrong(password)) {
+      setError('Please create a strong password meeting all 4 requirements below');
+      return;
+    }
+
     setError('');
-    const { error: err } = await signIn(email, password);
+    const cleanUsername = username.replace(/^@/, '').trim();
+    const isAvailable = await AuthService.checkUsernameAvailability(cleanUsername);
+    if (!isAvailable) {
+      setError(`The username @${cleanUsername} is already taken. Please choose another.`);
+      return;
+    }
+
+    const { error: err, session } = await signUp(email, password, name, username);
     if (err) {
-      if (err.message.toLowerCase().includes('email not confirmed') || err.message.toLowerCase().includes('unconfirmed')) {
+      if (err.message.toLowerCase().includes('already registered') || err.message.toLowerCase().includes('already in use')) {
         try {
           await supabase.auth.resend({ type: 'signup', email });
         } catch {}
@@ -56,15 +81,17 @@ export default function LoginScreen() {
         return;
       }
       setError(err.message);
+    } else if (!session) {
+      router.push({ pathname: '/(auth)/verify-email', params: { email } } as any);
     } else {
-      router.push('/(tabs)');
+      router.push('/(auth)/phone' as any);
     }
   };
 
   return (
     <View style={styles.container}>
       <SceneBg
-        photoId="1707011017057-e80acf66ddeb"
+        photoId="1571346746462-d4e51c41072f"
         gradientStart="40%"
       />
 
@@ -82,13 +109,25 @@ export default function LoginScreen() {
 
             <GlassCard>
               <View style={styles.titleBox}>
-                <Text style={styles.titleText}>Welcome back</Text>
-                <Text style={styles.subtitleText}>Sign in to your neighbourhood</Text>
+                <Text style={styles.titleText}>Join your neighbourhood</Text>
+                <Text style={styles.subtitleText}>Create your account — it only takes a moment</Text>
               </View>
 
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
               <View style={styles.inputStack}>
+                <GlassInput
+                  placeholder="Full name"
+                  value={name}
+                  onChange={setName}
+                  icon={<Ionicons name="person-outline" size={18} color={colors.LABEL} />}
+                />
+                <GlassInput
+                  placeholder="Username (e.g. johndoe)"
+                  value={username}
+                  onChange={setUsername}
+                  icon={<Ionicons name="at-outline" size={18} color={colors.LABEL} />}
+                />
                 <GlassInput
                   type="email"
                   placeholder="Email address"
@@ -100,7 +139,7 @@ export default function LoginScreen() {
 
                 <GlassInput
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
+                  placeholder="Create a password"
                   value={password}
                   onChange={setPassword}
                   icon={<Ionicons name="lock-closed-outline" size={18} color={colors.LABEL} />}
@@ -115,17 +154,12 @@ export default function LoginScreen() {
                   }
                 />
 
-                <TouchableOpacity
-                  onPress={() => router.push('/(auth)/forgot-password')}
-                  style={styles.forgotBtn}
-                >
-                  <Text style={styles.forgotText}>Forgot password?</Text>
-                </TouchableOpacity>
+                {password.length > 0 && <PasswordStrength value={password} />}
               </View>
 
               <PrimaryBtn
-                label="Sign In"
-                onClick={handleSignIn}
+                label="Create Account"
+                onClick={handleSignUp}
                 disabled={loading}
               />
 
@@ -134,9 +168,9 @@ export default function LoginScreen() {
               <SocialRow onGooglePress={handleGoogle} onApplePress={handleApple} />
 
               <View style={styles.crossLinkRow}>
-                <Text style={styles.crossLinkText}>Don't have an account? </Text>
-                <TouchableOpacity onPress={() => { router.push('/(auth)/signup'); }}>
-                  <Text style={styles.crossLinkAction}>Sign up</Text>
+                <Text style={styles.crossLinkText}>Already have an account? </Text>
+                <TouchableOpacity onPress={() => { router.push('/(auth)/login'); }}>
+                  <Text style={styles.crossLinkAction}>Sign in</Text>
                 </TouchableOpacity>
               </View>
             </GlassCard>
@@ -190,15 +224,6 @@ const styles = StyleSheet.create({
   },
   inputStack: {
     gap: 12,
-  },
-  forgotBtn: {
-    alignSelf: 'flex-end',
-    marginTop: -4,
-  },
-  forgotText: {
-    color: colors.G,
-    fontSize: 13,
-    fontFamily: 'Inter-Medium',
   },
   crossLinkRow: {
     flexDirection: 'row',

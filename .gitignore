@@ -52,3 +52,6 @@ yarn-error.*
 
 yrdly-cursor.code-workspace
 YRDLY NEW DESIGNS/
+
+# Markdown docs / agent files
+*.md

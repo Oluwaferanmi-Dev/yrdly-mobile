@@ -87,7 +87,7 @@ export default function ForgotPasswordScreen() {
                     <Ionicons name="checkmark" size={24} color={colors.G} />
                   </View>
                   <Text style={styles.sentText}>
-                    Reset link sent to <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>{email || 'your email'}</Text>. Check your inbox.
+                    Reset link sent to <Text style={{ color: '#FFFFFF', fontFamily: 'Inter-SemiBold' }}>{email || 'your email'}</Text>. Check your inbox.
                   </Text>
                 </View>
               )}
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.DANGER,
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     textAlign: 'center',
   },
   keyBadge: {
@@ -146,16 +146,18 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: 'Outfit-ExtraBold',
     color: '#FFFFFF',
     textAlign: 'center',
   },
   descText: {
+    fontFamily: 'Inter-Regular',
     fontSize: 14,
     color: colors.LABEL,
     lineHeight: 22,
     textAlign: 'center',
     maxWidth: 270,
+    fontFamily: 'Inter-Regular',
   },
   sentBox: {
     alignItems: 'center',
@@ -175,6 +177,7 @@ const styles = StyleSheet.create({
     color: colors.MUTED,
     textAlign: 'center',
     lineHeight: 22,
+    fontFamily: 'Inter-Regular',
   },
   backLink: {
     alignItems: 'center',
@@ -183,5 +186,6 @@ const styles = StyleSheet.create({
   backLinkText: {
     fontSize: 14,
     color: colors.LABEL,
+    fontFamily: 'Inter-Regular',
   },
 });

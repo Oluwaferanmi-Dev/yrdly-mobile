@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   skipText: {
     color: colors.LABEL,
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
   },
   scrollContent: {
     flexGrow: 1,
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: 'Outfit-ExtraBold',
     color: '#FFFFFF',
   },
   subtitleText: {
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   countryCode: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   trustBadge: {
     flexDirection: 'row',

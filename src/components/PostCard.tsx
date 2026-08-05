@@ -455,7 +455,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>
                 {post.user?.name || post.author_name || 'Anonymous'}
               </Text>
-              {((post.user as any)?.verified_seller) && (
+              {((post.user as any)?.phone_verified) && (
                 <VerifiedBadge size={15} />
               )}
             </View>

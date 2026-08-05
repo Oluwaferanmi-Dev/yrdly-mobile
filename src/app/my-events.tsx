@@ -99,13 +99,13 @@ export default function MyEventsScreen() {
             </View>
           </View>
 
-          <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: G, paddingVertical: 8, borderRadius: 12, marginTop: 10 }}
-            onPress={() => router.push({ pathname: '/events/scan' as any, params: { eventId: item.id } })}
-          >
-            <Ionicons name="qr-code" size={16} color="#000" />
-            <Text style={{ color: '#000', fontWeight: '800', fontSize: 13 }}>Scan Attendee Tickets</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: G, paddingVertical: 8, borderRadius: 12, marginTop: 10 }}
+              onPress={() => router.push({ pathname: '/events/scan' as any, params: { eventId: item.id } })}
+            >
+              <Ionicons name="qr-code" size={16} color="#000" />
+              <Text style={styles.scanBtnText}>Scan Attendee Tickets</Text>
+            </TouchableOpacity>
         </View>
       </TouchableOpacity>
     );
@@ -121,7 +121,7 @@ export default function MyEventsScreen() {
         <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>My Events</Text>
         <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: G + '20', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14 }} onPress={() => router.push('/events/scan' as any)}>
           <Ionicons name="qr-code-outline" size={16} color={G} />
-          <Text style={{ color: G, fontWeight: '700', fontSize: 12 }}>Scan</Text>
+          <Text style={{ color: G, fontFamily: 'Outfit-Bold', fontSize: 12 }}>Scan</Text>
         </TouchableOpacity>
       </View>
 
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   backButton: { width: 40, alignItems: 'flex-start' },
-  headerTitle: { fontSize: 18, fontWeight: '700' },
+  headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold' },
   listContainer: { padding: 16, flexGrow: 1 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
   eventCard: {
@@ -201,28 +201,17 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
   },
-  statusText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
+  statusText: { color: '#fff', fontSize: 10, fontFamily: 'Outfit-Bold' },
   eventContent: {
     padding: 16,
   },
-  eventTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
+  eventTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', marginBottom: 8 },
   eventInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
   },
-  eventInfoText: {
-    fontSize: 14,
-    marginLeft: 6,
-  },
+  eventInfoText: { fontSize: 14, marginLeft: 6, fontFamily: 'Inter-Regular' },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -238,38 +227,20 @@ const styles = StyleSheet.create({
     width: 1,
     height: '100%',
   },
-  statValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 2,
-  },
-  statLabel: {
-    fontSize: 11,
-  },
+  statValue: { fontSize: 16, fontFamily: 'Outfit-Bold', marginBottom: 2 },
+  statLabel: { fontSize: 11, fontFamily: 'Inter-Regular' },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 80,
   },
-  emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyStateDesc: {
-    fontSize: 15,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
+  emptyStateTitle: { fontSize: 20, fontFamily: 'Outfit-Bold', marginTop: 16, marginBottom: 8 },
+  emptyStateDesc: { fontSize: 15, fontFamily: 'Inter-Regular', textAlign: 'center', marginBottom: 24 },
   createButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
   },
-  createButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
+  createButtonText: { color: '#fff', fontFamily: 'Outfit-Bold', fontSize: 16 },
+  scanBtnText: { color: '#000', fontFamily: 'Outfit-ExtraBold', fontSize: 13 },
 });

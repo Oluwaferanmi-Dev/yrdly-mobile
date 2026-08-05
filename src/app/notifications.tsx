@@ -432,7 +432,7 @@ export default function NotificationsScreen() {
               <Image source={{ uri: item.from_user_avatar }} style={styles.avatar} contentFit="cover" />
             ) : (
               <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
-                <Text style={[styles.avatarFallbackText, { color: G, fontFamily: 'Outfit' }]}>
+                <Text style={[styles.avatarFallbackText, { color: G }]}>
                   {item.from_user_name ? item.from_user_name.charAt(0).toUpperCase() : 
                     (item.type === 'payment_successful' ? '💰' : 
                      item.type === 'payout_processed' ? '💳' :
@@ -452,14 +452,14 @@ export default function NotificationsScreen() {
           </View>
 
           <View style={styles.contentContainer}>
-            <Text style={[styles.messageText, { color: isUnread ? TEXT_PRIMARY : MUTED, fontFamily: 'Inter' }]}>
-              <Text style={[styles.boldText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{item.from_user_name || item.title} </Text>
+            <Text style={[styles.messageText, { color: isUnread ? TEXT_PRIMARY : MUTED }]}>
+              <Text style={[styles.boldText, { color: TEXT_PRIMARY }]}>{item.from_user_name || item.title} </Text>
               {item.from_user_name ? item.message : ''}
             </Text>
             {!item.from_user_name && (
-              <Text style={[styles.subMessageText, { color: MUTED, fontFamily: 'Inter' }]}>{item.message}</Text>
+              <Text style={[styles.subMessageText, { color: MUTED }]}>{item.message}</Text>
             )}
-            <Text style={[styles.timeText, { color: LABEL, fontFamily: 'Inter' }]}>{timeAgo(item.created_at)}</Text>
+            <Text style={[styles.timeText, { color: LABEL }]}>{timeAgo(item.created_at)}</Text>
           </View>
 
           <View style={styles.rightContent}>
@@ -483,7 +483,7 @@ export default function NotificationsScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
             <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Notifications</Text>
+          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Notifications</Text>
           {unreadCount > 0 ? (
             <TouchableOpacity style={[styles.markAllBtn, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]} onPress={handleMarkAllRead}>
               <Feather name="check-circle" size={20} color={G} />
@@ -492,7 +492,7 @@ export default function NotificationsScreen() {
             <View style={styles.markAllPlaceholder} />
           )}
         </View>
-        <Text style={[styles.headerSubtitle, { color: MUTED, fontFamily: 'Inter' }]}>Everything happening around your account</Text>
+        <Text style={[styles.headerSubtitle, { color: MUTED }]}>Everything happening around your account</Text>
       </View>
 
       {/* Pill Filters */}
@@ -516,7 +516,7 @@ export default function NotificationsScreen() {
               >
                 <Text style={[
                   styles.filterPillText, 
-                  { color: isActive ? '#000000' : TEXT_PRIMARY, fontFamily: 'Outfit' }
+                  { color: isActive ? '#000000' : TEXT_PRIMARY }
                 ]}>
                   {item}
                 </Text>
@@ -547,15 +547,15 @@ export default function NotificationsScreen() {
           <View style={[styles.emptyIconCircle, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
             <Feather name="bell" size={48} color={LABEL} />
           </View>
-          <Text style={[styles.emptyTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>No notifications yet</Text>
-          <Text style={[styles.emptySubtitle, { color: MUTED, fontFamily: 'Inter' }]}>
+          <Text style={[styles.emptyTitle, { color: TEXT_PRIMARY }]}>No notifications yet</Text>
+          <Text style={[styles.emptySubtitle, { color: MUTED }]}>
             When people interact with you, you'll see everything here.
           </Text>
           <TouchableOpacity 
             style={[styles.exploreBtn, { backgroundColor: G }]}
             onPress={() => router.push('/(tabs)/' as any)}
           >
-            <Text style={[styles.exploreBtnText, { color: '#000000', fontFamily: 'Outfit' }]}>Explore YRDLY</Text>
+            <Text style={[styles.exploreBtnText, { color: '#000000' }]}>Explore YRDLY</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -593,8 +593,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   backBtn: { width: 40, alignItems: 'flex-start' },
-  headerTitle: { fontSize: 24, fontWeight: '800', flex: 1, textAlign: 'center' },
-  headerSubtitle: { fontSize: 14, textAlign: 'center', marginTop: 4 },
+  headerTitle: { fontSize: 24, fontFamily: 'Outfit-ExtraBold', flex: 1, textAlign: 'center' },
+  headerSubtitle: { fontSize: 14, fontFamily: 'Inter-Regular', textAlign: 'center', marginTop: 4 },
   markAllBtn: { 
     width: 40, height: 40, borderRadius: 20, 
     justifyContent: 'center', alignItems: 'center' 
@@ -606,13 +606,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, paddingVertical: 10,
     borderRadius: 24, marginRight: 10,
   },
-  filterPillText: { fontSize: 14, fontWeight: 'bold' },
+  filterPillText: { fontSize: 14, fontFamily: 'Inter-Bold' },
   filterBadge: {
     borderRadius: 12, minWidth: 20, height: 20,
     justifyContent: 'center', alignItems: 'center', 
     marginLeft: 6, paddingHorizontal: 6,
   },
-  filterBadgeText: { fontSize: 11, fontWeight: 'bold' },
+  filterBadgeText: { fontSize: 11, fontFamily: 'Inter-Bold' },
   listContent: { paddingHorizontal: 16, paddingBottom: 40 },
   card: {
     flexDirection: 'row', alignItems: 'center', 
@@ -622,17 +622,17 @@ const styles = StyleSheet.create({
   avatarContainer: { position: 'relative', marginRight: 14 },
   avatar: { width: 52, height: 52, borderRadius: 26 },
   avatarFallback: { justifyContent: 'center', alignItems: 'center' },
-  avatarFallbackText: { fontSize: 20, fontWeight: 'bold' },
+  avatarFallbackText: { fontSize: 20, fontFamily: 'Outfit-Bold' },
   typeIconBadge: {
     position: 'absolute', bottom: -2, right: -2,
     borderRadius: 12, padding: 3, borderWidth: 2,
     justifyContent: 'center', alignItems: 'center',
   },
   contentContainer: { flex: 1, marginRight: 8 },
-  messageText: { fontSize: 15, lineHeight: 21 },
-  boldText: { fontWeight: 'bold' },
-  subMessageText: { fontSize: 14, marginTop: 2 },
-  timeText: { fontSize: 13, marginTop: 6 },
+  messageText: { fontSize: 15, lineHeight: 21, fontFamily: 'Inter-Regular' },
+  boldText: { fontFamily: 'Inter-Bold' },
+  subMessageText: { fontSize: 14, marginTop: 2, fontFamily: 'Inter-Regular' },
+  timeText: { fontSize: 13, marginTop: 6, fontFamily: 'Inter-Regular' },
   rightContent: { flexDirection: 'row', alignItems: 'center', paddingLeft: 8 },
   thumbnail: { width: 44, height: 44, borderRadius: 8 },
   unreadDot: { 
@@ -648,13 +648,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
     marginBottom: 24,
   },
-  emptyTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
-  emptySubtitle: { fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
+  emptyTitle: { fontSize: 20, fontFamily: 'Outfit-Bold', marginBottom: 8 },
+  emptySubtitle: { fontSize: 15, fontFamily: 'Inter-Regular', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
   exploreBtn: { 
     paddingHorizontal: 24, paddingVertical: 14, 
     borderRadius: 24 
   },
-  exploreBtnText: { color: '#000', fontSize: 16, fontWeight: 'bold' },
+  exploreBtnText: { color: '#000', fontSize: 16, fontFamily: 'Inter-Bold' },
   swipeRightActionContainer: {
     width: 70, height: '100%', marginBottom: 12,
     justifyContent: 'center', alignItems: 'center',

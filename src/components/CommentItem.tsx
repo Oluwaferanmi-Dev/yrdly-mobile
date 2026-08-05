@@ -20,9 +20,9 @@ export interface CommentType {
   user?: {
     name: string;
     avatar_url: string;
-    verified_seller?: boolean;
+    phone_verified?: boolean;
   };
-  verified_seller?: boolean;
+  phone_verified?: boolean;
   is_liked?: boolean;
 }
 
@@ -97,42 +97,46 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
           </View>
         )}
       </TouchableOpacity>
+      
       <View style={styles.commentContent}>
-        <Text style={styles.commentText}>
+        <View style={styles.authorRow}>
           <Text 
-            style={[styles.authorName, { color: colors.text }]}
+            style={[styles.authorName, { color: '#FFF' }]}
             onPress={handleProfilePress}
           >
             {item.user?.name || item.author_name}
           </Text>
-          {(item.user?.verified_seller || item.verified_seller) && (
+          {(item.user?.phone_verified || item.phone_verified) && (
             <Text>
               {' '}
-              <MaterialIcons name="verified" size={13} color={colors.tint} />
+              <MaterialIcons name="verified" size={12} color={colors.tint} />
             </Text>
           )}
-          <Text>{'  '}</Text>
-          <Text style={{ color: colors.text }}>
-            {item.text}
-          </Text>
+          <Text style={[styles.timestamp, { color: '#9CA3AF' }]}>{timeAgo(item.timestamp)}</Text>
+        </View>
+
+        <Text style={[styles.commentText, { color: '#9CA3AF' }]}>
+          {item.text}
         </Text>
+
         <View style={styles.commentActionsRow}>
-          <Text style={[styles.timestamp, { color: colors.textMuted }]}>{timeAgo(item.timestamp)}</Text>
-          {item.like_count > 0 && (
-            <Text style={[styles.likeCountText, { color: colors.textMuted }]}>{item.like_count} likes</Text>
-          )}
-          <TouchableOpacity onPress={() => onReply?.(item)} style={{ marginRight: 12 }}>
-            <Text style={[styles.replyText, { color: colors.textMuted }]}>Reply</Text>
+          <TouchableOpacity onPress={() => onLike?.(item)} style={styles.actionBtn}>
+            <Ionicons 
+              name={item.is_liked ? "heart" : "heart-outline"} 
+              size={13} 
+              color={item.is_liked ? "#EF4444" : '#9CA3AF'} 
+            />
+            {item.like_count > 0 && (
+              <Text style={[styles.likeCountText, { color: item.is_liked ? "#EF4444" : '#9CA3AF' }]}>
+                {item.like_count}
+              </Text>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onReply?.(item)} style={styles.actionBtn}>
+            <Text style={[styles.replyText, { color: '#9CA3AF' }]}>Reply</Text>
           </TouchableOpacity>
         </View>
       </View>
-      <TouchableOpacity style={styles.heartIcon} onPress={() => onLike?.(item)}>
-        <Ionicons 
-          name={item.is_liked ? "heart" : "heart-outline"} 
-          size={isReply ? 14 : 16} 
-          color={item.is_liked ? "#EF4444" : colors.textMuted} 
-        />
-      </TouchableOpacity>
       </TouchableOpacity>
       
       {hasReplies && !showReplies && (
@@ -172,26 +176,26 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   replyContainer: {
-    marginLeft: 40,
+    marginLeft: 44,
     marginBottom: 12,
   },
   commentRow: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   avatar: {
     marginRight: 12,
   },
   avatarImg: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#E8F5E9',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#111',
   },
   avatarImgSmall: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
   },
   avatarFallback: {
     justifyContent: 'center',
@@ -199,50 +203,55 @@ const styles = StyleSheet.create({
   },
   avatarFallbackText: {
     color: '#FFF',
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     fontSize: 14,
   },
   commentContent: {
     flex: 1,
-    paddingRight: 16,
   },
-  authorName: {
-    fontSize: 13,
-    fontWeight: '700',
+  authorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 2,
   },
+  authorName: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 13,
+    marginRight: 8,
+  },
+  timestamp: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 11,
+  },
   commentText: {
+    fontFamily: 'Inter-Regular',
     fontSize: 14,
-    lineHeight: 18,
-    marginBottom: 6,
+    lineHeight: 22,
+    marginBottom: 8,
   },
   commentActionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  timestamp: {
-    fontSize: 12,
-    marginRight: 12,
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
   },
   likeCountText: {
+    fontFamily: 'Inter-Regular',
     fontSize: 12,
-    fontWeight: '600',
-    marginRight: 12,
+    marginLeft: 4,
   },
   replyText: {
+    fontFamily: 'Inter-Regular',
     fontSize: 12,
-    fontWeight: '600',
-  },
-  heartIcon: {
-    padding: 4,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
   },
   viewRepliesBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 60,
-    marginTop: 8,
+    marginLeft: 66,
+    marginTop: 4,
   },
   viewRepliesLine: {
     width: 24,
@@ -250,8 +259,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   viewRepliesText: {
+    fontFamily: 'Inter-SemiBold',
     fontSize: 12,
-    fontWeight: '600',
   },
   repliesList: {
     marginTop: 12,

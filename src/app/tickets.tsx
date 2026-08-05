@@ -319,10 +319,10 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20, paddingVertical: 16,
   },
-  headerTitle: { fontSize: 22, fontWeight: 'bold' },
+  headerTitle: { fontSize: 22, fontFamily: 'Outfit-Bold' },
   tabRow: { flexDirection: 'row', borderBottomWidth: 1, paddingHorizontal: 20 },
   tab: { marginRight: 24, paddingVertical: 12, borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabText: { fontSize: 15, fontWeight: '600' },
+  tabText: { fontSize: 15, fontFamily: 'Outfit-SemiBold' },
   listContent: { padding: 16, paddingBottom: 100 },
 
   ticketCard: {
@@ -335,14 +335,14 @@ const styles = StyleSheet.create({
   ticketImage: { width: 72, height: 72, borderRadius: 8 },
   ticketImagePlaceholder: { justifyContent: 'center', alignItems: 'center' },
   ticketInfo: { flex: 1, paddingVertical: 12, paddingRight: 8 },
-  ticketTitle: { fontSize: 15, fontWeight: 'bold', marginBottom: 6 },
+  ticketTitle: { fontSize: 15, fontFamily: 'Outfit-Bold', marginBottom: 6 },
   ticketMeta: { flexDirection: 'row', alignItems: 'center', marginBottom: 3 },
-  ticketMetaText: { fontSize: 12, marginLeft: 4 },
-  eventLocation: { fontSize: 12, marginLeft: 4, flex: 1 },
+  ticketMetaText: { fontSize: 12, marginLeft: 4, fontFamily: 'Inter-Regular' },
+  eventLocation: { fontSize: 12, marginLeft: 4, flex: 1, fontFamily: 'Inter-Regular' },
   statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginTop: 6 },
   activeBadge: { backgroundColor: 'rgba(56,142,60,0.12)' },
   usedBadge: { },
-  statusBadgeText: { fontSize: 10, fontWeight: 'bold' },
+  statusBadgeText: { fontSize: 10, fontFamily: 'Outfit-Bold' },
 
   tearLine: { width: 20, alignItems: 'center', justifyContent: 'center' },
   tearCircleTop: { width: 14, height: 14, borderRadius: 7, marginBottom: 4 },
@@ -350,15 +350,15 @@ const styles = StyleSheet.create({
   tearDashes: { flex: 1, borderLeftWidth: 1.5, borderStyle: 'dashed' },
 
   qrSection: { width: 80, justifyContent: 'center', alignItems: 'center', gap: 4 },
-  tapText: { fontSize: 9, fontWeight: '600' },
+  tapText: { fontSize: 9, fontFamily: 'Outfit-SemiBold' },
 
   emptyContainer: { flex: 1, paddingTop: 80, alignItems: 'center', paddingHorizontal: 40 },
-  emptyTitle: { fontSize: 22, fontWeight: 'bold', marginTop: 20, marginBottom: 8 },
-  emptySubtitle: { fontSize: 16, textAlign: 'center', lineHeight: 22 },
+  emptyTitle: { fontSize: 22, fontFamily: 'Outfit-Bold', marginTop: 20, marginBottom: 8 },
+  emptySubtitle: { fontSize: 16, fontFamily: 'Inter-Regular', textAlign: 'center', lineHeight: 22 },
   browseButton: {
     marginTop: 28, paddingVertical: 14, paddingHorizontal: 32, borderRadius: 24,
   },
-  browseButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
+  browseButtonText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-Bold' },
 
   // Modal
   modalContainer: { flex: 1 },
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   modalClose: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  modalTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold' },
+  modalTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontFamily: 'Outfit-Bold' },
   modalContent: { flex: 1, alignItems: 'center', padding: 24 },
   modalEventCard: {
     width: '100%', flexDirection: 'row',
@@ -376,16 +376,16 @@ const styles = StyleSheet.create({
   },
   modalEventImage: { width: 80, height: 80 },
   modalEventInfo: { flex: 1, padding: 12, justifyContent: 'center' },
-  modalEventTitle: { fontSize: 15, fontWeight: 'bold', marginBottom: 4 },
-  modalEventDate: { fontSize: 12 },
+  modalEventTitle: { fontSize: 15, fontFamily: 'Outfit-Bold', marginBottom: 4 },
+  modalEventDate: { fontSize: 12, fontFamily: 'Inter-Regular' },
   qrContainer: {
     padding: 24,
     borderRadius: 20, marginBottom: 20,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4,
   },
-  tokenLabel: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 },
-  tokenValue: { fontSize: 14, fontWeight: '700', letterSpacing: 2, marginBottom: 20 },
+  tokenLabel: { fontSize: 11, fontFamily: 'Outfit-ExtraBold', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 },
+  tokenValue: { fontSize: 14, fontFamily: 'Outfit-Bold', letterSpacing: 2, marginBottom: 20 },
   modalStatusBadge: { paddingHorizontal: 20, paddingVertical: 8, borderRadius: 20, marginBottom: 16 },
-  modalStatusText: { fontSize: 14, fontWeight: 'bold' },
-  scanInstructions: { fontSize: 13, textAlign: 'center', paddingHorizontal: 32 },
+  modalStatusText: { fontSize: 14, fontFamily: 'Outfit-Bold' },
+  scanInstructions: { fontSize: 13, fontFamily: 'Inter-Regular', textAlign: 'center', paddingHorizontal: 32 },
 });

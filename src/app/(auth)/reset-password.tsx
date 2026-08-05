@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: 'Outfit-ExtraBold',
     color: '#FFFFFF',
   },
   subtitleText: {
@@ -146,6 +146,6 @@ const styles = StyleSheet.create({
   toastText: {
     fontSize: 13,
     color: colors.G,
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
   },
 });

@@ -59,7 +59,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
             avatar_url,
             location,
             created_at,
-            verified_seller
+            phone_verified
           )
         `);
 
@@ -73,7 +73,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
             avatar_url,
             location,
             created_at,
-            verified_seller
+            phone_verified
           )
         `)
         .eq('status', 'PUBLISHED')

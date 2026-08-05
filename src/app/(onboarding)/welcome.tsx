@@ -70,12 +70,13 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 32,
-    fontWeight: '800',
+    fontFamily: 'Outfit-ExtraBold',
     color: '#FFFFFF',
     letterSpacing: 1.5,
   },
   tagline: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: 'rgba(255,255,255,0.5)',
     letterSpacing: 0.3,
   },

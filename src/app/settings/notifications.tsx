@@ -108,7 +108,7 @@ export default function NotificationsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Notifications</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Notifications</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -118,13 +118,13 @@ export default function NotificationsScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={[styles.intro, { color: MUTED, fontFamily: 'Inter' }]}>
+          <Text style={[styles.intro, { color: MUTED }]}>
             Choose which notifications you receive. These apply to both push and in-app notifications.
           </Text>
 
           {NOTIFICATION_GROUPS.map((group) => (
             <View key={group.title} style={styles.group}>
-              <Text style={[styles.groupTitle, { color: LABEL, fontFamily: 'Inter' }]}>{group.title.toUpperCase()}</Text>
+              <Text style={[styles.groupTitle, { color: LABEL }]}>{group.title.toUpperCase()}</Text>
               <View style={[styles.groupCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
                 {group.items.map((item, index) => (
                   <View
@@ -135,8 +135,8 @@ export default function NotificationsScreen() {
                       <Feather name={item.icon as any} size={20} color={G} />
                     </View>
                     <View style={styles.rowInfo}>
-                      <Text style={[styles.rowLabel, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{item.label}</Text>
-                      <Text style={[styles.rowDesc, { color: MUTED, fontFamily: 'Inter' }]}>{item.desc}</Text>
+                      <Text style={[styles.rowLabel, { color: TEXT_PRIMARY }]}>{item.label}</Text>
+                      <Text style={[styles.rowDesc, { color: MUTED }]}>{item.desc}</Text>
                     </View>
                     {saving === item.key ? (
                       <ActivityIndicator size="small" color={G} />
@@ -171,12 +171,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)' },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '800' },
+  headerTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontFamily: 'Outfit-ExtraBold' },
   scroll: { padding: 16 },
-  intro: { fontSize: 13, marginBottom: 20, lineHeight: 18 },
+  intro: { fontSize: 13, fontFamily: 'Inter-Regular', marginBottom: 20, lineHeight: 18 },
   group: { marginBottom: 24 },
   groupTitle: {
-    fontSize: 11, fontWeight: '800',
+    fontSize: 11, fontFamily: 'Inter-Bold',
     textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10, marginLeft: 4,
   },
   groupCard: {
@@ -189,6 +189,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   rowInfo: { flex: 1 },
-  rowLabel: { fontSize: 15, fontWeight: '700', marginBottom: 2 },
-  rowDesc: { fontSize: 12 },
+  rowLabel: { fontSize: 15, fontFamily: 'Outfit-Bold', marginBottom: 2 },
+  rowDesc: { fontSize: 12, fontFamily: 'Inter-Regular' },
 });

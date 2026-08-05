@@ -62,7 +62,7 @@ export default function LocationSettingsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Location</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Location</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -74,15 +74,15 @@ export default function LocationSettingsScreen() {
               <Ionicons name="location-outline" size={22} color={G} />
             </View>
             <View>
-              <Text style={[styles.currentLabel, { color: MUTED, fontFamily: 'Inter' }]}>Current Location</Text>
-              <Text style={[styles.currentValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>
+              <Text style={[styles.currentLabel, { color: MUTED }]}>Current Location</Text>
+              <Text style={[styles.currentValue, { color: TEXT_PRIMARY }]}>
                 {location.lga ? `${location.lga}, ` : ''}{location.state}
               </Text>
             </View>
           </View>
         ) : null}
 
-        <Text style={[styles.info, { color: MUTED, fontFamily: 'Inter' }]}>
+        <Text style={[styles.info, { color: MUTED }]}>
           Your location determines which posts, events, marketplace items, and neighbours you see.
         </Text>
 
@@ -98,10 +98,10 @@ export default function LocationSettingsScreen() {
           ) : saved ? (
             <>
               <Feather name="check-circle" size={20} color="#000000" style={{ marginRight: 8 }} />
-              <Text style={[styles.saveBtnText, { color: '#000000', fontFamily: 'Outfit' }]}>Location Updated!</Text>
+              <Text style={[styles.saveBtnText, { color: '#000000' }]}>Location Updated!</Text>
             </>
           ) : (
-            <Text style={[styles.saveBtnText, { color: '#000000', fontFamily: 'Outfit' }]}>Save Location</Text>
+            <Text style={[styles.saveBtnText, { color: '#000000' }]}>Save Location</Text>
           )}
         </TouchableOpacity>
       </ScrollView>
@@ -113,14 +113,14 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 14, borderBottomWidth: 1 },
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)' },
-  headerTitle: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
+  headerTitle: { fontSize: 18, fontFamily: 'Outfit-ExtraBold', flex: 1, textAlign: 'center' },
   scroll: { padding: 20, paddingBottom: 40 },
   currentCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 20, padding: 16, marginBottom: 16 },
   currentIcon: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  currentLabel: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
-  currentValue: { fontSize: 15, fontWeight: '700' },
-  info: { fontSize: 13, lineHeight: 20, marginBottom: 20 },
+  currentLabel: { fontSize: 11, fontFamily: 'Inter-SemiBold', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
+  currentValue: { fontSize: 15, fontFamily: 'Outfit-Bold' },
+  info: { fontSize: 13, fontFamily: 'Inter-Regular', lineHeight: 20, marginBottom: 20 },
   saveBtn: { height: 56, borderRadius: 28, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 32 },
   saveBtnDisabled: { opacity: 0.4 },
-  saveBtnText: { fontSize: 16, fontWeight: '800', color: '#111' },
+  saveBtnText: { fontSize: 16, fontFamily: 'Outfit-ExtraBold', color: '#111' },
 });

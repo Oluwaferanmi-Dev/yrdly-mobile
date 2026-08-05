@@ -175,7 +175,7 @@ export default function ProfileTab() {
       {/* ── Top Header Navigation Bar ── */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 8 }}>
         <View style={{ width: 38 }} />
-        <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF' }}>Profile</Text>
+        <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: '#FFFFFF' }}>Profile</Text>
         <TouchableOpacity 
           style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
           onPress={() => router.push('/settings')}
@@ -195,7 +195,7 @@ export default function ProfileTab() {
                   <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
                 ) : (
                   <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: SURFACE }}>
-                    <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 24, color: G }}>
+                    <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 24, color: G }}>
                       {profile?.name ? profile.name.charAt(0).toUpperCase() : '?'}
                     </Text>
                   </View>
@@ -212,10 +212,10 @@ export default function ProfileTab() {
 
           <View style={{ flex: 1, paddingTop: 4 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-              <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 20, color: '#FFFFFF' }} numberOfLines={1}>
+              <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 20, color: '#FFFFFF' }} numberOfLines={1}>
                 {profile?.name || user?.user_metadata?.name || 'Anonymous'}
               </Text>
-              {(profile as any)?.verified_seller && (
+              {profile?.phone_verified && (
                 <MaterialIcons name="verified" size={18} color={G} />
               )}
             </View>
@@ -242,14 +242,14 @@ export default function ProfileTab() {
           onPress={() => router.push('/profile/edit')}
           activeOpacity={0.8}
         >
-          <Text style={{ color: MUTED, fontSize: 13, fontFamily: 'Inter-Medium', fontWeight: '500' }}>Edit Profile</Text>
+          <Text style={{ color: MUTED, fontSize: 13, fontFamily: 'Inter-Medium' }}>Edit Profile</Text>
         </TouchableOpacity>
       </View>
 
       {/* ── Stats Bar ── */}
       <View style={{ flexDirection: 'row', marginHorizontal: 20, marginBottom: 20, borderTopWidth: 1, borderBottomWidth: 1, borderColor: GLASS_BORDER, paddingVertical: 16 }}>
         <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 22, color: '#FFFFFF' }}>{posts.length}</Text>
+          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{posts.length}</Text>
           <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 }}>Posts</Text>
         </View>
         <View style={{ width: 1, height: '100%', backgroundColor: GLASS_BORDER }} />
@@ -257,7 +257,7 @@ export default function ProfileTab() {
           style={{ flex: 1, alignItems: 'center' }}
           onPress={() => router.push(`/network/${user?.id}?mode=followers` as any)}
         >
-          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 22, color: '#FFFFFF' }}>{followersCount}</Text>
+          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{followersCount}</Text>
           <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 }}>Followers</Text>
         </TouchableOpacity>
         <View style={{ width: 1, height: '100%', backgroundColor: GLASS_BORDER }} />
@@ -265,20 +265,20 @@ export default function ProfileTab() {
           style={{ flex: 1, alignItems: 'center' }}
           onPress={() => router.push(`/network/${user?.id}?mode=following` as any)}
         >
-          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 22, color: '#FFFFFF' }}>{followingCount}</Text>
+          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{followingCount}</Text>
           <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 }}>Following</Text>
         </TouchableOpacity>
       </View>
 
       {/* ── Quick Access 2x2 Grid ── */}
       <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
-        <Text style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: '700', color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>Quick Access</Text>
+        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>Quick Access</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
           <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/community')}>
             <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
               <Ionicons name="people-outline" size={18} color={G} />
             </View>
-            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Community</Text>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Community</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 11, color: LABEL }}>Connections & people</Text>
           </PressableCard>
 
@@ -286,7 +286,7 @@ export default function ProfileTab() {
             <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
               <MaterialCommunityIcons name="ticket-outline" size={18} color={G} />
             </View>
-            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Tickets</Text>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Tickets</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 11, color: G }}>2 upcoming</Text>
           </PressableCard>
 
@@ -294,7 +294,7 @@ export default function ProfileTab() {
             <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
               <Ionicons name="calendar-outline" size={18} color={G} />
             </View>
-            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>My Events</Text>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>My Events</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 11, color: LABEL }}>Events you run</Text>
           </PressableCard>
 
@@ -302,7 +302,7 @@ export default function ProfileTab() {
             <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
               <Ionicons name="storefront-outline" size={18} color={G} />
             </View>
-            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>My Business</Text>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>My Business</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 11, color: LABEL }}>Business presence</Text>
           </PressableCard>
         </View>
@@ -436,7 +436,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     color: TEXT_PRIMARY, 
     fontSize: 20, 
-    fontWeight: '800',
+    fontFamily: 'Outfit-ExtraBold',
     textAlign: 'center',
     letterSpacing: -0.4,
   },
@@ -498,7 +498,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   avatarText: { 
     fontSize: 28, 
-    fontWeight: '800' 
+    fontFamily: 'Outfit-ExtraBold' 
   },
   onlineBadgeDot: {
     position: 'absolute', 
@@ -541,17 +541,15 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   name: {
     color: TEXT_PRIMARY,
-    fontFamily: 'Outfit',
+    fontFamily: 'Outfit-ExtraBold',
     fontSize: 20,
-    fontWeight: '800',
     marginBottom: 2,
     letterSpacing: -0.3,
   },
   handle: {
     color: LABEL,
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Medium',
     fontSize: 13,
-    fontWeight: '500',
     marginBottom: 4,
   },
   bio: {
@@ -565,9 +563,8 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   memberSinceText: {
     color: LABEL,
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 12,
-    fontWeight: '600',
   },
 
   editProfileBtn: {
@@ -582,9 +579,8 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   editProfileText: {
     color: TEXT_PRIMARY,
-    fontFamily: 'Outfit',
+    fontFamily: 'Outfit-SemiBold',
     fontSize: 14,
-    fontWeight: '600',
   },
 
   // ── Stats Row ──
@@ -604,16 +600,14 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   statValue: { 
     color: TEXT_PRIMARY,
-    fontFamily: 'Outfit',
+    fontFamily: 'Outfit-ExtraBold',
     fontSize: 20, 
-    fontWeight: '800',
     letterSpacing: -0.3,
   },
   statLabel: { 
     color: LABEL,
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Medium',
     fontSize: 12, 
-    fontWeight: '500',
     marginTop: 2 
   },
   statDivider: { 
@@ -625,10 +619,9 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   // ── Bio & Location ──
   bioText: { 
     color: TEXT_PRIMARY, 
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Regular',
     fontSize: 14, 
     lineHeight: 20, 
-    fontWeight: '400',
     marginBottom: 12 
   },
   locationRow: {
@@ -639,9 +632,8 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   locationText: {
     color: MUTED,
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Medium',
     fontSize: 13,
-    fontWeight: '500',
   },
 
   // ── Quick Action Cards ──
@@ -677,16 +669,14 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   actionTitle: { 
     color: TEXT_PRIMARY, 
-    fontFamily: 'Outfit',
+    fontFamily: 'Outfit-Bold',
     fontSize: 13, 
-    fontWeight: '700',
     marginBottom: 2 
   },
   actionSub: { 
     color: MUTED, 
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Regular',
     fontSize: 11,
-    fontWeight: '400',
   },
 
   // ── Tabs ──
@@ -713,9 +703,8 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   tabText: { 
     color: LABEL,
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 15, 
-    fontWeight: '600' 
   },
   activeTabText: { 
     color: TEXT_PRIMARY 
@@ -730,9 +719,8 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   emptyHeadline: { 
     color: TEXT_PRIMARY, 
-    fontFamily: 'Outfit',
+    fontFamily: 'Outfit-Bold',
     fontSize: 18, 
-    fontWeight: '700', 
     marginBottom: 6 
   },
   emptySub: { 
@@ -750,7 +738,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   createBtnText: { 
     color: '#000', 
+    fontFamily: 'Outfit-Bold',
     fontSize: 15, 
-    fontWeight: '700' 
   }
 });

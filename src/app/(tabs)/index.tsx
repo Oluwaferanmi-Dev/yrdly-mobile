@@ -91,7 +91,7 @@ const QuickPostBox = memo(() => {
         {avatarUri ? (
           <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
         ) : (
-          <Text style={{ color: G, fontWeight: '700', fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
+          <Text style={{ color: G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
         )}
       </View>
 
@@ -298,7 +298,7 @@ export default function HomeTab() {
     <View style={[styles.container, { backgroundColor: DARK }]}>
       <Animated.View style={headerAnimatedStyle}>
         <View style={[styles.headerContent, { paddingTop: insets.top, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK }]}>
-          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 22, color: G, letterSpacing: -0.5 }}>YRDLY</Text>
+          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: G, letterSpacing: -0.5 }}>YRDLY</Text>
           
           <View style={{ flex: 1, paddingHorizontal: 10, alignItems: 'flex-start' }}>
             <LocationChip />
@@ -325,7 +325,7 @@ export default function HomeTab() {
                   borderWidth: 1.5,
                   borderColor: DARK
                 }}>
-                  <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '800', fontFamily: 'Outfit' }}>
+                  <Text style={{ color: '#FFF', fontSize: 9, fontFamily: 'Outfit-ExtraBold' }}>
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </Text>
                 </View>

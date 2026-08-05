@@ -105,7 +105,7 @@ export default function VerifyEmailScreen() {
                 <Text style={styles.titleText}>Verify your email</Text>
                 <Text style={styles.descText}>
                   We sent a 6-digit code to{' '}
-                  <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                  <Text style={{ color: '#FFFFFF', fontFamily: 'Inter-SemiBold' }}>
                     {typeof email === 'string' ? email : 'your email'}
                   </Text>
                 </Text>
@@ -194,11 +194,12 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: 'Outfit-ExtraBold',
     color: '#FFFFFF',
     textAlign: 'center',
   },
   descText: {
+    fontFamily: 'Inter-Regular',
     fontSize: 14,
     color: colors.LABEL,
     lineHeight: 22,
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.DANGER,
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     textAlign: 'center',
   },
   otpRow: {
@@ -224,7 +225,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#FFFFFF',
     fontSize: 22,
-    fontWeight: '700',
+    fontFamily: 'Inter-Bold',
   },
   actionsBox: {
     alignItems: 'center',
@@ -232,6 +233,6 @@ const styles = StyleSheet.create({
   },
   resendText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
 });

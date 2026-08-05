@@ -19,14 +19,14 @@ export default function WithdrawSuccessScreen() {
           style={s.lottie}
         />
 
-        <Text style={[s.title, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Withdrawal Processing</Text>
-        <Text style={[s.subtitle, { color: MUTED, fontFamily: 'Inter' }]}>
+        <Text style={[s.title, { color: TEXT_PRIMARY }]}>Withdrawal Processing</Text>
+        <Text style={[s.subtitle, { color: MUTED }]}>
           Your withdrawal request has been submitted successfully. Funds will arrive in your bank account within 1–2 business days.
         </Text>
 
         <View style={[s.infoCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
           <Feather name="info" size={18} color={G} />
-          <Text style={[s.infoText, { color: MUTED, fontFamily: 'Inter' }]}>
+          <Text style={[s.infoText, { color: MUTED }]}>
             You will receive a push notification once the transfer is completed by our payment partner.
           </Text>
         </View>
@@ -37,7 +37,7 @@ export default function WithdrawSuccessScreen() {
           style={[s.button, { backgroundColor: G }]}
           onPress={() => router.replace('/settings/payouts' as any)}
         >
-          <Text style={[s.buttonText, { color: '#000000', fontFamily: 'Outfit' }]}>Back to Payouts</Text>
+          <Text style={[s.buttonText, { color: '#000000' }]}>Back to Payouts</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -51,16 +51,16 @@ const s = StyleSheet.create({
     paddingHorizontal: 24, gap: 16,
   },
   lottie: { width: 140, height: 140 },
-  title: { fontSize: 24, fontWeight: '800', textAlign: 'center' },
-  subtitle: { fontSize: 15, textAlign: 'center', lineHeight: 22 },
+  title: { fontSize: 24, fontFamily: 'Outfit-ExtraBold', textAlign: 'center' },
+  subtitle: { fontSize: 15, fontFamily: 'Inter-Regular', textAlign: 'center', lineHeight: 22 },
   infoCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     borderRadius: 16, padding: 16, borderWidth: 1, marginTop: 12,
   },
-  infoText: { flex: 1, fontSize: 13, lineHeight: 18 },
+  infoText: { flex: 1, fontSize: 13, fontFamily: 'Inter-Regular', lineHeight: 18 },
   footer: { padding: 20 },
   button: {
     borderRadius: 16, paddingVertical: 16, alignItems: 'center',
   },
-  buttonText: { fontSize: 16, fontWeight: '700', color: '#000' },
+  buttonText: { fontSize: 16, fontFamily: 'Outfit-Bold', color: '#000' },
 });

@@ -119,12 +119,12 @@ export default function PayoutsScreen() {
             <Feather name={meta.icon as any} size={18} color={meta.color} />
           </View>
           <View>
-            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 16, color: TEXT_PRIMARY }}>{formatPrice(item.amount)}</Text>
-            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: MUTED }}>{fmt(item.created_at)}</Text>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: TEXT_PRIMARY }}>{formatPrice(item.amount)}</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: MUTED }}>{fmt(item.created_at)}</Text>
           </View>
         </View>
         <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, backgroundColor: meta.bg }}>
-          <Text style={{ fontFamily: 'Inter', fontWeight: '700', fontSize: 11, color: meta.color }}>{meta.label}</Text>
+          <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: meta.color }}>{meta.label}</Text>
         </View>
       </View>
     );
@@ -136,7 +136,7 @@ export default function PayoutsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, justifyContent: 'center', alignItems: 'center', borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.06)' }}>
           <Ionicons name="chevron-back" size={22} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 18, color: TEXT_PRIMARY, flex: 1, textAlign: 'center' }}>Payouts</Text>
+        <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 18, color: TEXT_PRIMARY, flex: 1, textAlign: 'center' }}>Payouts</Text>
         <View style={{ width: 36 }} />
       </View>
 
@@ -152,10 +152,10 @@ export default function PayoutsScreen() {
               {/* Balance card */}
               <View style={{ borderRadius: 24, padding: 20, marginBottom: 20, alignItems: 'center', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
                 <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-                  <Text style={{ fontFamily: 'Outfit', fontSize: 24, fontWeight: '900', color: G }}>₦</Text>
+                  <Text style={{ fontFamily: 'Outfit-Black', fontSize: 24, color: G }}>₦</Text>
                 </View>
-                <Text style={{ fontFamily: 'Inter', fontSize: 12, fontWeight: '600', color: LABEL, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Available Balance</Text>
-                <Text style={{ fontFamily: 'Outfit', fontSize: 36, fontWeight: '900', color: TEXT_PRIMARY, marginBottom: 16 }}>{formatPrice(balance)}</Text>
+                <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 12, color: LABEL, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Available Balance</Text>
+                <Text style={{ fontFamily: 'Outfit-Black', fontSize: 36, color: TEXT_PRIMARY, marginBottom: 16 }}>{formatPrice(balance)}</Text>
                 <TouchableOpacity
                   style={[{ backgroundColor: G, borderRadius: 18, paddingVertical: 14, marginBottom: 12, width: '100%', alignItems: 'center' }, (balance <= 0 || requesting) && { opacity: 0.5 }]}
                   onPress={handleRequestPayout}
@@ -163,14 +163,14 @@ export default function PayoutsScreen() {
                 >
                   {requesting
                     ? <ActivityIndicator color="#000" size="small" />
-                    : <Text style={{ fontFamily: 'Outfit', fontSize: 15, fontWeight: '800', color: '#000' }}>Withdraw Funds</Text>}
+                    : <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 15, color: '#000' }}>Withdraw Funds</Text>}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Feather name="briefcase" size={14} color={G} />
-                  <Text style={{ fontFamily: 'Inter', fontSize: 13, color: G, fontWeight: '600' }}>Manage bank account</Text>
+                  <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 13, color: G }}>Manage bank account</Text>
                 </TouchableOpacity>
               </View>
-              <Text style={{ fontFamily: 'Outfit', fontSize: 16, fontWeight: '800', color: TEXT_PRIMARY, marginBottom: 12, marginLeft: 4 }}>Payout History</Text>
+              <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 12, marginLeft: 4 }}>Payout History</Text>
             </View>
           }
           renderItem={renderItem}
@@ -179,8 +179,8 @@ export default function PayoutsScreen() {
           ListEmptyComponent={
             <View style={{ alignItems: 'center', paddingVertical: 40 }}>
               <Feather name="credit-card" size={44} color={LABEL} style={{ marginBottom: 10 }} />
-              <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 4 }}>No payouts yet</Text>
-              <Text style={{ fontFamily: 'Inter', fontSize: 13, color: MUTED, textAlign: 'center' }}>Funds from completed sales will appear here.</Text>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 4 }}>No payouts yet</Text>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED, textAlign: 'center' }}>Funds from completed sales will appear here.</Text>
             </View>
           }
         />

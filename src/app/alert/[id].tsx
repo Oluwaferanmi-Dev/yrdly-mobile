@@ -53,12 +53,10 @@ export default function AlertDetailsScreen() {
   if (!alert) {
     return (
       <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
-        <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14 }}>
+          <TouchableOpacity onPress={() => router.back()} style={{ width: 34, height: 34, justifyContent: 'center', alignItems: 'center', borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
+            <Ionicons name="chevron-back" size={18} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Alert Details</Text>
-          <View style={{ width: 24 }} />
         </View>
         <View style={styles.emptyContainer}>
           <Ionicons name="alert-circle-outline" size={48} color={MUTED} />
@@ -68,80 +66,87 @@ export default function AlertDetailsScreen() {
     );
   }
 
-  const getAlertColor = () => {
-    switch (alert.type) {
-      case 'amber': return '#ef4444'; // Red
-      case 'missing_person': return '#f59e0b'; // Amber
-      case 'community_safety': return '#3b82f6'; // Blue
-      default: return G;
-    }
+  const SEVERITY_COLORS = {
+    urgent: { bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.2)', text: '#ef4444', icon: '#ef4444' },
+    caution: { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', text: '#f59e0b', icon: '#f59e0b' },
+    information: { bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)', text: '#3b82f6', icon: '#3b82f6' },
   };
 
-  const alertColor = getAlertColor();
+  const isResolved = alert.status === 'resolved';
+  const severityKey = ['urgent', 'caution'].includes(alert.severity || '') 
+    ? alert.severity as keyof typeof SEVERITY_COLORS 
+    : 'information';
+  const c = SEVERITY_COLORS[severityKey];
 
   return (
     <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
-      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14 }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 34, height: 34, justifyContent: 'center', alignItems: 'center', borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
+          <Ionicons name="chevron-back" size={18} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Alert Details</Text>
-        <View style={{ width: 24 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.banner, { backgroundColor: alertColor + '20', borderColor: alertColor }]}>
-          <Ionicons name="alert-circle" size={24} color={alertColor} />
-          <Text style={[styles.bannerText, { color: alertColor }]}>
-            {alert.type === 'amber' ? 'AMBER ALERT' : 
-             alert.type === 'missing_person' ? 'MISSING PERSON' : 'COMMUNITY SAFETY'}
-          </Text>
+        {isResolved && (
+          <View style={styles.resolutionBanner}>
+            <Feather name="check" size={16} color={G} />
+            <Text style={styles.resolutionText}>Resolved — This alert is no longer active.</Text>
+          </View>
+        )}
+
+        {/* Hero */}
+        <View style={[styles.hero, { 
+          backgroundColor: isResolved ? '#0a0a0a' : c.bg, 
+          borderColor: isResolved ? GLASS_BORDER : c.border 
+        }]}>
+          <View style={styles.heroTopRow}>
+            <View style={[styles.typePill, { backgroundColor: `${c.icon}22`, borderColor: `${c.icon}44` }]}>
+              <Text style={[styles.typeText, { color: isResolved ? LABEL : c.text }]}>
+                {alert.type || alert.severity || 'ALERT'}
+              </Text>
+            </View>
+            <Text style={styles.timeText}>{new Date(alert.created_at).toLocaleDateString()}</Text>
+          </View>
+          <Text style={[styles.title, { color: isResolved ? MUTED : '#FFF' }]}>{alert.title}</Text>
+          <View style={styles.heroBottomRow}>
+            <Text style={styles.areaText}>📍 {alert.last_seen_address || alert.area || 'Unknown Location'}</Text>
+          </View>
         </View>
 
-        <Text style={[styles.title, { color: TEXT_PRIMARY }]}>{alert.title}</Text>
-        <Text style={[styles.time, { color: LABEL }]}>
-          {new Date(alert.created_at).toLocaleString()}
-        </Text>
-
-        <Text style={[styles.description, { color: TEXT_PRIMARY }]}>{alert.description}</Text>
+        {/* Description */}
+        <View style={styles.descCard}>
+          <Text style={styles.descLabel}>What Happened</Text>
+          <Text style={styles.descText}>{alert.description}</Text>
+        </View>
 
         {alert.subject_photo_url && (
           <Image source={{ uri: alert.subject_photo_url }} style={styles.photo} resizeMode="cover" />
         )}
 
-        <View style={[styles.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-          {alert.subject_name && (
-            <View style={styles.infoRow}>
-              <Feather name="user" size={18} color={LABEL} />
-              <Text style={[styles.infoText, { color: TEXT_PRIMARY }]}>
-                {alert.subject_name} {alert.subject_age ? `(${alert.subject_age} years old)` : ''}
-              </Text>
-            </View>
-          )}
-
-          {alert.last_seen_address && (
-            <View style={styles.infoRow}>
-              <Feather name="map-pin" size={18} color={LABEL} />
-              <Text style={[styles.infoText, { color: TEXT_PRIMARY }]}>
-                Last seen: {alert.last_seen_address}
-              </Text>
-            </View>
-          )}
-
-          {alert.source && (
-            <View style={styles.infoRow}>
-              <Feather name="info" size={18} color={LABEL} />
-              <Text style={[styles.infoText, { color: TEXT_PRIMARY }]}>
-                Source: {alert.source}
-              </Text>
-            </View>
-          )}
-        </View>
+        {(alert.subject_name || alert.source) && (
+          <View style={styles.detailsCard}>
+            {alert.subject_name && (
+              <View style={styles.infoRow}>
+                <Feather name="user" size={18} color={LABEL} />
+                <Text style={styles.infoText}>
+                  {alert.subject_name} {alert.subject_age ? `(${alert.subject_age} years old)` : ''}
+                </Text>
+              </View>
+            )}
+            {alert.source && (
+              <View style={styles.infoRow}>
+                <Feather name="info" size={18} color={LABEL} />
+                <Text style={styles.infoText}>Source: {alert.source}</Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {alert.contact_info && (
           <TouchableOpacity 
-            style={[styles.contactButton, { backgroundColor: alertColor }]}
+            style={[styles.contactButton, { backgroundColor: isResolved ? MUTED : c.icon }]}
             onPress={() => Linking.openURL(`tel:${alert.contact_info}`)}
+            disabled={isResolved}
           >
             <Feather name="phone" size={18} color="#fff" />
             <Text style={styles.contactButtonText}>Contact {alert.contact_info}</Text>
@@ -154,41 +159,109 @@ export default function AlertDetailsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 0.5,
-  },
-  backButton: { padding: 8, marginLeft: -8 },
-  headerTitle: { fontFamily: 'Inter-Bold', fontSize: 18 },
   emptyContainer: { padding: 40, alignItems: 'center', justifyContent: 'center', marginTop: 40 },
   emptyText: { fontFamily: 'Inter-Medium', fontSize: 16, marginTop: 16, textAlign: 'center' },
-  content: { padding: 16, paddingBottom: 40 },
-  banner: {
+  content: { paddingHorizontal: 20, paddingBottom: 40, gap: 16, paddingTop: 8 },
+  resolutionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(130,219,126,0.07)',
+    borderWidth: 1,
+    borderColor: 'rgba(130,219,126,0.2)',
+    borderRadius: 14,
+  },
+  resolutionText: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 13,
+    color: G,
+  },
+  hero: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    borderWidth: 1,
+    borderRadius: 24,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  typePill: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
     borderRadius: 8,
     borderWidth: 1,
-    marginBottom: 16,
   },
-  bannerText: { fontFamily: 'Inter-Bold', fontSize: 14, marginLeft: 8 },
-  title: { fontFamily: 'Inter-Bold', fontSize: 24, marginBottom: 8 },
-  time: { fontFamily: 'Inter-Medium', fontSize: 14, marginBottom: 16 },
-  description: { fontFamily: 'Inter-Regular', fontSize: 16, lineHeight: 24, marginBottom: 24 },
-  photo: { width: '100%', height: 300, borderRadius: 12, marginBottom: 24 },
-  card: { padding: 16, borderRadius: 12, borderWidth: 1, marginBottom: 24, gap: 16 },
+  typeText: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  timeText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 11,
+    color: LABEL,
+  },
+  title: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 20,
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  heroBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  areaText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 12,
+    color: LABEL,
+  },
+  descCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#0f0f0f',
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    borderRadius: 20,
+  },
+  descLabel: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 11,
+    color: LABEL,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  descText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.8)',
+    lineHeight: 25,
+  },
+  detailsCard: {
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: '#0f0f0f',
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    gap: 16,
+  },
+  photo: { width: '100%', height: 300, borderRadius: 20 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  infoText: { fontFamily: 'Inter-Medium', fontSize: 16, flex: 1 },
+  infoText: { fontFamily: 'Inter-Medium', fontSize: 15, color: TEXT_PRIMARY, flex: 1 },
   contactButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     gap: 8,
   },
   contactButtonText: { fontFamily: 'Inter-Bold', fontSize: 16, color: '#fff' },

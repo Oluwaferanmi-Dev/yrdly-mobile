@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     color: colors.DARK,
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
   secondaryBtn: {
     height: 52,
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   secondaryBtnText: {
     color: colors.MUTED,
     fontSize: 15,
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
   },
   glassInputContainer: {
     flexDirection: 'row',
@@ -332,6 +332,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#FFFFFF',
     fontSize: 15,
+    fontFamily: 'Inter-Regular',
   },
   strengthRow: {
     flexDirection: 'row',
@@ -351,7 +352,7 @@ const styles = StyleSheet.create({
   },
   strengthLabel: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     minWidth: 36,
     textAlign: 'right',
   },
@@ -368,6 +369,7 @@ const styles = StyleSheet.create({
   dividerText: {
     color: colors.LABEL,
     fontSize: 12,
+    fontFamily: 'Inter-Regular',
   },
   socialRow: {
     flexDirection: 'row',
@@ -387,7 +389,7 @@ const styles = StyleSheet.create({
   socialBtnText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
   },
   backBtn: {
     flexDirection: 'row',
@@ -396,7 +398,7 @@ const styles = StyleSheet.create({
   },
   backBtnText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
   },
   progressRow: {
     flexDirection: 'row',
@@ -418,12 +420,13 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 12,
     color: colors.G,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     letterSpacing: 1,
   },
   stepLabel: {
     fontSize: 12,
     color: colors.LABEL,
+    fontFamily: 'Inter-Regular',
   },
   stepTrack: {
     height: 3,

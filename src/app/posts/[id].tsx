@@ -106,7 +106,7 @@ function PostDetailContent() {
     if (!id) return;
     const { data, error } = await supabase
       .from('comments')
-      .select('*, user:users!comments_user_id_fkey(name, avatar_url, verified_seller)')
+      .select('*, user:users!comments_user_id_fkey(name, avatar_url, phone_verified)')
       .eq('post_id', id)
       .order('timestamp', { ascending: true });
 

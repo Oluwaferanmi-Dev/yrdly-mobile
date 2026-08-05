@@ -76,15 +76,15 @@ export default function VerifyPhoneScreen() {
           <Feather name="smartphone" size={30} color={G} />
         </View>
 
-        <Text style={{ fontFamily: 'Outfit', fontSize: 24, fontWeight: '800', textAlign: 'center', color: TEXT_PRIMARY, marginBottom: 8 }}>Verify Phone Number</Text>
-        <Text style={{ fontFamily: 'Inter', fontSize: 13, color: MUTED, textAlign: 'center', lineHeight: 20, marginBottom: 24 }}>
+        <Text style={[styles.title, { color: TEXT_PRIMARY }]}>Verify Phone Number</Text>
+        <Text style={[styles.subtitle, { color: MUTED }]}>
           Enter your Nigerian phone number to receive a verification code.
         </Text>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', height: 52, borderRadius: 16, borderWidth: 1, borderColor: GLASS_BORDER, backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 16, marginBottom: 16 }}>
           <Feather name="phone" size={18} color={LABEL} style={{ marginRight: 12 }} />
           <TextInput
-            style={{ flex: 1, fontFamily: 'Inter', fontSize: 15, fontWeight: '600', color: TEXT_PRIMARY }}
+            style={[styles.input, { color: TEXT_PRIMARY }]}
             placeholder="+234 800 000 0000"
             placeholderTextColor={LABEL}
             keyboardType="phone-pad"
@@ -104,7 +104,7 @@ export default function VerifyPhoneScreen() {
           {loading ? (
             <ActivityIndicator color="#000" />
           ) : (
-            <Text style={{ fontFamily: 'Outfit', fontSize: 15, fontWeight: '800', color: '#000' }}>Send Code</Text>
+            <Text style={[styles.verifyBtnText, { color: '#000' }]}>Send Code</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -124,20 +124,20 @@ const styles = StyleSheet.create({
     width: 80, height: 80, borderRadius: 40,
     justifyContent: 'center', alignItems: 'center', marginBottom: 20,
   },
-  title: { fontSize: 26, fontWeight: '800', textAlign: 'center', marginBottom: 10 },
-  subtitle: { fontSize: 15, textAlign: 'center', lineHeight: 23, marginBottom: 32 },
+  title: { fontSize: 24, fontFamily: 'Outfit-ExtraBold', textAlign: 'center', marginBottom: 8 },
+  subtitle: { fontSize: 13, fontFamily: 'Inter-Regular', textAlign: 'center', lineHeight: 20, marginBottom: 24 },
   inputWrapper: {
     flexDirection: 'row', alignItems: 'center',
     width: '100%', height: 56, borderRadius: 16,
     borderWidth: 1, paddingHorizontal: 16, marginBottom: 20,
   },
   inputIcon: { marginRight: 12 },
-  input: { flex: 1, fontSize: 16, fontWeight: '500' },
+  input: { flex: 1, fontSize: 15, fontFamily: 'Inter-SemiBold' },
   verifyBtn: {
     width: '100%', height: 54, borderRadius: 27,
     justifyContent: 'center', alignItems: 'center', marginTop: 10,
     shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 10, elevation: 4,
   },
   verifyBtnDisabled: { opacity: 0.6 },
-  verifyBtnText: { fontSize: 16, fontWeight: '700' },
+  verifyBtnText: { fontSize: 15, fontFamily: 'Outfit-ExtraBold' },
 });

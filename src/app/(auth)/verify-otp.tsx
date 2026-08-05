@@ -65,7 +65,7 @@ export default function VerifyOtpScreen() {
                 <Text style={styles.titleText}>Enter SMS code</Text>
                 <Text style={styles.subtitleText}>
                   We sent a 6-digit code via SMS to{' '}
-                  <Text style={{ color: colors.MUTED, fontWeight: '500' }}>
+                  <Text style={{ color: colors.MUTED, fontFamily: 'Inter-Medium' }}>
                     {phone ? `+234 ${phone}` : 'your phone number'}
                   </Text>
                 </Text>
@@ -96,7 +96,7 @@ export default function VerifyOtpScreen() {
               {/* Countdown */}
               <View style={styles.resendBox}>
                 <TouchableOpacity onPress={countdown === 0 ? () => setCountdown(45) : undefined}>
-                  <Text style={[styles.timerText, { color: countdown > 0 ? colors.LABEL : colors.G, fontWeight: '600' }]}>
+                  <Text style={[styles.timerText, { color: countdown > 0 ? colors.LABEL : colors.G, fontFamily: 'Inter-SemiBold' }]}>
                     {countdown > 0 ? `Resend SMS in 0:${String(countdown).padStart(2, '0')}` : 'Resend Code'}
                   </Text>
                 </TouchableOpacity>
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: 'Outfit-ExtraBold',
     color: '#FFFFFF',
   },
   subtitleText: {
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#FFFFFF',
     fontSize: 22,
-    fontWeight: '700',
+    fontFamily: 'Inter-Bold',
   },
   resendBox: {
     alignItems: 'center',

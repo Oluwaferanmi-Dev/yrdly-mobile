@@ -83,7 +83,7 @@ export default function PayoutSettingsScreen() {
     <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
       <View style={[s.header, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={s.back}><Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} /></TouchableOpacity>
-        <Text style={[s.title, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Bank Account</Text>
+        <Text style={[s.title, { color: TEXT_PRIMARY }]}>Bank Account</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
@@ -92,10 +92,10 @@ export default function PayoutSettingsScreen() {
             <View style={s.existingRow}>
               <View style={[s.iconWrap, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}><Feather name="briefcase" size={22} color={G} /></View>
               <View style={{ flex: 1 }}>
-                <Text style={[s.existingName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{existing.account_name}</Text>
-                <Text style={[s.existingDetail, { color: MUTED, fontFamily: 'Inter' }]}>{existing.bank_name} · ****{existing.account_number.slice(-4)}</Text>
+                <Text style={[s.existingName, { color: TEXT_PRIMARY }]}>{existing.account_name}</Text>
+                <Text style={[s.existingDetail, { color: MUTED }]}>{existing.bank_name} · ****{existing.account_number.slice(-4)}</Text>
                 <View style={[s.badge, existing.verification_status === 'verified' ? s.badgeOk : s.badgePending]}>
-                  <Text style={[s.badgeText, { color: existing.verification_status === 'verified' ? G : '#E65100', fontFamily: 'Inter' }]}>
+                  <Text style={[s.badgeText, { color: existing.verification_status === 'verified' ? G : '#E65100' }]}>
                     {existing.verification_status === 'verified' ? '✓ Verified' : '⏳ Pending verification'}
                   </Text>
                 </View>
@@ -104,23 +104,23 @@ export default function PayoutSettingsScreen() {
           </View>
         ) : null}
 
-        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{existing ? 'Replace Bank Account' : 'Add Bank Account'}</Text>
+        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY }]}>{existing ? 'Replace Bank Account' : 'Add Bank Account'}</Text>
         {existing && (
           <View style={s.warnBox}>
             <Feather name="alert-circle" size={15} color="#E65100" />
-            <Text style={[s.warnText, { fontFamily: 'Inter' }]}>Changing your bank account triggers a 24-hour hold on new payouts.</Text>
+            <Text style={[s.warnText]}>Changing your bank account triggers a 24-hour hold on new payouts.</Text>
           </View>
         )}
 
-        <Text style={[s.label, { color: LABEL, fontFamily: 'Inter' }]}>Bank *</Text>
+        <Text style={[s.label, { color: LABEL }]}>Bank *</Text>
         <TouchableOpacity style={[s.selector, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, selectedBank && { borderColor: G }]} onPress={() => { setBankSearch(''); setBankModal(true); }}>
-          <Text style={[s.selectorText, { color: TEXT_PRIMARY, fontFamily: 'Inter' }, !selectedBank && { color: LABEL }]}>{selectedBank?.name ?? 'Select your bank'}</Text>
+          <Text style={[s.selectorText, { color: TEXT_PRIMARY }, !selectedBank && { color: LABEL }]}>{selectedBank?.name ?? 'Select your bank'}</Text>
           <Feather name="chevron-down" size={18} color={selectedBank ? G : LABEL} />
         </TouchableOpacity>
 
-        <Text style={[s.label, { color: LABEL, fontFamily: 'Inter', marginTop: 16 }]}>Account Number *</Text>
+        <Text style={[s.label, { color: LABEL, marginTop: 16 }]}>Account Number *</Text>
         <TextInput
-          style={[s.input, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, color: TEXT_PRIMARY, fontFamily: 'Inter' }, accountNumber.length === 10 && { borderColor: G }]}
+          style={[s.input, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, color: TEXT_PRIMARY }, accountNumber.length === 10 && { borderColor: G }]}
           value={accountNumber}
           onChangeText={v => { setAccountNumber(v.replace(/\D/g, '').slice(0, 10)); setResolvedName(''); }}
           placeholder="10-digit account number"
@@ -129,28 +129,28 @@ export default function PayoutSettingsScreen() {
           maxLength={10}
         />
 
-        {resolving && <View style={s.resolveRow}><ActivityIndicator size="small" color={G} /><Text style={[s.resolveText, { color: MUTED, fontFamily: 'Inter' }]}>Verifying…</Text></View>}
+        {resolving && <View style={s.resolveRow}><ActivityIndicator size="small" color={G} /><Text style={[s.resolveText, { color: MUTED }]}>Verifying…</Text></View>}
         {!resolving && resolvedName ? (
-          <View style={s.resolveRow}><Feather name="check-circle" size={18} color={G} /><Text style={[s.resolvedName, { color: G, fontFamily: 'Outfit' }]}>{resolvedName}</Text></View>
+          <View style={s.resolveRow}><Feather name="check-circle" size={18} color={G} /><Text style={[s.resolvedName, { color: G }]}>{resolvedName}</Text></View>
         ) : null}
         {!resolving && accountNumber.length === 10 && !resolvedName && (
-          <View style={s.resolveRow}><Feather name="x-circle" size={18} color="#E53935" /><Text style={{ color: '#E53935', fontSize: 13, fontFamily: 'Inter' }}>Account not found.</Text></View>
+          <View style={s.resolveRow}><Feather name="x-circle" size={18} color="#E53935" /><Text style={{ color: '#E53935', fontSize: 13, fontFamily: 'Inter-Regular' }}>Account not found.</Text></View>
         )}
 
         <TouchableOpacity style={[s.saveBtn, { backgroundColor: G }, !canSave && s.saveBtnOff]} onPress={handleSave} disabled={!canSave || saving}>
-          {saving ? <ActivityIndicator color="#000000" /> : <Text style={[s.saveBtnText, { color: '#000000', fontFamily: 'Outfit' }]}>Save Bank Account</Text>}
+          {saving ? <ActivityIndicator color="#000000" /> : <Text style={[s.saveBtnText, { color: '#000000' }]}>Save Bank Account</Text>}
         </TouchableOpacity>
       </ScrollView>
 
       <Modal visible={bankModal} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={[s.modal, { backgroundColor: DARK }]}>
           <View style={[s.modalHeader, { borderBottomColor: GLASS_BORDER }]}>
-            <Text style={[s.modalTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Select Bank</Text>
+            <Text style={[s.modalTitle, { color: TEXT_PRIMARY }]}>Select Bank</Text>
             <TouchableOpacity onPress={() => setBankModal(false)}><Feather name="x" size={24} color={TEXT_PRIMARY} /></TouchableOpacity>
           </View>
           <View style={[s.searchBox, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
             <Feather name="search" size={18} color={LABEL} style={{ marginRight: 8 }} />
-            <TextInput style={[s.searchInput, { color: TEXT_PRIMARY, fontFamily: 'Inter' }]} value={bankSearch} onChangeText={setBankSearch} placeholder="Search banks…" placeholderTextColor={LABEL} autoFocus />
+            <TextInput style={[s.searchInput, { color: TEXT_PRIMARY }]} value={bankSearch} onChangeText={setBankSearch} placeholder="Search banks…" placeholderTextColor={LABEL} autoFocus />
           </View>
           <FlatList
             data={filteredBanks}
@@ -160,7 +160,7 @@ export default function PayoutSettingsScreen() {
                 style={[s.bankItem, selectedBank?.code === item.code && s.bankItemSel]}
                 onPress={() => { setSelectedBank(item); setResolvedName(''); setBankModal(false); }}
               >
-                <Text style={[s.bankName, { color: TEXT_PRIMARY, fontFamily: 'Inter' }, selectedBank?.code === item.code && { color: G, fontWeight: '700' }]}>{item.name}</Text>
+                <Text style={[s.bankName, { color: TEXT_PRIMARY }, selectedBank?.code === item.code && { color: G, fontFamily: 'Inter-Bold' }]}>{item.name}</Text>
                 {selectedBank?.code === item.code && <Feather name="check" size={18} color={G} />}
               </TouchableOpacity>
             )}
@@ -177,35 +177,35 @@ const s = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 14, borderBottomWidth: 1 },
   back: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)' },
-  title: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
+  title: { fontSize: 18, fontFamily: 'Outfit-ExtraBold', flex: 1, textAlign: 'center' },
   scroll: { padding: 20, paddingBottom: 40 },
   existingCard: { borderRadius: 20, padding: 16, marginBottom: 24 },
   existingRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   iconWrap: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  existingName: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
-  existingDetail: { fontSize: 13, marginBottom: 8 },
+  existingName: { fontSize: 16, fontFamily: 'Outfit-Bold', marginBottom: 2 },
+  existingDetail: { fontSize: 13, fontFamily: 'Inter-Regular', marginBottom: 8 },
   badge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
   badgeOk: { backgroundColor: 'rgba(130, 225, 87, 0.1)' }, badgePending: { backgroundColor: 'rgba(230, 81, 0, 0.1)' },
-  badgeText: { fontSize: 11, fontWeight: '700' },
-  sectionTitle: { fontSize: 18, fontWeight: '800', marginBottom: 16 },
+  badgeText: { fontSize: 11, fontFamily: 'Inter-Bold' },
+  sectionTitle: { fontSize: 18, fontFamily: 'Outfit-ExtraBold', marginBottom: 16 },
   warnBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: 'rgba(230, 81, 0, 0.1)', borderRadius: 10, padding: 12, marginBottom: 20 },
-  warnText: { flex: 1, fontSize: 13, color: '#E65100', lineHeight: 18 },
-  label: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  warnText: { flex: 1, fontSize: 13, fontFamily: 'Inter-Regular', color: '#E65100', lineHeight: 18 },
+  label: { fontSize: 12, fontFamily: 'Inter-Bold', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
   selector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16 },
-  selectorText: { fontSize: 16 }, placeholder: { },
-  input: { borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, fontSize: 16, letterSpacing: 1 },
+  selectorText: { fontSize: 16, fontFamily: 'Inter-Regular' }, placeholder: { },
+  input: { borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, fontSize: 16, fontFamily: 'Inter-Regular', letterSpacing: 1 },
   resolveRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
-  resolveText: { fontSize: 13 },
-  resolvedName: { fontSize: 14, fontWeight: '700' },
+  resolveText: { fontSize: 13, fontFamily: 'Inter-Regular' },
+  resolvedName: { fontSize: 14, fontFamily: 'Outfit-Bold' },
   saveBtn: { height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginTop: 32 },
   saveBtnOff: { opacity: 0.4 },
-  saveBtnText: { fontSize: 16, fontWeight: '800', color: '#111' },
+  saveBtnText: { fontSize: 16, fontFamily: 'Outfit-ExtraBold', color: '#111' },
   modal: { flex: 1 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1 },
-  modalTitle: { fontSize: 18, fontWeight: '800' },
+  modalTitle: { fontSize: 18, fontFamily: 'Outfit-ExtraBold' },
   searchBox: { flexDirection: 'row', alignItems: 'center', margin: 16, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, borderWidth: 1 },
-  searchInput: { flex: 1, fontSize: 16 },
+  searchInput: { flex: 1, fontSize: 16, fontFamily: 'Inter-Regular' },
   bankItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 18 },
   bankItemSel: { backgroundColor: 'rgba(130, 225, 87, 0.1)' },
-  bankName: { fontSize: 15 },
+  bankName: { fontSize: 15, fontFamily: 'Inter-Regular' },
 });

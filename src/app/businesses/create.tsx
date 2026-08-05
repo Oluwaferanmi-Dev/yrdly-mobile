@@ -48,7 +48,7 @@ export default function CreateBusinessScreen() {
   
   const [loading, setLoading] = useState(false);
   const [checkingVerification, setCheckingVerification] = useState(true);
-  const [isVerified, setIsVerified] = useState<boolean>(!!(profile as any)?.verified_seller);
+  const [isVerified, setIsVerified] = useState<boolean>(!!(profile as any)?.phone_verified);
 
   useEffect(() => {
     let isMounted = true;
@@ -61,7 +61,7 @@ export default function CreateBusinessScreen() {
         const [{ data: userData }, { data: sellerData }] = await Promise.all([
           supabase
             .from('users')
-            .select('verified_seller')
+            .select('phone_verified')
             .eq('id', user.id)
             .single(),
           supabase
@@ -74,7 +74,7 @@ export default function CreateBusinessScreen() {
 
         if (isMounted) {
           setIsVerified(
-            !!userData?.verified_seller ||
+            !!userData?.phone_verified ||
             (!!sellerData && sellerData.verification_status === 'verified')
           );
         }

@@ -28,7 +28,7 @@ interface UserProfile {
   following_count: number;
   rating?: number | null;
   review_count?: number;
-  verified_seller?: boolean;
+  phone_verified?: boolean;
   username?: string;
   email?: string;
   location?: { state?: string; lga?: string; city?: string; ward?: string };
@@ -46,6 +46,7 @@ export default function OtherUserProfileScreen() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollower, setIsFollower] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -66,6 +67,14 @@ export default function OtherUserProfileScreen() {
           .eq('following_id', id)
           .maybeSingle();
         setIsFollowing(!!fData);
+
+        const { data: fData2 } = await supabase
+          .from('followers')
+          .select('id')
+          .eq('follower_id', id)
+          .eq('following_id', currentUser.id)
+          .maybeSingle();
+        setIsFollower(!!fData2);
       }
 
       const { data: postData } = await supabase
@@ -219,7 +228,7 @@ export default function OtherUserProfileScreen() {
           <Text style={[styles.headerTitleLeft, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]} numberOfLines={1}>
             {profile.username || profile.name}
           </Text>
-          {profile.verified_seller && (
+          {profile.phone_verified && (
             <MaterialIcons 
               name="verified" 
               size={16} 
@@ -295,11 +304,23 @@ export default function OtherUserProfileScreen() {
 
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
             <Text style={[styles.name, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{profile.name}</Text>
-            {(profile.verified_seller) && (
-              <MaterialIcons name="verified" size={16} color={G} style={{ marginLeft: 6 }} />
+            {profile.phone_verified && (
+              <MaterialIcons name="verified" size={18} color={G} style={{ marginLeft: 6 }} />
             )}
           </View>
-          <Text style={{ color: MUTED, marginBottom: 8, fontSize: 14, fontFamily: 'Inter' }}>@{profile.username || 'user'}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
+            <Text style={{ color: MUTED, fontSize: 14, fontFamily: 'Inter' }}>@{profile.username || 'user'}</Text>
+            {isFollower && !isFollowing && (
+              <View style={styles.followsYouBadge}>
+                <Text style={styles.followsYouText}>Follows you</Text>
+              </View>
+            )}
+            {isFollower && isFollowing && (
+              <View style={styles.followsYouBadge}>
+                <Text style={styles.followsYouText}>Mutual</Text>
+              </View>
+            )}
+          </View>
           
           {(profile.review_count ?? 0) > 0 && (
             <View style={styles.ratingRow}>
@@ -349,7 +370,7 @@ export default function OtherUserProfileScreen() {
                   <ActivityIndicator size="small" color={isFollowing ? TEXT_PRIMARY : '#000000'} />
                 ) : (
                   <Text style={[styles.btnFollowText, { color: isFollowing ? TEXT_PRIMARY : '#000000', fontFamily: 'Outfit' }]}>
-                    {isFollowing ? 'Following' : 'Follow'}
+                    {isFollowing ? 'Following' : isFollower ? 'Follow Back' : 'Follow'}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -505,6 +526,8 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 18, fontWeight: 'bold' },
   statLabel: { fontSize: 13, marginTop: 2 },
   name: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
+  followsYouBadge: { backgroundColor: SURFACE, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: GLASS_BORDER },
+  followsYouText: { color: MUTED, fontSize: 11, fontFamily: 'Inter', fontWeight: '600' },
   bio: { fontSize: 14, lineHeight: 20, marginBottom: 16 },
   actionRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
   btnFollow: {

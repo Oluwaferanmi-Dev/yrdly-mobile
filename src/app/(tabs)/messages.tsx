@@ -294,7 +294,7 @@ export default function MessagesTab() {
             <Image source={{ uri: item.participantAvatar }} style={{ width: 48, height: 48, borderRadius: 24 }} contentFit="cover" />
           ) : (
             <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: G + '20', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={{ color: G, fontFamily: 'Outfit', fontWeight: '800', fontSize: 18 }}>
+              <Text style={{ color: G, fontFamily: 'Outfit-ExtraBold', fontSize: 18 }}>
                 {(item.participantName || 'Unknown').charAt(0).toUpperCase()}
               </Text>
             </View>
@@ -315,26 +315,26 @@ export default function MessagesTab() {
         {/* Content */}
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-            <Text style={[{ fontFamily: 'Outfit', fontSize: 15, color: TEXT_PRIMARY, fontWeight: '600' }, unread && { fontWeight: '800' }]} numberOfLines={1}>
+            <Text style={[{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY }, unread && { fontFamily: 'Outfit-ExtraBold' }]} numberOfLines={1}>
               {item.participantName}
             </Text>
 
-            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: unread ? G : MUTED, fontWeight: unread ? '700' : '400' }}>
+            <Text style={{ fontFamily: unread ? 'Inter-Bold' : 'Inter-Regular', fontSize: 11, color: unread ? G : MUTED }}>
               {timeLabel(item.timestamp)}
             </Text>
           </View>
           {item.context?.itemTitle && (
-            <Text style={{ fontFamily: 'Inter', fontSize: 12, color: G, fontWeight: '600', marginBottom: 2 }} numberOfLines={1}>
+            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 12, color: G, marginBottom: 2 }} numberOfLines={1}>
               Re: {item.context.itemTitle}
             </Text>
           )}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={[{ flex: 1, fontFamily: 'Inter', fontSize: 13, color: MUTED, marginRight: 8 }, unread && { color: TEXT_PRIMARY, fontWeight: '600' }]} numberOfLines={1}>
+            <Text style={[{ flex: 1, fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED, marginRight: 8 }, unread && { color: TEXT_PRIMARY, fontFamily: 'Inter-SemiBold' }]} numberOfLines={1}>
               {item.lastMessage}
             </Text>
             {unread && (
               <View style={{ minWidth: 18, height: 18, borderRadius: 9, backgroundColor: G, paddingHorizontal: 5, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ color: '#000', fontSize: 10, fontFamily: 'Outfit', fontWeight: '800' }}>{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text>
+                <Text style={{ color: '#000', fontSize: 10, fontFamily: 'Outfit-ExtraBold' }}>{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text>
               </View>
             )}
           </View>
@@ -419,14 +419,14 @@ export default function MessagesTab() {
   return (
     <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 8 }}>
-        <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 22, color: '#FFFFFF' }}>Messages</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 16 }}>
+        <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 24, color: '#FFFFFF' }}>Messages</Text>
         <TouchableOpacity
-          style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
+          style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
           onPress={openNewChatModal}
           activeOpacity={0.7}
         >
-          <Feather name="edit" size={18} color={MUTED} />
+          <Feather name="edit-2" size={16} color="#FFF" />
         </TouchableOpacity>
       </View>
 
@@ -489,7 +489,7 @@ export default function MessagesTab() {
           <View style={{ backgroundColor: '#0A0A0A', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '80%', padding: 20, paddingBottom: insets.bottom + 20 }}>
             {/* Header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', color: TEXT_PRIMARY, fontFamily: 'Outfit' }}>New Message</Text>
+              <Text style={{ fontSize: 18, color: TEXT_PRIMARY, fontFamily: 'Outfit-Bold' }}>New Message</Text>
               <TouchableOpacity onPress={() => setIsModalOpen(false)} style={{ padding: 4 }}>
                 <Feather name="x" size={24} color={TEXT_PRIMARY} />
               </TouchableOpacity>
@@ -531,12 +531,12 @@ export default function MessagesTab() {
                       <Image source={{ uri: item.avatar_url }} style={{ width: 44, height: 44, borderRadius: 22, marginRight: 12 }} />
                     ) : (
                       <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(130, 219, 126, 0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                        <Text style={{ color: G, fontWeight: 'bold', fontSize: 16, fontFamily: 'Outfit' }}>
+                        <Text style={{ color: G, fontSize: 16, fontFamily: 'Outfit-Bold' }}>
                           {(item.name || 'U').charAt(0).toUpperCase()}
                         </Text>
                       </View>
                     )}
-                    <Text style={{ fontSize: 16, fontWeight: '600', color: TEXT_PRIMARY, flex: 1, fontFamily: 'Inter' }}>{item.name}</Text>
+                    <Text style={{ fontSize: 16, color: TEXT_PRIMARY, flex: 1, fontFamily: 'Inter-SemiBold' }}>{item.name}</Text>
                     <Feather name="chevron-right" size={18} color={LABEL} />
                   </TouchableOpacity>
                 )}
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   filterTabActive: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 2, elevation: 2 },
-  filterTabText: { fontSize: 12, fontWeight: '600' },
+  filterTabText: { fontSize: 12, fontFamily: 'Inter-SemiBold' },
   filterTabTextActive: { },
   listContent: { paddingHorizontal: 16, paddingBottom: 80 },
   convRow: {
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
   avatarContainer: { position: 'relative', marginRight: 12 },
   avatar: { width: 52, height: 52, borderRadius: 26 },
   avatarFallback: { justifyContent: 'center', alignItems: 'center' },
-  avatarFallbackText: { fontSize: 20, fontWeight: 'bold', color: '#FFF' },
+  avatarFallbackText: { fontSize: 20, fontFamily: 'Outfit-Bold', color: '#FFF' },
   typeBadge: {
     position: 'absolute', bottom: -2, right: -2,
     width: 18, height: 18, borderRadius: 9,
@@ -599,18 +599,18 @@ const styles = StyleSheet.create({
   convContent: { flex: 1, minWidth: 0 },
   convTopRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
   convName: { fontSize: 15, flex: 1 },
-  convNameBold: { fontWeight: 'bold' },
+  convNameBold: { fontFamily: 'Outfit-Bold' },
   convRight: { flexDirection: 'row', alignItems: 'center' },
   convTime: { fontSize: 12, marginLeft: 8 },
   convItemTitle: { fontSize: 11, marginBottom: 2, fontStyle: 'italic' },
   convLastMsg: { fontSize: 13 },
-  convLastMsgBold: { fontWeight: '500' },
+  convLastMsgBold: { fontFamily: 'Inter-Medium' },
   unreadBadge: {
     borderRadius: 10,
     minWidth: 20, height: 20, justifyContent: 'center', alignItems: 'center',
     paddingHorizontal: 5, marginLeft: 8,
   },
-  unreadBadgeText: { fontSize: 11, fontWeight: 'bold', color: '#FFF' },
+  unreadBadgeText: { fontSize: 11, fontFamily: 'Outfit-Bold', color: '#FFF' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyText: { fontSize: 16, marginTop: 12 },
   deleteAction: {
@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
   deleteActionText: {
     color: '#FFF',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontFamily: 'Outfit-Bold',
     marginTop: 4,
   },
 });

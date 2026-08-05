@@ -135,7 +135,7 @@ export default function WithdrawScreen() {
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
             <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[s.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Withdraw Funds</Text>
+          <Text style={[s.headerTitle, { color: TEXT_PRIMARY }]}>Withdraw Funds</Text>
           <View style={{ width: 28 }} />
         </View>
 
@@ -144,10 +144,10 @@ export default function WithdrawScreen() {
           {/* Balance card */}
           <View style={[s.balanceCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
             <View style={[s.balanceIcon, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
-              <Text style={[s.balanceIconText, { color: G, fontFamily: 'Outfit' }]}>₦</Text>
+              <Text style={[s.balanceIconText, { color: G }]}>₦</Text>
             </View>
-            <Text style={[s.balanceLabel, { color: MUTED, fontFamily: 'Inter' }]}>Available Balance</Text>
-            <Text style={[s.balanceAmount, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{formatPrice(balance)}</Text>
+            <Text style={[s.balanceLabel, { color: MUTED }]}>Available Balance</Text>
+            <Text style={[s.balanceAmount, { color: TEXT_PRIMARY }]}>{formatPrice(balance)}</Text>
           </View>
 
           {/* Bank account */}
@@ -155,13 +155,13 @@ export default function WithdrawScreen() {
             <View style={[s.bankCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
               <Feather name="credit-card" size={18} color={G} />
               <View style={{ flex: 1 }}>
-                <Text style={[s.bankName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{bankInfo.bank_name}</Text>
-                <Text style={[s.bankAccount, { color: MUTED, fontFamily: 'Inter' }]}>
+                <Text style={[s.bankName, { color: TEXT_PRIMARY }]}>{bankInfo.bank_name}</Text>
+                <Text style={[s.bankAccount, { color: MUTED }]}>
                   {bankInfo.account_number} · {bankInfo.account_name}
                 </Text>
               </View>
               <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)}>
-                <Text style={[s.changeLink, { color: G, fontFamily: 'Outfit' }]}>Change</Text>
+                <Text style={[s.changeLink, { color: G }]}>Change</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -170,30 +170,30 @@ export default function WithdrawScreen() {
               onPress={() => router.push('/settings/payout-settings' as any)}
             >
               <Feather name="plus-circle" size={18} color={G} />
-              <Text style={[s.bankName, { color: G, fontFamily: 'Outfit' }]}>Add Bank Account</Text>
+              <Text style={[s.bankName, { color: G }]}>Add Bank Account</Text>
             </TouchableOpacity>
           )}
 
           {/* Amount input */}
           <View style={s.inputSection}>
-            <Text style={[s.inputLabel, { color: MUTED, fontFamily: 'Inter' }]}>Amount to withdraw</Text>
+            <Text style={[s.inputLabel, { color: MUTED }]}>Amount to withdraw</Text>
             <View style={[s.inputWrapper, { backgroundColor: SURFACE, borderColor: numericAmount > 0 ? G : GLASS_BORDER }]}>
-              <Text style={[s.nairaSign, { color: MUTED, fontFamily: 'Outfit' }]}>₦</Text>
+              <Text style={[s.nairaSign, { color: MUTED }]}>₦</Text>
               <TextInput
                 value={amount}
                 onChangeText={v => setAmount(formatAmountInput(v))}
                 keyboardType="numeric"
                 placeholder="0"
                 placeholderTextColor={LABEL}
-                style={[s.input, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}
+                style={[s.input, { color: TEXT_PRIMARY }]}
                 maxLength={12}
               />
             </View>
             {numericAmount > 0 && numericAmount < 500 && (
-              <Text style={[s.hint, { color: '#EF4444', fontFamily: 'Inter' }]}>Minimum withdrawal is ₦500</Text>
+              <Text style={[s.hint, { color: '#EF4444' }]}>Minimum withdrawal is ₦500</Text>
             )}
             {numericAmount > balance && (
-              <Text style={[s.hint, { color: '#EF4444', fontFamily: 'Inter' }]}>Amount exceeds available balance</Text>
+              <Text style={[s.hint, { color: '#EF4444' }]}>Amount exceeds available balance</Text>
             )}
           </View>
 
@@ -211,7 +211,7 @@ export default function WithdrawScreen() {
                   },
                 ]}
               >
-                <Text style={[s.quickChipText, { color: numericAmount === q ? G : MUTED, fontFamily: 'Outfit' }]}>
+                <Text style={[s.quickChipText, { color: numericAmount === q ? G : MUTED }]}>
                   ₦{(q / 1000).toFixed(0)}k
                 </Text>
               </TouchableOpacity>
@@ -221,13 +221,13 @@ export default function WithdrawScreen() {
                 onPress={() => setAmount(Math.floor(balance).toLocaleString('en-NG'))}
                 style={[s.quickChip, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
               >
-                <Text style={[s.quickChipText, { color: MUTED, fontFamily: 'Outfit' }]}>All</Text>
+                <Text style={[s.quickChipText, { color: MUTED }]}>All</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {/* Fee note */}
-          <Text style={[s.feeNote, { color: MUTED, fontFamily: 'Inter' }]}>
+          <Text style={[s.feeNote, { color: MUTED }]}>
             Processing fee: ₦50 · Arrives within 1–2 business days
           </Text>
 
@@ -237,7 +237,7 @@ export default function WithdrawScreen() {
             disabled={!isValid}
             style={[s.ctaBtn, { backgroundColor: isValid ? G : GLASS_BORDER }]}
           >
-            <Text style={[s.ctaBtnText, { color: isValid ? '#000000' : LABEL, fontFamily: 'Outfit' }]}>
+            <Text style={[s.ctaBtnText, { color: isValid ? '#000000' : LABEL }]}>
               Continue
             </Text>
           </TouchableOpacity>
@@ -254,26 +254,26 @@ export default function WithdrawScreen() {
             <Animated.View style={[s.confirmSheet, { backgroundColor: DARK, borderColor: GLASS_BORDER, borderWidth: 1 }, confirmStyle]}>
               <View style={[s.handle, { backgroundColor: GLASS_BORDER }]} />
 
-              <Text style={[s.confirmTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Confirm Withdrawal</Text>
+              <Text style={[s.confirmTitle, { color: TEXT_PRIMARY }]}>Confirm Withdrawal</Text>
 
               <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
-                <Text style={[s.confirmLabel, { color: MUTED, fontFamily: 'Inter' }]}>Amount</Text>
-                <Text style={[s.confirmValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>₦{numericAmount.toLocaleString('en-NG')}</Text>
+                <Text style={[s.confirmLabel, { color: MUTED }]}>Amount</Text>
+                <Text style={[s.confirmValue, { color: TEXT_PRIMARY }]}>₦{numericAmount.toLocaleString('en-NG')}</Text>
               </View>
               <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
-                <Text style={[s.confirmLabel, { color: MUTED, fontFamily: 'Inter' }]}>Fee</Text>
-                <Text style={[s.confirmValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>₦50</Text>
+                <Text style={[s.confirmLabel, { color: MUTED }]}>Fee</Text>
+                <Text style={[s.confirmValue, { color: TEXT_PRIMARY }]}>₦50</Text>
               </View>
               <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
-                <Text style={[s.confirmLabel, { color: MUTED, fontFamily: 'Inter' }]}>You receive</Text>
-                <Text style={[s.confirmValue, { color: G, fontFamily: 'Outfit' }]}>
+                <Text style={[s.confirmLabel, { color: MUTED }]}>You receive</Text>
+                <Text style={[s.confirmValue, { color: G }]}>
                   ₦{Math.max(0, numericAmount - 50).toLocaleString('en-NG')}
                 </Text>
               </View>
               {bankInfo && (
                 <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
-                  <Text style={[s.confirmLabel, { color: MUTED, fontFamily: 'Inter' }]}>To</Text>
-                  <Text style={[s.confirmValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]} numberOfLines={1}>
+                  <Text style={[s.confirmLabel, { color: MUTED }]}>To</Text>
+                  <Text style={[s.confirmValue, { color: TEXT_PRIMARY }]} numberOfLines={1}>
                     {bankInfo.bank_name} · {bankInfo.account_number}
                   </Text>
                 </View>
@@ -286,12 +286,12 @@ export default function WithdrawScreen() {
               >
                 {submitting
                   ? <ActivityIndicator size="small" color="#000" />
-                  : <Text style={[s.confirmBtnText, { fontFamily: 'Outfit' }]}>Withdraw Now</Text>
+                  : <Text style={[s.confirmBtnText]}>Withdraw Now</Text>
                 }
               </TouchableOpacity>
 
               <TouchableOpacity onPress={closeConfirm} style={s.cancelBtn}>
-                <Text style={[s.cancelText, { color: MUTED, fontFamily: 'Inter' }]}>Cancel</Text>
+                <Text style={[s.cancelText, { color: MUTED }]}>Cancel</Text>
               </TouchableOpacity>
             </Animated.View>
           </Animated.View>
@@ -309,7 +309,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 0.5,
   },
   backBtn: { padding: 4 },
-  headerTitle: { fontFamily: 'Inter-Bold', fontSize: 18 },
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18 },
   scroll: { padding: 20, gap: 16 },
 
   balanceCard: {
@@ -320,36 +320,36 @@ const s = StyleSheet.create({
     width: 48, height: 48, borderRadius: 24,
     alignItems: 'center', justifyContent: 'center',
   },
-  balanceIconText: { fontSize: 24, fontWeight: '900' },
-  balanceLabel: { fontSize: 13 },
-  balanceAmount: { fontSize: 36, fontWeight: '900' },
+  balanceIconText: { fontSize: 24, fontFamily: 'Outfit-Black' },
+  balanceLabel: { fontSize: 13, fontFamily: 'Inter-Regular' },
+  balanceAmount: { fontSize: 36, fontFamily: 'Outfit-Black' },
 
   bankCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     borderRadius: 14, padding: 14, borderWidth: 1,
   },
-  bankName: { fontSize: 14, fontWeight: '600' },
-  bankAccount: { fontSize: 12, marginTop: 2 },
-  changeLink: { fontSize: 13, fontWeight: '600' },
+  bankName: { fontSize: 14, fontFamily: 'Outfit-Bold' },
+  bankAccount: { fontSize: 12, marginTop: 2, fontFamily: 'Inter-Regular' },
+  changeLink: { fontSize: 13, fontFamily: 'Outfit-Bold' },
 
   inputSection: { gap: 8 },
-  inputLabel: { fontSize: 13, fontWeight: '600' },
+  inputLabel: { fontSize: 13, fontFamily: 'Inter-SemiBold' },
   inputWrapper: {
     flexDirection: 'row', alignItems: 'center',
     borderRadius: 14, borderWidth: 1.5, paddingHorizontal: 14,
   },
-  nairaSign: { fontSize: 20, fontWeight: '700', marginRight: 4 },
-  input: { flex: 1, fontSize: 28, fontWeight: '800', paddingVertical: 14 },
-  hint: { fontSize: 12, marginTop: 4 },
+  nairaSign: { fontSize: 20, fontFamily: 'Outfit-Bold', marginRight: 4 },
+  input: { flex: 1, fontSize: 28, fontFamily: 'Outfit-ExtraBold', paddingVertical: 14 },
+  hint: { fontSize: 12, marginTop: 4, fontFamily: 'Inter-Regular' },
 
   quickRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   quickChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  quickChipText: { fontSize: 13, fontWeight: '600' },
+  quickChipText: { fontSize: 13, fontFamily: 'Outfit-SemiBold' },
 
-  feeNote: { fontSize: 12, textAlign: 'center' },
+  feeNote: { fontSize: 12, textAlign: 'center', fontFamily: 'Inter-Regular' },
 
   ctaBtn: { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
-  ctaBtnText: { fontSize: 16, fontWeight: '700' },
+  ctaBtnText: { fontSize: 16, fontFamily: 'Outfit-Bold' },
 
   // Confirm sheet
   overlay: {
@@ -361,15 +361,15 @@ const s = StyleSheet.create({
     padding: 24, paddingBottom: 40, gap: 4,
   },
   handle: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 16 },
-  confirmTitle: { fontSize: 18, fontWeight: '800', marginBottom: 12 },
+  confirmTitle: { fontSize: 18, fontFamily: 'Outfit-ExtraBold', marginBottom: 12 },
   confirmRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingVertical: 12, borderBottomWidth: 0.5,
   },
-  confirmLabel: { fontSize: 14 },
-  confirmValue: { fontSize: 14, fontWeight: '600', flex: 1, textAlign: 'right', marginLeft: 16 },
+  confirmLabel: { fontSize: 14, fontFamily: 'Inter-Regular' },
+  confirmValue: { fontSize: 14, fontFamily: 'Outfit-SemiBold', flex: 1, textAlign: 'right', marginLeft: 16 },
   confirmBtn: { borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 20 },
-  confirmBtnText: { fontSize: 16, fontWeight: '700', color: '#000' },
+  confirmBtnText: { fontSize: 16, fontFamily: 'Outfit-Bold', color: '#000' },
   cancelBtn: { alignItems: 'center', paddingVertical: 14 },
-  cancelText: { fontSize: 15 },
+  cancelText: { fontSize: 15, fontFamily: 'Inter-Regular' },
 });

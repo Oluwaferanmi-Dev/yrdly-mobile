@@ -537,12 +537,12 @@ function MarketplaceDetailContent() {
             <View style={styles.statsRow}>
               <View style={styles.statColumn}>
                 <Ionicons 
-                  name={postUser?.verified_seller ? "shield-checkmark" : "shield-outline"} 
-                  size={20} 
-                  color={postUser?.verified_seller ? G : LABEL} 
+                  name={postUser?.phone_verified ? "shield-checkmark" : "shield-outline"} 
+                  size={16} 
+                  color={postUser?.phone_verified ? G : LABEL} 
                 />
-                <Text style={[styles.statValue, { color: postUser?.verified_seller ? TEXT_PRIMARY : LABEL, fontFamily: 'Outfit' }]}>
-                  {postUser?.verified_seller ? 'Verified' : 'Unverified'}
+                <Text style={[styles.statValue, { color: postUser?.phone_verified ? TEXT_PRIMARY : LABEL, fontFamily: 'Outfit' }]}>
+                  {postUser?.phone_verified ? 'Verified' : 'Unverified'}
                 </Text>
                 <Text style={[styles.statLabel, { color: LABEL, fontFamily: 'Inter' }]}>Seller</Text>
               </View>

@@ -57,21 +57,21 @@ export default function PrivacySettingsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn}>
           <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Privacy & Discoverability</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Privacy & Discoverability</Text>
         <View style={styles.headerIconBtn} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         
-        <Text style={[styles.sectionHeader, { color: LABEL, fontFamily: 'Inter' }]}>LOCATION PRIVACY</Text>
+        <Text style={[styles.sectionHeader, { color: LABEL }]}>LOCATION PRIVACY</Text>
         <View style={[styles.glassCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
           <View style={[styles.navRow, { borderBottomColor: GLASS_BORDER }]}>
             <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
               <Ionicons name="location-outline" size={24} color={G} />
             </View>
             <View style={styles.navTextWrap}>
-              <Text style={[styles.navLabel, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Share Location with Friends</Text>
-              <Text style={[styles.navSubtext, { color: MUTED, fontFamily: 'Inter' }]}>
+              <Text style={[styles.navLabel, { color: TEXT_PRIMARY }]}>Share Location with Friends</Text>
+              <Text style={[styles.navSubtext, { color: MUTED }]}>
                 Let mutual friends see you on the map
               </Text>
             </View>
@@ -89,15 +89,15 @@ export default function PrivacySettingsScreen() {
           </View>
         </View>
 
-        <Text style={[styles.sectionHeader, { color: LABEL, fontFamily: 'Inter' }]}>COMMUNITY VISIBILITY</Text>
+        <Text style={[styles.sectionHeader, { color: LABEL }]}>COMMUNITY VISIBILITY</Text>
         <View style={[styles.glassCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
           <View style={[styles.navRow, { borderBottomColor: GLASS_BORDER }]}>
             <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
               <Ionicons name="compass-outline" size={24} color={G} />
             </View>
             <View style={styles.navTextWrap}>
-              <Text style={[styles.navLabel, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Allow Neighbors to Discover Me</Text>
-              <Text style={[styles.navSubtext, { color: MUTED, fontFamily: 'Inter' }]}>
+              <Text style={[styles.navLabel, { color: TEXT_PRIMARY }]}>Allow Neighbors to Discover Me</Text>
+              <Text style={[styles.navSubtext, { color: MUTED }]}>
                 When enabled, your profile may appear in other users' Discover tab based on your location.
               </Text>
             </View>
@@ -117,7 +117,7 @@ export default function PrivacySettingsScreen() {
 
         <View style={styles.infoContainer}>
           <Ionicons name="information-circle-outline" size={18} color={MUTED} style={styles.infoIcon} />
-          <Text style={[styles.infoText, { color: MUTED, fontFamily: 'Inter' }]}>
+          <Text style={[styles.infoText, { color: MUTED }]}>
             We value your privacy. Your exact GPS coordinates are never broadcast to the public — only coarse location (State and LGA) is used for local discovery.
           </Text>
         </View>
@@ -147,14 +147,14 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Outfit-Bold',
   },
   content: {
     padding: 16,
   },
   sectionHeader: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: 'Inter-Bold',
     letterSpacing: 1.2,
     marginTop: 16,
     marginBottom: 8,
@@ -185,11 +185,12 @@ const styles = StyleSheet.create({
   },
   navLabel: {
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Outfit-SemiBold',
     marginBottom: 2,
   },
   navSubtext: {
     fontSize: 12,
+    fontFamily: 'Inter-Regular',
     lineHeight: 16,
   },
   infoContainer: {
@@ -205,6 +206,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 12,
+    fontFamily: 'Inter-Regular',
     lineHeight: 18,
   },
 });

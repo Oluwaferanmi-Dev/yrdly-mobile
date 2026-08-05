@@ -6,8 +6,10 @@ import { useAppTheme } from '../../context/ThemeContext';
 import {
   HomeIcon, ExploreIcon, MessagesIcon, ProfileIcon
 } from '../../components/SvgIcons';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
+import { BlurView } from 'expo-blur';
+import { PencilSimple, Storefront, CalendarBlank, WarningCircle, X } from 'phosphor-react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { G, GLOW_STRONG, GLASS_BG, GLASS_BORDER, DARK, MUTED, RED } from '../../constants/tokens';
@@ -60,12 +62,55 @@ function FloatingCreateButton({ onPress }: { onPress: () => void }) {
 
 const TAB_BAR_HEIGHT = 64;
 
+function CreateMenuOverlay({ visible, onClose, onSelect }: { visible: boolean, onClose: () => void, onSelect: (route: string) => void }) {
+  if (!visible) return null;
+  
+  const OPTIONS = [
+    { id: 'post', title: 'Create Post', desc: 'Share thoughts or photos', icon: PencilSimple, route: '/create-post' },
+    { id: 'listing', title: 'Create Listing', desc: 'Sell or give away items', icon: Storefront, route: '/create-for-sale' },
+    { id: 'event', title: 'Create Event', desc: 'Host a gathering or party', icon: CalendarBlank, route: '/create-event' },
+    { id: 'alert', title: 'Publish Alert', desc: 'Notify neighbors of danger', icon: WarningCircle, route: '/create-alert' },
+  ];
+
+  return (
+    <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} style={StyleSheet.absoluteFill}>
+      <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+      </BlurView>
+      <Animated.View entering={SlideInDown.duration(300).springify()} exiting={SlideOutDown.duration(200)} style={styles.overlayContent}>
+        <View style={styles.optionsContainer}>
+          {OPTIONS.map((opt, idx) => (
+            <TouchableOpacity 
+              key={opt.id} 
+              activeOpacity={0.8} 
+              style={styles.optionBtn}
+              onPress={() => onSelect(opt.route)}
+            >
+              <View style={styles.optionIconWrap}>
+                <opt.icon size={24} color={G} weight="regular" />
+              </View>
+              <View style={styles.optionTextWrap}>
+                <Text style={styles.optionTitle}>{opt.title}</Text>
+                <Text style={styles.optionDesc}>{opt.desc}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <TouchableOpacity style={styles.closeBtn} activeOpacity={0.8} onPress={onClose}>
+          <X size={24} color="#FFF" weight="bold" />
+        </TouchableOpacity>
+      </Animated.View>
+    </Animated.View>
+  );
+}
+
 export default function TabLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors, isDarkMode } = useAppTheme();
   const { user, profile } = useAuth();
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -142,10 +187,15 @@ export default function TabLayout() {
             },
             tabBarActiveTintColor: G,
             tabBarInactiveTintColor: 'rgba(255,255,255,0.42)',
-            tabBarLabelStyle: {
-              fontFamily: 'Inter',
-              fontSize: 10,
-            },
+            tabBarLabel: ({ focused, color }) => (
+              <Text style={{
+                color,
+                fontFamily: focused ? 'Inter-SemiBold' : 'Inter-Regular',
+                fontSize: 10,
+              }}>
+                {/* The label text is determined by the route title or passed down */}
+              </Text>
+            ),
             tabBarItemStyle: {
               paddingTop: 8,
             },
@@ -182,13 +232,13 @@ export default function TabLayout() {
               paddingTop: Platform.OS === 'ios' ? 0 : 4,
             },
             tabBarIcon: () => (
-              <FloatingCreateButton onPress={() => router.push('/new-post' as any)} />
+              <FloatingCreateButton onPress={() => setShowCreateMenu(true)} />
             ),
           }}
           listeners={{
             tabPress: (e: any) => {
               e.preventDefault();
-              router.push('/new-post' as any);
+              setShowCreateMenu(true);
             },
           }}
         />
@@ -221,7 +271,17 @@ export default function TabLayout() {
             ),
           }}
         />
+        />
       </Tabs>
+
+      <CreateMenuOverlay 
+        visible={showCreateMenu} 
+        onClose={() => setShowCreateMenu(false)} 
+        onSelect={(route) => {
+          setShowCreateMenu(false);
+          router.push(route as any);
+        }} 
+      />
     </View>
   );
 }
@@ -258,8 +318,64 @@ const styles = StyleSheet.create({
   badgeText: {
     color: DARK,
     fontSize: 9,
-    fontFamily: 'Outfit',
-    fontWeight: 'bold',
+    fontFamily: 'Outfit-ExtraBold',
+  },
+  overlayContent: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  optionsContainer: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  optionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#111',
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 8,
+    gap: 16,
+  },
+  optionIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(130,219,126,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  optionTextWrap: {
+    flex: 1,
+  },
+  optionTitle: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 16,
+    color: '#FFF',
+    marginBottom: 2,
+  },
+  optionDesc: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    color: MUTED,
+  },
+  closeBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#222',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
 });
 

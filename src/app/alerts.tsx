@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, SectionList, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertService, Alert } from '../lib/alert-service';
@@ -47,44 +47,45 @@ export default function AlertsScreen() {
     [alerts, activeFilter]
   );
 
+  const sections = useMemo(() => {
+    const active = filtered.filter((a: any) => a.status !== 'resolved'); // default to active if missing
+    const resolved = filtered.filter((a: any) => a.status === 'resolved');
+    const result = [];
+    if (active.length > 0) result.push({ title: `ACTIVE · ${active.length}`, data: active });
+    if (resolved.length > 0) result.push({ title: `RESOLVED · ${resolved.length}`, data: resolved });
+    return result;
+  }, [filtered]);
+
   return (
     <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, justifyContent: 'center', alignItems: 'center', borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.06)' }}>
-          <Ionicons name="chevron-back" size={22} color={TEXT_PRIMARY} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 34, height: 34, justifyContent: 'center', alignItems: 'center', borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
+          <Ionicons name="chevron-back" size={18} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 18, color: TEXT_PRIMARY }}>Active Alerts</Text>
-        <View style={{ width: 36 }} />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 18, color: TEXT_PRIMARY }}>Safety Alerts</Text>
+          <Text style={{ fontFamily: 'Inter', fontSize: 12, color: LABEL }}>Victoria Island & Lekki, Lagos</Text>
+        </View>
+        <View style={{ paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.12)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.25)' }}>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 11, color: '#ef4444' }}>
+            {alerts.filter(a => a.status !== 'resolved').length} ACTIVE
+          </Text>
+        </View>
       </View>
 
-      {/* Severity Filter Pills */}
-      <View style={styles.filterRow}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 8, flexDirection: 'row' }}>
-          {FILTERS.map(f => {
-            const active = activeFilter === f.key;
-            return (
-              <TouchableOpacity
-                key={f.key}
-                onPress={() => setActiveFilter(f.key)}
-                style={{ paddingHorizontal: 16, paddingVertical: 7, borderRadius: 20, borderWidth: 1, backgroundColor: active ? f.bg : SURFACE, borderColor: active ? f.color : GLASS_BORDER }}
-              >
-                <Text style={{ fontFamily: 'Outfit', fontWeight: active ? '700' : '500', fontSize: 13, color: active ? f.color : MUTED }}>
-                  {f.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      <FlatList
-        data={filtered}
+      <SectionList
+        sections={sections}
         keyExtractor={(item) => item.id}
+        renderSectionHeader={({ section: { title } }) => (
+          <Text style={styles.sectionHeader}>{title}</Text>
+        )}
         renderItem={({ item }) => (
-          <AlertBanner
-            alert={item}
-            onPress={() => router.push(`/alert/${item.id}` as any)}
-          />
+          <View style={{ paddingHorizontal: 20 }}>
+            <AlertBanner
+              alert={item}
+              onPress={() => router.push(`/alert/${item.id}` as any)}
+            />
+          </View>
         )}
         refreshControl={
           <RefreshControl
@@ -98,8 +99,8 @@ export default function AlertsScreen() {
         ListEmptyComponent={
           !loading ? (
             <View style={styles.emptyContainer}>
-              <Ionicons name="shield-checkmark-outline" size={48} color={colors.textMuted} />
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              <Ionicons name="shield-checkmark-outline" size={48} color={MUTED} />
+              <Text style={[styles.emptyText, { color: LABEL }]}>
                 {activeFilter === 'all'
                   ? 'There are no active alerts in your area.'
                   : `No ${activeFilter} alerts right now.`}
@@ -114,26 +115,17 @@ export default function AlertsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 0.5,
+  listContent: { paddingVertical: 16, paddingBottom: 32 },
+  sectionHeader: {
+    fontFamily: 'Inter',
+    fontWeight: '700',
+    fontSize: 11,
+    color: LABEL,
+    letterSpacing: 1.1,
+    paddingHorizontal: 20,
+    marginBottom: 10,
+    marginTop: 10,
   },
-  backButton: { padding: 8, marginLeft: -8 },
-  headerTitle: { fontFamily: 'Inter-Bold', fontSize: 18 },
-  filterRow: { paddingVertical: 12 },
-  filterContent: { paddingHorizontal: 16, gap: 8, flexDirection: 'row' },
-  filterPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  filterLabel: { fontSize: 13, fontWeight: '600' },
-  listContent: { paddingBottom: 24 },
   emptyContainer: {
     padding: 40,
     alignItems: 'center',
@@ -141,7 +133,8 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   emptyText: {
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Inter',
+    fontWeight: '500',
     fontSize: 16,
     marginTop: 16,
     textAlign: 'center',

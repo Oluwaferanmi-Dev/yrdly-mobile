@@ -183,9 +183,9 @@ export default function SettingsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
           <Ionicons name="chevron-back" size={20} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF' }}>Settings</Text>
+        <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: TEXT_PRIMARY }}>Settings</Text>
         <TouchableOpacity onPress={handleSave} disabled={saving} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: G, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 13, color: DARK }}>{saving ? 'Saving...' : 'Save'}</Text>
+          <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 13, color: DARK }}>{saving ? 'Saving...' : 'Save'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -222,7 +222,7 @@ export default function SettingsScreen() {
             {hasLegalName ? (
               <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 6}}>
                 <Ionicons name="shield-checkmark" size={12} color={G} style={{marginRight: 4}} />
-                <Text style={{fontSize: 12, color: MUTED, fontWeight: '500', fontFamily: 'Inter'}}>
+                <Text style={{fontSize: 12, color: MUTED, fontFamily: 'Inter-Medium'}}>
                   {legalName}
                 </Text>
               </View>
@@ -258,13 +258,13 @@ export default function SettingsScreen() {
             <Ionicons name="home-outline" size={22} color={G} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 15, color: G, marginBottom: 2 }}>Stronger together.</Text>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Stronger together.</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Buy, sell, connect and look out for your neighborhood.</Text>
           </View>
         </View>
 
         {/* Commerce & Account */}
-        <Text style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: '700', color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>COMMERCE & ACCOUNT</Text>
+        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>COMMERCE & ACCOUNT</Text>
         <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, marginBottom: 20, overflow: 'hidden' }}>
           {[
             { icon: 'bag-handle-outline', label: 'Transactions', subtext: 'Track your orders and activity', route: '/transactions' },
@@ -282,7 +282,7 @@ export default function SettingsScreen() {
                 <Ionicons name={item.icon as any} size={20} color={G} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>{item.label}</Text>
+                <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>{item.label}</Text>
                 <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>{item.subtext}</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={MUTED} />
@@ -291,7 +291,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* Privacy */}
-        <Text style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: '700', color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>PRIVACY</Text>
+        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>PRIVACY</Text>
         <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, marginBottom: 20, overflow: 'hidden' }}>
           <TouchableOpacity
             style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }}
@@ -302,7 +302,7 @@ export default function SettingsScreen() {
               <Ionicons name="lock-closed-outline" size={20} color={G} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Privacy & Discoverability</Text>
+              <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Privacy & Discoverability</Text>
               <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Manage location sharing and visibility</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={MUTED} />
@@ -310,7 +310,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* Preferences */}
-        <Text style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: '700', color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>PREFERENCES</Text>
+        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>PREFERENCES</Text>
         <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, marginBottom: 20, overflow: 'hidden' }}>
           <TouchableOpacity
             style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}
@@ -321,7 +321,7 @@ export default function SettingsScreen() {
               <Ionicons name="notifications-outline" size={20} color={TEXT_PRIMARY} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Notifications</Text>
+              <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Notifications</Text>
               <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Choose what you want to hear</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={MUTED} />
@@ -332,7 +332,7 @@ export default function SettingsScreen() {
               <Ionicons name="moon-outline" size={20} color={TEXT_PRIMARY} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Dark Mode</Text>
+              <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Dark Mode</Text>
               <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Keep it easy on your eyes</Text>
             </View>
             <Switch
@@ -348,7 +348,7 @@ export default function SettingsScreen() {
         {/* Sign Out */}
         <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 20, backgroundColor: 'rgba(239, 68, 68, 0.08)', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.2)', marginTop: 8 }} onPress={handleSignOut} disabled={authLoading}>
           <Ionicons name="log-out-outline" size={20} color={RED} style={{ marginRight: 8 }} />
-          <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 15, color: RED }}>Sign Out</Text>
+          <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: RED }}>Sign Out</Text>
         </TouchableOpacity>
 
       </ScrollView>
@@ -357,24 +357,24 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0B0D0B' },
+  container: { flex: 1, backgroundColor: DARK },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,
   },
   headerIconBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' },
-  saveText: { color: '#82E157', fontSize: 16, fontWeight: 'bold' },
+  headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', color: TEXT_PRIMARY },
+  saveText: { color: G, fontSize: 16, fontFamily: 'Outfit-Bold' },
   
   content: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 12 },
   
   profileCard: {
-    backgroundColor: '#1C1C1C',
+    backgroundColor: SURFACE,
     borderRadius: 28,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: GLASS_BORDER,
     borderWidth: 1,
     marginBottom: 24,
   },
@@ -386,14 +386,14 @@ const styles = StyleSheet.create({
   avatarImage: {
     width: 80, height: 80,
     borderRadius: 40,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: GLASS_BORDER,
     borderWidth: 1,
   },
   avatarPlaceholder: {
     width: 80, height: 80, borderRadius: 40,
     backgroundColor: 'rgba(130, 225, 87, 0.1)',
     justifyContent: 'center', alignItems: 'center',
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: GLASS_BORDER,
     borderWidth: 1,
   },
   editBadge: {
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#82E157',
     width: 24, height: 24, borderRadius: 12,
     justifyContent: 'center', alignItems: 'center',
-    borderWidth: 2, borderColor: '#1C1C1C',
+    borderWidth: 2, borderColor: DARK,
   },
   uploadOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   nameInput: {
-    fontSize: 20, fontWeight: '700', color: '#FFFFFF',
+    fontSize: 20, fontFamily: 'Outfit-Bold', color: TEXT_PRIMARY,
     marginBottom: 2, padding: 0,
   },
   locationBadgeRow: {
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   bioInput: {
-    fontSize: 14, color: '#A6A6A6',
+    fontSize: 14, color: MUTED,
     flex: 1, padding: 0,
   },
   memberBadge: {
@@ -434,14 +434,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   memberBadgeText: {
-    color: '#82E157', fontSize: 11, fontWeight: '600'
+    color: G, fontSize: 11, fontFamily: 'Inter-SemiBold'
   },
   
   bannerContainer: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#121A10',
+    backgroundColor: DARK,
     borderRadius: 24, padding: 20,
-    borderColor: 'rgba(130, 225, 87, 0.1)', borderWidth: 1,
+    borderColor: GLASS_BORDER, borderWidth: 1,
     marginBottom: 24,
   },
   bannerIconWrap: {
@@ -452,17 +452,17 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   bannerTextWrap: { flex: 1 },
-  bannerTitle: { color: '#82E157', fontSize: 14, fontWeight: 'bold', marginBottom: 4 },
-  bannerSubtitle: { color: '#A6A6A6', fontSize: 12, lineHeight: 16 },
+  bannerTitle: { color: G, fontSize: 14, fontFamily: 'Outfit-Bold', marginBottom: 4 },
+  bannerSubtitle: { color: MUTED, fontSize: 12, lineHeight: 16 },
 
   sectionHeader: {
-    color: '#A6A6A6', fontSize: 12, fontWeight: '700',
+    color: MUTED, fontSize: 12, fontFamily: 'Inter-Bold',
     letterSpacing: 1.2, marginLeft: 8, marginBottom: 12,
   },
   glassCard: {
-    backgroundColor: '#1C1C1C',
+    backgroundColor: SURFACE,
     borderRadius: 24,
-    borderColor: 'rgba(255,255,255,0.06)', borderWidth: 1,
+    borderColor: GLASS_BORDER, borderWidth: 1,
     marginBottom: 24,
     overflow: 'hidden',
   },
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   navRowBorder: {
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomWidth: 1, borderBottomColor: GLASS_BORDER,
   },
   iconGlow: {
     width: 40, height: 40, borderRadius: 20,
@@ -485,8 +485,8 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   navTextWrap: { flex: 1 },
-  navLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '600', marginBottom: 2 },
-  navSubtext: { color: '#A6A6A6', fontSize: 12 },
+  navLabel: { color: TEXT_PRIMARY, fontSize: 16, fontFamily: 'Outfit-SemiBold', marginBottom: 2 },
+  navSubtext: { color: MUTED, fontSize: 12 },
 
   logoutButton: {
     flexDirection: 'row', alignItems: 'center',
@@ -500,5 +500,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
     marginRight: 16,
   },
-  logoutLabel: { color: '#E53E3E', fontSize: 16, fontWeight: '600', marginBottom: 2 },
+  logoutLabel: { color: RED, fontSize: 16, fontFamily: 'Outfit-SemiBold', marginBottom: 2 },
 });

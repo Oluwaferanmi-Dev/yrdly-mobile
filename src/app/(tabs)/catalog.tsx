@@ -26,8 +26,8 @@ import { MapIcon, NotificationsIcon } from '../../components/SvgIcons';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 
 const { width } = Dimensions.get('window');
-type TabType = 'Marketplace' | 'Events' | 'Businesses';
-const TABS: TabType[] = ['Marketplace', 'Events', 'Businesses'];
+type TabType = 'Discover' | 'Marketplace' | 'Events' | 'Businesses';
+const TABS: TabType[] = ['Discover', 'Marketplace', 'Events', 'Businesses'];
 
 const CATEGORIES = [
   { key: '', label: 'All', icon: 'apps-outline' },
@@ -48,11 +48,12 @@ export default function CatalogTab() {
   const { activeFilter } = useLocation();
   const { unreadCount } = useNotificationBadge();
 
-  const [activeTab, setActiveTab] = useState<TabType>('Marketplace');
+  const [activeTab, setActiveTab] = useState<TabType>('Discover');
   const [search, setSearch] = useState('');
   const [filterVisible, setFilterVisible] = useState(false);
   const [sort, setSort] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
   const [category, setCategory] = useState('');
+  const [itemCondition, setItemCondition] = useState('');
   const [items, setItems] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -68,7 +69,7 @@ export default function CatalogTab() {
   const fetchItems = useCallback(async (isRefresh = false) => {
     if (!isRefresh) setLoading(true);
     
-    const filterString = `${activeFilter?.state || ''}_${activeFilter?.lga || ''}_${activeFilter?.ward || ''}_${category}_${search}_${sort}`;
+    const filterString = `${activeFilter?.state || ''}_${activeFilter?.lga || ''}_${activeFilter?.ward || ''}_${category}_${search}_${sort}_${itemCondition}`;
     const cacheFile = FileSystem.documentDirectory + `yrdly_marketplace_cache_${filterString.replace(/\W/g, '_')}.json`;
     
     try {
@@ -92,6 +93,7 @@ export default function CatalogTab() {
       if (activeFilter?.lga)   q = q.eq('lga', activeFilter.lga);
       if (activeFilter?.ward)  q = q.eq('ward', activeFilter.ward);
       if (category)            q = q.ilike('sub_category', `%${category}%`);
+      if (itemCondition)       q = q.eq('condition', itemCondition);
       if (search)              q = q.or(`title.ilike.%${search}%,text.ilike.%${search}%`);
 
       if (sort === 'price_asc')  q = q.order('price', { ascending: true });
@@ -109,7 +111,7 @@ export default function CatalogTab() {
       }
     } catch (e) { console.error(e); }
     finally { if (!isRefresh) setLoading(false); }
-  }, [search, sort, category, activeFilter]);
+  }, [search, sort, category, itemCondition, activeFilter]);
 
   useFocusEffect(useCallback(() => { fetchItems(); }, [fetchItems]));
 
@@ -276,7 +278,7 @@ export default function CatalogTab() {
                 borderWidth: 1.5,
                 borderColor: DARK
               }}>
-                <Text style={{ color: '#000', fontSize: 9, fontWeight: '800', fontFamily: 'Outfit' }}>
+                <Text style={{ color: '#000', fontSize: 9, fontFamily: 'Outfit-ExtraBold' }}>
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </Text>
               </View>
@@ -313,7 +315,7 @@ export default function CatalogTab() {
           return (
             <TouchableOpacity key={tab} style={[s.tab, { width: TAB_W }]} onPress={() => switchTab(tab)} activeOpacity={0.7}>
               <Ionicons
-                name={tab === 'Marketplace' ? 'bag-outline' : tab === 'Events' ? 'calendar-outline' : 'storefront-outline'}
+                name={tab === 'Discover' ? 'compass-outline' : tab === 'Marketplace' ? 'bag-outline' : tab === 'Events' ? 'calendar-outline' : 'storefront-outline'}
                 size={14} color={active ? DARK : MUTED}
                 style={{ marginRight: 4 }}
               />
@@ -322,6 +324,16 @@ export default function CatalogTab() {
           );
         })}
       </View>
+
+      {/* ── Discover content ── */}
+      {activeTab === 'Discover' && (
+        <View style={[s.empty, { marginTop: 40 }]}>
+          <Ionicons name="compass-outline" size={48} color={LABEL} style={{ opacity: 0.4, marginBottom: 12 }} />
+          <Text style={[s.emptyTxt, { color: LABEL }]}>
+            Curated Discover feed is coming soon
+          </Text>
+        </View>
+      )}
 
       {/* ── Marketplace content ── */}
       {activeTab === 'Marketplace' && (
@@ -361,16 +373,37 @@ export default function CatalogTab() {
         <TouchableWithoutFeedback onPress={() => setFilterVisible(false)}>
           <View style={s.overlay} />
         </TouchableWithoutFeedback>
-        <View style={[s.modal, { backgroundColor: '#0A0A0A' }]}>
+        <View style={[s.modal, { backgroundColor: isDarkMode ? '#111' : '#fff' }]}>
           <View style={s.modalHandle} />
-          <Text style={[s.modalTitle, { color: TEXT_PRIMARY }]}>Sort Listings</Text>
+          
+          {(activeTab === 'Marketplace' || activeTab === 'Discover') && (
+            <>
+              <Text style={[s.modalTitle, { color: TEXT_PRIMARY, marginTop: 10 }]}>Condition</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24, paddingBottom: 8 }} contentContainerStyle={{ gap: 10 }}>
+                {['', 'New', 'Used - Like New', 'Used - Good', 'Used - Fair'].map((cond) => {
+                  const active = itemCondition === cond;
+                  return (
+                    <TouchableOpacity 
+                      key={cond} 
+                      style={[s.condChip, { backgroundColor: active ? G : 'transparent', borderColor: active ? G : GLASS_BORDER }]}
+                      onPress={() => setItemCondition(cond)}
+                    >
+                      <Text style={[s.condChipTxt, { color: active ? '#0B0D0B' : TEXT_PRIMARY }]}>{cond || 'Any'}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </>
+          )}
+
+          <Text style={[s.modalTitle, { color: TEXT_PRIMARY }]}>Sort By</Text>
           {([
             { key: 'newest',     label: 'Newest First' },
             { key: 'price_asc',  label: 'Price: Low to High' },
             { key: 'price_desc', label: 'Price: High to Low' },
           ] as const).map(opt => (
             <TouchableOpacity key={opt.key} style={[s.modalOpt, { borderBottomColor: GLASS_BORDER }]}
-              onPress={() => { setSort(opt.key); setFilterVisible(false); }}>
+              onPress={() => { setSort(opt.key); }}>
               <Text style={[s.modalOptTxt, { color: TEXT_PRIMARY }]}>{opt.label}</Text>
               {sort === opt.key && <Ionicons name="checkmark" size={20} color={G} />}
             </TouchableOpacity>
@@ -387,48 +420,50 @@ export default function CatalogTab() {
 const s = StyleSheet.create({
   root: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14 },
-  title: { fontSize: 32, fontWeight: '900', letterSpacing: -0.5 },
-  subtitle: { fontSize: 13, marginTop: 2 },
+  title: { fontSize: 32, fontFamily: 'Outfit-ExtraBold', letterSpacing: -0.5 },
+  subtitle: { fontSize: 13, marginTop: 2, fontFamily: 'Inter-Regular' },
   headerActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
   iconBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
   searchRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, marginBottom: 14 },
   searchBox: { flexDirection: 'row', alignItems: 'center', borderRadius: 24, paddingHorizontal: 14, height: 48, borderWidth: 1 },
-  searchInput: { flex: 1, fontSize: 14 },
+  searchInput: { flex: 1, fontSize: 14, fontFamily: 'Inter-Regular' },
   filterBtn: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
   tabBar: { flexDirection: 'row', marginHorizontal: 16, borderRadius: 28, padding: 4, marginBottom: 16, borderWidth: 1, position: 'relative', overflow: 'hidden' },
   tabIndicator: { position: 'absolute', height: '100%', top: 4, left: 4, borderRadius: 24 },
   tab: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 9, zIndex: 1 },
-  tabTxt: { fontSize: 12, fontWeight: '700' },
+  tabTxt: { fontSize: 12, fontFamily: 'Inter-Bold' },
   listContent: { paddingHorizontal: 16, paddingBottom: 100 },
   chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
-  chipTxt: { fontSize: 12, fontWeight: '600' },
+  chipTxt: { fontSize: 12, fontFamily: 'Inter-SemiBold' },
   featuredCard: { height: 220, borderRadius: 24, overflow: 'hidden', marginRight: 0 },
   featuredOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
   featuredBadge: { position: 'absolute', top: 14, left: 14, backgroundColor: 'rgba(130,219,126,0.2)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(130,219,126,0.35)' },
-  featuredBadgeTxt: { color: '#82DB7E', fontSize: 11, fontWeight: '800' },
+  featuredBadgeTxt: { color: '#82DB7E', fontSize: 11, fontFamily: 'Outfit-ExtraBold' },
   featuredInfo: { position: 'absolute', bottom: 60, left: 16, right: 110 },
-  featuredTitle: { color: '#fff', fontSize: 20, fontWeight: '900', marginBottom: 2 },
-  featuredCond: { color: 'rgba(255,255,255,0.7)', fontSize: 12, marginBottom: 4 },
-  featuredPrice: { color: '#82DB7E', fontSize: 22, fontWeight: '900' },
+  featuredTitle: { color: '#fff', fontSize: 20, fontFamily: 'Outfit-ExtraBold', marginBottom: 2 },
+  featuredCond: { color: 'rgba(255,255,255,0.7)', fontSize: 12, marginBottom: 4, fontFamily: 'Inter-Regular' },
+  featuredPrice: { color: '#82DB7E', fontSize: 22, fontFamily: 'Outfit-ExtraBold' },
   featuredLoc: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 4 },
-  featuredLocTxt: { color: '#aaa', fontSize: 11 },
+  featuredLocTxt: { color: '#aaa', fontSize: 11, fontFamily: 'Inter-Regular' },
   featuredCTA: { position: 'absolute', bottom: 16, right: 16, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#82DB7E', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20 },
-  featuredCTATxt: { color: '#0B0D0B', fontWeight: '800', fontSize: 13 },
+  featuredCTATxt: { color: '#0B0D0B', fontFamily: 'Outfit-ExtraBold', fontSize: 13 },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 10 },
   dot: { width: 7, height: 7, borderRadius: 4 },
   nearbyHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
-  nearbyTitle: { fontSize: 20, fontWeight: '800' },
-  seeAll: { fontSize: 13, fontWeight: '700' },
+  nearbyTitle: { fontSize: 20, fontFamily: 'Outfit-ExtraBold' },
+  seeAll: { fontSize: 13, fontFamily: 'Inter-Bold' },
   skeletonGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   skeletonCard: { width: '48%', borderRadius: 20, overflow: 'hidden', borderWidth: 1, marginBottom: 14 },
   empty: { paddingVertical: 60, alignItems: 'center' },
-  emptyTxt: { fontSize: 15, textAlign: 'center' },
+  emptyTxt: { fontSize: 15, textAlign: 'center', fontFamily: 'Inter-Regular' },
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
   modal: { padding: 24, borderTopLeftRadius: 28, borderTopRightRadius: 28, position: 'absolute', bottom: 0, left: 0, right: 0, paddingBottom: 44 },
   modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)', alignSelf: 'center', marginBottom: 16 },
-  modalTitle: { fontSize: 18, fontWeight: '800', marginBottom: 16 },
+  modalTitle: { fontSize: 18, fontFamily: 'Outfit-ExtraBold', marginBottom: 16 },
   modalOpt: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth },
-  modalOptTxt: { fontSize: 16 },
+  modalOptTxt: { fontSize: 16, fontFamily: 'Inter-Regular' },
   closeBtn: { marginTop: 20, paddingVertical: 16, borderRadius: 16, alignItems: 'center' },
-  closeBtnTxt: { color: '#0B0D0B', fontSize: 16, fontWeight: '800' },
+  closeBtnTxt: { color: '#0B0D0B', fontSize: 16, fontFamily: 'Outfit-ExtraBold' },
+  condChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, borderWidth: 1, minWidth: 60, alignItems: 'center' },
+  condChipTxt: { fontSize: 13, fontFamily: 'Inter-SemiBold' },
 });

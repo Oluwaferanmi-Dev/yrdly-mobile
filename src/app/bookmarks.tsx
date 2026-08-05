@@ -102,13 +102,13 @@ export default function BookmarksScreen() {
           style={[{ flex: 1, paddingVertical: 12, alignItems: 'center' }, activeTab === 'posts' && { borderBottomWidth: 2, borderBottomColor: G }]} 
           onPress={() => setActiveTab('posts')}
         >
-          <Text style={{ fontFamily: 'Outfit', fontWeight: activeTab === 'posts' ? '800' : '500', fontSize: 14, color: activeTab === 'posts' ? G : MUTED }}>Posts & Market</Text>
+          <Text style={[s.tabText, { color: activeTab === 'posts' ? G : MUTED }]}>Posts & Market</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[{ flex: 1, paddingVertical: 12, alignItems: 'center' }, activeTab === 'events' && { borderBottomWidth: 2, borderBottomColor: G }]} 
           onPress={() => setActiveTab('events')}
         >
-          <Text style={{ fontFamily: 'Outfit', fontWeight: activeTab === 'events' ? '800' : '500', fontSize: 14, color: activeTab === 'events' ? G : MUTED }}>Events</Text>
+          <Text style={[s.tabText, { color: activeTab === 'events' ? G : MUTED }]}>Events</Text>
         </TouchableOpacity>
       </View>
 
@@ -162,6 +162,10 @@ export default function BookmarksScreen() {
   );
 }
 
+const s = StyleSheet.create({
+  tabText: { fontFamily: 'Outfit-Bold', fontSize: 14 },
+});
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   tabs: {
@@ -182,7 +186,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 64,
   },
-  emptyText: {
-    fontSize: 16,
-  }
+  emptyText: { fontFamily: 'Inter-Regular', fontSize: 16 }
 });

@@ -602,9 +602,9 @@ function ChatContent() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
-          <Ionicons name="chevron-back" size={20} color={TEXT_PRIMARY} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
+          <Feather name="chevron-left" size={20} color="#FFF" style={{ marginLeft: -2 }} />
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -615,18 +615,21 @@ function ChatContent() {
           }}
         >
           {otherUser?.avatar_url ? (
-            <Image source={{ uri: otherUser.avatar_url }} style={{ width: 36, height: 36, borderRadius: 18 }} contentFit="cover" />
+            <Image source={{ uri: otherUser.avatar_url }} style={{ width: 38, height: 38, borderRadius: 19 }} contentFit="cover" />
           ) : (
-            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: G + '20', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15, color: G }}>{title.charAt(0).toUpperCase()}</Text>
+            <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: G + '20', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: G }}>{title.charAt(0).toUpperCase()}</Text>
             </View>
           )}
-          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF' }} numberOfLines={1}>{title}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>{title}</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>@user</Text>
+          </View>
         </TouchableOpacity>
 
         {Boolean(meta?.participant_ids?.find((pid: string) => pid !== user?.id)) && (
           <TouchableOpacity 
-            style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
             onPress={() => {
               Alert.alert(
                 'Options',
@@ -654,7 +657,7 @@ function ChatContent() {
               );
             }}
           >
-            <Ionicons name="ellipsis-horizontal" size={18} color={MUTED} />
+            <Feather name="more-horizontal" size={18} color={MUTED} />
           </TouchableOpacity>
         )}
       </View>
@@ -662,7 +665,7 @@ function ChatContent() {
       {/* Item context banner (for marketplace chats) */}
       {meta?.item_title && (
         <TouchableOpacity 
-          style={[styles.contextBanner, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: 'rgba(255,255,255,0.015)', borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}
           onPress={() => {
             if (meta?.item_id) {
               router.push(`/marketplace/${meta.item_id}`);
@@ -671,15 +674,18 @@ function ChatContent() {
           activeOpacity={0.7}
         >
           {meta.item_image && (
-            <Image source={{ uri: meta.item_image }} style={[styles.contextImage, { backgroundColor: SURFACE }]} contentFit="cover" />
+            <Image source={{ uri: meta.item_image }} style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: SURFACE }} contentFit="cover" />
           )}
           <View style={{ flex: 1 }}>
-            <Text style={[styles.contextTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]} numberOfLines={1}>{meta.item_title}</Text>
+            <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 13, color: '#FFFFFF' }} numberOfLines={1}>{meta.item_title}</Text>
             {typeof meta.item_price === 'number' && (
-              <Text style={[styles.contextPrice, { color: G, fontFamily: 'Outfit' }]}>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 13, color: G }}>
                 {meta.item_price === 0 ? 'FREE' : formatPrice(meta.item_price)}
               </Text>
             )}
+          </View>
+          <View style={{ height: 30, paddingHorizontal: 12, borderRadius: 15, backgroundColor: 'rgba(130,219,126,0.08)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', justifyContent: 'center' }}>
+            <Text style={{ color: G, fontFamily: 'Inter-SemiBold', fontSize: 12 }}>View Listing</Text>
           </View>
         </TouchableOpacity>
       )}
@@ -710,31 +716,39 @@ function ChatContent() {
         )}
 
         {/* Input */}
-        <View style={[styles.inputRow, { borderTopColor: GLASS_BORDER, backgroundColor: SURFACE, paddingBottom: keyboardVisible ? 10 : Math.max(insets.bottom, 10) }]}>
-          <TouchableOpacity style={styles.attachBtn} onPress={pickMedia} disabled={uploadingMedia}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 16, paddingTop: 12, paddingBottom: keyboardVisible ? 10 : Math.max(insets.bottom, 24), backgroundColor: DARK, borderTopWidth: 1, borderTopColor: GLASS_BORDER, gap: 12 }}>
+          <TouchableOpacity 
+            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }} 
+            onPress={pickMedia} 
+            disabled={uploadingMedia}
+          >
             {uploadingMedia ? (
               <ActivityIndicator size="small" color={G} />
             ) : (
-              <Feather name="plus-circle" size={28} color={G} />
+              <Feather name="plus" size={18} color={MUTED} />
             )}
           </TouchableOpacity>
-          <TextInput
-            style={[styles.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY, fontFamily: 'Inter' }]}
-            placeholder="Type a message..."
-            placeholderTextColor={LABEL}
-            value={inputText}
-            onChangeText={setInputText}
-            multiline
-            onSubmitEditing={sendMessage}
-          />
+
+          <View style={{ flex: 1, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: inputText.trim() ? 'rgba(130,219,126,0.22)' : GLASS_BORDER, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 }}>
+            <TextInput
+              style={{ color: '#FFF', fontFamily: 'Inter-Regular', fontSize: 15, maxHeight: 96, padding: 0 }}
+              placeholder="Message…"
+              placeholderTextColor={LABEL}
+              value={inputText}
+              onChangeText={setInputText}
+              multiline
+              onSubmitEditing={sendMessage}
+            />
+          </View>
+
           <TouchableOpacity
-            style={[styles.sendBtn, { backgroundColor: G }, !inputText.trim() && [styles.sendBtnDisabled, { backgroundColor: 'rgba(255,255,255,0.1)' }]]}
+            style={[{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center' }, inputText.trim() ? { backgroundColor: G, borderColor: G } : { backgroundColor: '#111', borderColor: GLASS_BORDER }]}
             onPress={sendMessage}
             disabled={!inputText.trim() || sending}
           >
             {sending
-              ? <ActivityIndicator size="small" color="#000000" />
-              : <Feather name="send" size={20} color="#000000" />
+              ? <ActivityIndicator size="small" color={inputText.trim() ? DARK : MUTED} />
+              : <Feather name="send" size={16} color={inputText.trim() ? DARK : MUTED} style={{ marginLeft: -2, marginTop: 2 }} />
             }
           </TouchableOpacity>
         </View>
