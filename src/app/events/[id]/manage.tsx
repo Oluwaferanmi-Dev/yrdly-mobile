@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../../constants/tokens';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -68,12 +69,12 @@ export default function ManageEventScreen() {
   }, [tickets]);
 
   if (loading) {
-    return <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}><ActivityIndicator size="large" color={colors.tint} /></SafeAreaView>;
+    return <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}><ActivityIndicator size="large" color={colors.tint} /></SafeAreaView>;
   }
 
   if (accessDenied || !event) {
     return (
-      <SafeAreaView style={[styles.center, { backgroundColor: colors.background, padding: 28 }]}>
+      <SafeAreaView style={[styles.center, { backgroundColor: DARK, padding: 28 }]}>
         <Feather name="lock" size={44} color={colors.textMuted} />
         <Text style={[styles.emptyTitle, { color: colors.text }]}>Organizer access only</Text>
         <Text style={[styles.emptyText, { color: colors.textMuted }]}>Only the event organizer can view ticket buyers and check-ins.</Text>
@@ -88,7 +89,7 @@ export default function ManageEventScreen() {
   const renderTicket = ({ item }: { item: Ticket }) => {
     const checkedIn = item.status === 'USED';
     return (
-      <View style={[styles.ticketCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[styles.ticketCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={styles.ticketTopRow}>
           <View style={[styles.attendeeIcon, { backgroundColor: colors.tint + '18' }]}><Feather name="user" size={18} color={colors.tint} /></View>
           <View style={styles.ticketInfo}>
@@ -117,7 +118,7 @@ export default function ManageEventScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}><Ionicons name="chevron-back" size={28} color={colors.text} /></TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Event Dashboard</Text>
@@ -131,7 +132,7 @@ export default function ManageEventScreen() {
         contentContainerStyle={styles.listContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
         ListHeaderComponent={<>
-          <View style={[styles.eventCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View style={[styles.eventCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
             {event.cover_image_url && <Image source={{ uri: event.cover_image_url }} style={styles.eventImage} contentFit="cover" />}
             <View style={styles.eventBody}>
               <Text style={[styles.eventTitle, { color: colors.text }]}>{event.title}</Text>
@@ -155,7 +156,7 @@ export default function ManageEventScreen() {
 }
 
 function Metric({ label, value, colors }: { label: string; value: string; colors: any }) {
-  return <View style={[styles.metric, { backgroundColor: colors.card, borderColor: colors.borderLight }]}><Text style={[styles.metricValue, { color: colors.text }]} numberOfLines={1}>{value}</Text><Text style={[styles.metricLabel, { color: colors.textMuted }]}>{label}</Text></View>;
+  return <View style={[styles.metric, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}><Text style={[styles.metricValue, { color: colors.text }]} numberOfLines={1}>{value}</Text><Text style={[styles.metricLabel, { color: colors.textMuted }]}>{label}</Text></View>;
 }
 
 const styles = StyleSheet.create({

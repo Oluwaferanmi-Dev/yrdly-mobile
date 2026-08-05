@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -147,7 +148,7 @@ export default function EditMarketplaceItemScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
         <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
@@ -155,14 +156,14 @@ export default function EditMarketplaceItemScreen() {
 
   if (!post) {
     return (
-      <SafeAreaView style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
         <Text style={[styles.errorText, { color: colors.text }]}>Listing not found</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>

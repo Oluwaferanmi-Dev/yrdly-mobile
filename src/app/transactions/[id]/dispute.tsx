@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import {
@@ -132,8 +133,8 @@ export default function DisputeScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
@@ -143,7 +144,7 @@ export default function DisputeScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Info Banner */}
-        <View style={[styles.infoBanner, { backgroundColor: colors.card }]}>
+        <View style={[styles.infoBanner, { backgroundColor: SURFACE }]}>
           <Feather name="shield" size={20} color="#1565C0" />
           <Text style={[styles.infoText, { color: colors.textSecondary }]}>
             Disputes are reviewed by our team within 24 hours. The transaction will be paused until resolved.
@@ -156,7 +157,7 @@ export default function DisputeScreen() {
           {DISPUTE_REASONS.map(r => (
             <TouchableOpacity
               key={r.value}
-              style={[styles.reasonRow, { backgroundColor: colors.card, borderColor: colors.borderLight }, selectedReason === r.value && { borderColor: colors.tint, backgroundColor: colors.inputBackground }]}
+              style={[styles.reasonRow, { backgroundColor: SURFACE, borderColor: colors.borderLight }, selectedReason === r.value && { borderColor: colors.tint, backgroundColor: colors.inputBackground }]}
               onPress={() => setSelectedReason(r.value)}
               activeOpacity={0.7}
             >
@@ -174,7 +175,7 @@ export default function DisputeScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>DESCRIBE THE ISSUE</Text>
           <TextInput
-            style={[styles.textArea, { backgroundColor: colors.card, borderColor: colors.borderLight, color: colors.text }]}
+            style={[styles.textArea, { backgroundColor: SURFACE, borderColor: colors.borderLight, color: colors.text }]}
             value={description}
             onChangeText={setDescription}
             placeholder="Tell us what happened in as much detail as possible..."
@@ -201,7 +202,7 @@ export default function DisputeScreen() {
               </View>
             ))}
             {photos.length < 5 && (
-              <TouchableOpacity style={[styles.addPhotoBtn, { backgroundColor: colors.card, borderColor: colors.borderLight }]} onPress={pickPhotos} disabled={uploading}>
+              <TouchableOpacity style={[styles.addPhotoBtn, { backgroundColor: SURFACE, borderColor: colors.borderLight }]} onPress={pickPhotos} disabled={uploading}>
                 {uploading
                   ? <ActivityIndicator size="small" color={colors.tint} />
                   : <Feather name="plus" size={28} color={colors.tint} />

@@ -105,7 +105,7 @@ function Dropdown({
 
   return (
     <View style={{ zIndex: open ? 20 : 1 }}>
-      <View style={[dd.row, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[dd.row, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={dd.labelRow}>
           <Ionicons name={icon as any} size={16} color={colors.tint} />
           <Text style={[dd.label, { color: colors.text }]}>{label}</Text>
@@ -118,7 +118,7 @@ function Dropdown({
         </TouchableOpacity>
       </View>
       {open && (
-        <Animated.View style={[dd.menu, { backgroundColor: colors.card, borderColor: colors.borderLight, maxHeight: heightAnim }]}>
+        <Animated.View style={[dd.menu, { backgroundColor: SURFACE, borderColor: colors.borderLight, maxHeight: heightAnim }]}>
           <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
             {options.map(opt => (
               <TouchableOpacity key={opt} style={[dd.item, { borderBottomColor: colors.borderLight }]}
@@ -158,7 +158,7 @@ function PhotoGallery({ images, onAdd, onRemove, colors }: {
         onMomentumScrollEnd={e => setActiveDot(Math.round(e.nativeEvent.contentOffset.x / (PHOTO_SIZE + 10)))}>
 
         {/* Add photo slot */}
-        <TouchableOpacity onPress={onAdd} style={[pg.addSlot, { borderColor: colors.tint, backgroundColor: colors.card }]}>
+        <TouchableOpacity onPress={onAdd} style={[pg.addSlot, { borderColor: colors.tint, backgroundColor: SURFACE }]}>
           <Ionicons name="camera-outline" size={28} color={colors.tint} />
           <Text style={[pg.addLabel, { color: colors.tint }]}>Add Photo</Text>
         </TouchableOpacity>
@@ -170,7 +170,7 @@ function PhotoGallery({ images, onAdd, onRemove, colors }: {
             {img.type === 'video' && (
               <View style={pg.videoIcon}><Ionicons name="play-circle" size={28} color="rgba(255,255,255,0.9)" /></View>
             )}
-            <TouchableOpacity style={[pg.removeBtn, { backgroundColor: colors.background }]}
+            <TouchableOpacity style={[pg.removeBtn, { backgroundColor: DARK }]}
               onPress={() => onRemove(i)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
               <Ionicons name="close" size={12} color={colors.text} />
             </TouchableOpacity>
@@ -213,7 +213,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
   return (
     <>
       {/* ── Seller card ── */}
-      <View style={[s.sellerCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.sellerCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         {profile?.avatar_url
           ? <Image source={{ uri: profile.avatar_url }} style={s.avatar} contentFit="cover" />
           : <View style={[s.avatar, s.avatarFallback, { backgroundColor: colors.tint }]}>
@@ -232,7 +232,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
                 <Ionicons name="chevron-down" size={10} color={colors.tint} />
               </TouchableOpacity>
               {showCategoryMenu && categories && onSelectCategory && (
-                <View style={[s.menu, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                <View style={[s.menu, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
                   {categories.map(cat => (
                     <TouchableOpacity key={cat} style={s.menuItem} onPress={() => onSelectCategory(cat)}>
                       <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
@@ -252,12 +252,12 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       </View>
 
       {/* ── Photo gallery ── */}
-      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <PhotoGallery images={values.images} onAdd={onAddPhoto} onRemove={onRemovePhoto} colors={colors} />
       </View>
 
       {/* ── Title ── */}
-      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={s.fieldHeader}>
           <Ionicons name="diamond-outline" size={15} color={colors.tint} />
           <Text style={[s.fieldLabel, { color: colors.text }]}>Title</Text>
@@ -277,7 +277,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
 
       {/* ── Price + Category side by side ── */}
       <View style={s.row}>
-        <View style={[s.card, s.half, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[s.card, s.half, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           <View style={s.fieldHeader}>
             <Ionicons name="add-circle-outline" size={15} color={colors.tint} />
             <Text style={[s.fieldLabel, { color: colors.text }]}>Price</Text>
@@ -297,7 +297,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
           </View>
         </View>
 
-        <View style={[s.card, s.half, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[s.card, s.half, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           <View style={s.fieldHeader}>
             <Ionicons name="grid-outline" size={15} color={colors.tint} />
             <Text style={[s.fieldLabel, { color: colors.text }]}>Category</Text>
@@ -312,7 +312,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       </View>
 
       {/* ── Description ── */}
-      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={s.fieldHeader}>
           <Ionicons name="document-text-outline" size={15} color={colors.tint} />
           <Text style={[s.fieldLabel, { color: colors.text }]}>Description</Text>
@@ -331,7 +331,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       </View>
 
       {/* ── Location (settings row style) ── */}
-      <View style={[s.settingsCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.settingsCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={s.settingsRow}>
           <View style={[s.settingsIcon, { backgroundColor: 'rgba(130,219,126,0.12)' }]}>
             <Ionicons name="location-outline" size={18} color={colors.tint} />
@@ -345,7 +345,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       </View>
 
       {/* ── Condition ── */}
-      <View style={[s.settingsCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.settingsCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <Dropdown
           label="Condition" value={values.condition} placeholder="Select condition"
           options={ITEM_CONDITIONS} icon="shield-checkmark-outline"
@@ -354,7 +354,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       </View>
 
       {/* ── Price type ── */}
-      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={s.fieldHeader}>
           <Ionicons name="pricetag-outline" size={15} color={colors.tint} />
           <Text style={[s.fieldLabel, { color: colors.text }]}>Set Price Type</Text>

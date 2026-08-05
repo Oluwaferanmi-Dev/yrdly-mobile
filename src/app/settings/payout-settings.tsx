@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -81,15 +82,15 @@ export default function PayoutSettingsScreen() {
 
   const canSave = selectedBank && accountNumber.length === 10 && !!resolvedName && !resolving;
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={[s.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
+    <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
+      <View style={[s.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={s.back}><Ionicons name="chevron-back" size={28} color={colors.text} /></TouchableOpacity>
         <Text style={[s.title, { color: colors.text }]}>Bank Account</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
         {loading ? <ActivityIndicator color={colors.tint} style={{ marginTop: 32 }} /> : existing ? (
-          <View style={[s.existingCard, { backgroundColor: colors.card, borderColor: colors.borderLight, borderWidth: 1 }]}>
+          <View style={[s.existingCard, { backgroundColor: SURFACE, borderColor: colors.borderLight, borderWidth: 1 }]}>
             <View style={s.existingRow}>
               <View style={[s.iconWrap, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}><Feather name="briefcase" size={22} color={colors.tint} /></View>
               <View style={{ flex: 1 }}>
@@ -114,14 +115,14 @@ export default function PayoutSettingsScreen() {
         )}
 
         <Text style={[s.label, { color: colors.textMuted }]}>Bank *</Text>
-        <TouchableOpacity style={[s.selector, { backgroundColor: colors.card, borderColor: colors.borderLight }, selectedBank && { borderColor: colors.tint }]} onPress={() => { setBankSearch(''); setBankModal(true); }}>
+        <TouchableOpacity style={[s.selector, { backgroundColor: SURFACE, borderColor: colors.borderLight }, selectedBank && { borderColor: colors.tint }]} onPress={() => { setBankSearch(''); setBankModal(true); }}>
           <Text style={[s.selectorText, { color: colors.text }, !selectedBank && { color: colors.textMuted }]}>{selectedBank?.name ?? 'Select your bank'}</Text>
           <Feather name="chevron-down" size={18} color={selectedBank ? colors.tint : colors.textMuted} />
         </TouchableOpacity>
 
         <Text style={[s.label, { color: colors.textMuted, marginTop: 16 }]}>Account Number *</Text>
         <TextInput
-          style={[s.input, { backgroundColor: colors.card, borderColor: colors.borderLight, color: colors.text }, accountNumber.length === 10 && { borderColor: colors.tint }]}
+          style={[s.input, { backgroundColor: SURFACE, borderColor: colors.borderLight, color: colors.text }, accountNumber.length === 10 && { borderColor: colors.tint }]}
           value={accountNumber}
           onChangeText={v => { setAccountNumber(v.replace(/\D/g, '').slice(0, 10)); setResolvedName(''); }}
           placeholder="10-digit account number"
@@ -144,12 +145,12 @@ export default function PayoutSettingsScreen() {
       </ScrollView>
 
       <Modal visible={bankModal} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={[s.modal, { backgroundColor: colors.background }]}>
+        <SafeAreaView style={[s.modal, { backgroundColor: DARK }]}>
           <View style={[s.modalHeader, { borderBottomColor: colors.borderLight }]}>
             <Text style={[s.modalTitle, { color: colors.text }]}>Select Bank</Text>
             <TouchableOpacity onPress={() => setBankModal(false)}><Feather name="x" size={24} color={colors.text} /></TouchableOpacity>
           </View>
-          <View style={[s.searchBox, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View style={[s.searchBox, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
             <Feather name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
             <TextInput style={[s.searchInput, { color: colors.text }]} value={bankSearch} onChangeText={setBankSearch} placeholder="Search banks…" placeholderTextColor={colors.textMuted} autoFocus />
           </View>

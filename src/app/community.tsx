@@ -490,7 +490,7 @@ export default function CommunityScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainerPremium}>
-            <View style={[styles.emptyIconBg, { backgroundColor: colors.card }]}>
+            <View style={[styles.emptyIconBg, { backgroundColor: SURFACE }]}>
               <Feather name="compass" size={40} color={colors.textSecondary} />
             </View>
             <Text style={[styles.emptyTitlePremium, { color: colors.text }]}>No one found</Text>
@@ -502,7 +502,7 @@ export default function CommunityScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       {/* Premium Header */}
       <View style={styles.premiumHeader}>
         <TouchableOpacity onPress={() => router.back()} style={[styles.glassBtn, { backgroundColor: colors.tint + '1A' }]}>
@@ -517,7 +517,7 @@ export default function CommunityScreen() {
 
       {/* Segmented Control */}
       <View style={styles.segmentedControlContainer}>
-        <View style={[styles.segmentedControl, { backgroundColor: colors.card }]}>
+        <View style={[styles.segmentedControl, { backgroundColor: SURFACE }]}>
           <TouchableOpacity 
             style={[styles.segmentBtn, activeTab === 'friends' && { backgroundColor: colors.tint + '1A' }]} 
             onPress={() => setActiveTab('friends')}
@@ -550,7 +550,7 @@ export default function CommunityScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <Animated.View entering={FadeInUp} style={styles.emptyContainerPremium}>
-              <View style={[styles.emptyIconBg, { backgroundColor: colors.card }]}>
+              <View style={[styles.emptyIconBg, { backgroundColor: SURFACE }]}>
                 <Feather name="users" size={40} color={colors.textSecondary} />
               </View>
               <Text style={[styles.emptyTitlePremium, { color: colors.text }]}>No Friends Yet</Text>
@@ -577,7 +577,7 @@ export default function CommunityScreen() {
         ref={bottomSheetModalRef}
         index={0}
         snapPoints={snapPoints}
-        backgroundStyle={{ backgroundColor: colors.card }}
+        backgroundStyle={{ backgroundColor: SURFACE }}
         handleIndicatorStyle={{ backgroundColor: colors.borderLight }}
         backdropComponent={(props) => (
           <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.7} />
@@ -704,7 +704,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     paddingRight: 16,
   },
   premiumCard: {
-    backgroundColor: colors.card,
+    backgroundColor: SURFACE,
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
@@ -770,7 +770,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     fontSize: 14,
   },
   heroCard: {
-    backgroundColor: colors.card,
+    backgroundColor: SURFACE,
     borderRadius: 24,
     padding: 20,
     marginBottom: 24,
@@ -870,7 +870,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     fontSize: 15,
   },
   premiumFriendCard: {
-    backgroundColor: colors.card,
+    backgroundColor: SURFACE,
     borderRadius: 16,
     padding: 12,
     marginBottom: 12,
@@ -990,7 +990,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
 
   discoverHeroCard: {
-    backgroundColor: colors.card,
+    backgroundColor: SURFACE,
     borderRadius: 24,
     padding: 20,
     marginBottom: 24,
@@ -1095,7 +1095,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   nearbyCard: {
     width: 140,
-    backgroundColor: colors.card,
+    backgroundColor: SURFACE,
     borderRadius: 24,
     padding: 16,
     alignItems: 'center',
@@ -1155,7 +1155,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   mutualCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
+    backgroundColor: SURFACE,
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,
@@ -1202,7 +1202,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   sellerCard: {
     width: 240,
-    backgroundColor: colors.card,
+    backgroundColor: SURFACE,
     borderRadius: 24,
     padding: 16,
     marginRight: 12,

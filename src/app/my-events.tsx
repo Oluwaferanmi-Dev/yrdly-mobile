@@ -53,7 +53,7 @@ export default function MyEventsScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.eventCard, { backgroundColor: colors.card }]}
+        style={[styles.eventCard, { backgroundColor: SURFACE }]}
         onPress={() => router.push(`/events/${item.id}/manage`)}
         activeOpacity={0.8}
       >
@@ -80,7 +80,7 @@ export default function MyEventsScreen() {
             </Text>
           </View>
 
-          <View style={[styles.statsContainer, { backgroundColor: colors.background, borderColor: colors.border }]}>
+          <View style={[styles.statsContainer, { backgroundColor: DARK, borderColor: colors.border }]}>
             <View style={styles.statBox}>
               <Text style={[styles.statValue, { color: colors.text }]}>{totalSold}</Text>
               <Text style={[styles.statLabel, { color: colors.textMuted }]}>Sold</Text>
@@ -112,7 +112,7 @@ export default function MyEventsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>

@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -53,8 +54,8 @@ export default function PrivacySettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
@@ -65,7 +66,7 @@ export default function PrivacySettingsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         
         <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>LOCATION PRIVACY</Text>
-        <View style={[styles.glassCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[styles.glassCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           <View style={[styles.navRow, { borderBottomColor: colors.borderLight }]}>
             <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
               <Ionicons name="location-outline" size={24} color={colors.tint} />
@@ -91,7 +92,7 @@ export default function PrivacySettingsScreen() {
         </View>
 
         <Text style={[styles.sectionHeader, { color: colors.textMuted }]}>COMMUNITY VISIBILITY</Text>
-        <View style={[styles.glassCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[styles.glassCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           <View style={[styles.navRow, { borderBottomColor: colors.borderLight }]}>
             <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
               <Ionicons name="compass-outline" size={24} color={colors.tint} />

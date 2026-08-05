@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Dimensions, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -260,7 +261,7 @@ export default function CatalogItemScreen() {
 
   if (loading) {
     return (
-      <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.tint} />
       </View>
     );
@@ -268,7 +269,7 @@ export default function CatalogItemScreen() {
 
   if (!item) {
     return (
-      <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
+      <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
         <Ionicons name="cube-outline" size={48} color={colors.textMuted} style={{ opacity: 0.5, marginBottom: 16 }} />
         <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Item not found</Text>
         <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: 'center', marginBottom: 24 }}>The item you&apos;re looking for doesn&apos;t exist or has been removed.</Text>
@@ -296,7 +297,7 @@ export default function CatalogItemScreen() {
   const screenWidth = Dimensions.get('window').width;
 
   return (
-    <View style={[s.root, { backgroundColor: colors.background }]}>
+    <View style={[s.root, { backgroundColor: DARK }]}>
       <ImageViewing
         images={imageViewerImages}
         imageIndex={viewerIndex}
@@ -422,7 +423,7 @@ export default function CatalogItemScreen() {
           {/* Business Info Card */}
           {business && (
             <TouchableOpacity 
-              style={[s.bizCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+              style={[s.bizCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
               onPress={() => router.push(`/businesses/${business.id}` as any)}
             >
               {business.logo ? (

@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../../constants/tokens';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, Vibration, Animated,
@@ -101,12 +102,12 @@ export default function ScanTicketScreen() {
   };
 
   if (!permission) {
-    return <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}><Text style={{ color: colors.text }}>Requesting camera permission…</Text></SafeAreaView>;
+    return <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}><Text style={{ color: colors.text }}>Requesting camera permission…</Text></SafeAreaView>;
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}>
         <Feather name="camera" size={60} color={colors.textMuted} />
         <Text style={[styles.permText, { color: colors.textSecondary }]}>Camera access is required to scan tickets.</Text>
         <TouchableOpacity style={[styles.permBtn, { backgroundColor: colors.tint }]} onPress={requestPermission}>
@@ -119,7 +120,7 @@ export default function ScanTicketScreen() {
   const flashBg = result?.success ? colors.tint : RED;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       <CameraView
         style={StyleSheet.absoluteFillObject}
         facing="back"

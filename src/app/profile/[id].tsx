@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
@@ -187,7 +188,7 @@ export default function OtherUserProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
@@ -195,7 +196,7 @@ export default function OtherUserProfileScreen() {
 
   if (!profile) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
         <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
             <Ionicons name="chevron-back" size={28} color={colors.text} />
@@ -209,7 +210,7 @@ export default function OtherUserProfileScreen() {
   const isOwnProfile = currentUser?.id === profile.id;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -256,10 +257,10 @@ export default function OtherUserProfileScreen() {
           <Image source={{ uri: profile.cover_url }} style={styles.cover} contentFit="cover" />
         )}
 
-        <View style={[styles.profileHeader, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
+        <View style={[styles.profileHeader, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
           <View style={styles.avatarRow}>
             {profile.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={[styles.avatar, { borderColor: colors.background, backgroundColor: colors.card }, !profile.cover_url && { marginTop: 0 }]} contentFit="cover" />
+              <Image source={{ uri: profile.avatar_url }} style={[styles.avatar, { borderColor: colors.background, backgroundColor: SURFACE }, !profile.cover_url && { marginTop: 0 }]} contentFit="cover" />
             ) : (
               <View style={[styles.avatar, styles.avatarFallback, { borderColor: colors.background, backgroundColor: colors.tint }, !profile.cover_url && { marginTop: 0 }]}>
                 <Text style={[styles.avatarFallbackText, { color: colors.background }]}>
@@ -443,7 +444,7 @@ export default function OtherUserProfileScreen() {
             <View style={styles.reviewsList}>
               {reviews.length > 0 ? (
                 reviews.map(review => (
-                  <View key={review.id} style={[styles.reviewCard, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
+                  <View key={review.id} style={[styles.reviewCard, { backgroundColor: SURFACE, borderBottomColor: colors.borderLight }]}>
                     <View style={styles.reviewHeader}>
                       <Image source={{ uri: review.buyer?.avatar_url }} style={styles.reviewerAvatar} />
                       <View style={styles.reviewerInfo}>

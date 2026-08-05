@@ -48,7 +48,7 @@ export default function VerifyPhoneScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={[styles.container, { backgroundColor: DARK }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={StyleSheet.absoluteFillObject}>

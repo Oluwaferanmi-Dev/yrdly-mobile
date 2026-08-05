@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, Text, Alert, RefreshControl } from 'react-native';
 import { MarketplaceItemCard } from './MarketplaceItemCard';
@@ -131,7 +132,7 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
     return (
       <View style={styles.skeletonGrid}>
         {[1, 2, 3, 4, 5, 6].map(key => (
-          <View key={key} style={[styles.skeletonCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View key={key} style={[styles.skeletonCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
             <Skeleton width="100%" height={160} />
             <View style={{ padding: 12 }}>
               <Skeleton width="80%" height={14} style={{ marginBottom: 6 }} />

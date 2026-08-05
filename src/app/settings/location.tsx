@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import {
@@ -58,8 +59,8 @@ export default function LocationSettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
@@ -70,7 +71,7 @@ export default function LocationSettingsScreen() {
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Current location */}
         {location.state ? (
-          <View style={[styles.currentCard, { backgroundColor: colors.card, borderColor: colors.borderLight, borderWidth: 1 }]}>
+          <View style={[styles.currentCard, { backgroundColor: SURFACE, borderColor: colors.borderLight, borderWidth: 1 }]}>
             <View style={[styles.currentIcon, { backgroundColor: 'rgba(130, 225, 87, 0.1)' }]}>
               <Ionicons name="location-outline" size={22} color={colors.tint} />
             </View>

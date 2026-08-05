@@ -220,7 +220,7 @@ export default function BusinessProfileScreen() {
 
   if (loading) {
     return (
-      <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.tint} />
       </View>
     );
@@ -228,7 +228,7 @@ export default function BusinessProfileScreen() {
 
   if (!business) {
     return (
-      <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={{ color: colors.text }}>Business not found</Text>
       </View>
     );
@@ -238,7 +238,7 @@ export default function BusinessProfileScreen() {
   const isArchivedOrInactive = (business as any).is_active === false || (business as any).is_archived === true || (business as any).status === 'archived';
   if (isArchivedOrInactive && !isOwner) {
     return (
-      <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }]}>
+      <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }]}>
         <Ionicons name="storefront-outline" size={64} color={colors.textMuted} style={{ marginBottom: 16, opacity: 0.4 }} />
         <Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>Business No Longer Active</Text>
         <Text style={{ color: colors.textMuted, fontSize: 15, textAlign: 'center', lineHeight: 22 }}>This business has been deactivated by the owner and is no longer available.</Text>
@@ -256,11 +256,11 @@ export default function BusinessProfileScreen() {
   const logoImg = business.logo || business.owner_avatar;
 
   return (
-    <View style={[s.root, { backgroundColor: colors.background }]}>
+    <View style={[s.root, { backgroundColor: DARK }]}>
       {/* Owner menu modal */}
       <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)}>
         <TouchableOpacity style={s.modalOverlay} activeOpacity={1} onPress={() => setMenuVisible(false)}>
-          <View style={[s.menuSheet, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View style={[s.menuSheet, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
             {!(business as any).is_active ? (
               <View style={[s.menuItem, { opacity: 0.5 }]}>
                 <Ionicons name="archive-outline" size={18} color={colors.textMuted} />
@@ -304,7 +304,7 @@ export default function BusinessProfileScreen() {
           )}
 
           {/* Logo */}
-          <View style={[s.logoContainer, { backgroundColor: colors.background, borderColor: colors.background }]}>
+          <View style={[s.logoContainer, { backgroundColor: DARK, borderColor: colors.background }]}>
             {logoImg ? (
               <Image source={{ uri: logoImg }} style={s.logo} contentFit="cover" />
             ) : (
@@ -380,7 +380,7 @@ export default function BusinessProfileScreen() {
           {activeTab === 'Catalog' && (
             <View>
               {isOwner && (
-                <TouchableOpacity style={[s.addBtn, { backgroundColor: colors.card, borderColor: colors.borderLight }]} onPress={() => router.push({ pathname: '/businesses/create-catalog-item', params: { businessId: business.id } } as any)}>
+                <TouchableOpacity style={[s.addBtn, { backgroundColor: SURFACE, borderColor: colors.borderLight }]} onPress={() => router.push({ pathname: '/businesses/create-catalog-item', params: { businessId: business.id } } as any)}>
                   <Ionicons name="add" size={20} color={colors.tint} />
                   <Text style={[s.addBtnTxt, { color: colors.tint }]}>Add Catalog Item</Text>
                 </TouchableOpacity>
@@ -395,7 +395,7 @@ export default function BusinessProfileScreen() {
                   {catalogItems.map(item => (
                     <TouchableOpacity 
                       key={item.id} 
-                      style={[s.catalogCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+                      style={[s.catalogCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
                       activeOpacity={0.8}
                       onPress={() => router.push(`/businesses/catalog/${item.id}` as any)}
                     >
@@ -493,7 +493,7 @@ export default function BusinessProfileScreen() {
                 </View>
               ) : (
                 reviews.map(review => (
-                  <View key={review.id} style={[s.reviewCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                  <View key={review.id} style={[s.reviewCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
                     <View style={s.reviewHeader}>
                       <Image source={{ uri: review.users?.avatar_url || 'https://via.placeholder.com/150' }} style={s.reviewerAvatar} />
                       <View style={s.reviewerInfo}>

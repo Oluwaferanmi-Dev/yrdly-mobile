@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
@@ -120,7 +121,7 @@ export default function VerifyPhoneOtpScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={[styles.container, { backgroundColor: DARK }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={StyleSheet.absoluteFillObject}>
@@ -139,7 +140,7 @@ export default function VerifyPhoneOtpScreen() {
         <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background === '#121212' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.4)' }]} />
       )}
 
-      <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.text }]}>
+      <View style={[styles.card, { backgroundColor: SURFACE, shadowColor: colors.text }]}>
         <TouchableOpacity style={styles.back} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
@@ -159,7 +160,7 @@ export default function VerifyPhoneOtpScreen() {
             <TextInput
               key={i}
               ref={(r) => { inputRefs.current[i] = r; }}
-              style={[styles.otpBox, { backgroundColor: colors.card, borderColor: colors.borderLight, color: colors.text }, d && [styles.otpBoxFilled, { borderColor: colors.tint, backgroundColor: colors.inputBackground }]]}
+              style={[styles.otpBox, { backgroundColor: SURFACE, borderColor: colors.borderLight, color: colors.text }, d && [styles.otpBoxFilled, { borderColor: colors.tint, backgroundColor: colors.inputBackground }]]}
               value={d}
               onChangeText={(v) => handleDigitChange(v, i)}
               onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, i)}

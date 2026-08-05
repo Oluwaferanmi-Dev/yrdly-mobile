@@ -161,9 +161,9 @@ export default function TicketsScreen() {
 
         {/* Tear line */}
         <View style={styles.tearLine}>
-          <View style={[styles.tearCircleTop, { backgroundColor: colors.background }]} />
+          <View style={[styles.tearCircleTop, { backgroundColor: DARK }]} />
           <View style={[styles.tearDashes, { borderLeftColor: colors.border }]} />
-          <View style={[styles.tearCircleBottom, { backgroundColor: colors.background }]} />
+          <View style={[styles.tearCircleBottom, { backgroundColor: DARK }]} />
         </View>
 
         {/* QR hint / Delete for past */}
@@ -191,8 +191,8 @@ export default function TicketsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>My Tickets</Text>
       </View>
 
@@ -246,7 +246,7 @@ export default function TicketsScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setSelectedTicket(null)}
       >
-        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: DARK }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.borderLight }]}>
             <TouchableOpacity onPress={() => setSelectedTicket(null)} style={styles.modalClose}>
               <Feather name="x" size={26} color={colors.text} />
@@ -280,7 +280,7 @@ export default function TicketsScreen() {
               </View>
 
               {/* QR Code */}
-              <View style={[styles.qrContainer, { backgroundColor: colors.card }]}>
+              <View style={[styles.qrContainer, { backgroundColor: SURFACE }]}>
                 <QRCode
                   value={selectedTicket.id}
                   size={220}

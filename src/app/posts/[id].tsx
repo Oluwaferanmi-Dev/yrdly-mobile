@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../constants/tokens';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
@@ -263,7 +264,7 @@ function PostDetailContent() {
   }, [handleReply, handleLikeComment, handleDeleteComment, user?.id]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />

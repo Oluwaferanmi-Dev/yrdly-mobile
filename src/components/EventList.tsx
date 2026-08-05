@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
   View, StyleSheet, FlatList, Text, RefreshControl, ScrollView,
@@ -193,7 +194,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
               Showing: {EVENT_CATEGORIES.find(c => c.key === category)?.label || category}
             </Text>
           </View>
-          <TouchableOpacity onPress={() => setCategory('')} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: colors.borderLight }}>
+          <TouchableOpacity onPress={() => setCategory('')} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: SURFACE, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: colors.borderLight }}>
             <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', marginRight: 4 }}>Clear</Text>
             <Ionicons name="close" size={14} color={colors.textSecondary} />
           </TouchableOpacity>
@@ -291,7 +292,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       )}
 
       <TouchableOpacity
-        style={[s.createBanner, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+        style={[s.createBanner, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
         onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
         <View style={[s.createIcon, { backgroundColor: 'rgba(130,219,126,0.1)' }]}>
           <Ionicons name="calendar-outline" size={24} color={colors.tint} />

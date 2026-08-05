@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Linking, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -43,7 +44,7 @@ export default function AlertDetailsScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.container, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.tint} />
       </View>
     );
@@ -51,7 +52,7 @@ export default function AlertDetailsScreen() {
 
   if (!alert) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
         <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="chevron-back" size={28} color={colors.text} />
@@ -79,7 +80,7 @@ export default function AlertDetailsScreen() {
   const alertColor = getAlertColor();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />
@@ -108,7 +109,7 @@ export default function AlertDetailsScreen() {
           <Image source={{ uri: alert.subject_photo_url }} style={styles.photo} resizeMode="cover" />
         )}
 
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[styles.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           {alert.subject_name && (
             <View style={styles.infoRow}>
               <Feather name="user" size={18} color={colors.textSecondary} />

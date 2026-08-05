@@ -349,7 +349,7 @@ export default function EventDetailScreen() {
   const scrollHandler = useAnimatedScrollHandler((e) => { scrollY.value = e.contentOffset.y; });
   const headerAnimatedStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
-    return { opacity, backgroundColor: colors.background };
+    return { opacity, backgroundColor: DARK };
   });
 
   const getEventStatus = (ev: Event) => {
@@ -371,7 +371,7 @@ export default function EventDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}><Ionicons name="chevron-back" size={28} color={colors.text} /></TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Event Details</Text>
@@ -395,7 +395,7 @@ export default function EventDetailScreen() {
 
   if (!event) {
     return (
-      <SafeAreaView style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
         <Text style={[styles.errorText, { color: colors.text }]}>Event not found</Text>
         <TouchableOpacity style={[styles.backBtnWrapper, { backgroundColor: colors.inputBackground }]} onPress={() => router.back()}>
           <Text style={[styles.backBtnText, { color: colors.text }]}>Go Back</Text>
@@ -418,7 +418,7 @@ export default function EventDetailScreen() {
     : 'Time TBD';
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: DARK }]}>
       <Animated.View style={[styles.stickyHeader, headerAnimatedStyle, { zIndex: 10 }]}>
         <SafeAreaView edges={['top']} />
       </Animated.View>
@@ -494,7 +494,7 @@ export default function EventDetailScreen() {
           </View>
           
           {/* PREMIUM INFO CARD */}
-          <View style={[styles.premiumCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
             <View style={styles.infoRow}>
               <View style={[styles.iconBox, { backgroundColor: colors.tint + '15' }]}>
                 <Feather name="calendar" size={20} color={colors.tint} />
@@ -553,7 +553,7 @@ export default function EventDetailScreen() {
           </View>
 
           {/* ABOUT SECTION */}
-          <View style={[styles.premiumCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
             <View style={styles.aboutHeader}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>About this event</Text>
             </View>
@@ -572,7 +572,7 @@ export default function EventDetailScreen() {
 
           {/* ORGANIZER CARD */}
           <TouchableOpacity 
-            style={[styles.premiumCard, { backgroundColor: colors.card, borderColor: colors.borderLight }, styles.organizerCard]}
+            style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }, styles.organizerCard]}
             onPress={() => { if (event.organizer_id) router.push(`/profile/${event.organizer_id}` as any); }}
             activeOpacity={0.8}
           >
@@ -612,7 +612,7 @@ export default function EventDetailScreen() {
           {/* MAP PREVIEW */}
           {!event.location_online && event.lat && event.lng && (
             <TouchableOpacity 
-              style={[styles.premiumCard, { backgroundColor: colors.card, borderColor: colors.borderLight, padding: 0, overflow: 'hidden' }]}
+              style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: colors.borderLight, padding: 0, overflow: 'hidden' }]}
               onPress={getDirections}
               activeOpacity={0.9}
             >
@@ -650,7 +650,7 @@ export default function EventDetailScreen() {
               return (
               <TouchableOpacity 
                 key={tier.id} 
-                style={[styles.tierCard, { backgroundColor: colors.card, borderColor: tier.price === 0 ? colors.tint : colors.borderLight }]}
+                style={[styles.tierCard, { backgroundColor: SURFACE, borderColor: tier.price === 0 ? colors.tint : colors.borderLight }]}
                 disabled={tier.is_sold_out || isExpired || isOwner}
                 onPress={() => setSelectedTier(tier)}
                 activeOpacity={0.8}
@@ -682,7 +682,7 @@ export default function EventDetailScreen() {
               </TouchableOpacity>
             );})
           ) : (
-            <View style={[styles.premiumCard, { backgroundColor: colors.card, borderColor: colors.borderLight, alignItems: 'center', paddingVertical: 32 }]}>
+            <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: colors.borderLight, alignItems: 'center', paddingVertical: 32 }]}>
               <Feather name="tag" size={48} color={colors.textMuted} style={{ marginBottom: 12 }} />
               <Text style={{ color: colors.textSecondary, fontSize: 16 }}>No tickets available.</Text>
             </View>
@@ -696,7 +696,7 @@ export default function EventDetailScreen() {
                 {relatedEvents.map(rel => (
                   <TouchableOpacity 
                     key={rel.id} 
-                    style={[styles.relatedCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+                    style={[styles.relatedCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
                     onPress={() => { router.push(`/events/${rel.id}`); }}
                   >
                     <Image source={{ uri: rel.cover_image_url }} style={styles.relatedImg} contentFit="cover" />
@@ -740,7 +740,7 @@ export default function EventDetailScreen() {
       </Animated.ScrollView>
 
       {/* FLOATING ACTION BAR */}
-      <View style={[styles.bottomActionBar, { backgroundColor: colors.card, borderTopColor: colors.borderLight }]}>
+      <View style={[styles.bottomActionBar, { backgroundColor: SURFACE, borderTopColor: colors.borderLight }]}>
         
         
         <TouchableOpacity 
@@ -768,7 +768,7 @@ export default function EventDetailScreen() {
           style={styles.modalOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalContent, { backgroundColor: DARK }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>Get Tickets</Text>
               <TouchableOpacity onPress={() => { setSelectedTier(null); setQuantity(1); }}>
@@ -856,7 +856,7 @@ export default function EventDetailScreen() {
       {ticketSuccess && (
         <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 100, justifyContent: 'flex-end' }, successOverlayStyle]}>
           <View style={styles.successBackdrop} />
-          <Animated.View style={[styles.successSheet, { backgroundColor: colors.card }, successSheetStyle]}>
+          <Animated.View style={[styles.successSheet, { backgroundColor: SURFACE }, successSheetStyle]}>
             <View style={styles.successHandleBar} />
             <View style={{ alignItems: 'center', marginVertical: 20 }}>
               <Ionicons name="checkmark-circle" size={100} color="#82DB7E" />

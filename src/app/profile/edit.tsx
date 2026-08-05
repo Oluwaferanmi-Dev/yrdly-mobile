@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../constants/tokens';
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
@@ -134,7 +135,7 @@ export default function ProfileEditScreen() {
             <View style={s.field}>
               <Text style={[s.label, { color: colors.textSecondary }]}>Name *</Text>
               <TextInput
-                style={[s.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.borderLight }]}
+                style={[s.input, { color: colors.text, backgroundColor: SURFACE, borderColor: colors.borderLight }]}
                 value={name}
                 onChangeText={setName}
                 placeholder="Your full name"
@@ -146,7 +147,7 @@ export default function ProfileEditScreen() {
             <View style={s.field}>
               <Text style={[s.label, { color: colors.textSecondary }]}>Username</Text>
               <TextInput
-                style={[s.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.borderLight }]}
+                style={[s.input, { color: colors.text, backgroundColor: SURFACE, borderColor: colors.borderLight }]}
                 value={username}
                 onChangeText={setUsername}
                 placeholder="@handle"
@@ -159,7 +160,7 @@ export default function ProfileEditScreen() {
             <View style={s.field}>
               <Text style={[s.label, { color: colors.textSecondary }]}>Bio</Text>
               <TextInput
-                style={[s.input, s.bioInput, { color: colors.text, backgroundColor: colors.card, borderColor: colors.borderLight }]}
+                style={[s.input, s.bioInput, { color: colors.text, backgroundColor: SURFACE, borderColor: colors.borderLight }]}
                 value={bio}
                 onChangeText={setBio}
                 placeholder="Tell your neighborhood about yourself..."
@@ -178,7 +179,7 @@ export default function ProfileEditScreen() {
 }
 
 const styles = (colors: any) => StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
+  root: { flex: 1, backgroundColor: DARK },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,
@@ -194,7 +195,7 @@ const styles = (colors: any) => StyleSheet.create({
   avatarSection: { alignItems: 'center', paddingVertical: 28 },
   avatarWrapper: { position: 'relative', width: 100, height: 100, borderRadius: 50, marginBottom: 8 },
   avatar: { width: 100, height: 100, borderRadius: 50 },
-  avatarPlaceholder: { backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
+  avatarPlaceholder: { backgroundColor: SURFACE, alignItems: 'center', justifyContent: 'center' },
   avatarInitial: { fontSize: 36, fontWeight: 'bold' },
   avatarOverlay: {
     position: 'absolute', bottom: 0, right: 0, width: 30, height: 30,

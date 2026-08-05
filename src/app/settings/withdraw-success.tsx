@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,7 +12,7 @@ export default function WithdrawSuccessScreen() {
   const { colors } = useAppTheme();
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
       <View style={s.content}>
         <LottieView
           source={require('../../../assets/success.json')}
@@ -25,7 +26,7 @@ export default function WithdrawSuccessScreen() {
           Your withdrawal request has been submitted successfully. Funds will arrive in your bank account within 1–2 business days.
         </Text>
 
-        <View style={[s.infoCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[s.infoCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           <Feather name="info" size={18} color={colors.tint} />
           <Text style={[s.infoText, { color: colors.textMuted }]}>
             You will receive a push notification once the transfer is completed by our payment partner.

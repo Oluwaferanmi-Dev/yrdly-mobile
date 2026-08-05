@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../constants/tokens';
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert, SafeAreaView, Platform, Dimensions,
@@ -121,7 +122,7 @@ export default function TicketScannerScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
@@ -144,7 +145,7 @@ export default function TicketScannerScreen() {
             <Text style={styles.scanNotice}>Position ticket QR code inside the box</Text>
           </View>
         ) : (
-          <View style={[styles.noPermBox, { backgroundColor: colors.card }]}>
+          <View style={[styles.noPermBox, { backgroundColor: SURFACE }]}>
             <Ionicons name="camera-outline" size={48} color={colors.textMuted} />
             <Text style={[styles.noPermText, { color: colors.text }]}>Camera Permission Required</Text>
             <TouchableOpacity style={[styles.permBtn, { backgroundColor: colors.tint }]} onPress={requestPermission}>
@@ -176,7 +177,7 @@ export default function TicketScannerScreen() {
         )}
 
         {/* Manual Code Input */}
-        <View style={[styles.manualCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[styles.manualCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           <Text style={[styles.manualTitle, { color: colors.text }]}>Enter Ticket Code Manually</Text>
           <View style={styles.inputRow}>
             <TextInput

@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../constants/tokens';
 import React, { useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Dimensions,
@@ -71,7 +72,7 @@ export default function CheckoutSuccessScreen() {
   const amountNum = Number(amount ?? 0);
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View style={[styles.root, { backgroundColor: DARK }]}>
       {/* Confetti — full screen */}
       <LottieView
         autoPlay
@@ -82,7 +83,7 @@ export default function CheckoutSuccessScreen() {
       />
 
       {/* Main content area */}
-      <Animated.View style={[styles.sheet, { backgroundColor: colors.background, flex: 1 }, sheetStyle]}>
+      <Animated.View style={[styles.sheet, { backgroundColor: DARK, flex: 1 }, sheetStyle]}>
         <SafeAreaView edges={['bottom', 'top']} style={{ flex: 1, paddingTop: 40 }}>
 
           {/* ── Lottie hero ─────────────────────────── */}

@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
@@ -68,7 +69,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
         onPress={onPress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+        style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
       >
         {/* Image */}
         <View style={s.imgWrap}>

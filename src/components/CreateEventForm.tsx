@@ -51,7 +51,7 @@ function TicketCard({ tier, idx, onChange, onRemove, canRemove, colors }: any) {
   };
   const rotate = rot.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
   return (
-    <View style={[tk.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+    <View style={[tk.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
       <TouchableOpacity style={tk.header} onPress={toggle}>
         <View style={[tk.iconWrap, { backgroundColor: colors.tint + '20' }]}>
           <Ionicons name="ticket-outline" size={16} color={colors.tint} />
@@ -128,7 +128,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
   return (
     <>
       {/* Host card */}
-      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           {profile?.avatar_url
             ? <Image source={{ uri: profile.avatar_url }} style={s.avatar} contentFit="cover" />
@@ -147,7 +147,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
                 <Ionicons name="chevron-down" size={10} color={colors.tint} />
               </TouchableOpacity>
               {showCategoryMenu && categories && onSelectCategory && (
-                <View style={[s.menu, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                <View style={[s.menu, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
                   {categories.map(cat => (
                     <TouchableOpacity key={cat} style={s.menuItem} onPress={() => onSelectCategory(cat)}>
                       <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
@@ -168,7 +168,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Cover */}
-      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="image-outline" size={15} color={colors.tint} />
@@ -206,7 +206,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Title */}
-      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
           <Ionicons name="pricetag-outline" size={15} color={colors.tint} />
           <Text style={[s.fieldLabel, { color: colors.text }]}>Event Title <Text style={s.req}>*</Text></Text>
@@ -219,7 +219,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Description */}
-      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
           <Ionicons name="document-text-outline" size={15} color={colors.tint} />
           <Text style={[s.fieldLabel, { color: colors.text }]}>Event Description <Text style={s.req}>*</Text></Text>
@@ -234,7 +234,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
 
       {/* Date + Time */}
       <View style={s.row}>
-        <View style={[s.card, s.half, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[s.card, s.half, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Ionicons name="calendar-outline" size={14} color={colors.tint} />
             <Text style={[s.fieldLabel, { color: colors.text }]}>Date <Text style={s.req}>*</Text></Text>
@@ -250,7 +250,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
             </TouchableOpacity>
           )}
         </View>
-        <View style={[s.card, s.half, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[s.card, s.half, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Ionicons name="time-outline" size={14} color={colors.tint} />
             <Text style={[s.fieldLabel, { color: colors.text }]}>Time <Text style={s.req}>*</Text></Text>
@@ -278,7 +278,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       )}
 
       {/* Location */}
-      <View style={[s.settingsCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.settingsCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <TouchableOpacity style={s.settingsRow} onPress={() => setShowLocation(o => !o)}>
           <View style={[s.settingsIcon, { backgroundColor: colors.tint + '15' }]}>
             <Ionicons name="location-outline" size={18} color={colors.tint} />
@@ -302,9 +302,9 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
               query={{ key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY, language: 'en', components: 'country:ng' }}
               styles={{
                 textInput: [s.googleInput, { color: colors.text, backgroundColor: colors.inputBackground || colors.background }],
-                row: { backgroundColor: colors.background },
+                row: { backgroundColor: DARK },
                 description: { color: colors.text },
-                listView: { backgroundColor: colors.background, zIndex: 100 },
+                listView: { backgroundColor: DARK, zIndex: 100 },
               }}
               textInputProps={{ placeholderTextColor: colors.textMuted }}
             />
@@ -313,7 +313,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Category */}
-      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
           <Ionicons name="grid-outline" size={15} color={colors.tint} />
           <Text style={[s.fieldLabel, { color: colors.text }]}>Category <Text style={s.req}>*</Text></Text>
@@ -332,7 +332,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Ticketed toggle */}
-      <View style={[s.settingsCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.settingsCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={[s.settingsRow, { paddingVertical: 14 }]}>
           <View style={{ flex: 1 }}>
             <Text style={[s.fieldLabel, { color: colors.text }]}>Is this a ticketed event?</Text>
@@ -349,7 +349,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Tickets */}
-      <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="ticket-outline" size={15} color={colors.tint} />

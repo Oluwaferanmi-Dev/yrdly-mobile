@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
@@ -148,7 +149,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
       <View style={styles.fieldGroup}>
         <Text style={[styles.label, { color: colors.text }]}>State *</Text>
         <TouchableOpacity
-          style={[styles.selector, { backgroundColor: colors.card, borderColor: colors.border }, value.state ? { borderColor: colors.tint } : null]}
+          style={[styles.selector, { backgroundColor: SURFACE, borderColor: colors.border }, value.state ? { borderColor: colors.tint } : null]}
           onPress={() => openPicker('state')}
           activeOpacity={0.8}
         >
@@ -165,7 +166,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
         <TouchableOpacity
           style={[
             styles.selector,
-            { backgroundColor: colors.card, borderColor: colors.border },
+            { backgroundColor: SURFACE, borderColor: colors.border },
             value.lga ? { borderColor: colors.tint } : null,
             !value.state && styles.selectorDisabled,
           ]}
@@ -181,7 +182,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
 
       {/* Picker Modal */}
       <Modal visible={pickerVisible} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={[styles.modal, { backgroundColor: colors.background }]}>
+        <SafeAreaView style={[styles.modal, { backgroundColor: DARK }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.borderLight }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
               {pickerMode === 'state' ? 'Select State' : 'Select LGA'}
@@ -192,7 +193,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
           </View>
 
           {/* Search */}
-          <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.searchBox, { backgroundColor: SURFACE, borderColor: colors.border }]}>
             <Feather name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
             <TextInput
               style={[styles.searchInput, { color: colors.text }]}

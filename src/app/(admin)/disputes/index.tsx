@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../../constants/tokens';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
@@ -91,7 +92,7 @@ export default function AdminDisputesScreen() {
 
   if (accessDenied) {
     return (
-      <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
         <View style={s.center}>
           <Feather name="lock" size={48} color={colors.textMuted} />
           <Text style={[s.accessText, { color: colors.textSecondary }]}>Admin access required</Text>
@@ -108,7 +109,7 @@ export default function AdminDisputesScreen() {
 
     return (
       <TouchableOpacity
-        style={[s.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+        style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
         onPress={() => router.push(`/(admin)/disputes/${item.id}` as any)}
         activeOpacity={0.75}
       >
@@ -173,7 +174,7 @@ export default function AdminDisputesScreen() {
   };
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
       {/* Header */}
       <View style={[s.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>

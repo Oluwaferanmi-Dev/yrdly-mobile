@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image, Switch } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -155,14 +156,14 @@ export default function CreateCatalogItemScreen() {
 
   if (initLoading) {
     return (
-      <View style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.tint} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={[s.root, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[s.root, { backgroundColor: DARK }]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={[s.header, { borderBottomColor: colors.borderLight }]}>
           <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>

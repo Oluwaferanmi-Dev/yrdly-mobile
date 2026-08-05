@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, forwardRef, useImperativeHandle, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput, Platform, Keyboard } from 'react-native';
 import { Image } from 'expo-image';
@@ -69,7 +70,7 @@ export const CommentInput = forwardRef<CommentInputRef, CommentInputProps>(({
   };
 
   return (
-    <View style={[styles.container, { borderTopColor: colors.borderLight, backgroundColor: colors.background, paddingBottom: keyboardVisible ? (Platform.OS === 'android' ? 12 : 12) : Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 12) }]}>
+    <View style={[styles.container, { borderTopColor: colors.borderLight, backgroundColor: DARK, paddingBottom: keyboardVisible ? (Platform.OS === 'android' ? 12 : 12) : Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 12) }]}>
       {replyingTo && (
         <View style={styles.replyBanner}>
           <Text style={[styles.replyBannerText, { color: colors.textMuted }]}>

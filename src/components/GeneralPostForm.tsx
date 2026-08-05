@@ -83,7 +83,7 @@ export function GeneralPostForm({
                 <Ionicons name="chevron-down" size={11} color={colors.tint} />
               </TouchableOpacity>
               {showCategoryMenu && (
-                <View style={[s.menu, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                <View style={[s.menu, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
                   {categories.map(cat => (
                     <TouchableOpacity key={cat} style={s.menuItem} onPress={() => onSelectCategory(cat)}>
                       <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
@@ -103,7 +103,7 @@ export function GeneralPostForm({
       </View>
 
       {/* ── Composer card ── */}
-      <View style={[s.composerCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.composerCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         <TextInput
           style={[s.composerInput, { color: colors.text }]}
           placeholder="What's happening nearby?"
@@ -119,7 +119,7 @@ export function GeneralPostForm({
       </View>
 
       {/* ── Media toolbar ── */}
-      <View style={[s.toolbarCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+      <View style={[s.toolbarCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
         {([
           ['image-outline', 'Photo'],
         ] as [string, string][]).map(([icon, label]) => (
@@ -155,7 +155,7 @@ export function GeneralPostForm({
 
       {/* ── Visibility row ── */}
       <TouchableOpacity 
-        style={[s.rowCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+        style={[s.rowCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
         onPress={() => onChange({ visibility: values.visibility === 'private' ? 'public' : 'private' })}
       >
         <View style={[s.visIcon, { borderColor: colors.tint }]}>

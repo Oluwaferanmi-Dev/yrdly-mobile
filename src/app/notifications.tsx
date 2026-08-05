@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, useWindowDimensions,
@@ -70,7 +71,7 @@ const SkeletonCard = () => {
   const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Animated.View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }, animStyle]}>
+    <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }, animStyle]}>
       <View style={[styles.avatar, { backgroundColor: colors.border }]} />
       <View style={styles.contentContainer}>
         <View style={{ height: 16, width: '60%', backgroundColor: colors.border, borderRadius: 4, marginBottom: 8 }} />
@@ -445,7 +446,7 @@ export default function NotificationsScreen() {
                 </Text>
               </View>
             )}
-            <View style={[styles.typeIconBadge, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+            <View style={[styles.typeIconBadge, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
               {renderIcon(item.type)}
             </View>
           </View>
@@ -475,7 +476,7 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
       {/* Premium Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
@@ -543,7 +544,7 @@ export default function NotificationsScreen() {
         </View>
       ) : filteredNotifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <View style={[styles.emptyIconCircle, { backgroundColor: colors.card }]}>
+          <View style={[styles.emptyIconCircle, { backgroundColor: SURFACE }]}>
             <Feather name="bell" size={48} color={colors.textSecondary} />
           </View>
           <Text style={[styles.emptyTitle, { color: colors.text }]}>No notifications yet</Text>

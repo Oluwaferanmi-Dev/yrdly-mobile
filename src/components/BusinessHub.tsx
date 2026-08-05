@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
@@ -122,7 +123,7 @@ export function BusinessHub({ searchQuery }: BusinessHubProps) {
     return (
       <View style={s.skeletonGrid}>
         {[1, 2, 3, 4].map(k => (
-          <View key={k} style={[s.skeletonCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View key={k} style={[s.skeletonCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
             <Skeleton width="100%" height={150} />
           </View>
         ))}
@@ -189,9 +190,9 @@ export function BusinessHub({ searchQuery }: BusinessHubProps) {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => router.push(`/businesses/${item.id}` as any)}
-              style={[s.bizCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+              style={[s.bizCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
             >
-              <View style={[s.bizImgContainer, { backgroundColor: colors.background }]}>
+              <View style={[s.bizImgContainer, { backgroundColor: DARK }]}>
                 <Image 
                   source={{ uri: item.logo || item.cover_image || item.image_urls?.[0] || 'https://via.placeholder.com/150' }} 
                   style={s.bizImg} 

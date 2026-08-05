@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -49,7 +50,7 @@ export function LocationChip() {
         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={styles.modalOverlay} />
         </TouchableWithoutFeedback>
-        <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+        <View style={[styles.modalContent, { backgroundColor: SURFACE }]}>
           <Text style={[styles.modalTitle, { color: colors.text }]}>View Area</Text>
           
           <TouchableOpacity 

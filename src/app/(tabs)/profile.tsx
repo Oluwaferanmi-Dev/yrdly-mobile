@@ -663,7 +663,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   actionCard: {
     flex: 1, 
-    backgroundColor: colors.card, 
+    backgroundColor: SURFACE, 
     borderRadius: 20, 
     padding: 14,
     borderWidth: 1, 

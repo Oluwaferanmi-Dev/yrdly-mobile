@@ -177,8 +177,8 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.borderLight }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
@@ -191,7 +191,7 @@ export default function SettingsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         
         {/* Profile Card */}
-        <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[styles.profileCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           <TouchableOpacity style={styles.avatarWrapper} onPress={handlePickImage} disabled={uploadingImage}>
             {avatarUrl ? (
               <Image source={{ uri: avatarUrl }} style={[styles.avatarImage, { borderColor: colors.borderLight }]} />

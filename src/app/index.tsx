@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../constants/tokens';
 import { Redirect } from 'expo-router';
 import { View, ActivityIndicator, StyleSheet} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,7 +11,7 @@ export default function Index() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
         <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );

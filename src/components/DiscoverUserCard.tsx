@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
@@ -55,7 +56,7 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
         {user.avatar_url ? (
           <Image
             source={{ uri: user.avatar_url }}
-            style={[styles.avatar, { backgroundColor: colors.background }]}
+            style={[styles.avatar, { backgroundColor: DARK }]}
             contentFit="cover"
           />
         ) : (

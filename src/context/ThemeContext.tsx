@@ -47,8 +47,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const activeTheme: ActiveTheme = isDarkMode ? 'dark' : 'light';
-  const colors = Colors[activeTheme];
+  const activeTheme: ActiveTheme = 'dark'; // YRDLY is dark-mode only
+  const colors = Colors['dark'];
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleTheme, activeTheme, colors }}>

@@ -209,7 +209,7 @@ export default function CheckoutScreen() {
   // ── Loading ──────────────────────────────────────────────────
   if (stage === 'loading') {
     return (
-      <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}>
         <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
@@ -219,7 +219,7 @@ export default function CheckoutScreen() {
   if (stage === 'paying' || stage === 'verifying') {
     const isVerifying = stage === 'verifying';
     return (
-      <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}>
         <LottieView
           autoPlay
           loop
@@ -251,7 +251,7 @@ export default function CheckoutScreen() {
   // ── Error ────────────────────────────────────────────────────
   if (stage === 'error') {
     return (
-      <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}>
         <Feather name="alert-circle" size={48} color="#E53935" />
         <Text style={[styles.errorTitle, { color: colors.text }]}>Payment failed</Text>
         <Text style={[styles.errorMsg, { color: colors.textSecondary }]}>{errorMsg}</Text>
@@ -264,8 +264,8 @@ export default function CheckoutScreen() {
 
   // ── Order Summary ────────────────────────────────────────────
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
@@ -275,7 +275,7 @@ export default function CheckoutScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Item card */}
-        <View style={[styles.itemCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+        <View style={[styles.itemCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
           {thumbnail ? (
             <Image source={{ uri: thumbnail }} style={styles.itemThumb} contentFit="cover" />
           ) : (

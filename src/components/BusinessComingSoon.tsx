@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -83,13 +84,13 @@ export function BusinessComingSoon() {
         </Animated.View>
 
         {/* Floating Accent Icons */}
-        <Animated.View style={[styles.accentIcon, styles.accent1, { backgroundColor: colors.card, shadowColor: colors.text }, opacity1Style]}>
+        <Animated.View style={[styles.accentIcon, styles.accent1, { backgroundColor: SURFACE, shadowColor: colors.text }, opacity1Style]}>
           <Feather name="trending-up" size={16} color={colors.tint} />
         </Animated.View>
-        <Animated.View style={[styles.accentIcon, styles.accent2, { backgroundColor: colors.card, shadowColor: colors.text }, opacity2Style]}>
+        <Animated.View style={[styles.accentIcon, styles.accent2, { backgroundColor: SURFACE, shadowColor: colors.text }, opacity2Style]}>
           <Feather name="star" size={18} color="#FFC107" />
         </Animated.View>
-        <Animated.View style={[styles.accentIcon, styles.accent3, { backgroundColor: colors.card, shadowColor: colors.text }, opacity3Style]}>
+        <Animated.View style={[styles.accentIcon, styles.accent3, { backgroundColor: SURFACE, shadowColor: colors.text }, opacity3Style]}>
           <Feather name="map-pin" size={16} color="#FF5252" />
         </Animated.View>
       </View>

@@ -600,7 +600,7 @@ function ChatContent() {
     : (otherUser?.name || 'Chat');
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
@@ -711,7 +711,7 @@ function ChatContent() {
         )}
 
         {/* Input */}
-        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: colors.card, paddingBottom: keyboardVisible ? 10 : Math.max(insets.bottom, 10) }]}>
+        <View style={[styles.inputRow, { borderTopColor: colors.borderLight, backgroundColor: SURFACE, paddingBottom: keyboardVisible ? 10 : Math.max(insets.bottom, 10) }]}>
           <TouchableOpacity style={styles.attachBtn} onPress={pickMedia} disabled={uploadingMedia}>
             {uploadingMedia ? (
               <ActivityIndicator size="small" color={colors.tint} />

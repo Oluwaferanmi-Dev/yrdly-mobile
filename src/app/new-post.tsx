@@ -517,7 +517,7 @@ export default function CreateTab() {
       <Modal visible={postSuccess} transparent={true} animationType="none" onRequestClose={() => {}}>
         <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 200, justifyContent: 'flex-end' }, successOverlayStyle]}>
           <View style={styles.postSuccessBackdrop} />
-          <Animated.View style={[styles.postSuccessSheet, { backgroundColor: colors.card, paddingBottom: insets.bottom + 90 }, successSheetStyle]}>
+          <Animated.View style={[styles.postSuccessSheet, { backgroundColor: SURFACE, paddingBottom: insets.bottom + 90 }, successSheetStyle]}>
             <View style={styles.postSuccessHandle} />
             <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.tint + '20', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
               <Ionicons name="checkmark-circle" size={80} color={colors.tint} />

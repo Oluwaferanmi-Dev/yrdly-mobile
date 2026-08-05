@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
@@ -119,7 +120,7 @@ export default function WithdrawScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
         <View style={s.center}>
           <ActivityIndicator size="large" color={colors.tint} />
         </View>
@@ -128,7 +129,7 @@ export default function WithdrawScreen() {
   }
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
 
         {/* Header */}
@@ -143,7 +144,7 @@ export default function WithdrawScreen() {
         <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
           {/* Balance card */}
-          <View style={[s.balanceCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View style={[s.balanceCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
             <View style={[s.balanceIcon, { backgroundColor: colors.tint + '18' }]}>
               <Text style={[s.balanceIconText, { color: colors.tint }]}>₦</Text>
             </View>
@@ -153,7 +154,7 @@ export default function WithdrawScreen() {
 
           {/* Bank account */}
           {bankInfo ? (
-            <View style={[s.bankCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+            <View style={[s.bankCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
               <Feather name="credit-card" size={18} color={colors.tint} />
               <View style={{ flex: 1 }}>
                 <Text style={[s.bankName, { color: colors.text }]}>{bankInfo.bank_name}</Text>
@@ -167,7 +168,7 @@ export default function WithdrawScreen() {
             </View>
           ) : (
             <TouchableOpacity
-              style={[s.bankCard, { backgroundColor: colors.card, borderColor: colors.tint + '55', borderStyle: 'dashed' }]}
+              style={[s.bankCard, { backgroundColor: SURFACE, borderColor: colors.tint + '55', borderStyle: 'dashed' }]}
               onPress={() => router.push('/settings/payout-settings' as any)}
             >
               <Feather name="plus-circle" size={18} color={colors.tint} />
@@ -220,7 +221,7 @@ export default function WithdrawScreen() {
             {balance > 0 && (
               <TouchableOpacity
                 onPress={() => setAmount(Math.floor(balance).toLocaleString('en-NG'))}
-                style={[s.quickChip, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+                style={[s.quickChip, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
               >
                 <Text style={[s.quickChipText, { color: colors.textSecondary }]}>All</Text>
               </TouchableOpacity>
@@ -252,7 +253,7 @@ export default function WithdrawScreen() {
         <Modal transparent animationType="none" visible={showConfirm} onRequestClose={closeConfirm}>
           <Animated.View style={[s.overlay, overlayStyle]}>
             <TouchableOpacity style={StyleSheet.absoluteFill} onPress={closeConfirm} activeOpacity={1} />
-            <Animated.View style={[s.confirmSheet, { backgroundColor: colors.card }, confirmStyle]}>
+            <Animated.View style={[s.confirmSheet, { backgroundColor: SURFACE }, confirmStyle]}>
               <View style={[s.handle, { backgroundColor: colors.borderLight }]} />
 
               <Text style={[s.confirmTitle, { color: colors.text }]}>Confirm Withdrawal</Text>

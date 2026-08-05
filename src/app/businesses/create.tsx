@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -90,7 +91,7 @@ export default function CreateBusinessScreen() {
 
   if (checkingVerification) {
     return (
-      <SafeAreaView style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <SafeAreaView style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.tint} />
       </SafeAreaView>
     );
@@ -98,7 +99,7 @@ export default function CreateBusinessScreen() {
 
   if (!isVerified) {
     return (
-      <SafeAreaView style={[s.root, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <SafeAreaView style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
         <Ionicons name="alert-circle-outline" size={48} color={colors.tint} style={{ marginBottom: 16 }} />
         <Text style={[s.errorTxt, { color: colors.text }]}>Verification Required</Text>
         <Text style={[s.subErrorTxt, { color: colors.textMuted }]}>You must be a verified seller to create a business.</Text>
@@ -204,7 +205,7 @@ export default function CreateBusinessScreen() {
   };
 
   return (
-    <SafeAreaView style={[s.root, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[s.root, { backgroundColor: DARK }]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[s.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
@@ -300,9 +301,9 @@ export default function CreateBusinessScreen() {
               container: { flex: 0, marginBottom: 20 },
               textInputContainer: { width: '100%' },
               textInput: [s.input, { backgroundColor: colors.inputBackground, color: colors.text, marginBottom: 0 }],
-              row: { backgroundColor: colors.background, padding: 13, minHeight: 44, flexDirection: 'row' },
+              row: { backgroundColor: DARK, padding: 13, minHeight: 44, flexDirection: 'row' },
               description: { color: colors.text },
-              listView: { backgroundColor: colors.background, borderRadius: 12, borderWidth: 1, borderColor: colors.borderLight, marginTop: 4, position: 'absolute', top: '100%', width: '100%', zIndex: 100 },
+              listView: { backgroundColor: DARK, borderRadius: 12, borderWidth: 1, borderColor: colors.borderLight, marginTop: 4, position: 'absolute', top: '100%', width: '100%', zIndex: 100 },
             }}
             textInputProps={{ 
               placeholderTextColor: colors.textMuted,

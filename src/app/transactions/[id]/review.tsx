@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import {
@@ -96,14 +97,14 @@ export default function ReviewScreen() {
     }
   };
 
-  if (loading) return <SafeAreaView style={[styles.center, { backgroundColor: colors.background }]}><ActivityIndicator size="large" color={colors.tint} /></SafeAreaView>;
+  if (loading) return <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}><ActivityIndicator size="large" color={colors.tint} /></SafeAreaView>;
 
   const thumb = tx?.item?.image_urls?.[0];
   const LABELS = ['', 'Terrible', 'Poor', 'Okay', 'Good', 'Excellent!'];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Feather name="x" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -112,7 +113,7 @@ export default function ReviewScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={[styles.card, { backgroundColor: colors.card }]}
+        <View style={[styles.card, { backgroundColor: SURFACE }]}
 >
           {thumb
             ? <Image source={{ uri: thumb }} style={styles.itemImage} contentFit="cover" />
@@ -153,7 +154,7 @@ export default function ReviewScreen() {
             <View style={styles.section}>
               <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>YOUR REVIEW (OPTIONAL)</Text>
               <TextInput
-                style={[styles.textArea, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
+                style={[styles.textArea, { backgroundColor: SURFACE, borderColor: colors.border, color: colors.text }]}
                 value={comment}
                 onChangeText={setComment}
                 placeholder="Share your experience with this seller..."

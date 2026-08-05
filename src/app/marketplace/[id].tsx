@@ -344,7 +344,7 @@ function MarketplaceDetailContent() {
 
   if (loading) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+      <View style={[styles.centerContainer, { backgroundColor: DARK }]}>
         <ActivityIndicator size="large" color={colors.tint} />
       </View>
     );
@@ -352,7 +352,7 @@ function MarketplaceDetailContent() {
 
   if (!post) {
     return (
-      <SafeAreaView style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
         <Text style={[styles.errorText, { color: colors.text }]}>Item not found</Text>
         <TouchableOpacity style={[styles.backBtnWrapper, { backgroundColor: colors.inputBackground }]} onPress={() => router.back()}>
           <Text style={[styles.backBtnText, { color: colors.text }]}>Go Back</Text>
@@ -369,7 +369,7 @@ function MarketplaceDetailContent() {
   const isOwner = user?.id === post.user_id;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: DARK }]}>
       {/* Absolute Header Overlay */}
       <View style={styles.absoluteHeader}>
         <SafeAreaView edges={['top']} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16 }}>
@@ -475,7 +475,7 @@ function MarketplaceDetailContent() {
                   </View>
                 )}
               </View>
-              <TouchableOpacity onPress={handleToggleLike} style={[styles.favouriteBtn, { backgroundColor: colors.background }]}>
+              <TouchableOpacity onPress={handleToggleLike} style={[styles.favouriteBtn, { backgroundColor: DARK }]}>
                 <Animated.View style={animatedHeartStyle}>
                   <Ionicons name={isLiked ? "heart" : "heart-outline"} size={22} color={isLiked ? colors.tint : colors.text} />
                 </Animated.View>
@@ -564,7 +564,7 @@ function MarketplaceDetailContent() {
       </Animated.ScrollView>
 
       {/* Sticky Bottom Bar */}
-      <View style={[styles.stickyFooter, { backgroundColor: colors.background, borderTopColor: colors.borderLight }]}>
+      <View style={[styles.stickyFooter, { backgroundColor: DARK, borderTopColor: colors.borderLight }]}>
         <SafeAreaView edges={['bottom']} style={{ flexDirection: 'row', width: '100%', paddingBottom: Platform.OS === 'ios' ? 0 : 16 }}>
           {isOwner ? (
             <TouchableOpacity 

@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -352,9 +353,9 @@ export default function TransactionDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
@@ -375,7 +376,7 @@ export default function TransactionDetailScreen() {
         </Animated.View>
 
         {/* Item card */}
-        <Animated.View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }, card1Style]}>
+        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }, card1Style]}>
           <View style={styles.itemRow}>
             {thumb ? (
               <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" />
@@ -405,7 +406,7 @@ export default function TransactionDetailScreen() {
         </Animated.View>
 
         {/* Counterparty */}
-        <Animated.View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }, card2Style]}>
+        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }, card2Style]}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{isBuyer ? 'Seller' : 'Buyer'}</Text>
           <View style={styles.personRow}>
             {counterparty?.avatar_url ? (
@@ -427,7 +428,7 @@ export default function TransactionDetailScreen() {
         </Animated.View>
 
         {/* Timeline */}
-        <Animated.View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.borderLight }, card3Style]}>
+        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }, card3Style]}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Timeline</Text>
           {TIMELINE_STEPS.map((step, i) => {
             const done = STATUS_ORDER.indexOf(step.status) <= currentStepIndex
@@ -436,7 +437,7 @@ export default function TransactionDetailScreen() {
             return (
               <View key={step.status} style={styles.timelineRow}>
                 <View style={styles.timelineLeft}>
-                  <View style={[styles.timelineDot, { borderColor: colors.borderLight, backgroundColor: colors.card }, done && [styles.timelineDotDone, { backgroundColor: colors.tint, borderColor: colors.tint }]]}>
+                  <View style={[styles.timelineDot, { borderColor: colors.borderLight, backgroundColor: SURFACE }, done && [styles.timelineDotDone, { backgroundColor: colors.tint, borderColor: colors.tint }]]}>
                     {done && <Feather name="check" size={12} color="#FFF" />}
                   </View>
                   {i < TIMELINE_STEPS.length - 1 && (

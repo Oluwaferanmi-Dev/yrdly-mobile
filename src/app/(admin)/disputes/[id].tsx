@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
@@ -142,7 +143,7 @@ export default function AdminDisputeDetailScreen() {
 
   if (accessDenied) {
     return (
-      <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
         <View style={s.center}>
           <Feather name="lock" size={48} color={colors.textMuted} />
           <Text style={[s.centerText, { color: colors.textSecondary }]}>Admin access required</Text>
@@ -153,7 +154,7 @@ export default function AdminDisputeDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
         <View style={s.center}>
           <ActivityIndicator size="large" color={colors.tint} />
         </View>
@@ -163,7 +164,7 @@ export default function AdminDisputeDetailScreen() {
 
   if (!dispute) {
     return (
-      <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
         <View style={s.center}>
           <Text style={[s.centerText, { color: colors.textSecondary }]}>Dispute not found.</Text>
         </View>
@@ -180,7 +181,7 @@ export default function AdminDisputeDetailScreen() {
   const evidence: string[] = dispute.evidence_urls ?? [];
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {/* Header */}
         <View style={[s.header, { borderBottomColor: colors.borderLight }]}>
@@ -198,7 +199,7 @@ export default function AdminDisputeDetailScreen() {
         <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
           {/* Parties */}
-          <View style={[s.section, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
             <Text style={[s.sectionTitle, { color: colors.textMuted }]}>PARTIES</Text>
             {[{ role: 'Buyer', p: buyer }, { role: 'Seller', p: seller }].map(({ role, p }) => (
               <View key={role} style={s.partyRow}>
@@ -219,7 +220,7 @@ export default function AdminDisputeDetailScreen() {
 
           {/* Transaction info */}
           {tx && (
-            <View style={[s.section, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+            <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
               <Text style={[s.sectionTitle, { color: colors.textMuted }]}>ORDER</Text>
               {item && (
                 <Text style={[s.detailRow, { color: colors.text }]}>
@@ -241,7 +242,7 @@ export default function AdminDisputeDetailScreen() {
           )}
 
           {/* Dispute info */}
-          <View style={[s.section, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+          <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
             <Text style={[s.sectionTitle, { color: colors.textMuted }]}>DISPUTE</Text>
             <Text style={[s.detailRow, { color: colors.text }]}>
               <Text style={{ color: colors.textMuted }}>Reason: </Text>
@@ -258,7 +259,7 @@ export default function AdminDisputeDetailScreen() {
 
           {/* Evidence images */}
           {evidence.length > 0 && (
-            <View style={[s.section, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+            <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
               <Text style={[s.sectionTitle, { color: colors.textMuted }]}>EVIDENCE ({evidence.length})</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                 {evidence.map((url, i) => (
@@ -270,7 +271,7 @@ export default function AdminDisputeDetailScreen() {
 
           {/* Admin note (if already resolved) */}
           {isResolved && dispute.admin_note && (
-            <View style={[s.section, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+            <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
               <Text style={[s.sectionTitle, { color: colors.textMuted }]}>RESOLUTION NOTE</Text>
               <Text style={[s.description, { color: colors.textSecondary }]}>{dispute.admin_note}</Text>
               {dispute.resolution && (
@@ -283,7 +284,7 @@ export default function AdminDisputeDetailScreen() {
 
           {/* Resolution controls — only for non-resolved disputes */}
           {!isResolved && (
-            <View style={[s.section, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+            <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
               <Text style={[s.sectionTitle, { color: colors.textMuted }]}>RESOLUTION</Text>
 
               {RESOLUTION_OPTIONS.map(opt => {

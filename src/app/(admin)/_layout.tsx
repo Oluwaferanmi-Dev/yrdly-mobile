@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../constants/tokens';
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Redirect, Slot } from 'expo-router';
@@ -10,7 +11,7 @@ export default function AdminLayout() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: DARK }}>
         <ActivityIndicator size="large" color={colors.tint} />
       </View>
     );

@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../../constants/tokens';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert as RNAlert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -67,7 +68,7 @@ export default function CreateAlertScreen() {
   // If user is not admin, they shouldn't even be here, but let's be safe
   if (profile?.role !== 'admin' && !profile?.is_admin) {
     return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
+      <View style={[styles.center, { backgroundColor: DARK }]}>
         <Text style={styles.errorText}>Unauthorized Access</Text>
       </View>
     );
@@ -115,7 +116,7 @@ export default function CreateAlertScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
+    <ScrollView style={[styles.container, { backgroundColor: DARK }]} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color={colors.text} />

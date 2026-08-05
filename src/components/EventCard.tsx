@@ -1,3 +1,4 @@
+import { DARK, SURFACE } from '../../constants/tokens';
 import React, { useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Animated, Share, Dimensions,
@@ -93,7 +94,7 @@ export function EventCardCompact({ event, onPress }: EventCardProps) {
     <Animated.View style={{ transform: [{ scale: pressScale }] }}>
       <TouchableOpacity
         activeOpacity={1} onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut}
-        style={[c.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+        style={[c.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
       >
         {/* Image */}
         <View style={c.imgWrap}>
@@ -205,7 +206,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
     <Animated.View style={[f.wrap, { transform: [{ scale: pressScale }] }]}>
       <TouchableOpacity
         activeOpacity={1} onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut}
-        style={[f.card, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+        style={[f.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
       >
         {/* Cover */}
         <View style={f.imgWrap}>
