@@ -207,7 +207,7 @@ export default function OtherUserProfileScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
         <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
             <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Profile Not Found</Text>
@@ -220,25 +220,16 @@ export default function OtherUserProfileScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitleLeft, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]} numberOfLines={1}>
-            {profile.username || profile.name}
-          </Text>
-          {profile.phone_verified && (
-            <MaterialIcons 
-              name="verified" 
-              size={16} 
-              color={G}
-            />
-          )}
-        </View>
-        {!isOwnProfile && (
-          <TouchableOpacity 
+      <View style={[styles.header, { paddingTop: 54 }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
+          <Ionicons name="chevron-back" size={20} color="#fff" />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: MUTED, fontFamily: 'Outfit-Bold' }]}>
+          @{profile.username || 'user'}
+        </Text>
+        <TouchableOpacity 
             onPress={() => {
+              if (isOwnProfile) return;
               Alert.alert('Options', '', [
                 { text: 'Block User', style: 'destructive', onPress: async () => {
                   if (!currentUser) return;
@@ -254,188 +245,111 @@ export default function OtherUserProfileScreen() {
                 { text: 'Cancel', style: 'cancel' }
               ]);
             }}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="ellipsis-horizontal" size={22} color={TEXT_PRIMARY} />
-          </TouchableOpacity>
-        )}
+            style={styles.navBtn}
+        >
+          <Ionicons name="ellipsis-horizontal" size={18} color="#fff" />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {profile.cover_url && (
-          <Image source={{ uri: profile.cover_url }} style={styles.cover} contentFit="cover" />
-        )}
-
-        <View style={[styles.profileHeader, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
-          <View style={styles.avatarRow}>
-            {profile.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={[styles.avatar, { borderColor: DARK, backgroundColor: SURFACE }, !profile.cover_url && { marginTop: 0 }]} contentFit="cover" />
-            ) : (
-              <View style={[styles.avatar, styles.avatarFallback, { borderColor: DARK, backgroundColor: G }, !profile.cover_url && { marginTop: 0 }]}>
-                <Text style={[styles.avatarFallbackText, { color: '#000000', fontFamily: 'Outfit' }]}>
-                  {profile.name ? profile.name.charAt(0).toUpperCase() : '?'}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+        {/* Profile hero */}
+        <View style={styles.profileHero}>
+          <View style={styles.heroTopRow}>
+            <View style={styles.avatarWrap}>
+              {profile.avatar_url ? (
+                <Image source={{ uri: profile.avatar_url }} style={styles.avatarImg} contentFit="cover" />
+              ) : (
+                <View style={[styles.avatarImg, styles.avatarFallback]}>
+                  <Text style={styles.avatarFallbackTxt}>{profile.name ? profile.name.charAt(0).toUpperCase() : '?'}</Text>
+                </View>
+              )}
+              <View style={styles.onlineDot} />
+            </View>
+            <View style={styles.heroInfo}>
+              <View style={styles.nameRow}>
+                <Text style={styles.heroName}>{profile.name}</Text>
+                {profile.phone_verified && (
+                  <MaterialIcons name="verified" size={18} color={G} />
+                )}
+              </View>
+              <Text style={styles.heroHandle}>@{profile.username || 'user'}</Text>
+              
+              <View style={styles.locationRow}>
+                <Ionicons name="location" size={12} color={G} />
+                <Text style={styles.locationTxt}>
+                  {[profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ') || 'Unknown Location'}
                 </Text>
               </View>
-            )}
-            
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{posts.length}</Text>
-                <Text style={[styles.statLabel, { color: LABEL, fontFamily: 'Inter' }]}>Posts</Text>
-              </View>
-              <TouchableOpacity 
-                style={styles.statItem}
-                onPress={() => router.push(`/network/${profile.id}?mode=followers` as any)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.statValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{followersCount}</Text>
-                <Text style={[styles.statLabel, { color: LABEL, fontFamily: 'Inter' }]}>Followers</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.statItem}
-                onPress={() => router.push(`/network/${profile.id}?mode=following` as any)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.statValue, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{followingCount}</Text>
-                <Text style={[styles.statLabel, { color: LABEL, fontFamily: 'Inter' }]}>Following</Text>
-              </TouchableOpacity>
             </View>
           </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-            <Text style={[styles.name, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{profile.name}</Text>
-            {profile.phone_verified && (
-              <MaterialIcons name="verified" size={18} color={G} style={{ marginLeft: 6 }} />
-            )}
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
-            <Text style={{ color: MUTED, fontSize: 14, fontFamily: 'Inter' }}>@{profile.username || 'user'}</Text>
-            {isFollower && !isFollowing && (
-              <View style={styles.followsYouBadge}>
-                <Text style={styles.followsYouText}>Follows you</Text>
-              </View>
-            )}
-            {isFollower && isFollowing && (
-              <View style={styles.followsYouBadge}>
-                <Text style={styles.followsYouText}>Mutual</Text>
-              </View>
-            )}
-          </View>
-          
-          {(profile.review_count ?? 0) > 0 && (
-            <View style={styles.ratingRow}>
-              <FontAwesome name="star" size={14} color="#FFD700" />
-              <Text style={[styles.ratingText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>
-                {profile.rating?.toFixed(1) || '0.0'}
-              </Text>
-              <Text style={[styles.reviewCount, { color: LABEL, fontFamily: 'Inter' }]}>
-                ({profile.review_count} reviews)
-              </Text>
-            </View>
+          {profile.bio && (
+            <Text style={styles.heroBio}>{profile.bio}</Text>
           )}
-          
-          {profile.bio && <Text style={[styles.bio, { color: MUTED, fontFamily: 'Inter' }]}>{profile.bio}</Text>}
 
-          <View style={{ flexDirection: 'column', gap: 6, marginTop: profile.bio ? 8 : 0, marginBottom: 8 }}>
-            {profile.email && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Ionicons name="mail-outline" size={14} color={G} />
-                <Text style={{ color: MUTED, fontSize: 13, fontFamily: 'Inter' }} numberOfLines={1}>{profile.email}</Text>
-              </View>
-            )}
-            {profile.location && (
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
-                onPress={() => {
-                  const locStr = [profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ');
-                  if (locStr) Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(locStr)}`);
-                }}
-              >
-                <Ionicons name="location-outline" size={14} color={G} />
-                <Text style={{ color: MUTED, fontSize: 13, textDecorationLine: 'underline', fontFamily: 'Inter' }}>
-                  {[profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ')}
-                </Text>
-              </TouchableOpacity>
-            )}
+          {/* Stats */}
+          <View style={styles.statsRow}>
+            <TouchableOpacity style={styles.statBtn} onPress={() => router.push(`/network/${profile.id}?mode=followers` as any)}>
+              <Text style={styles.statV}>{followersCount}</Text>
+              <Text style={styles.statL}>Followers</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.statBtn} onPress={() => router.push(`/network/${profile.id}?mode=following` as any)}>
+              <Text style={styles.statV}>{followingCount}</Text>
+              <Text style={styles.statL}>Following</Text>
+            </TouchableOpacity>
+            <View style={styles.statBtn}>
+              <Text style={styles.statV}>{posts.length}</Text>
+              <Text style={styles.statL}>Posts</Text>
+            </View>
           </View>
 
-          {currentUser?.id !== profile.id && (
+          {/* Mutuals */}
+          {/* Note: if you have mutuals logic, insert it here */}
+
+          {/* Action buttons */}
+          {!isOwnProfile && (
             <View style={styles.actionRow}>
               <TouchableOpacity
-                style={[styles.btnFollow, { backgroundColor: isFollowing ? SURFACE : G, borderWidth: isFollowing ? 1 : 0, borderColor: GLASS_BORDER }]}
+                style={[styles.btnAction, { backgroundColor: isFollowing ? SURFACE : G, borderColor: isFollowing ? GLASS_BORDER : G, borderWidth: 1 }]}
                 onPress={handleToggleFollow}
                 disabled={followLoading}
               >
                 {followLoading ? (
-                  <ActivityIndicator size="small" color={isFollowing ? TEXT_PRIMARY : '#000000'} />
+                  <ActivityIndicator size="small" color={isFollowing ? '#fff' : DARK} />
                 ) : (
-                  <Text style={[styles.btnFollowText, { color: isFollowing ? TEXT_PRIMARY : '#000000', fontFamily: 'Outfit' }]}>
-                    {isFollowing ? 'Following' : isFollower ? 'Follow Back' : 'Follow'}
-                  </Text>
+                  <>
+                    {isFollowing && <Ionicons name="checkmark" size={16} color="#fff" style={{ marginRight: 6 }} />}
+                    <Text style={[styles.btnActionTxt, { color: isFollowing ? '#fff' : DARK }]}>
+                      {isFollowing ? 'Following' : isFollower ? 'Follow Back' : 'Follow'}
+                    </Text>
+                  </>
                 )}
               </TouchableOpacity>
-
-              {friendship.status === 'none' && (
-                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]} onPress={friendship.addFriend} disabled={friendship.isLoading}>
-                  {friendship.isLoading ? <ActivityIndicator size="small" color={G} /> : <Feather name="user-plus" size={18} color={G} />}
-                  <Text style={[styles.btnMessageText, { color: G, fontFamily: 'Outfit' }]}>Add Friend</Text>
-                </TouchableOpacity>
-              )}
-
-              {friendship.status === 'request_sent' && (
-                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }]} disabled>
-                  <Feather name="clock" size={18} color={MUTED} />
-                  <Text style={[styles.btnMessageText, { color: MUTED, fontFamily: 'Inter' }]}>Requested</Text>
-                </TouchableOpacity>
-              )}
-
-              {friendship.status === 'request_received' && (
-                <View style={{ flex: 1, flexDirection: 'row', gap: 8 }}>
-                  <TouchableOpacity
-                    style={[styles.btnMessage, { backgroundColor: G, flex: 1 }]}
-                    onPress={friendship.acceptRequest}
-                    disabled={friendship.isLoading}
-                  >
-                    {friendship.isLoading
-                      ? <ActivityIndicator size="small" color="#000" />
-                      : <Feather name="check" size={18} color="#000" />}
-                    <Text style={[styles.btnMessageText, { color: '#000', fontFamily: 'Outfit' }]}>Accept</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.btnMessage, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, flex: 1 }]}
-                    onPress={friendship.declineRequest}
-                    disabled={friendship.isLoading}
-                  >
-                    <Feather name="x" size={18} color={MUTED} />
-                    <Text style={[styles.btnMessageText, { color: MUTED, fontFamily: 'Inter' }]}>Decline</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {friendship.status === 'friends' && (
-                <TouchableOpacity style={[styles.btnMessage, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]} onPress={handleMessage}>
-                  <Feather name="message-circle" size={18} color={G} />
-                  <Text style={[styles.btnMessageText, { color: G, fontFamily: 'Outfit' }]}>Message</Text>
-                </TouchableOpacity>
-              )}
+              
+              <TouchableOpacity
+                style={[styles.btnAction, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}
+                onPress={handleMessage}
+              >
+                <Ionicons name="chatbubble-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
+                <Text style={[styles.btnActionTxt, { color: '#fff' }]}>Message</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
 
-        <View style={styles.tabsContainer}>
-          <TouchableOpacity 
-            style={[styles.tabBtn, activeTab === 'posts' && { borderBottomColor: G, borderBottomWidth: 2 }]} 
-            onPress={() => setActiveTab('posts')}
-          >
-            <Text style={[styles.tabText, { color: activeTab === 'posts' ? G : LABEL, fontFamily: 'Outfit' }]}>Posts</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.tabBtn, activeTab === 'reviews' && { borderBottomColor: G, borderBottomWidth: 2 }]} 
-            onPress={() => setActiveTab('reviews')}
-          >
-            <Text style={[styles.tabText, { color: activeTab === 'reviews' ? G : LABEL, fontFamily: 'Outfit' }]}>Reviews</Text>
-          </TouchableOpacity>
+        {/* Tabs */}
+        <View style={styles.tabsWrap}>
+          {(['posts', 'reviews'] as const).map(t => (
+            <TouchableOpacity key={t} onPress={() => setActiveTab(t)} style={styles.tabBtn}>
+              <Text style={[styles.tabTxt, { color: activeTab === t ? '#fff' : LABEL, fontFamily: activeTab === t ? 'Outfit-Bold' : 'Outfit-Medium' }]}>
+                {t}
+              </Text>
+              {activeTab === t && <View style={styles.tabIndicator} />}
+            </TouchableOpacity>
+          ))}
         </View>
+
+
 
         <View style={styles.feedSection}>
           {activeTab === 'posts' ? (
@@ -506,53 +420,40 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingHorizontal: 20, paddingBottom: 12
   },
-  backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { fontSize: 16, fontWeight: 'bold', flex: 1, textAlign: 'center' },
-  headerTitleLeft: { fontSize: 20, fontWeight: '800' },
-  cover: { height: 120, width: '100%' },
-  profileHeader: { padding: 16, borderBottomWidth: 1 },
-  avatarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  avatar: {
-    width: 80, height: 80, borderRadius: 40,
-    marginTop: -40, borderWidth: 4,
-  },
-  avatarFallback: { justifyContent: 'center', alignItems: 'center' },
-  avatarFallbackText: { fontSize: 32, fontWeight: 'bold' },
-  statsRow: { flex: 1, flexDirection: 'row', justifyContent: 'space-around', marginLeft: 10 },
-  statItem: { alignItems: 'center' },
-  statValue: { fontSize: 18, fontWeight: 'bold' },
-  statLabel: { fontSize: 13, marginTop: 2 },
-  name: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
-  followsYouBadge: { backgroundColor: SURFACE, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: GLASS_BORDER },
-  followsYouText: { color: MUTED, fontSize: 11, fontFamily: 'Inter', fontWeight: '600' },
-  bio: { fontSize: 14, lineHeight: 20, marginBottom: 16 },
-  actionRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
-  btnFollow: {
-    flex: 1, paddingVertical: 10, borderRadius: 20,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  btnFollowText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 15 },
-  btnFollowing: { },
-  btnFollowingText: { },
-  btnMessage: {
-    flex: 1, flexDirection: 'row', paddingVertical: 10, borderRadius: 20,
-    justifyContent: 'center', alignItems: 'center', gap: 6,
-  },
-  btnMessageText: { fontWeight: 'bold', fontSize: 15 },
-  feedSection: { paddingVertical: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', paddingHorizontal: 16, marginBottom: 12 },
+  navBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 15, textAlign: 'center' },
+  profileHero: { paddingHorizontal: 20, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
+  heroTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16, marginBottom: 16 },
+  avatarWrap: { position: 'relative' },
+  avatarImg: { width: 80, height: 80, borderRadius: 40, borderWidth: 2.5, borderColor: GLASS_BORDER },
+  avatarFallback: { backgroundColor: G, alignItems: 'center', justifyContent: 'center' },
+  avatarFallbackTxt: { fontSize: 32, fontFamily: 'Outfit-Bold', color: '#050505' },
+  onlineDot: { position: 'absolute', bottom: 3, right: 3, width: 14, height: 14, borderRadius: 7, backgroundColor: G, borderWidth: 2, borderColor: '#050505' },
+  heroInfo: { flex: 1, justifyContent: 'center' },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  heroName: { fontSize: 20, fontFamily: 'Outfit-Bold', color: '#fff' },
+  heroHandle: { fontSize: 13, fontFamily: 'Inter-Regular', color: LABEL, marginBottom: 6 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  locationTxt: { fontSize: 12, fontFamily: 'Inter-Regular', color: LABEL },
+  heroBio: { fontSize: 14, fontFamily: 'Inter-Regular', color: MUTED, lineHeight: 22, marginBottom: 12 },
+  statsRow: { flexDirection: 'row', gap: 20, marginBottom: 16 },
+  statBtn: { alignItems: 'center' },
+  statV: { fontSize: 18, fontFamily: 'Outfit-Bold', color: '#fff' },
+  statL: { fontSize: 11, fontFamily: 'Inter-Regular', color: LABEL },
+  actionRow: { flexDirection: 'row', gap: 12 },
+  btnAction: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 14 },
+  btnActionTxt: { fontSize: 14, fontFamily: 'Outfit-Bold' },
+  tabsWrap: { flexDirection: 'row', paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
+  tabBtn: { flex: 1, paddingVertical: 12, position: 'relative' },
+  tabTxt: { fontSize: 14, textAlign: 'center', textTransform: 'capitalize' },
+  tabIndicator: { position: 'absolute', bottom: -1, left: 0, right: 0, height: 2, borderRadius: 99, backgroundColor: G },
+  
+  feedSection: { paddingTop: 16 },
   emptyState: { alignItems: 'center', padding: 40 },
   emptyTitle: { fontSize: 16, fontWeight: 'bold', marginTop: 12 },
   emptySubtitle: { fontSize: 14, marginTop: 6 },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  ratingText: { fontSize: 14, fontWeight: 'bold', marginLeft: 4 },
-  reviewCount: { fontSize: 14, marginLeft: 4 },
-  tabsContainer: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#333' },
-  tabBtn: { flex: 1, paddingVertical: 14, alignItems: 'center' },
-  tabText: { fontSize: 15, fontWeight: 'bold' },
   reviewsList: { paddingHorizontal: 16 },
   reviewCard: { paddingVertical: 16, borderBottomWidth: 1 },
   reviewHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
@@ -563,4 +464,5 @@ const styles = StyleSheet.create({
   verifiedBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F5E9', paddingHorizontal: 6, paddingVertical: 4, borderRadius: 4, opacity: 0.8 },
   verifiedText: { fontSize: 11, fontWeight: 'bold', marginLeft: 4 },
   reviewComment: { fontSize: 14, lineHeight: 20, marginTop: 4 },
+
 });

@@ -102,7 +102,7 @@ export default function Profile1Screen() {
       }
     }
 
-    router.push('/(onboarding)/profile2');
+    router.push('/profile2' as any);
   };
 
   return (
@@ -137,7 +137,7 @@ export default function Profile1Screen() {
                     <Text style={styles.verifyBannerTitle}>Verify your phone number</Text>
                     <Text style={styles.verifyBannerDesc}>Get your Verified Neighbour badge & buy/sell safely.</Text>
                   </View>
-                  <TouchableOpacity onPress={() => router.push('/(auth)/phone')} style={styles.verifyNowBtn}>
+                  <TouchableOpacity onPress={() => router.push('/phone' as any)} style={styles.verifyNowBtn}>
                     <Text style={styles.verifyNowText}>Verify</Text>
                   </TouchableOpacity>
                 </View>
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(235, 179, 74, 0.08)',
     borderWidth: 1,
     borderColor: 'rgba(235, 179, 74, 0.2)',
-    borderRadius: radii.md,
+    borderRadius: radii.card,
     padding: 12,
     marginBottom: 20,
   },
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(235, 179, 74, 0.15)',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: radii.sm,
+    borderRadius: radii.input,
   },
   verifyNowText: {
     fontFamily: 'Inter-Medium',
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.SURFACE,
     borderWidth: 1,
     borderColor: colors.GLASS_BORDER,
-    borderRadius: radii.md,
+    borderRadius: radii.input,
     color: '#fff',
     fontSize: 15,
     fontFamily: 'Inter-Regular',

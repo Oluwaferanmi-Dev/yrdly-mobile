@@ -291,7 +291,6 @@ export default function CatalogTab() {
           renderItem={({ item }) => (
             <MarketplaceItemCard
               item={item}
-              width={(width - 48) / 2}
               onPress={() => router.push(`/marketplace/${item.id}` as any)}
             />
           )}
@@ -311,7 +310,6 @@ export default function CatalogTab() {
           renderItem={({ item }) => (
             <MarketplaceItemCard
               item={item}
-              width={(width - 48) / 2}
               onPress={() => router.push(`/marketplace/${item.id}` as any)}
             />
           )}
@@ -323,7 +321,7 @@ export default function CatalogTab() {
       )}
 
       {activeTab === 'Businesses' && (
-        <BusinessHub />
+        <BusinessHub searchQuery={search} />
       )}
     </View>
   );

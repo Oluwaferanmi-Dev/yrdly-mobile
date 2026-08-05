@@ -107,6 +107,7 @@ const QuickPostBox = memo(() => {
 });
 
 export default function HomeTab() {
+  const { user, profile } = useAuth();
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -272,16 +273,25 @@ export default function HomeTab() {
     return (
       <View style={[styles.container, { backgroundColor: DARK }]}>
         <View style={[styles.headerContent, { paddingTop: insets.top, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }]}>
-          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 22, color: G, letterSpacing: -0.5 }}>YRDLY</Text>
+          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: G, letterSpacing: -0.5 }}>YRDLY</Text>
           <View style={{ flex: 1, paddingHorizontal: 10, alignItems: 'flex-start' }}>
             <LocationChip />
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
-              <MapIcon size={20} color={TEXT_PRIMARY} />
+            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
+              <MapIcon size={17} color="rgba(255,255,255,0.85)" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/alerts')} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-              <NotificationsIcon size={20} color={TEXT_PRIMARY} />
+            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
+              <NotificationsIcon size={17} color="rgba(255,255,255,0.85)" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/profile' as any)} style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden', borderWidth: 2, borderColor: G, padding: 0 }}>
+              {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
+                <Image source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
+              ) : (
+                <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ color: G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -305,29 +315,27 @@ export default function HomeTab() {
           </View>
 
           <View style={styles.headerRight}>
-            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
-              <MapIcon size={20} color={TEXT_PRIMARY} />
+            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
+              <MapIcon size={17} color="rgba(255,255,255,0.85)" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-              <NotificationsIcon size={20} color={TEXT_PRIMARY} />
+            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
+              <NotificationsIcon size={17} color="rgba(255,255,255,0.85)" />
               {unreadCount > 0 && (
                 <View style={{
-                  position: 'absolute',
-                  right: -2,
-                  top: -2,
-                  backgroundColor: RED,
-                  borderRadius: 9,
-                  minWidth: 16,
-                  height: 16,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingHorizontal: 3,
-                  borderWidth: 1.5,
-                  borderColor: DARK
+                  position: 'absolute', right: -6, top: -3, backgroundColor: '#EF4444', borderRadius: 9, minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4, borderWidth: 1.5, borderColor: '#050505'
                 }}>
-                  <Text style={{ color: '#FFF', fontSize: 9, fontFamily: 'Outfit-ExtraBold' }}>
+                  <Text style={{ color: '#FFF', fontSize: 10, fontFamily: 'Inter-ExtraBold', lineHeight: 10 }}>
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/profile' as any)} style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden', borderWidth: 2, borderColor: G, padding: 0 }}>
+              {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
+                <Image source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
+              ) : (
+                <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ color: G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
                 </View>
               )}
             </TouchableOpacity>

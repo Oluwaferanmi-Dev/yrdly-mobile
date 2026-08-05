@@ -1,211 +1,328 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, FlatList,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Feather, Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/use-supabase-auth';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../lib/api';
-import banksData from '../../data/nigerian-banks.json';
-
-interface Bank { code: string; name: string }
-const BANKS: Bank[] = banksData as Bank[];
+import { G, DARK, GLASS_BORDER, MUTED, LABEL, SURFACE } from '../../constants/tokens';
 
 export default function PayoutSettingsScreen() {
   const router = useRouter();
-  const { user } = useAuth();
-  const [existing, setExisting] = useState<any>(null);
+
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [resolving, setResolving] = useState(false);
-  const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
+  const [existingBank, setExistingBank] = useState<any>(null);
+  const [isChangingBank, setIsChangingBank] = useState(false);
+
+  // Verification flow state
+  const [step, setStep] = useState<'select' | 'account' | 'verifying' | 'confirmed'>('select');
+  
+  const [banks, setBanks] = useState<any[]>([]);
+  const [bankSearch, setBankSearch] = useState('');
+  const [selectedBank, setSelectedBank] = useState<any>(null);
+  
   const [accountNumber, setAccountNumber] = useState('');
   const [resolvedName, setResolvedName] = useState('');
-  const [bankModal, setBankModal] = useState(false);
-  const [bankSearch, setBankSearch] = useState('');
-
-  const filteredBanks = BANKS.filter(b => b.name.toLowerCase().includes(bankSearch.toLowerCase()));
+  const [saving, setSaving] = useState(false);
 
   const fetchExisting = useCallback(async () => {
-    if (!user) return;
+    setLoading(true);
     try {
       const { account } = await api.get('/api/seller/setup-account');
       if (account) {
-        const bankCode = account.bankCode || '';
-        const matchedBank = BANKS.find(b => b.code === bankCode);
-        
-        setExisting({
-          account_name: account.accountName || '',
-          account_number: account.accountNumber || '',
-          bank_name: matchedBank?.name || 'Bank',
-          bank_code: bankCode,
-          verification_status: account.isVerified ? 'verified' : 'unverified'
-        });
+        setExistingBank(account);
+      } else {
+        setIsChangingBank(true);
       }
-    } catch { } finally { setLoading(false); }
-  }, [user]);
+    } catch (e) {
+      console.error(e);
+      setIsChangingBank(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  useEffect(() => { fetchExisting(); }, [fetchExisting]);
+  const fetchBanks = useCallback(async () => {
+    try {
+      const res = await fetch('https://api.paystack.co/bank?currency=NGN');
+      const data = await res.json();
+      if (data.status) {
+        setBanks(data.data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
   useEffect(() => {
-    if (accountNumber.length !== 10 || !selectedBank) { setResolvedName(''); return; }
-    const t = setTimeout(async () => {
-      setResolving(true);
-      try {
-        const r = await api.get(`/api/seller/resolve-account?bank_code=${selectedBank.code}&account_number=${accountNumber}`);
-        setResolvedName(r.accountName ?? '');
-      } catch { setResolvedName(''); } finally { setResolving(false); }
-    }, 600);
-    return () => clearTimeout(t);
-  }, [accountNumber, selectedBank]);
+    fetchExisting();
+    fetchBanks();
+  }, [fetchExisting, fetchBanks]);
+
+  const resolveBank = async (bankCode: string, acctNum: string) => {
+    setStep('verifying');
+    setResolvedName('');
+    try {
+      const res = await fetch(`https://api.paystack.co/bank/resolve?account_number=${acctNum}&bank_code=${bankCode}`, {
+        headers: {
+          Authorization: `Bearer ${process.env.EXPO_PUBLIC_PAYSTACK_SECRET_KEY}`
+        }
+      });
+      const data = await res.json();
+      if (data.status) {
+        setResolvedName(data.data.account_name);
+        setTimeout(() => setStep('confirmed'), 1000);
+      } else {
+        setStep('account');
+        Alert.alert('Verification Failed', 'Could not verify this account number.');
+      }
+    } catch (e) {
+      setStep('account');
+      Alert.alert('Error', 'An error occurred while verifying the account.');
+    }
+  };
+
+  const handleAcctChange = (val: string) => {
+    const num = val.replace(/\D/g, '').slice(0, 10);
+    setAccountNumber(num);
+    if (step === 'confirmed') setStep('account');
+    if (num.length === 10 && selectedBank) {
+      resolveBank(selectedBank.code, num);
+    }
+  };
 
   const handleSave = async () => {
-    if (!user || !selectedBank || !resolvedName) return;
+    if (!selectedBank || !accountNumber || !resolvedName) return;
     setSaving(true);
     try {
       await api.post('/api/seller/setup-account', {
-        userId: user.id, bankCode: selectedBank.code, bankName: selectedBank.name,
-        accountNumber, accountName: resolvedName,
+        account_number: accountNumber,
+        bank_code: selectedBank.code,
+        bank_name: selectedBank.name,
+        account_name: resolvedName
       });
-      Alert.alert('Saved!', 'Bank account saved. Verification takes a few minutes.', [
-        { text: 'OK', onPress: () => { fetchExisting(); setAccountNumber(''); setSelectedBank(null); setResolvedName(''); } }
+      Alert.alert('Success', 'Bank account saved successfully.', [
+        { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (e: any) {
-      Alert.alert('Error', e?.message ?? 'Could not save account.');
-    } finally { setSaving(false); }
+      Alert.alert('Error', e.message || 'Failed to save bank account');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const canSave = selectedBank && accountNumber.length === 10 && !!resolvedName && !resolving;
-  return (
-    <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
-      <View style={[s.header, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={s.back}><Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} /></TouchableOpacity>
-        <Text style={[s.title, { color: TEXT_PRIMARY }]}>Bank Account</Text>
-        <View style={{ width: 40 }} />
-      </View>
-      <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
-        {loading ? <ActivityIndicator color={G} style={{ marginTop: 32 }} /> : existing ? (
-          <View style={[s.existingCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
-            <View style={s.existingRow}>
-              <View style={[s.iconWrap, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}><Feather name="briefcase" size={22} color={G} /></View>
+  if (loading) {
+    return (
+      <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+        <View style={s.header}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+            <Ionicons name="chevron-back" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={G} /></View>
+      </SafeAreaView>
+    );
+  }
+
+  // Active Bank Account View
+  if (!isChangingBank && existingBank) {
+    return (
+      <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+        <View style={s.header}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+            <Ionicons name="chevron-back" size={20} color="#fff" />
+          </TouchableOpacity>
+          <Text style={s.headerTitle}>Bank Account</Text>
+        </View>
+
+        <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 10 }}>
+          <View style={s.activeBankCard}>
+            <View style={s.activeBankHeader}>
+              <View style={s.activeBankIcon}>
+                <Ionicons name="business" size={20} color={G} />
+              </View>
               <View style={{ flex: 1 }}>
-                <Text style={[s.existingName, { color: TEXT_PRIMARY }]}>{existing.account_name}</Text>
-                <Text style={[s.existingDetail, { color: MUTED }]}>{existing.bank_name} · ****{existing.account_number.slice(-4)}</Text>
-                <View style={[s.badge, existing.verification_status === 'verified' ? s.badgeOk : s.badgePending]}>
-                  <Text style={[s.badgeText, { color: existing.verification_status === 'verified' ? G : '#E65100' }]}>
-                    {existing.verification_status === 'verified' ? '✓ Verified' : '⏳ Pending verification'}
-                  </Text>
-                </View>
+                <Text style={s.activeBankName}>{existingBank.bankName}</Text>
+                <Text style={s.activeBankNum}>**** **** **** {existingBank.accountNumber.slice(-4)}</Text>
+              </View>
+              <View style={s.activeBadge}>
+                <Text style={s.activeBadgeTxt}>ACTIVE</Text>
               </View>
             </View>
+            <Text style={s.activeBankHolder}>Account holder: <Text style={{ color: '#fff', fontFamily: 'Inter-SemiBold' }}>{existingBank.accountName}</Text></Text>
+            <View style={s.verifiedRow}>
+              <Feather name="check" size={12} color={G} />
+              <Text style={s.verifiedTxt}>Verified by Paystack</Text>
+            </View>
           </View>
-        ) : null}
 
-        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY }]}>{existing ? 'Replace Bank Account' : 'Add Bank Account'}</Text>
-        {existing && (
-          <View style={s.warnBox}>
-            <Feather name="alert-circle" size={15} color="#E65100" />
-            <Text style={[s.warnText]}>Changing your bank account triggers a 24-hour hold on new payouts.</Text>
-          </View>
-        )}
+          <TouchableOpacity style={s.changeBtn} onPress={() => setIsChangingBank(true)}>
+            <Text style={s.changeBtnTxt}>Change Bank Account</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{ marginTop: 12 }}>
+            <Text style={s.removeBtnTxt}>Remove Bank Account</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-        <Text style={[s.label, { color: LABEL }]}>Bank *</Text>
-        <TouchableOpacity style={[s.selector, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, selectedBank && { borderColor: G }]} onPress={() => { setBankSearch(''); setBankModal(true); }}>
-          <Text style={[s.selectorText, { color: TEXT_PRIMARY }, !selectedBank && { color: LABEL }]}>{selectedBank?.name ?? 'Select your bank'}</Text>
-          <Feather name="chevron-down" size={18} color={selectedBank ? G : LABEL} />
+  const filteredBanks = banks.filter(b => b.name.toLowerCase().includes(bankSearch.toLowerCase()));
+
+  // Change Bank / Verify Flow View
+  return (
+    <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+      <View style={s.header}>
+        <TouchableOpacity 
+          onPress={() => {
+            if (step === 'select') {
+              if (existingBank) setIsChangingBank(false);
+              else router.back();
+            } else {
+              setStep('select');
+            }
+          }} 
+          style={s.backBtn}
+        >
+          <Ionicons name={step === 'select' ? "chevron-back" : "close"} size={20} color="#fff" />
         </TouchableOpacity>
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={s.headerTitle}>{step === 'select' ? 'Select Bank' : 'Verify Account'}</Text>
+          {step !== 'select' && selectedBank && <Text style={s.headerSub}>{selectedBank.name}</Text>}
+        </View>
+      </View>
 
-        <Text style={[s.label, { color: LABEL, marginTop: 16 }]}>Account Number *</Text>
-        <TextInput
-          style={[s.input, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, color: TEXT_PRIMARY }, accountNumber.length === 10 && { borderColor: G }]}
-          value={accountNumber}
-          onChangeText={v => { setAccountNumber(v.replace(/\D/g, '').slice(0, 10)); setResolvedName(''); }}
-          placeholder="10-digit account number"
-          placeholderTextColor={LABEL}
-          keyboardType="number-pad"
-          maxLength={10}
-        />
-
-        {resolving && <View style={s.resolveRow}><ActivityIndicator size="small" color={G} /><Text style={[s.resolveText, { color: MUTED }]}>Verifying…</Text></View>}
-        {!resolving && resolvedName ? (
-          <View style={s.resolveRow}><Feather name="check-circle" size={18} color={G} /><Text style={[s.resolvedName, { color: G }]}>{resolvedName}</Text></View>
-        ) : null}
-        {!resolving && accountNumber.length === 10 && !resolvedName && (
-          <View style={s.resolveRow}><Feather name="x-circle" size={18} color="#E53935" /><Text style={{ color: '#E53935', fontSize: 13, fontFamily: 'Inter-Regular' }}>Account not found.</Text></View>
-        )}
-
-        <TouchableOpacity style={[s.saveBtn, { backgroundColor: G }, !canSave && s.saveBtnOff]} onPress={handleSave} disabled={!canSave || saving}>
-          {saving ? <ActivityIndicator color="#000000" /> : <Text style={[s.saveBtnText, { color: '#000000' }]}>Save Bank Account</Text>}
-        </TouchableOpacity>
-      </ScrollView>
-
-      <Modal visible={bankModal} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={[s.modal, { backgroundColor: DARK }]}>
-          <View style={[s.modalHeader, { borderBottomColor: GLASS_BORDER }]}>
-            <Text style={[s.modalTitle, { color: TEXT_PRIMARY }]}>Select Bank</Text>
-            <TouchableOpacity onPress={() => setBankModal(false)}><Feather name="x" size={24} color={TEXT_PRIMARY} /></TouchableOpacity>
+      {step === 'select' && (
+        <View style={{ flex: 1 }}>
+          <View style={s.searchBox}>
+            <Feather name="search" size={16} color={LABEL} />
+            <TextInput 
+              style={s.searchInput}
+              value={bankSearch}
+              onChangeText={setBankSearch}
+              placeholder="Search banks…"
+              placeholderTextColor={LABEL}
+            />
           </View>
-          <View style={[s.searchBox, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-            <Feather name="search" size={18} color={LABEL} style={{ marginRight: 8 }} />
-            <TextInput style={[s.searchInput, { color: TEXT_PRIMARY }]} value={bankSearch} onChangeText={setBankSearch} placeholder="Search banks…" placeholderTextColor={LABEL} autoFocus />
-          </View>
+
           <FlatList
             data={filteredBanks}
-            keyExtractor={b => b.code}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[s.bankItem, selectedBank?.code === item.code && s.bankItemSel]}
-                onPress={() => { setSelectedBank(item); setResolvedName(''); setBankModal(false); }}
-              >
-                <Text style={[s.bankName, { color: TEXT_PRIMARY }, selectedBank?.code === item.code && { color: G, fontFamily: 'Inter-Bold' }]}>{item.name}</Text>
-                {selectedBank?.code === item.code && <Feather name="check" size={18} color={G} />}
-              </TouchableOpacity>
+            keyExtractor={item => item.code}
+            style={s.bankListWrap}
+            contentContainerStyle={s.bankListContainer}
+            renderItem={({ item, index }) => (
+              <View>
+                <TouchableOpacity 
+                  style={s.bankListItem} 
+                  onPress={() => { setSelectedBank(item); setStep('account'); setAccountNumber(''); setResolvedName(''); }}
+                >
+                  <View style={s.bankIconBox}><Ionicons name="business" size={18} color={G} /></View>
+                  <Text style={s.bankListName}>{item.name}</Text>
+                  <Ionicons name="chevron-forward" size={18} color={LABEL} style={{ marginLeft: 'auto' }} />
+                </TouchableOpacity>
+                {index < filteredBanks.length - 1 && <View style={s.bankListDivider} />}
+              </View>
             )}
-            ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: GLASS_BORDER, marginLeft: 20 }} />}
-            keyboardShouldPersistTaps="handled"
           />
-        </SafeAreaView>
-      </Modal>
+        </View>
+      )}
+
+      {(step === 'account' || step === 'verifying' || step === 'confirmed') && (
+        <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}>
+          <Text style={s.acctLabel}>10-DIGIT ACCOUNT NUMBER (NUBAN)</Text>
+          <View style={[s.acctInputBox, step === 'confirmed' && { borderColor: 'rgba(130,219,126,0.4)' }]}>
+            <Feather name="hash" size={18} color={LABEL} />
+            <TextInput
+              style={s.acctInput}
+              value={accountNumber}
+              onChangeText={handleAcctChange}
+              placeholder="0000000000"
+              placeholderTextColor={LABEL}
+              keyboardType="number-pad"
+              maxLength={10}
+            />
+            {step === 'verifying' && <ActivityIndicator size="small" color={G} />}
+            {step === 'confirmed' && <Feather name="check" size={20} color={G} />}
+          </View>
+          <Text style={s.acctCount}>{accountNumber.length}/10 digits</Text>
+
+          {step === 'verifying' && (
+            <View style={s.verifyingBox}>
+              <Text style={s.verifyingTxt}>Verifying account with Paystack…</Text>
+            </View>
+          )}
+
+          {step === 'confirmed' && (
+            <View style={s.confirmedBox}>
+              <View style={s.confirmedIconBox}><Feather name="check" size={18} color={G} /></View>
+              <View>
+                <Text style={s.confirmedLabel}>ACCOUNT HOLDER</Text>
+                <Text style={s.confirmedName}>{resolvedName}</Text>
+                <Text style={s.confirmedSub}>Verified by Paystack ✓</Text>
+              </View>
+            </View>
+          )}
+
+          {step === 'confirmed' && (
+            <View style={s.footerBtnWrap}>
+              <TouchableOpacity style={s.saveFinalBtn} onPress={handleSave} disabled={saving}>
+                {saving ? <ActivityIndicator color={DARK} /> : <Text style={s.saveFinalBtnTxt}>Save Bank Account</Text>}
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
+
     </SafeAreaView>
   );
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 14, borderBottomWidth: 1 },
-  back: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)' },
-  title: { fontSize: 18, fontFamily: 'Outfit-ExtraBold', flex: 1, textAlign: 'center' },
-  scroll: { padding: 20, paddingBottom: 40 },
-  existingCard: { borderRadius: 20, padding: 16, marginBottom: 24 },
-  existingRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  iconWrap: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  existingName: { fontSize: 16, fontFamily: 'Outfit-Bold', marginBottom: 2 },
-  existingDetail: { fontSize: 13, fontFamily: 'Inter-Regular', marginBottom: 8 },
-  badge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
-  badgeOk: { backgroundColor: 'rgba(130, 225, 87, 0.1)' }, badgePending: { backgroundColor: 'rgba(230, 81, 0, 0.1)' },
-  badgeText: { fontSize: 11, fontFamily: 'Inter-Bold' },
-  sectionTitle: { fontSize: 18, fontFamily: 'Outfit-ExtraBold', marginBottom: 16 },
-  warnBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: 'rgba(230, 81, 0, 0.1)', borderRadius: 10, padding: 12, marginBottom: 20 },
-  warnText: { flex: 1, fontSize: 13, fontFamily: 'Inter-Regular', color: '#E65100', lineHeight: 18 },
-  label: { fontSize: 12, fontFamily: 'Inter-Bold', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
-  selector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16 },
-  selectorText: { fontSize: 16, fontFamily: 'Inter-Regular' }, placeholder: { },
-  input: { borderRadius: 16, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 16, fontSize: 16, fontFamily: 'Inter-Regular', letterSpacing: 1 },
-  resolveRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
-  resolveText: { fontSize: 13, fontFamily: 'Inter-Regular' },
-  resolvedName: { fontSize: 14, fontFamily: 'Outfit-Bold' },
-  saveBtn: { height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginTop: 32 },
-  saveBtnOff: { opacity: 0.4 },
-  saveBtnText: { fontSize: 16, fontFamily: 'Outfit-ExtraBold', color: '#111' },
-  modal: { flex: 1 },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1 },
-  modalTitle: { fontSize: 18, fontFamily: 'Outfit-ExtraBold' },
-  searchBox: { flexDirection: 'row', alignItems: 'center', margin: 16, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, borderWidth: 1 },
-  searchInput: { flex: 1, fontSize: 16, fontFamily: 'Inter-Regular' },
-  bankItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 18 },
-  bankItemSel: { backgroundColor: 'rgba(130, 225, 87, 0.1)' },
-  bankName: { fontSize: 15, fontFamily: 'Inter-Regular' },
+  root: { flex: 1, backgroundColor: '#050505' },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
+  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+  headerSub: { fontFamily: 'Inter', fontSize: 12, color: LABEL },
+
+  activeBankCard: { padding: 20, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 24, marginBottom: 16 },
+  activeBankHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+  activeBankIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(130,219,126,0.08)', alignItems: 'center', justifyContent: 'center' },
+  activeBankName: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff' },
+  activeBankNum: { fontFamily: 'Inter', fontSize: 12, color: LABEL },
+  activeBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, backgroundColor: 'rgba(130,219,126,0.1)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.2)' },
+  activeBadgeTxt: { fontFamily: 'Outfit-Bold', fontSize: 11, color: G },
+  activeBankHolder: { fontFamily: 'Inter', fontSize: 13, color: MUTED },
+  verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
+  verifiedTxt: { fontFamily: 'Inter', fontSize: 12, color: LABEL },
+
+  changeBtn: { width: '100%', padding: 14, borderRadius: 16, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center' },
+  changeBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff' },
+  removeBtnTxt: { fontFamily: 'Inter', fontSize: 13, color: '#ef4444', textAlign: 'center' },
+
+  searchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 20, marginVertical: 16, paddingHorizontal: 12, height: 42, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 14 },
+  searchInput: { flex: 1, fontFamily: 'Inter', fontSize: 14, color: '#fff', height: '100%' },
+
+  bankListWrap: { flex: 1, paddingHorizontal: 20, paddingBottom: 32 },
+  bankListContainer: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 22, overflow: 'hidden' },
+  bankListItem: { width: '100%', flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 20, paddingVertical: 16 },
+  bankIconBox: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+  bankListName: { fontFamily: 'Inter', fontSize: 15, color: '#fff' },
+  bankListDivider: { height: 1, backgroundColor: GLASS_BORDER, marginLeft: 72 },
+
+  acctLabel: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: LABEL, marginBottom: 8, letterSpacing: 1 },
+  acctInputBox: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, height: 58, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER },
+  acctInput: { flex: 1, fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff', letterSpacing: 2 },
+  acctCount: { fontFamily: 'Inter', fontSize: 12, color: LABEL, marginTop: 6, marginLeft: 4 },
+
+  verifyingBox: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, backgroundColor: 'rgba(100,181,246,0.06)', borderWidth: 1, borderColor: 'rgba(100,181,246,0.2)', borderRadius: 14, marginTop: 20 },
+  verifyingTxt: { fontFamily: 'Inter', fontSize: 13, color: '#64B5F6' },
+
+  confirmedBox: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)', borderRadius: 18, marginTop: 20 },
+  confirmedIconBox: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(130,219,126,0.1)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)', alignItems: 'center', justifyContent: 'center' },
+  confirmedLabel: { fontFamily: 'Inter', fontSize: 11, color: LABEL, marginBottom: 2 },
+  confirmedName: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+  confirmedSub: { fontFamily: 'Inter', fontSize: 12, color: G, marginTop: 2 },
+
+  footerBtnWrap: { position: 'absolute', bottom: 34, left: 20, right: 20, borderTopWidth: 1, borderTopColor: GLASS_BORDER, paddingTop: 14 },
+  saveFinalBtn: { width: '100%', paddingVertical: 16, borderRadius: 18, backgroundColor: G, alignItems: 'center' },
+  saveFinalBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },
 });

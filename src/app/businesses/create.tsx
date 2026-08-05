@@ -1,498 +1,246 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../hooks/use-supabase-auth';
+import { Image } from 'expo-image';
 import { supabase } from '../../lib/supabase';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '../../hooks/use-supabase-auth';
 import { StorageService } from '../../lib/storage-service';
+import * as ImagePicker from 'expo-image-picker';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 
-const CATEGORIES = ['Food & Drinks', 'Retail', 'Services', 'Tech', 'Health', 'Fashion', 'Beauty', 'Entertainment', 'Other'];
+const CATS = ['Food & Catering', 'Restaurant', 'Shopping', 'Beauty & Salon', 'Local Services', 'Tech & Repair'];
 
-export default function CreateBusinessScreen() {
-  const { colors } = useAppTheme();
+export default function BusinessEditScreen() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
 
   const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
-  const [location, setLocation] = useState('');
+  const [desc, setDesc] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
   const [website, setWebsite] = useState('');
+  const [category, setCategory] = useState(CATS[0]);
   const [hours, setHours] = useState('');
   
-  const [dayPreset, setDayPreset] = useState('Mon - Fri');
-  const [openTime, setOpenTime] = useState('9:00 AM');
-  const [closeTime, setCloseTime] = useState('5:00 PM');
-  const [isCustomHours, setIsCustomHours] = useState(false);
-
-  useEffect(() => {
-    if (!isCustomHours) {
-      if (dayPreset === '24/7') {
-        setHours('Open 24/7');
-      } else {
-        setHours(`${dayPreset}: ${openTime} - ${closeTime}`);
-      }
-    }
-  }, [dayPreset, openTime, closeTime, isCustomHours]);
-  
-  const [logoUri, setLogoUri] = useState<string | null>(null);
   const [coverUri, setCoverUri] = useState<string | null>(null);
-  const [galleryUris, setGalleryUris] = useState<string[]>([]);
   
   const [loading, setLoading] = useState(false);
-  const [checkingVerification, setCheckingVerification] = useState(true);
-  const [isVerified, setIsVerified] = useState<boolean>(!!(profile as any)?.phone_verified);
+  const [fetching, setFetching] = useState(!!id);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
-    const checkVerificationStatus = async () => {
-      if (!user) {
-        if (isMounted) setCheckingVerification(false);
-        return;
-      }
-      try {
-        const [{ data: userData }, { data: sellerData }] = await Promise.all([
-          supabase
-            .from('users')
-            .select('phone_verified')
-            .eq('id', user.id)
-            .single(),
-          supabase
-            .from('seller_accounts')
-            .select('id, verification_status')
-            .eq('user_id', user.id)
-            .eq('is_active', true)
-            .maybeSingle(),
-        ]);
-
-        if (isMounted) {
-          setIsVerified(
-            !!userData?.phone_verified ||
-            (!!sellerData && sellerData.verification_status === 'verified')
-          );
+    if (id) {
+      const fetchBiz = async () => {
+        try {
+          const { data, error } = await supabase.from('businesses').select('*').eq('id', id).single();
+          if (data) {
+            setName(data.name || '');
+            setDesc(data.description || '');
+            setPhone(data.phone || '');
+            setWebsite(data.website || '');
+            setCategory(data.category || CATS[0]);
+            setHours(data.hours || '');
+            setCoverUri(data.cover_image || data.image_urls?.[0] || null);
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setFetching(false);
         }
-      } catch (err) {
-        console.error('Error fetching verification status:', err);
-      } finally {
-        if (isMounted) setCheckingVerification(false);
-      }
-    };
+      };
+      fetchBiz();
+    } else {
+      setFetching(false);
+    }
+  }, [id]);
 
-    checkVerificationStatus();
-    return () => { isMounted = false; };
-  }, [user]);
-
-  if (checkingVerification) {
-    return (
-      <SafeAreaView style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={G} />
-      </SafeAreaView>
-    );
-  }
-
-  if (!isVerified) {
-    return (
-      <SafeAreaView style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <Ionicons name="alert-circle-outline" size={48} color={G} style={{ marginBottom: 16 }} />
-        <Text style={[s.errorTxt, { color: TEXT_PRIMARY }]}>Verification Required</Text>
-        <Text style={[s.subErrorTxt, { color: MUTED }]}>You must be a verified seller to create a business.</Text>
-        <TouchableOpacity style={[s.btn, { backgroundColor: G, marginTop: 24 }]} onPress={() => router.back()}>
-          <Text style={[s.btnTxt, { color: '#000' }]}>Go Back</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
-
-  const pickImage = async (type: 'logo' | 'cover' | 'gallery') => {
+  const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: type !== 'gallery',
-      aspect: type === 'cover' ? [16, 9] : [1, 1],
+      allowsEditing: true,
+      aspect: [16, 9],
       quality: 0.8,
-      allowsMultipleSelection: type === 'gallery',
     });
-
     if (!result.canceled) {
-      if (type === 'logo') setLogoUri(result.assets[0].uri);
-      if (type === 'cover') setCoverUri(result.assets[0].uri);
-      if (type === 'gallery') {
-        const uris = result.assets.map(a => a.uri);
-        setGalleryUris(prev => [...prev, ...uris]);
-      }
+      setCoverUri(result.assets[0].uri);
     }
   };
 
-  const removeGalleryImage = (index: number) => {
-    setGalleryUris(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleCreate = async () => {
-    if (!name.trim() || !category.trim() || !location.trim()) {
-      Alert.alert('Error', 'Please fill out the name, category, and location.');
-      return;
-    }
-
+  const handleSave = async () => {
+    if (!name.trim()) return Alert.alert('Error', 'Name is required');
+    
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('businesses')
-        .insert({
-          owner_id: user?.id,
-          name: name.trim(),
-          description: description.trim(),
-          category: category.trim(),
-          location: location.trim(),
-          phone: phone.trim(),
-          email: email.trim(),
-          website: website.trim() || null,
-          hours: hours.trim() || null,
-          owner_name: profile?.name || user?.user_metadata?.name || 'Seller',
-          owner_avatar: profile?.avatar_url || user?.user_metadata?.avatar_url,
-          is_active: true
-        })
-        .select('id')
-        .single();
-
-      if (error) throw error;
+      let finalCover = coverUri;
+      let businessId = id;
       
-      const businessId = data.id;
+      const payload = {
+        name: name.trim(),
+        description: desc.trim(),
+        phone: phone.trim(),
+        website: website.trim(),
+        category,
+        hours: hours.trim(),
+        is_active: true
+      };
 
-      let logoUrl = null;
-      let coverUrl = null;
-      let imageUrls: string[] = [];
-
-      if (logoUri) {
-        const { url } = await StorageService.uploadBusinessImage(businessId, { uri: logoUri, name: 'logo.jpg', type: 'image/jpeg' });
-        if (url) logoUrl = url;
+      if (!id) {
+        // Create new
+        const { data, error } = await supabase.from('businesses').insert({
+          ...payload,
+          owner_id: user?.id,
+          location: 'Location not specified', // simple fallback
+        }).select('id').single();
+        if (error) throw error;
+        businessId = data.id;
+      } else {
+        // Update existing
+        const { error } = await supabase.from('businesses').update(payload).eq('id', id);
+        if (error) throw error;
       }
 
-      if (coverUri) {
+      // Upload image if it's a local file (file://)
+      if (businessId && coverUri && coverUri.startsWith('file://')) {
         const { url } = await StorageService.uploadBusinessImage(businessId, { uri: coverUri, name: 'cover.jpg', type: 'image/jpeg' });
-        if (url) coverUrl = url;
-      }
-
-      if (galleryUris.length > 0) {
-        for (let i = 0; i < galleryUris.length; i++) {
-          const { url } = await StorageService.uploadBusinessImage(businessId, { uri: galleryUris[i], name: `gallery_${i}.jpg`, type: 'image/jpeg' });
-          if (url) imageUrls.push(url);
+        if (url) {
+          finalCover = url;
+          await supabase.from('businesses').update({ cover_image: url }).eq('id', businessId);
         }
       }
 
-      if (logoUrl || coverUrl || imageUrls.length > 0) {
-        const finalImageUrls = imageUrls.length > 0 ? imageUrls : (coverUrl ? [coverUrl] : null);
-        await supabase.from('businesses').update({
-          logo: logoUrl,
-          cover_image: coverUrl,
-          image_urls: finalImageUrls
-        }).eq('id', businessId);
-      }
-      
-      Alert.alert('Success', 'Business created successfully!', [
-        { text: 'OK', onPress: () => router.replace(`/businesses/${businessId}` as any) }
-      ]);
+      setSaved(true);
+      setTimeout(() => {
+        if (id) {
+          router.back();
+        } else {
+          router.replace(`/businesses/${businessId}` as any);
+        }
+      }, 1000);
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Could not create business.');
+      Alert.alert('Error', e.message || 'Could not save business');
     } finally {
       setLoading(false);
     }
   };
 
+  if (fetching) {
+    return <View style={{ flex: 1, backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={G} /></View>;
+  }
+
   return (
-    <SafeAreaView style={[s.root, { backgroundColor: DARK }]}>
+    <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={[s.header, { borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
-        </TouchableOpacity>
-        <Text style={[s.headerTitle, { color: TEXT_PRIMARY }]}>Create Business</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <ScrollView contentContainerStyle={s.scrollPad} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         
-        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY }]}>Branding</Text>
-        
-        <View style={s.brandingRow}>
-          <View style={s.logoContainer}>
-            <Text style={[s.label, { color: LABEL, textAlign: 'center' }]}>Logo</Text>
-            <TouchableOpacity style={[s.logoPicker, { backgroundColor: SURFACE }]} onPress={() => pickImage('logo')}>
-              {logoUri ? (
-                <Image source={{ uri: logoUri }} style={s.logoPreview} />
-              ) : (
-                <Ionicons name="camera-outline" size={32} color={MUTED} />
-              )}
+        {/* Header */}
+        <View style={s.header}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+              <Ionicons name="chevron-back" size={20} color="#fff" />
             </TouchableOpacity>
+            <Text style={s.headerTitle}>{id ? 'Edit Business' : 'Create Business'}</Text>
           </View>
+          <TouchableOpacity onPress={handleSave} style={s.saveBtn} disabled={loading}>
+            {loading ? <ActivityIndicator size="small" color={DARK} /> : (
+              <Text style={s.saveBtnTxt}>{saved ? '✓ Saved' : (id ? 'Save' : 'Create')}</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.contentPad}>
           
+          {/* Cover */}
           <View style={s.coverContainer}>
-            <Text style={[s.label, { color: LABEL }]}>Cover Image</Text>
-            <TouchableOpacity style={[s.coverPicker, { backgroundColor: SURFACE }]} onPress={() => pickImage('cover')}>
-              {coverUri ? (
-                <Image source={{ uri: coverUri }} style={s.coverPreview} />
-              ) : (
-                <Ionicons name="image-outline" size={32} color={MUTED} />
-              )}
+            <Image source={{ uri: coverUri || 'https://via.placeholder.com/700x240' }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
+            <TouchableOpacity style={s.coverOverlay} onPress={pickImage} activeOpacity={0.8}>
+              <View style={s.changeCoverBadge}>
+                <Text style={s.changeCoverTxt}>Change Cover</Text>
+              </View>
             </TouchableOpacity>
           </View>
-        </View>
 
-        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY, marginTop: 16 }]}>Business Details</Text>
-        
-        <Text style={[s.label, { color: LABEL }]}>Business Name *</Text>
-        <TextInput
-          style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
-          placeholder="e.g. Jane's Bakery"
-          placeholderTextColor={MUTED}
-          value={name}
-          onChangeText={setName}
-        />
-
-        <Text style={[s.label, { color: LABEL }]}>Category *</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
-          {CATEGORIES.map(cat => (
-            <TouchableOpacity 
-              key={cat}
-              style={[
-                s.categoryChip, 
-                { backgroundColor: category === cat ? G : SURFACE }
-              ]}
-              onPress={() => setCategory(cat)}
-            >
-              <Text style={{ 
-                color: category === cat ? '#000' : TEXT_PRIMARY,
-                fontWeight: category === cat ? 'bold' : 'normal'
-              }}>
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        <Text style={[s.label, { color: LABEL }]}>Description</Text>
-        <TextInput
-          style={[s.input, s.textarea, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
-          placeholder="Tell customers about your business..."
-          placeholderTextColor={MUTED}
-          multiline
-          numberOfLines={4}
-          value={description}
-          onChangeText={setDescription}
-        />
-
-        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY, marginTop: 16 }]}>Contact Info</Text>
-
-        <Text style={[s.label, { color: LABEL }]}>Location / Address *</Text>
-        <View style={{ zIndex: 50 }}>
-          <GooglePlacesAutocomplete
-            placeholder="e.g. 123 Main St, Lagos"
-            fetchDetails={false}
-            onPress={(data) => {
-              setLocation(data.description);
-            }}
-            query={{ key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY, language: 'en', components: 'country:ng' }}
-            styles={{
-              container: { flex: 0, marginBottom: 20 },
-              textInputContainer: { width: '100%' },
-              textInput: [s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY, marginBottom: 0 }],
-              row: { backgroundColor: DARK, padding: 13, minHeight: 44, flexDirection: 'row' },
-              description: { color: TEXT_PRIMARY },
-              listView: { backgroundColor: DARK, borderRadius: 12, borderWidth: 1, borderColor: GLASS_BORDER, marginTop: 4, position: 'absolute', top: '100%', width: '100%', zIndex: 100 },
-            }}
-            textInputProps={{ 
-              placeholderTextColor: MUTED,
-              onChangeText: (text) => setLocation(text),
-              value: location
-            }}
-            enablePoweredByContainer={false}
-          />
-        </View>
-
-        <Text style={[s.label, { color: LABEL }]}>Phone Number</Text>
-        <TextInput
-          style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
-          placeholder="+234..."
-          placeholderTextColor={MUTED}
-          keyboardType="phone-pad"
-          value={phone}
-          onChangeText={setPhone}
-        />
-
-        <Text style={[s.label, { color: LABEL }]}>Email Address</Text>
-        <TextInput
-          style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
-          placeholder="e.g. contact@business.com"
-          placeholderTextColor={MUTED}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
-
-        <Text style={[s.label, { color: LABEL }]}>Website</Text>
-        <TextInput
-          style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
-          placeholder="e.g. https://mybusiness.com"
-          placeholderTextColor={MUTED}
-          keyboardType="url"
-          autoCapitalize="none"
-          value={website}
-          onChangeText={setWebsite}
-        />
-
-        <Text style={[s.label, { color: LABEL }]}>Operating Hours</Text>
-        
-        {/* Days Presets */}
-        <Text style={{ color: MUTED, fontSize: 12, marginBottom: 6 }}>Select Days</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
-          {['Mon - Fri', 'Mon - Sat', 'Everyday', 'Weekends', '24/7'].map(preset => (
-            <TouchableOpacity
-              key={preset}
-              style={[
-                s.categoryChip,
-                { backgroundColor: dayPreset === preset && !isCustomHours ? G : SURFACE }
-              ]}
-              onPress={() => {
-                setIsCustomHours(false);
-                setDayPreset(preset);
-              }}
-            >
-              <Text style={{ 
-                color: dayPreset === preset && !isCustomHours ? '#000' : TEXT_PRIMARY,
-                fontWeight: dayPreset === preset && !isCustomHours ? 'bold' : 'normal',
-                fontSize: 13
-              }}>
-                {preset}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {dayPreset !== '24/7' && !isCustomHours && (
-          <View style={{ marginBottom: 16 }}>
-            {/* Open Time */}
-            <Text style={{ color: MUTED, fontSize: 12, marginBottom: 6 }}>Opening Time</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }}>
-              {['7:00 AM', '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '11:00 AM'].map(t => (
-                <TouchableOpacity
-                  key={t}
-                  style={[
-                    s.categoryChip,
-                    { backgroundColor: openTime === t ? G : SURFACE, paddingHorizontal: 12, paddingVertical: 6 }
-                  ]}
-                  onPress={() => setOpenTime(t)}
-                >
-                  <Text style={{ color: openTime === t ? '#000' : TEXT_PRIMARY, fontSize: 12 }}>{t}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            {/* Close Time */}
-            <Text style={{ color: MUTED, fontSize: 12, marginBottom: 6 }}>Closing Time</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {['4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM', '10:00 PM', '11:00 PM'].map(t => (
-                <TouchableOpacity
-                  key={t}
-                  style={[
-                    s.categoryChip,
-                    { backgroundColor: closeTime === t ? G : SURFACE, paddingHorizontal: 12, paddingVertical: 6 }
-                  ]}
-                  onPress={() => setCloseTime(t)}
-                >
-                  <Text style={{ color: closeTime === t ? '#000' : TEXT_PRIMARY, fontSize: 12 }}>{t}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+          {/* Form Fields */}
+          <View style={s.fieldBlock}>
+            <Text style={s.fieldLabel}>Business Name</Text>
+            <TextInput style={s.input} value={name} onChangeText={setName} placeholder="Your business name" placeholderTextColor={MUTED} />
           </View>
-        )}
 
-        {/* Display hours result / Custom toggle */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="time-outline" size={16} color={G} />
-            <Text style={{ color: TEXT_PRIMARY, fontWeight: '600', fontSize: 13 }}>{hours || 'Not set'}</Text>
+          <View style={s.fieldBlock}>
+            <Text style={s.fieldLabel}>Phone Number</Text>
+            <TextInput style={s.input} value={phone} onChangeText={setPhone} placeholder="+234..." placeholderTextColor={MUTED} />
           </View>
-          <TouchableOpacity onPress={() => setIsCustomHours(!isCustomHours)}>
-            <Text style={{ color: G, fontSize: 12 }}>{isCustomHours ? 'Use Presets' : 'Custom Text'}</Text>
-          </TouchableOpacity>
-        </View>
 
-        {isCustomHours && (
-          <TextInput
-            style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
-            placeholder="e.g. Mon-Fri: 9AM - 5PM, Sat: 10AM - 2PM"
-            placeholderTextColor={MUTED}
-            value={hours}
-            onChangeText={setHours}
-          />
-        )}
+          <View style={s.fieldBlock}>
+            <Text style={s.fieldLabel}>Website (optional)</Text>
+            <TextInput style={s.input} value={website} onChangeText={setWebsite} placeholder="https://..." placeholderTextColor={MUTED} />
+          </View>
 
-        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY, marginTop: 16 }]}>Gallery</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.galleryScroll}>
-          <TouchableOpacity style={[s.addGalleryBtn, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]} onPress={() => pickImage('gallery')}>
-            <Ionicons name="add" size={32} color={MUTED} />
-          </TouchableOpacity>
-          {galleryUris.map((uri, index) => (
-            <View key={index} style={s.galleryImgWrapper}>
-              <Image source={{ uri }} style={s.galleryImg} />
-              <TouchableOpacity style={s.removeGalleryBtn} onPress={() => removeGalleryImage(index)}>
-                <Ionicons name="close-circle" size={24} color="#ff4444" />
-              </TouchableOpacity>
+          <View style={s.fieldBlock}>
+            <Text style={s.fieldLabel}>Opening Hours</Text>
+            <TextInput style={s.input} value={hours} onChangeText={setHours} placeholder="e.g. Mon–Sat: 9am – 8pm" placeholderTextColor={MUTED} />
+          </View>
+
+          <View style={s.fieldBlock}>
+            <Text style={s.fieldLabel}>Category</Text>
+            <View style={s.catWrap}>
+              {CATS.map(c => {
+                const active = category === c;
+                return (
+                  <TouchableOpacity 
+                    key={c} 
+                    onPress={() => setCategory(c)} 
+                    style={[s.catBtn, { 
+                      backgroundColor: active ? 'rgba(130,219,126,0.15)' : SURFACE, 
+                      borderColor: active ? 'rgba(130,219,126,0.35)' : GLASS_BORDER 
+                    }]}
+                  >
+                    <Text style={[s.catTxt, { color: active ? G : MUTED }]}>{c}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-          ))}
+          </View>
+
+          <View style={s.fieldBlock}>
+            <Text style={s.fieldLabel}>Description</Text>
+            <TextInput 
+              style={[s.input, s.textarea]} 
+              value={desc} 
+              onChangeText={setDesc} 
+              multiline 
+              numberOfLines={4} 
+              placeholder="Tell customers about your business..." 
+              placeholderTextColor={MUTED} 
+            />
+          </View>
         </ScrollView>
 
-        <TouchableOpacity 
-          style={[s.submitBtn, { backgroundColor: G, opacity: loading ? 0.7 : 1 }]} 
-          onPress={handleCreate}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#000" />
-          ) : (
-            <Text style={[s.submitBtnTxt, { color: '#000' }]}>Create Business</Text>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1 },
-  backBtn: { width: 40, alignItems: 'flex-start' },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '700' },
-  scrollPad: { padding: 20, paddingBottom: 100 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
-  input: { borderRadius: 12, padding: 14, fontSize: 15, marginBottom: 20 },
-  textarea: { height: 100, textAlignVertical: 'top' },
-  categoryChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, marginRight: 10 },
-  submitBtn: { height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', marginTop: 30 },
-  submitBtnTxt: { fontSize: 16, fontWeight: '700' },
-  errorTxt: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
-  subErrorTxt: { fontSize: 14, textAlign: 'center', paddingHorizontal: 40 },
-  btn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24 },
-  btnTxt: { fontSize: 16, fontWeight: 'bold' },
-  brandingRow: { flexDirection: 'row', gap: 16, marginBottom: 20 },
-  logoContainer: { alignItems: 'center' },
-  coverContainer: { flex: 1 },
-  logoPicker: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
-  logoPreview: { width: '100%', height: '100%' },
-  coverPicker: { height: 80, borderRadius: 12, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
-  coverPreview: { width: '100%', height: '100%' },
-  galleryScroll: { flexDirection: 'row', marginBottom: 20 },
-  addGalleryBtn: { width: 80, height: 80, borderRadius: 12, borderWidth: 1, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  galleryImgWrapper: { width: 80, height: 80, borderRadius: 12, marginRight: 12 },
-  galleryImg: { width: '100%', height: '100%', borderRadius: 12 },
-  removeGalleryBtn: { position: 'absolute', top: -8, right: -8, backgroundColor: '#fff', borderRadius: 12 },
+  root: { flex: 1, backgroundColor: '#050505' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
+  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+  saveBtn: { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 12, backgroundColor: G },
+  saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: DARK },
+  
+  contentPad: { paddingHorizontal: 20, paddingVertical: 20, gap: 20 },
+  coverContainer: { position: 'relative', height: 120, borderRadius: 18, overflow: 'hidden', backgroundColor: '#111' },
+  coverOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
+  changeCoverBadge: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.12)' },
+  changeCoverTxt: { fontFamily: 'Outfit-Bold', fontSize: 13, color: '#fff' },
+  
+  fieldBlock: {},
+  fieldLabel: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: LABEL, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  input: { width: '100%', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, color: '#fff', fontFamily: 'Inter', fontSize: 15 },
+  textarea: { height: 120, textAlignVertical: 'top' },
+  
+  catWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  catBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
+  catTxt: { fontFamily: 'Inter', fontSize: 13 },
 });
-

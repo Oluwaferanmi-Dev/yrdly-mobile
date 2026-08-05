@@ -1,21 +1,17 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import LottieView from 'lottie-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
-import { useAppTheme } from '../../context/ThemeContext';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, AMBER } from '../../constants/tokens';
-
-
+import { G, DARK, GLASS_BORDER, MUTED, LABEL } from '../../constants/tokens';
 
 type EscrowStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled';
+type Tab = 'purchases' | 'sales';
+type Filter = 'all' | 'active' | 'completed' | 'disputed';
 
 interface Transaction {
   id: string;
@@ -30,24 +26,33 @@ interface Transaction {
   seller: { name: string; avatar_url: string | null } | null;
 }
 
-const STATUS_META: Record<EscrowStatus, { label: string; color: string; bg: string; dot: string }> = {
-  pending:   { label: 'Awaiting Payment',      color: '#D84315', bg: '#FFF3E0', dot: '#FF6D00' },
-  paid:      { label: 'Paid — Awaiting Delivery', color: '#1565C0', bg: '#E8F0FE', dot: '#1A73E8' },
-  shipped:   { label: 'Shipped',               color: '#6A1B9A', bg: '#F3E5F5', dot: '#8E24AA' },
-  delivered: { label: 'Delivered',             color: '#2E7D32', bg: '#E8F5E9', dot: '#43A047' },
-  completed: { label: 'Completed',             color: '#2E7D32', bg: '#E8F5E9', dot: '#43A047' },
-  disputed:  { label: 'Disputed',              color: '#B71C1C', bg: '#FFEBEE', dot: '#E53935' },
-  cancelled: { label: 'Cancelled',             color: '#616161', bg: '#F5F5F5', dot: '#9E9E9E' },
+const STATUS_ICONS: Record<EscrowStatus, string> = {
+  pending: '🔒',
+  paid: '🔒',
+  shipped: '📦',
+  delivered: '✅',
+  completed: '✅',
+  disputed: '↩️',
+  cancelled: '↩️',
 };
 
-type Tab = 'purchases' | 'sales';
+const STATUS_MAP: Record<EscrowStatus, { label: string; color: string }> = {
+  pending:   { label: 'In Escrow', color: '#FFB648' },
+  paid:      { label: 'In Escrow', color: '#FFB648' },
+  shipped:   { label: 'Shipped',   color: '#64B5F6' },
+  delivered: { label: 'Delivered', color: G },
+  completed: { label: 'Completed', color: G },
+  disputed:  { label: 'Refunded',  color: '#ef4444' },
+  cancelled: { label: 'Refunded',  color: '#ef4444' },
+};
 
 export default function TransactionsScreen() {
-  const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
 
   const [tab, setTab] = useState<Tab>('purchases');
+  const [filter, setFilter] = useState<Filter>('all');
+  
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -80,22 +85,12 @@ export default function TransactionsScreen() {
           : (catalogItem ? { id: catalogItem.id, title: catalogItem.title, images: catalogItem.images } : null);
 
         if (!itemObj && tx.item_id) {
-          const { data: catData } = await supabase
-            .from('catalog_items')
-            .select('id, title, images')
-            .eq('id', tx.item_id)
-            .maybeSingle();
-
+          const { data: catData } = await supabase.from('catalog_items').select('id, title, images').eq('id', tx.item_id).maybeSingle();
           if (catData) {
             const imgs = Array.isArray(catData.images) ? catData.images : typeof catData.images === 'string' ? [catData.images] : null;
             itemObj = { id: catData.id, title: catData.title || 'Item', images: imgs };
           } else {
-            const { data: pData } = await supabase
-              .from('posts')
-              .select('id, title, text, image_urls, image_url')
-              .eq('id', tx.item_id)
-              .maybeSingle();
-
+            const { data: pData } = await supabase.from('posts').select('id, title, text, image_urls, image_url').eq('id', tx.item_id).maybeSingle();
             if (pData) {
               const imgs = Array.isArray(pData.image_urls) ? pData.image_urls : pData.image_url ? [pData.image_url] : null;
               itemObj = { id: pData.id, title: pData.title || pData.text || 'Item', images: imgs };
@@ -122,107 +117,131 @@ export default function TransactionsScreen() {
 
   useEffect(() => { fetchTransactions(); }, [fetchTransactions]);
 
+  const filteredData = transactions.filter(tx => {
+    if (filter === 'all') return true;
+    const s = STATUS_MAP[tx.status].label;
+    if (filter === 'active') return s === 'In Escrow' || s === 'Shipped';
+    if (filter === 'completed') return s === 'Completed' || s === 'Delivered';
+    if (filter === 'disputed') return s === 'Refunded';
+    return true;
+  });
+
   const renderItem = ({ item: tx }: { item: Transaction }) => {
-    const meta = STATUS_META[tx.status] ?? STATUS_META.pending;
+    const meta = STATUS_MAP[tx.status];
+    const icon = STATUS_ICONS[tx.status];
     const counterparty = tab === 'purchases' ? tx.seller : tx.buyer;
     const imagesArr = Array.isArray(tx.item?.images) ? tx.item?.images : typeof tx.item?.images === 'string' ? [tx.item?.images] : [];
     const thumb = imagesArr[0] || (tx.item as any)?.image_url;
+    const dateStr = new Date(tx.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
     return (
       <TouchableOpacity
-        style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 20, padding: 14, borderWidth: 1, borderColor: GLASS_BORDER, backgroundColor: SURFACE, marginBottom: 10 }}
+        style={s.rowCard}
         onPress={() => router.push(`/transactions/${tx.id}` as any)}
         activeOpacity={0.85}
       >
-        {/* Thumbnail */}
-        {thumb ? (
-          <Image source={{ uri: thumb }} style={{ width: 52, height: 52, borderRadius: 14, marginRight: 14 }} contentFit="cover" />
-        ) : (
-          <View style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.06)', justifyContent: 'center', alignItems: 'center', marginRight: 14 }}>
-            <Feather name="box" size={20} color={MUTED} />
-          </View>
-        )}
-
-        {/* Info */}
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }} numberOfLines={1}>
-            {tx.item?.title || tx.item_title || 'Item'}
-          </Text>
-          <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED, marginBottom: 6 }}>
-            {tab === 'purchases' ? 'From' : 'To'} {counterparty?.name ?? 'User'}
-          </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, backgroundColor: meta.dot + '15', borderWidth: 1, borderColor: meta.dot + '30' }}>
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: meta.dot }} />
-            <Text style={{ fontFamily: 'Inter', fontWeight: '700', fontSize: 10, color: meta.dot }}>{meta.label}</Text>
-          </View>
+        <View style={s.rowThumbBox}>
+          {thumb ? <Image source={{ uri: thumb }} style={StyleSheet.absoluteFillObject} contentFit="cover" /> : null}
         </View>
-
-        {/* Amount + chevron */}
-        <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
-          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 16, color: G }}>{formatPrice(tx.amount)}</Text>
-          <Feather name="chevron-right" size={16} color={MUTED} style={{ marginTop: 4 }} />
+        <View style={s.rowMid}>
+          <Text style={s.rowTitle} numberOfLines={1}>{tx.item?.title || tx.item_title || 'Item'}</Text>
+          <Text style={s.rowParty} numberOfLines={1}>{counterparty?.name ?? 'User'}</Text>
+          <Text style={s.rowDate}>{dateStr}</Text>
+        </View>
+        <View style={s.rowRight}>
+          <Text style={s.rowAmount}>₦{tx.amount.toLocaleString()}</Text>
+          <View style={[s.statusBadge, { backgroundColor: `${meta.color}18`, borderColor: `${meta.color}30` }]}>
+            <Text style={{ fontSize: 9, marginRight: 4 }}>{icon}</Text>
+            <Text style={[s.statusBadgeText, { color: meta.color }]}>{meta.label.toUpperCase()}</Text>
+          </View>
         </View>
       </TouchableOpacity>
     );
   };
 
+  const FILTERS: { key: Filter, label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'active', label: 'Active' },
+    { key: 'completed', label: 'Completed' },
+    { key: 'disputed', label: 'Disputed' },
+  ];
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: DARK }}>
+    <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, justifyContent: 'center', alignItems: 'center', borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.06)' }}>
-          <Ionicons name="chevron-back" size={22} color={TEXT_PRIMARY} />
-        </TouchableOpacity>
-        <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 18, color: TEXT_PRIMARY, flex: 1, textAlign: 'center' }}>Transactions</Text>
-        <View style={{ width: 36 }} />
-      </View>
-
-      {/* Tabs */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
-        {(['purchases', 'sales'] as Tab[]).map((t) => (
-          <TouchableOpacity
-            key={t}
-            style={[{ flex: 1, paddingVertical: 12, alignItems: 'center' }, tab === t && { borderBottomWidth: 2, borderBottomColor: G }]}
-            onPress={() => setTab(t)}
-          >
-            <Text style={[{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 14 }, { color: tab === t ? G : MUTED }]}>
-              {t === 'purchases' ? 'Purchases' : 'Sales'}
-            </Text>
+      <View style={s.header}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/profile')} style={s.backBtn}>
+            <Ionicons name="chevron-back" size={20} color="#fff" />
           </TouchableOpacity>
-        ))}
+          <Text style={s.headerTitle}>Transactions</Text>
+        </View>
       </View>
 
+      {/* Role Tabs */}
+      <View style={s.roleTabsWrap}>
+        <View style={s.roleTabsInner}>
+          {(['purchases', 'sales'] as Tab[]).map((t) => {
+            const active = tab === t;
+            return (
+              <TouchableOpacity
+                key={t}
+                style={[s.roleTab, active && s.roleTabActive]}
+                onPress={() => setTab(t)}
+              >
+                <Text style={[s.roleTabTxt, { color: active ? DARK : MUTED }]}>
+                  {t}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Filter Pills */}
+      <View style={s.filtersWrap}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filtersPad}>
+          {FILTERS.map(f => {
+            const active = filter === f.key;
+            return (
+              <TouchableOpacity
+                key={f.key}
+                onPress={() => setFilter(f.key)}
+                style={[s.filterPill, { 
+                  backgroundColor: active ? G : '#111', 
+                  borderColor: active ? G : GLASS_BORDER 
+                }]}
+              >
+                <Text style={[s.filterPillTxt, { 
+                  color: active ? DARK : MUTED,
+                  fontWeight: active ? '700' : '500'
+                }]}>
+                  {f.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* List */}
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={G} />
         </View>
       ) : (
         <FlatList
-          data={transactions}
+          data={filteredData}
           keyExtractor={(tx) => tx.id}
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={s.listContent}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => fetchTransactions(true)}
-              tintColor={G}
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={() => fetchTransactions(true)} tintColor={G} />
           }
           ListEmptyComponent={
-            <View style={styles.empty}>
-              <LottieView
-                autoPlay
-                loop
-                style={{ width: 160, height: 160 }}
-                source={{ uri: 'https://lottie.host/1c248ba5-2d9a-4898-9b94-b0f7d3e9c90a/hhyaO2TJBJ.json' }}
-              />
-              <Text style={[styles.emptyTitle, { color: TEXT_PRIMARY }]}>No {tab} yet</Text>
-              <Text style={[styles.emptyBody, { color: MUTED }]}>
-                {tab === 'purchases'
-                  ? 'Items you buy on the marketplace will appear here.'
-                  : 'Items you sell will appear here.'}
-              </Text>
+            <View style={s.empty}>
+              <Text style={s.emptyTitle}>No transactions</Text>
+              <Text style={s.emptyBody}>Nothing here yet.</Text>
             </View>
           }
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
@@ -232,49 +251,39 @@ export default function TransactionsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
-    paddingVertical: 14, borderBottomWidth: 1,
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)' },
-  headerTitle: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#050505' },
+  
+  header: { paddingHorizontal: 20, paddingBottom: 12 },
+  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
 
-  tabs: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-  },
-  tab: { flex: 1, paddingVertical: 14, alignItems: 'center' },
-  tabActive: { borderBottomWidth: 2 },
-  tabText: { fontSize: 14, fontWeight: '600' },
-  tabTextActive: {},
+  roleTabsWrap: { paddingHorizontal: 20, marginBottom: 12 },
+  roleTabsInner: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 4, gap: 4 },
+  roleTab: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 11, backgroundColor: 'transparent' },
+  roleTabActive: { backgroundColor: '#fff' },
+  roleTabTxt: { fontFamily: 'Outfit-Bold', fontSize: 13, textTransform: 'capitalize' },
 
-  listContent: { padding: 16, paddingBottom: 40 },
+  filtersWrap: { marginBottom: 16 },
+  filtersPad: { paddingHorizontal: 20, gap: 8 },
+  filterPill: { height: 32, paddingHorizontal: 14, borderRadius: 16, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
+  filterPillTxt: { fontFamily: 'Inter', fontSize: 13 },
 
-  txCard: {
-    flexDirection: 'row', alignItems: 'center',
-    borderRadius: 20, padding: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    backgroundColor: '#1C1C1C',
-  },
-  thumb: { width: 60, height: 60, borderRadius: 14, marginRight: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-  thumbPlaceholder: { justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(130, 225, 87, 0.1)', borderColor: 'rgba(130, 225, 87, 0.2)' },
-  txInfo: { flex: 1 },
-  txTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4, color: '#FFFFFF' },
-  txCounterparty: { fontSize: 13, marginBottom: 8, color: '#A6A6A6' },
-  statusBadge: {
-    flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start',
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12,
-    borderWidth: 1, backgroundColor: 'transparent',
-  },
-  statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
-  statusText: { fontSize: 11, fontWeight: '700' },
-  txRight: { alignItems: 'flex-end', marginLeft: 8 },
-  txAmount: { fontSize: 16, fontWeight: '800', color: '#82E157' },
+  listContent: { paddingHorizontal: 20, paddingBottom: 40 },
+  
+  rowCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, padding: 16, gap: 16 },
+  rowThumbBox: { width: 52, height: 52, borderRadius: 14, backgroundColor: '#111', overflow: 'hidden' },
+  rowMid: { flex: 1 },
+  rowTitle: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff', marginBottom: 2 },
+  rowParty: { fontFamily: 'Inter', fontSize: 12, color: LABEL, marginBottom: 1 },
+  rowDate: { fontFamily: 'Inter', fontSize: 11, color: LABEL },
+  
+  rowRight: { alignItems: 'flex-end', gap: 6 },
+  rowAmount: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff' },
+  statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, borderWidth: 1 },
+  statusBadgeText: { fontFamily: 'Inter-Bold', fontSize: 10 },
 
-  empty: { flex: 1, alignItems: 'center', paddingTop: 80, paddingHorizontal: 32 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', marginTop: 16, marginBottom: 8 },
-  emptyBody: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  empty: { alignItems: 'center', paddingTop: 56, gap: 8 },
+  emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
+  emptyBody: { fontFamily: 'Inter', fontSize: 13, color: LABEL },
 });

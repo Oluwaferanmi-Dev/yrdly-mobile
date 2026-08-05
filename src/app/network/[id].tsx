@@ -1,6 +1,6 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
@@ -22,6 +22,7 @@ export default function NetworkScreen() {
   const [currentUserFollowing, setCurrentUserFollowing] = useState<Set<string>>(new Set());
   const [currentUserFollowers, setCurrentUserFollowers] = useState<Set<string>>(new Set());
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -131,27 +132,31 @@ export default function NetworkScreen() {
         style={[styles.userRow, { borderBottomColor: GLASS_BORDER }]}
         onPress={() => router.push(`/profile/${item.id}` as any)}
       >
-        {item.avatar_url ? (
-          <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: G }]}>
-            <Text style={[styles.avatarFallbackText, { color: '#000000', fontFamily: 'Outfit' }]}>
-              {item.name ? item.name.charAt(0).toUpperCase() : '?'}
-            </Text>
-          </View>
-        )}
-        <View style={{ flex: 1, marginRight: 12 }}>
+        <TouchableOpacity onPress={() => router.push(`/profile/${item.id}` as any)} style={{ flexShrink: 0, marginRight: 12 }}>
+          {item.avatar_url ? (
+            <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, styles.avatarFallback]}>
+              <Text style={styles.avatarFallbackText}>
+                {item.name ? item.name.charAt(0).toUpperCase() : '?'}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+        
+        <View style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={[styles.userName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]} numberOfLines={1}>{item.name}</Text>
+            <Text style={styles.userName} numberOfLines={1}>{item.name}</Text>
             {item.phone_verified && (
               <MaterialIcons name="verified" size={14} color={G} style={{ marginLeft: 4 }} />
             )}
           </View>
+          <Text style={styles.userHandle} numberOfLines={1}>@{item.username || 'user'}</Text>
           {isFollower && isFollowing && !isCurrentUser && (
-            <Text style={[styles.mutualText, { color: MUTED, fontFamily: 'Inter' }]}>Mutual</Text>
+            <Text style={styles.mutualText}>Mutual</Text>
           )}
           {isFollower && !isFollowing && !isCurrentUser && (
-            <Text style={[styles.mutualText, { color: MUTED, fontFamily: 'Inter' }]}>Follows you</Text>
+            <Text style={styles.mutualText}>Follows you</Text>
           )}
         </View>
 
@@ -159,16 +164,18 @@ export default function NetworkScreen() {
           <TouchableOpacity 
             style={[
               styles.followBtn, 
-              { backgroundColor: isFollowing ? SURFACE : G, borderWidth: isFollowing ? 1 : 0, borderColor: GLASS_BORDER }
+              activeTab === 'followers' 
+                ? { backgroundColor: SURFACE, borderColor: GLASS_BORDER } 
+                : { backgroundColor: 'rgba(130,219,126,0.1)', borderColor: 'rgba(130,219,126,0.25)' }
             ]}
             onPress={() => handleToggleFollow(item.id)}
             disabled={actionLoading[item.id]}
           >
             {actionLoading[item.id] ? (
-              <ActivityIndicator size="small" color={isFollowing ? TEXT_PRIMARY : '#000'} />
+              <ActivityIndicator size="small" color={activeTab === 'followers' ? MUTED : G} />
             ) : (
-              <Text style={[styles.followBtnText, { color: isFollowing ? TEXT_PRIMARY : '#000', fontFamily: 'Outfit' }]}>
-                {isFollowing ? 'Following' : isFollower ? 'Follow Back' : 'Follow'}
+              <Text style={[styles.followBtnText, activeTab === 'followers' ? { color: MUTED } : { color: G }]}>
+                {activeTab === 'followers' ? 'Remove' : 'Following'}
               </Text>
             )}
           </TouchableOpacity>
@@ -177,28 +184,56 @@ export default function NetworkScreen() {
     );
   };
 
+  const filteredUsers = users.filter(u => {
+    const matchName = u.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchHandle = u.username?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchName || matchHandle;
+  });
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
+          <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Network</Text>
-        <View style={{ width: 40 }} />
+        <Text style={styles.headerTitle}>Connections</Text>
       </View>
 
-      <View style={[styles.tabs, { borderBottomColor: GLASS_BORDER }]}>
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={14} color={LABEL} style={{ marginRight: 8 }} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by name or @username…"
+          placeholderTextColor={LABEL}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
+
+      <View style={styles.tabsWrap}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'followers' && { borderBottomColor: G, borderBottomWidth: 2 }]}
+          style={[styles.tabBtn]}
           onPress={() => setActiveTab('followers')}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'followers' ? G : LABEL, fontFamily: 'Outfit' }]}>Followers</Text>
+          <Text style={[styles.tabTxt, { 
+            color: activeTab === 'followers' ? '#fff' : LABEL, 
+            fontFamily: activeTab === 'followers' ? 'Outfit-Bold' : 'Outfit-Medium' 
+          }]}>
+            Followers <Text style={{ color: activeTab === 'followers' ? G : LABEL }}>({activeTab === 'followers' ? filteredUsers.length : 0})</Text>
+          </Text>
+          {activeTab === 'followers' && <View style={styles.tabIndicator} />}
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'following' && { borderBottomColor: G, borderBottomWidth: 2 }]}
+          style={[styles.tabBtn]}
           onPress={() => setActiveTab('following')}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'following' ? G : LABEL, fontFamily: 'Outfit' }]}>Following</Text>
+          <Text style={[styles.tabTxt, { 
+            color: activeTab === 'following' ? '#fff' : LABEL, 
+            fontFamily: activeTab === 'following' ? 'Outfit-Bold' : 'Outfit-Medium' 
+          }]}>
+            Following <Text style={{ color: activeTab === 'following' ? G : LABEL }}>({activeTab === 'following' ? filteredUsers.length : 0})</Text>
+          </Text>
+          {activeTab === 'following' && <View style={styles.tabIndicator} />}
         </TouchableOpacity>
       </View>
 
@@ -208,7 +243,7 @@ export default function NetworkScreen() {
         </View>
       ) : (
         <FlatList
-          data={users}
+          data={filteredUsers}
           keyExtractor={item => item.id}
           renderItem={renderUser}
           contentContainerStyle={styles.listContent}
@@ -229,66 +264,73 @@ export default function NetworkScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12, paddingTop: 10,
+    borderBottomWidth: 1, borderBottomColor: GLASS_BORDER,
   },
-  backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
-  tabs: {
-    flexDirection: 'row',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  navBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', color: '#fff' },
+  searchContainer: {
+    flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, marginVertical: 12, paddingHorizontal: 12,
+    backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1, borderRadius: 14, height: 40
   },
-  tab: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  tabText: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
+  searchInput: { flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: '#fff' },
+  tabsWrap: { flexDirection: 'row', paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
+  tabBtn: { flex: 1, paddingVertical: 12, position: 'relative' },
+  tabTxt: { fontSize: 14, textAlign: 'center', textTransform: 'capitalize' },
+  tabIndicator: { position: 'absolute', bottom: -1, left: 0, right: 0, height: 2, borderRadius: 99, backgroundColor: G },
+  
   listContent: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     paddingBottom: 40,
   },
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   avatarFallback: {
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: G,
   },
   avatarFallbackText: {
-    color: '#FFF',
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: '#050505',
+    fontFamily: 'Outfit-Bold',
+    fontSize: 18,
   },
   userName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#fff',
+  },
+  userHandle: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: LABEL,
   },
   mutualText: {
-    fontSize: 12,
+    fontSize: 11,
+    fontFamily: 'Inter-Regular',
+    color: MUTED,
     marginTop: 2,
   },
   followBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    minWidth: 100,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
     alignItems: 'center',
   },
   followBtnText: {
-    fontSize: 13,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontFamily: 'Inter-SemiBold',
   },
   centerContainer: {
     flex: 1,
@@ -296,10 +338,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyContainer: {
-    padding: 40,
+    paddingVertical: 48,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: 14,
   },
 });

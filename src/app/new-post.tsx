@@ -9,9 +9,9 @@ export default function NewPostScreen() {
 
   useEffect(() => {
     if (params.category === 'Event') {
-      router.replace('/create-event');
+      router.replace('/create-event' as any);
     } else {
-      router.replace('/create-post');
+      router.replace('/create-post' as any);
     }
   }, [params.category, router]);
 

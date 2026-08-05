@@ -108,7 +108,7 @@ export default function Profile2Screen() {
       }
     }
     // Per user request, we skip permissions and go straight to tabs
-    router.replace('/(tabs)');
+    router.replace('/(tabs)' as any);
   };
 
   return (
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.G,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: radii.sm,
+    borderRadius: radii.input,
   },
   gpsText: {
     fontFamily: 'Inter-SemiBold',
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15,15,15,0.96)',
     borderWidth: 1,
     borderColor: colors.GLASS_BORDER,
-    borderRadius: radii.md,
+    borderRadius: radii.card,
     overflow: 'hidden',
   },
   suggestionRow: {
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.SURFACE,
     borderWidth: 1,
     borderColor: colors.GLASS_BORDER,
-    borderRadius: radii.md,
+    borderRadius: radii.card,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },

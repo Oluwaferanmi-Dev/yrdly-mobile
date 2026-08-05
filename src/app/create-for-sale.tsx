@@ -101,10 +101,10 @@ export default function CreateForSaleScreen() {
       try {
         let imageUrls: string[] = [];
         if (attachedFiles.length > 0) {
-          const { urls, error: uploadErr } = await StorageService.uploadPostImages(user.id, attachedFiles);
-          if (!uploadErr && urls) {
-            imageUrls = urls;
-          }
+          const uploadedImages = await Promise.all(
+            attachedFiles.map((file) => StorageService.uploadPostImage(user.id, file))
+          );
+          imageUrls = uploadedImages.map(res => res.url).filter(Boolean) as string[];
         }
 
         const userLoc = profile.location as { state?: string; lga?: string; ward?: string } | undefined;
@@ -200,8 +200,13 @@ export default function CreateForSaleScreen() {
             <Text style={styles.stepDesc}>First photo becomes your listing cover.</Text>
             <View style={styles.photosGrid}>
               {attachedFiles.map((file, i) => (
-                <View key={i} style={styles.photoBox}>
+                <View key={i} style={[styles.photoBox, i === 0 && { borderWidth: 2, borderColor: G }]}>
                   <Image source={{ uri: file.uri }} style={styles.photoImg} />
+                  {i === 0 && (
+                    <View style={styles.coverBadge}>
+                      <Text style={styles.coverBadgeText}>COVER</Text>
+                    </View>
+                  )}
                   <TouchableOpacity 
                     style={styles.removePhoto}
                     onPress={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))}
@@ -211,8 +216,7 @@ export default function CreateForSaleScreen() {
                 </View>
               ))}
               <TouchableOpacity style={styles.addPhotoBox} onPress={pickImages}>
-                <Ionicons name="camera-outline" size={28} color={G} />
-                <Text style={styles.addPhotoText}>Add Photo</Text>
+                <Feather name="camera" size={24} color={LABEL} />
               </TouchableOpacity>
             </View>
           </View>
@@ -220,13 +224,10 @@ export default function CreateForSaleScreen() {
 
         {step === 1 && (
           <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Item Details</Text>
-            <Text style={styles.stepDesc}>Provide key information for buyers.</Text>
-            
             <Text style={styles.label}>Title</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g. Vintage Leather Jacket"
+              placeholder="e.g. Nike Air Max 90, Blue"
               placeholderTextColor={MUTED}
               value={title}
               onChangeText={setTitle}
@@ -234,8 +235,8 @@ export default function CreateForSaleScreen() {
 
             <Text style={styles.label}>Price (₦)</Text>
             <TextInput
-              style={styles.input}
-              placeholder="0.00"
+              style={[styles.input, { fontFamily: 'Outfit-Bold', fontSize: 18 }]}
+              placeholder="₦ 0"
               placeholderTextColor={MUTED}
               keyboardType="numeric"
               value={price}
@@ -243,7 +244,7 @@ export default function CreateForSaleScreen() {
             />
 
             <Text style={styles.label}>Category</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+            <View style={styles.chipGrid}>
               {CATEGORIES.map(cat => (
                 <TouchableOpacity
                   key={cat}
@@ -253,20 +254,32 @@ export default function CreateForSaleScreen() {
                   <Text style={[styles.chipText, category === cat && styles.chipTextActive]}>{cat}</Text>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
 
             <Text style={styles.label}>Condition</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+            <View style={styles.conditionList}>
               {CONDITIONS.map(cond => (
                 <TouchableOpacity
                   key={cond}
-                  style={[styles.chip, condition === cond && styles.chipActive]}
+                  style={[styles.conditionRow, condition === cond && styles.conditionRowActive]}
                   onPress={() => setCondition(cond)}
                 >
-                  <Text style={[styles.chipText, condition === cond && styles.chipTextActive]}>{cond}</Text>
+                  <View style={[styles.radioCircle, condition === cond && styles.radioCircleActive]}>
+                    {condition === cond && <View style={styles.radioDot} />}
+                  </View>
+                  <Text style={[styles.conditionText, condition === cond && styles.conditionTextActive]}>{cond}</Text>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
+
+            <Text style={styles.label}>Location</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Lekki Phase 1, Lagos"
+              placeholderTextColor={MUTED}
+              value={location}
+              onChangeText={setLocation}
+            />
           </View>
         )}
 
@@ -335,69 +348,92 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 12,
     backgroundColor: SURFACE,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTextContainer: { flex: 1 },
   headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  headerSubtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: MUTED },
+  headerSubtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL },
   progressBarBg: {
     height: 3,
     backgroundColor: 'rgba(255,255,255,0.08)',
-    width: '100%',
+    marginHorizontal: 20,
+    marginTop: 14,
+    borderRadius: 2,
   },
   progressBarFill: {
     height: '100%',
     backgroundColor: G,
+    borderRadius: 2,
   },
   scrollContent: {
     padding: 20,
     paddingBottom: 40,
   },
-  stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff', marginBottom: 4 },
-  stepDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED, marginBottom: 20 },
+  stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 17, color: '#fff', marginBottom: 4 },
+  stepDesc: { fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL, marginBottom: 20 },
   photosGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8,
   },
   photoBox: {
-    width: 100,
-    height: 100,
+    width: (Dimensions.get('window').width - 40 - 16) / 3,
+    aspectRatio: 1,
     borderRadius: 16,
     overflow: 'hidden',
     position: 'relative',
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
   photoImg: { width: '100%', height: '100%' },
+  coverBadge: {
+    position: 'absolute',
+    bottom: 5,
+    alignSelf: 'center',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    backgroundColor: G,
+  },
+  coverBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 9, color: DARK },
   removePhoto: {
     position: 'absolute',
     top: 6,
     right: 6,
   },
   addPhotoBox: {
-    width: 100,
-    height: 100,
+    width: (Dimensions.get('window').width - 40 - 16) / 3,
+    aspectRatio: 1,
     borderRadius: 16,
     backgroundColor: SURFACE,
     borderWidth: 1,
-    borderColor: GLASS_BORDER,
+    borderColor: 'rgba(255,255,255,0.2)',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 4,
   },
-  addPhotoText: { fontFamily: 'Inter-Medium', fontSize: 11, color: G },
   formGroup: { gap: 12 },
-  label: { fontFamily: 'Inter-Medium', fontSize: 13, color: '#ccc', marginTop: 8 },
+  label: { 
+    fontFamily: 'Inter-SemiBold', 
+    fontSize: 12, 
+    color: LABEL, 
+    marginBottom: 8, 
+    marginTop: 8,
+    textTransform: 'uppercase', 
+    letterSpacing: 0.96 
+  },
   input: {
     backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: GLASS_BORDER,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontFamily: 'Inter-Regular',
     fontSize: 15,
     color: '#fff',
@@ -406,25 +442,63 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: 'top',
   },
-  chipRow: {
+  chipGrid: {
     flexDirection: 'row',
-    marginBottom: 8,
+    flexWrap: 'wrap',
+    gap: 8,
   },
   chip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 12,
     backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: GLASS_BORDER,
-    marginRight: 8,
   },
   chipActive: {
-    backgroundColor: G + '20',
+    backgroundColor: 'rgba(130,219,126,0.15)',
+    borderColor: 'rgba(130,219,126,0.35)',
+  },
+  chipText: { fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED },
+  chipTextActive: { color: G },
+  conditionList: {
+    gap: 8,
+  },
+  conditionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: SURFACE,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+  },
+  conditionRowActive: {
+    backgroundColor: 'rgba(130,219,126,0.08)',
+    borderColor: 'rgba(130,219,126,0.25)',
+  },
+  radioCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: GLASS_BORDER,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioCircleActive: {
     borderColor: G,
   },
-  chipText: { fontFamily: 'Inter-Medium', fontSize: 13, color: MUTED },
-  chipTextActive: { color: G },
+  radioDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: G,
+  },
+  conditionText: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED },
+  conditionTextActive: { color: '#fff' },
   reviewCard: {
     backgroundColor: SURFACE,
     borderWidth: 1,
@@ -447,16 +521,16 @@ const styles = StyleSheet.create({
   btnPrimary: {
     backgroundColor: G,
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   btnDisabled: { opacity: 0.4 },
   btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },
-  btnText: { fontFamily: 'Inter-Medium', fontSize: 14, color: MUTED, textAlign: 'center', marginTop: 12 },
+  btnText: { fontFamily: 'Inter-Medium', fontSize: 14, color: LABEL, textAlign: 'center', marginTop: 12 },
   successContainer: {
     flex: 1,
-    justify.content: 'center',
+    justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
     gap: 16,

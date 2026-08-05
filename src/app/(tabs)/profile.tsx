@@ -396,7 +396,7 @@ export default function ProfileTab() {
               <Text style={styles.emptySub}>Share something with your neighbourhood.</Text>
               <TouchableOpacity 
                 style={styles.createBtn}
-                onPress={() => router.push('/create-post')}
+                onPress={() => router.push('/create-post' as any)}
               >
                 <Text style={styles.createBtnText}>Create Post</Text>
               </TouchableOpacity>

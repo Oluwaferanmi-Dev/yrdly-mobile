@@ -1,253 +1,263 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Switch, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../context/ThemeContext';
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, RED } from '../../constants/tokens';
 
-function SettingSection({ title, children }: { title: string; children: React.ReactNode }) {
+import { G, DARK, GLASS_BORDER, MUTED, LABEL, SURFACE } from '../../constants/tokens';
+
+function SettingSection({ title, children }: { title: string, children: React.ReactNode }) {
   return (
-    <View style={{ marginBottom: 24 }}>
-      <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10, marginLeft: 4 }}>
-        {title}
-      </Text>
-      <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, overflow: 'hidden' }}>
+    <View style={s.section}>
+      <Text style={s.sectionTitle}>{title}</Text>
+      <View style={s.sectionCard}>
         {children}
       </View>
     </View>
   );
 }
 
-interface SettingRowProps {
-  icon: string;
-  iconColor?: string;
-  label: string;
-  sub: string;
-  onPress?: () => void;
-  isLast?: boolean;
-  value?: string;
-  toggle?: boolean;
-  toggled?: boolean;
-  onToggle?: (val: boolean) => void;
+function SettingDivider() {
+  return <View style={s.divider} />;
 }
 
-function SettingRow({ icon, iconColor = G, label, sub, onPress, isLast = false, value, toggle, toggled, onToggle }: SettingRowProps) {
+function SettingRow({ 
+  icon, label, sub, value, danger, toggle, toggled, onToggle, chevron = true, onPress 
+}: { 
+  icon: React.ReactNode; label: string; sub?: string; value?: string; danger?: boolean; toggle?: boolean; toggled?: boolean; onToggle?: (v: boolean) => void; chevron?: boolean; onPress?: () => void 
+}) {
   return (
-    <TouchableOpacity
-      style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: isLast ? 0 : 1, borderBottomColor: GLASS_BORDER }}
-      onPress={toggle ? undefined : onPress}
-      activeOpacity={toggle ? 1 : 0.7}
-    >
-      <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: iconColor + '15', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-        <Ionicons name={icon as any} size={18} color={iconColor} />
+    <TouchableOpacity style={s.row} onPress={onPress} disabled={!onPress && !toggle}>
+      <View style={[s.iconBox, danger && { backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.2)' }]}>
+        {icon}
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>{label}</Text>
-        <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: MUTED }}>{sub}</Text>
+      <View style={s.rowMid}>
+        <Text style={[s.rowLabel, danger && { color: '#ef4444' }]}>{label}</Text>
+        {sub && <Text style={s.rowSub}>{sub}</Text>}
       </View>
-      {value ? (
-        <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: G, marginRight: 4 }}>{value}</Text>
-      ) : null}
-      {toggle ? (
-        <Switch
-          value={toggled}
-          onValueChange={onToggle}
-          trackColor={{ false: '#353534', true: G }}
-          thumbColor="#FFFFFF"
-          ios_backgroundColor="#353534"
+      {value && <Text style={s.rowValue}>{value}</Text>}
+      {toggle && (
+        <Switch 
+          value={toggled} 
+          onValueChange={onToggle} 
+          trackColor={{ false: 'rgba(255,255,255,0.1)', true: G }} 
+          thumbColor="#fff" 
         />
-      ) : (
-        <Ionicons name="chevron-forward" size={18} color={MUTED} />
       )}
+      {!toggle && chevron && <Feather name="chevron-right" size={18} color={LABEL} style={{ marginLeft: 8 }} />}
     </TouchableOpacity>
   );
 }
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { user, profile, signOut, loading: authLoading } = useAuth();
-  const { isDarkMode, toggleTheme } = useAppTheme();
+  const { user, profile, signOut } = useAuth();
+  const [isDarkMode, setIsDarkMode] = React.useState(true);
 
   const handleSignOut = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out of your account?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
-      ]
-    );
+    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
+    ]);
   };
 
   const isAdmin = (profile as any)?.is_admin || (profile as any)?.role === 'admin';
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: DARK }}>
-      {/* ── Detail Header (Figma matching) ── */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 14 }}>
-        <TouchableOpacity 
-          onPress={() => router.back()} 
-          style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <Ionicons name="chevron-back" size={20} color={TEXT_PRIMARY} />
+    <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+      <View style={s.header}>
+        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+          <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
-        <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: TEXT_PRIMARY }}>Settings</Text>
-        <View style={{ width: 38 }} />
+        <Text style={s.headerTitle}>Settings</Text>
+        <View style={{ width: 34 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, paddingTop: 8 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, paddingTop: 10 }}>
         
-        {/* Section 1: Account & Identity */}
         <SettingSection title="Account & Identity">
           <SettingRow 
-            icon="person-outline" 
-            label="Edit Profile" 
-            sub="Update your name, photo and bio" 
-            onPress={() => router.push('/profile/edit')} 
+            icon={<Feather name="user" size={16} color="#fff" />} 
+            label="Edit Profile" sub="Update your name, photo and bio" 
+            onPress={() => router.push('/profile/edit' as any)} 
           />
+          <SettingDivider />
           <SettingRow 
-            icon="call-outline" 
+            icon={<Text style={{ fontSize: 16 }}>🇳🇬</Text>} 
             label="Phone Number" 
-            sub={profile?.phone_verified ? `${profile?.phone || 'Phone'} · Verified` : 'Verify phone number for trusted status'} 
-            value={profile?.phone_verified ? 'Verified' : 'Verify'} 
-            onPress={() => router.push('/verify-phone')} 
+            sub={profile?.phone_verified ? `${profile?.phone || 'Phone'} · Verified` : 'Verify phone number'} 
+            onPress={() => router.push('/verify-phone' as any)} 
           />
+          <SettingDivider />
           <SettingRow 
-            icon="mail-outline" 
+            icon={<Feather name="mail" size={16} color="#fff" />} 
             label="Email Address" 
             sub={user?.email || 'No email linked'} 
-            isLast 
+            onPress={() => {}} 
           />
         </SettingSection>
 
-        {/* Section 2: Commerce */}
         <SettingSection title="Commerce">
           <SettingRow 
-            icon="bag-handle-outline" 
-            label="Transactions" 
-            sub="Track your orders & marketplace activity" 
-            onPress={() => router.push('/transactions')} 
+            icon={<Feather name="shopping-bag" size={16} color="#fff" />} 
+            label="Transactions" sub="Track your orders & marketplace activity" 
+            onPress={() => router.push('/transactions' as any)} 
           />
+          <SettingDivider />
           <SettingRow 
-            icon="wallet-outline" 
-            label="Payouts" 
-            sub="Manage your earnings & balances" 
-            onPress={() => router.push('/settings/payouts')} 
+            icon={<Ionicons name="wallet-outline" size={18} color="#fff" />} 
+            label="Payouts" sub="Manage your earnings & balances" 
+            onPress={() => router.push('/settings/payouts' as any)} 
           />
+          <SettingDivider />
           <SettingRow 
-            icon="business-outline" 
-            label="Bank Account" 
-            sub="Manage your linked payout account" 
-            onPress={() => router.push('/settings/payout-settings')} 
-            isLast 
+            icon={<Ionicons name="business-outline" size={18} color="#fff" />} 
+            label="Bank Account" sub="Manage your linked payout account" 
+            onPress={() => router.push('/settings/payout-settings' as any)} 
           />
         </SettingSection>
 
-        {/* Section 3: Privacy & Location */}
         <SettingSection title="Privacy & Location">
           <SettingRow 
-            icon="lock-closed-outline" 
-            label="Privacy & Discoverability" 
-            sub="Manage location sharing and visibility" 
-            onPress={() => router.push('/settings/privacy')} 
+            icon={<Feather name="lock" size={16} color="#fff" />} 
+            label="Privacy & Discoverability" sub="Manage location sharing and visibility" 
+            onPress={() => router.push('/settings/privacy' as any)} 
           />
+          <SettingDivider />
           <SettingRow 
-            icon="location-outline" 
-            label="Location" 
-            sub="Your neighbourhood & location alerts" 
-            onPress={() => router.push('/settings/location')} 
+            icon={<Feather name="map-pin" size={16} color="#fff" />} 
+            label="Location" sub="Your neighbourhood & location alerts" 
+            onPress={() => router.push('/settings/location' as any)} 
           />
+          <SettingDivider />
           <SettingRow 
-            icon="shield-outline" 
-            label="Blocked Users" 
-            sub="Manage who can't see or contact you" 
-            value={profile?.blocked_users?.length ? `${profile.blocked_users.length}` : '0'} 
-            isLast 
+            icon={<Feather name="shield" size={16} color="#fff" />} 
+            label="Blocked Users" sub="Manage who can't see or contact you" 
+            value={profile?.blocked_users?.length ? String(profile.blocked_users.length) : '0'} 
+            onPress={() => {}} 
           />
         </SettingSection>
 
-        {/* Section 4: Preferences */}
         <SettingSection title="Preferences">
           <SettingRow 
-            icon="notifications-outline" 
-            label="Notifications" 
-            sub="Choose what you want to hear" 
-            onPress={() => router.push('/settings/notifications')} 
+            icon={<Feather name="bell" size={16} color="#fff" />} 
+            label="Notifications" sub="Choose what you want to hear" 
+            onPress={() => router.push('/settings/notifications' as any)} 
           />
+          <SettingDivider />
           <SettingRow 
-            icon="moon-outline" 
-            label="Dark Mode" 
-            sub="Keep it easy on your eyes" 
-            toggle 
-            toggled={isDarkMode} 
-            onToggle={toggleTheme} 
-            isLast 
+            icon={<Feather name="moon" size={16} color="#fff" />} 
+            label="Dark Mode" sub="Keep it easy on your eyes" 
+            toggle toggled={isDarkMode} onToggle={setIsDarkMode} chevron={false} 
           />
         </SettingSection>
 
-        {/* Section 5: Community & Support */}
         <SettingSection title="Community & Support">
           <SettingRow 
-            icon="person-add-outline" 
-            label="Invite Neighbours" 
-            sub="Invite neighbours to join your community" 
-            onPress={() => router.push('/invite' as any)} 
+            icon={<Feather name="user-plus" size={16} color="#fff" />} 
+            label="Invite Neighbours" sub="Invite neighbours to join your community" 
+            value="Invite" 
+            onPress={() => {}} 
           />
+          <SettingDivider />
           <SettingRow 
-            icon="book-outline" 
-            label="Neighbourhood Guidelines" 
-            sub="What we stand for in every community" 
-            onPress={() => Alert.alert('Neighbourhood Guidelines', 'Be respectful, look out for your neighbours, and support your local marketplace.')} 
+            icon={<Feather name="book-open" size={16} color="#fff" />} 
+            label="Neighbourhood Guidelines" sub="What we stand for in every community" 
+            onPress={() => {}} 
           />
+          <SettingDivider />
           <SettingRow 
-            icon="help-circle-outline" 
-            label="Help Center" 
-            sub="FAQs, tutorials and getting support" 
-            onPress={() => Alert.alert('Help Center', 'Need help? Contact support@yrdly.app')} 
+            icon={<Feather name="help-circle" size={16} color="#fff" />} 
+            label="Help Center" sub="FAQs, tutorials and getting support" 
+            onPress={() => {}} 
           />
+          <SettingDivider />
           <SettingRow 
-            icon="flag-outline" 
-            label="Report an Issue" 
-            sub="Flag a problem or inappropriate content" 
-            onPress={() => Alert.alert('Report an Issue', 'Thank you for keeping Yrdly safe. Please email safety@yrdly.app to report an issue.')} 
-            isLast 
+            icon={<Feather name="flag" size={16} color="#fff" />} 
+            label="Report an Issue" sub="Flag a problem or inappropriate content" 
+            onPress={() => {}} 
           />
         </SettingSection>
 
-        {/* Section 6: Admin Tools (Figma matching) */}
         {isAdmin && (
           <View style={{ marginBottom: 24 }}>
-            <View style={{ padding: 16, borderRadius: 20, backgroundColor: G + '10', borderWidth: 1, borderColor: G + '25', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '18', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
-                <Ionicons name="shield-checkmark" size={18} color={G} />
+            <View style={s.adminBanner}>
+              <View style={s.adminBannerIcon}>
+                <Ionicons name="shield-checkmark" size={16} color={G} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: G }}>Admin Portal</Text>
-                <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>You have administrator privileges</Text>
+                <Text style={s.adminBannerTitle}>Admin Portal</Text>
+                <Text style={s.adminBannerSub}>You have administrator privileges</Text>
               </View>
-              <TouchableOpacity 
-                style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: G, justifyContent: 'center', alignItems: 'center' }}
-                onPress={() => router.push('/(admin)/disputes' as any)}
-              >
-                <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 12, color: DARK }}>Open</Text>
-              </TouchableOpacity>
+              <View style={s.adminBadge}>
+                <Text style={s.adminBadgeTxt}>ADMIN</Text>
+              </View>
             </View>
+            <SettingSection title="Admin Tools">
+              <SettingRow 
+                icon={<Feather name="inbox" size={16} color="#fff" />} 
+                label="Dispute Resolution" sub="Review and resolve marketplace disputes" 
+                onPress={() => router.push('/(admin)/disputes' as any)} 
+              />
+              <SettingDivider />
+              <SettingRow 
+                icon={<Feather name="alert-triangle" size={16} color="#fff" />} 
+                label="Safety Alerts" sub="Create and manage community safety alerts" 
+                onPress={() => {}} 
+              />
+            </SettingSection>
           </View>
         )}
 
-        {/* Section 7: Account Actions */}
-        <TouchableOpacity 
-          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 20, backgroundColor: 'rgba(239, 68, 68, 0.08)', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.2)', marginTop: 4 }} 
-          onPress={handleSignOut} 
-          disabled={authLoading}
-        >
-          <Ionicons name="log-out-outline" size={20} color={RED} style={{ marginRight: 8 }} />
-          <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: RED }}>Sign Out</Text>
-        </TouchableOpacity>
+        <SettingSection title="Account">
+          <SettingRow 
+            icon={<Feather name="log-out" size={16} color="#ef4444" />} 
+            label="Sign Out" sub="Log out of your YRDLY account" 
+            danger chevron={false} 
+            onPress={handleSignOut} 
+          />
+          <SettingDivider />
+          <SettingRow 
+            icon={<Feather name="trash-2" size={16} color="#ef4444" />} 
+            label="Request Account Deletion" sub="We'll process your request within 30 days" 
+            danger chevron={false} 
+            onPress={() => {}} 
+          />
+        </SettingSection>
+
+        <Text style={s.footerText}>YRDLY v1.0.0 · Made with 💚 for Nigerian communities</Text>
 
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#050505' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
+  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+
+  section: { marginBottom: 24 },
+  sectionTitle: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: LABEL, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginLeft: 4 },
+  sectionCard: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 22, overflow: 'hidden' },
+  
+  divider: { height: 1, backgroundColor: GLASS_BORDER, marginLeft: 64 },
+  
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14 },
+  iconBox: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+  rowMid: { flex: 1, paddingLeft: 12 },
+  rowLabel: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+  rowSub: { fontFamily: 'Inter', fontSize: 12, color: MUTED, marginTop: 2 },
+  rowValue: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
+
+  adminBanner: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', borderRadius: 18, marginBottom: 12 },
+  adminBannerIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.12)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)', alignItems: 'center', justifyContent: 'center' },
+  adminBannerTitle: { fontFamily: 'Outfit-Bold', fontSize: 14, color: G },
+  adminBannerSub: { fontFamily: 'Inter', fontSize: 12, color: LABEL },
+  adminBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: 'rgba(130,219,126,0.15)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)' },
+  adminBadgeTxt: { fontFamily: 'Inter-Bold', fontSize: 10, color: G, textTransform: 'uppercase', letterSpacing: 1 },
+
+  footerText: { fontFamily: 'Inter', fontSize: 11, color: LABEL, textAlign: 'center', marginTop: 4 },
+});

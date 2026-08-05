@@ -180,7 +180,7 @@ export default function NotificationsScreen() {
 
       {/* Alert Banner for Safety */}
       <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
-        <AlertBanner />
+        {/* <AlertBanner /> */}
       </View>
 
       {/* ── Notifications List ── */}
@@ -200,7 +200,6 @@ export default function NotificationsScreen() {
         <FlashList
           data={filteredNotifications}
           keyExtractor={item => item.id}
-          estimatedItemSize={70}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchNotifications(true)} tintColor={G} />}
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
@@ -214,7 +213,7 @@ export default function NotificationsScreen() {
                   supabase.from('notifications').update({ is_read: true }).eq('id', item.id);
                   setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n));
                 }
-                if (item.type.includes('event')) router.push('/events');
+                if (item.type.includes('event')) router.push('/events' as any);
                 else if (item.type.includes('marketplace') || item.type.includes('escrow')) router.push('/transactions');
                 else if (item.type === 'friend_request') router.push('/community');
                 else if (item.related_id) router.push(`/posts/${item.related_id}`);

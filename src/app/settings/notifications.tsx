@@ -1,194 +1,162 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, Switch, ScrollView, TouchableOpacity, ActivityIndicator, Alert,
-} from 'react-native';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/use-supabase-auth';
-
-interface NotificationSettings {
-  messages: boolean;
-  friendRequests: boolean;
-  postUpdates: boolean;
-  comments: boolean;
-  postLikes: boolean;
-  eventInvites: boolean;
-  orderUpdates: boolean;
-  disputeUpdates: boolean;
-  paymentReceived: boolean;
-}
-
-const DEFAULT_SETTINGS: NotificationSettings = {
-  messages: true,
-  friendRequests: true,
-  postUpdates: true,
-  comments: true,
-  postLikes: true,
-  eventInvites: true,
-  orderUpdates: true,
-  disputeUpdates: true,
-  paymentReceived: true,
-};
-
-const NOTIFICATION_GROUPS = [
-  {
-    title: 'Social',
-    items: [
-      { key: 'messages' as const, label: 'Messages', desc: 'When someone sends you a message', icon: 'message-circle' },
-      { key: 'friendRequests' as const, label: 'Follow Requests', desc: 'When someone follows you', icon: 'user-plus' },
-      { key: 'comments' as const, label: 'Comments', desc: 'When someone comments on your post', icon: 'message-square' },
-      { key: 'postLikes' as const, label: 'Post Likes', desc: 'When someone likes your post', icon: 'heart' },
-    ],
-  },
-  {
-    title: 'Commerce',
-    items: [
-      { key: 'orderUpdates' as const, label: 'Order Updates', desc: 'Transaction and escrow status changes', icon: 'file-text' },
-      { key: 'paymentReceived' as const, label: 'Payment Received', desc: 'When a buyer pays for your item', icon: 'dollar-sign' },
-      { key: 'disputeUpdates' as const, label: 'Dispute Updates', desc: 'Changes to your dispute cases', icon: 'alert-circle' },
-    ],
-  },
-  {
-    title: 'Events',
-    items: [
-      { key: 'eventInvites' as const, label: 'Event Invites', desc: 'Invitations to local events', icon: 'calendar' },
-      { key: 'postUpdates' as const, label: 'Post Activity', desc: 'Updates to posts you follow', icon: 'list' },
-    ],
-  },
-];
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL } from '../../constants/tokens';
 
 export default function NotificationsScreen() {
   const router = useRouter();
-  const { user } = useAuth();
-  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data } = await supabase
-        .from('users')
-        .select('notification_settings')
-        .eq('id', user.id)
-        .single();
-      if (data?.notification_settings) {
-        setSettings({ ...DEFAULT_SETTINGS, ...data.notification_settings });
-      }
-      setLoading(false);
-    })();
-  }, [user]);
-
-  const handleToggle = async (key: keyof NotificationSettings, value: boolean) => {
-    if (!user) return;
-    const newSettings = { ...settings, [key]: value };
-    setSettings(newSettings);
-    setSaving(key);
-    try {
-      const { error } = await supabase
-        .from('users')
-        .update({ notification_settings: newSettings })
-        .eq('id', user.id);
-      if (error) throw error;
-    } catch {
-      // Revert on failure
-      setSettings(settings);
-      Alert.alert('Error', 'Failed to save notification preference.');
-    } finally {
-      setSaving(null);
-    }
-  };
+  
+  const [notifs, setNotifs] = useState({ inquiries: true, offers: true, rsvp: true, hostUpdates: false, mentions: true, alerts: true });
+  
+  const toggle = (k: keyof typeof notifs) => setNotifs(p => ({ ...p, [k]: !p[k] }));
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
+    <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+      {/* Header */}
+      <View style={s.header}>
+        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+          <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Notifications</Text>
-        <View style={{ width: 40 }} />
+        <Text style={s.headerTitle}>Notifications</Text>
+        <View style={{ width: 38 }} />
       </View>
 
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={G} />
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={[styles.intro, { color: MUTED }]}>
-            Choose which notifications you receive. These apply to both push and in-app notifications.
-          </Text>
-
-          {NOTIFICATION_GROUPS.map((group) => (
-            <View key={group.title} style={styles.group}>
-              <Text style={[styles.groupTitle, { color: LABEL }]}>{group.title.toUpperCase()}</Text>
-              <View style={[styles.groupCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
-                {group.items.map((item, index) => (
-                  <View
-                    key={item.key}
-                    style={[styles.row, index < group.items.length - 1 && [styles.rowDivider, { borderBottomColor: GLASS_BORDER }]]}
-                  >
-                    <View style={[styles.iconWrap, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
-                      <Feather name={item.icon as any} size={20} color={G} />
-                    </View>
-                    <View style={styles.rowInfo}>
-                      <Text style={[styles.rowLabel, { color: TEXT_PRIMARY }]}>{item.label}</Text>
-                      <Text style={[styles.rowDesc, { color: MUTED }]}>{item.desc}</Text>
-                    </View>
-                    {saving === item.key ? (
-                      <ActivityIndicator size="small" color={G} />
-                    ) : (
-                      <Switch
-                        value={settings[item.key]}
-                        onValueChange={(v) => handleToggle(item.key, v)}
-                        trackColor={{ false: 'rgba(150,150,150,0.3)', true: 'rgba(130, 219, 126, 0.4)' }}
-                        thumbColor={settings[item.key] ? G : '#FFFFFF'}
-                        ios_backgroundColor="rgba(150,150,150,0.3)"
-                      />
-                    )}
-                  </View>
-                ))}
-              </View>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, paddingTop: 10 }}>
+        
+        {/* Marketplace */}
+        <Text style={s.sectionTitle}>MARKETPLACE</Text>
+        <View style={s.sectionCard}>
+          <View style={s.row}>
+            <View style={s.iconWrap}>
+              <Feather name="shopping-bag" size={18} color="#fff" />
             </View>
-          ))}
+            <View style={s.rowText}>
+              <Text style={s.rowTitle}>Item Inquiries</Text>
+              <Text style={s.rowSub}>When someone messages about your listing</Text>
+            </View>
+            <Switch
+              value={notifs.inquiries}
+              onValueChange={() => toggle('inquiries')}
+              trackColor={{ false: '#353534', true: G }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#353534"
+            />
+          </View>
+          <View style={s.divider} />
+          <View style={s.row}>
+            <View style={s.iconWrap}>
+              <Feather name="tag" size={18} color="#fff" />
+            </View>
+            <View style={s.rowText}>
+              <Text style={s.rowTitle}>Offers & Bids</Text>
+              <Text style={s.rowSub}>Price offers on your items</Text>
+            </View>
+            <Switch
+              value={notifs.offers}
+              onValueChange={() => toggle('offers')}
+              trackColor={{ false: '#353534', true: G }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#353534"
+            />
+          </View>
+        </View>
 
-          <View style={{ height: 40 }} />
-        </ScrollView>
-      )}
+        {/* Events */}
+        <Text style={s.sectionTitle}>EVENTS</Text>
+        <View style={s.sectionCard}>
+          <View style={s.row}>
+            <View style={s.iconWrap}>
+              <Feather name="calendar" size={18} color="#fff" />
+            </View>
+            <View style={s.rowText}>
+              <Text style={s.rowTitle}>RSVP Reminders</Text>
+              <Text style={s.rowSub}>Upcoming events you've joined</Text>
+            </View>
+            <Switch
+              value={notifs.rsvp}
+              onValueChange={() => toggle('rsvp')}
+              trackColor={{ false: '#353534', true: G }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#353534"
+            />
+          </View>
+          <View style={s.divider} />
+          <View style={s.row}>
+            <View style={s.iconWrap}>
+              <Feather name="bell" size={18} color="#fff" />
+            </View>
+            <View style={s.rowText}>
+              <Text style={s.rowTitle}>Host Updates</Text>
+              <Text style={s.rowSub}>Changes to events you're attending</Text>
+            </View>
+            <Switch
+              value={notifs.hostUpdates}
+              onValueChange={() => toggle('hostUpdates')}
+              trackColor={{ false: '#353534', true: G }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#353534"
+            />
+          </View>
+        </View>
+
+        {/* Community */}
+        <Text style={s.sectionTitle}>COMMUNITY</Text>
+        <View style={s.sectionCard}>
+          <View style={s.row}>
+            <View style={s.iconWrap}>
+              <Feather name="message-circle" size={18} color="#fff" />
+            </View>
+            <View style={s.rowText}>
+              <Text style={s.rowTitle}>Mentions & Replies</Text>
+              <Text style={s.rowSub}>When neighbours mention or reply to you</Text>
+            </View>
+            <Switch
+              value={notifs.mentions}
+              onValueChange={() => toggle('mentions')}
+              trackColor={{ false: '#353534', true: G }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#353534"
+            />
+          </View>
+          <View style={s.divider} />
+          <View style={s.row}>
+            <View style={s.iconWrap}>
+              <Feather name="shield" size={18} color="#fff" />
+            </View>
+            <View style={s.rowText}>
+              <Text style={s.rowTitle}>Local Emergency Alerts</Text>
+              <Text style={s.rowSub}>Safety alerts from your neighbourhood</Text>
+            </View>
+            <Switch
+              value={notifs.alerts}
+              onValueChange={() => toggle('alerts')}
+              trackColor={{ false: '#353534', true: G }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#353534"
+            />
+          </View>
+        </View>
+
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 12, paddingVertical: 14,
-    borderBottomWidth: 1,
-  },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)' },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontFamily: 'Outfit-ExtraBold' },
-  scroll: { padding: 16 },
-  intro: { fontSize: 13, fontFamily: 'Inter-Regular', marginBottom: 20, lineHeight: 18 },
-  group: { marginBottom: 24 },
-  groupTitle: {
-    fontSize: 11, fontFamily: 'Inter-Bold',
-    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10, marginLeft: 4,
-  },
-  groupCard: {
-    borderRadius: 20,
-  },
-  row: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
-  rowDivider: { borderBottomWidth: 1 },
-  iconWrap: {
-    width: 44, height: 44, borderRadius: 12,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  rowInfo: { flex: 1 },
-  rowLabel: { fontSize: 15, fontFamily: 'Outfit-Bold', marginBottom: 2 },
-  rowDesc: { fontSize: 12, fontFamily: 'Inter-Regular' },
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#050505' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16 },
+  backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
+
+  sectionTitle: { fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginTop: 16, marginLeft: 4 },
+  sectionCard: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 24, overflow: 'hidden', marginBottom: 12 },
+  
+  row: { flexDirection: 'row', alignItems: 'center', padding: 16 },
+  iconWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  rowText: { flex: 1, marginRight: 12 },
+  rowTitle: { fontFamily: 'Outfit-Medium', fontSize: 15, color: '#fff', marginBottom: 2 },
+  rowSub: { fontFamily: 'Inter', fontSize: 13, color: LABEL },
+  divider: { height: 1, backgroundColor: GLASS_BORDER, marginHorizontal: 16 },
 });

@@ -283,7 +283,6 @@ export default function MessagesTab() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchConversations(true)} tintColor={G} />}
-          estimatedItemSize={72}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[

@@ -1,310 +1,160 @@
 import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Dimensions,
+  View, Text, StyleSheet, TouchableOpacity
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, {
-  useSharedValue, useAnimatedStyle,
-  withSpring, withTiming, withDelay, withSequence,
-  Easing, runOnJS,
-} from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import LottieView from 'lottie-react-native';
-import * as Haptics from 'expo-haptics';
+import { Feather } from '@expo/vector-icons';
 import { formatPrice } from '../../lib/utils';
-import { useAppTheme } from '../../context/ThemeContext';
-
-const { height: SCREEN_H, width: SCREEN_W } = Dimensions.get('window');
-
-const LOTTIE_SUCCESS = {
-  uri: 'https://lottie.host/3acad958-cd8e-424a-a1c9-58e8bff45d87/XvFdYxtUDF.json',
-};
-const LOTTIE_CONFETTI = {
-  uri: 'https://lottie.host/ea97d544-2453-48db-8cdb-7a35e9821946/LwHylkZ0X9.json',
-};
-
-const STEPS = [
-  { icon: 'shield-checkmark-outline' as const, label: 'Funds\nsecured' },
-  { icon: 'cube-outline' as const,             label: 'Seller\nships' },
-  { icon: 'checkmark-done-outline' as const,   label: 'You\nconfirm' },
-];
 
 export default function CheckoutSuccessScreen() {
-  const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const { transactionId, itemTitle, amount } = useLocalSearchParams<{
     transactionId: string; itemTitle: string; amount: string;
   }>();
 
-  // ── Sheet slide-up ────────────────────────────────────────────
-  const sheetY    = useSharedValue(0);
-  const overlayOp = useSharedValue(1);
-
-  // ── Content sequence ──────────────────────────────────────────
-  const lottieOp  = useSharedValue(1);
-  const titleOp   = useSharedValue(1);
-  const titleY    = useSharedValue(0);
-  const stepperOp = useSharedValue(1);
-  const stepperY  = useSharedValue(0);
-  const footerOp  = useSharedValue(1);
-  const footerY   = useSharedValue(0);
-
-  const lottieRef = useRef<LottieView>(null);
-
-  function triggerHaptic() {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }
-
-  useEffect(() => {
-    triggerHaptic();
-  }, []);
-
-  // ── Animated styles ───────────────────────────────────────────
-  const overlayStyle  = useAnimatedStyle(() => ({ opacity: overlayOp.value }));
-  const sheetStyle    = useAnimatedStyle(() => ({ transform: [{ translateY: sheetY.value }] }));
-  const lottieStyle   = useAnimatedStyle(() => ({ opacity: lottieOp.value }));
-  const titleStyle    = useAnimatedStyle(() => ({ opacity: titleOp.value, transform: [{ translateY: titleY.value }] }));
-  const stepperStyle  = useAnimatedStyle(() => ({ opacity: stepperOp.value, transform: [{ translateY: stepperY.value }] }));
-  const footerStyle   = useAnimatedStyle(() => ({ opacity: footerOp.value, transform: [{ translateY: footerY.value }] }));
-
   const amountNum = Number(amount ?? 0);
+  const ref = `REF-${transactionId?.substring(0, 8).toUpperCase() ?? '84920'}`;
+
+  const summary = [
+    { l: 'Item', v: itemTitle || 'Item' },
+    { l: 'Amount', v: formatPrice(amountNum) },
+    { l: 'Reference', v: ref },
+  ];
 
   return (
-    <View style={[styles.root, { backgroundColor: DARK }]}>
-      {/* Confetti — full screen */}
-      <LottieView
-        autoPlay
-        loop={false}
-        style={styles.confetti}
-        source={LOTTIE_CONFETTI}
-        resizeMode="cover"
-      />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <View style={styles.iconContainer}>
+          <Feather name="check" size={34} color={G} />
+        </View>
+        <Text style={styles.title}>Order Confirmed!</Text>
+        <Text style={styles.subtitle}>Your payment is being held securely until the transaction is completed.</Text>
 
-      {/* Main content area */}
-      <Animated.View style={[styles.sheet, { backgroundColor: DARK, flex: 1 }, sheetStyle]}>
-        <SafeAreaView edges={['bottom', 'top']} style={{ flex: 1, paddingTop: 40 }}>
-
-          {/* ── Lottie hero ─────────────────────────── */}
-          <Animated.View style={[styles.lottieWrapper, lottieStyle]}>
-            <LottieView
-              ref={lottieRef}
-              autoPlay
-              loop={false}
-              style={styles.lottie}
-              source={LOTTIE_SUCCESS}
-            />
-          </Animated.View>
-
-          {/* ── Title + pill ─────────────────────────── */}
-          <Animated.View style={[styles.titleBlock, titleStyle]}>
-            <Text style={[styles.title, { color: TEXT_PRIMARY }]}>Payment Successful!</Text>
-
-            <View style={[styles.escrowPill, {
-              backgroundColor: G + '15',
-              borderColor: G + '35',
-            }]}>
-              <Ionicons name="lock-closed-outline" size={13} color={G} style={{ marginRight: 5 }} />
-              <Text style={[styles.pillText, { color: G }]}>
-                {formatPrice(amountNum)} held in escrow
-              </Text>
+        <View style={styles.summaryContainer}>
+          {summary.map((r) => (
+            <View key={r.l} style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>{r.l}</Text>
+              <Text style={styles.summaryValue} numberOfLines={1}>{r.v}</Text>
             </View>
+          ))}
+        </View>
 
-            {!!itemTitle && (
-              <Text style={[styles.itemLabel, { color: MUTED }]} numberOfLines={2}>
-                for <Text style={{ color: LABEL, fontWeight: '600' }}>{itemTitle}</Text>
-              </Text>
-            )}
-
-            <Text style={[styles.body, { color: MUTED }]}>
-              Your funds are protected until you confirm receipt of the item.
-            </Text>
-          </Animated.View>
-
-          {/* ── Stepper ───────────────────────────────── */}
-          <Animated.View style={[styles.stepper, stepperStyle]}>
-            {STEPS.map((step, i) => (
-              <View key={i} style={styles.stepItem}>
-                <View style={styles.stepTrack}>
-                  {i > 0 && (
-                    <View style={[styles.stepLine, { backgroundColor: G + '35' }]} />
-                  )}
-                  <View style={[styles.stepDot, {
-                    backgroundColor: isDarkMode ? G + '20' : G + '12',
-                    borderColor: G + '50',
-                  }]}>
-                    <Ionicons name={step.icon} size={15} color={G} />
-                  </View>
-                  {i < STEPS.length - 1 && (
-                    <View style={[styles.stepLine, { backgroundColor: G + '35' }]} />
-                  )}
-                </View>
-                <Text style={[styles.stepLabel, { color: MUTED }]}>{step.label}</Text>
-              </View>
-            ))}
-          </Animated.View>
-
-          {/* ── Footer buttons ────────────────────────── */}
-          <Animated.View style={[styles.footer, footerStyle]}>
-            <TouchableOpacity
-              style={[styles.primaryBtn, { backgroundColor: G, shadowColor: G }]}
-              onPress={() => router.replace(`/transactions/${transactionId}` as any)}
-              activeOpacity={0.85}
-            >
-              <Text style={[styles.primaryBtnText, { color: '#fff' }]}>View Transaction</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.secondaryBtn}
-              onPress={() => router.replace('/(tabs)/' as any)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.secondaryBtnText, { color: MUTED }]}>Back to Home</Text>
-            </TouchableOpacity>
-          </Animated.View>
-
-        </SafeAreaView>
-      </Animated.View>
-    </View>
+        <View style={styles.footer}>
+          <TouchableOpacity 
+            style={styles.primaryBtn} 
+            onPress={() => router.replace(`/transactions/${transactionId}` as any)}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.primaryBtnText}>View Order</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.secondaryBtn} 
+            onPress={() => router.replace('/(tabs)/explore' as any)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.secondaryBtnText}>Continue Shopping</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: '#111', // Solid background so it's not transparent over nothing
+    backgroundColor: '#050505',
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#111',
-  },
-  confetti: {
-    position: 'absolute',
-    width: SCREEN_W,
-    height: SCREEN_H,
-    zIndex: 0,
-    pointerEvents: 'none',
-  },
-
-  // Sheet
-  sheet: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingTop: 12,
-    paddingHorizontal: 24,
-    zIndex: 10,
-    // subtle shadow above sheet
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
-    elevation: 20,
-  },
-
-  // Drag handle
-  handle: {
-    width: 40, height: 4, borderRadius: 2,
-    alignSelf: 'center', marginBottom: 16,
-  },
-
-  // Lottie
-  lottieWrapper: {
+  content: {
+    flex: 1,
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 4,
+    justifyContent: 'center',
+    paddingHorizontal: 28,
   },
-  lottie: {
-    width: 180,
-    height: 180,
-  },
-
-  // Title block
-  titleBlock: {
+  iconContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: 'rgba(130,219,126,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(130,219,126,0.25)',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    marginBottom: 24,
+    justifyContent: 'center',
+    marginBottom: 20,
   },
   title: {
+    fontFamily: 'Outfit-Bold',
     fontSize: 26,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  escrowPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 13,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginBottom: 8,
-  },
-  pillText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  itemLabel: {
-    fontSize: 13,
+    color: '#fff',
     textAlign: 'center',
     marginBottom: 8,
   },
-  body: {
-    fontSize: 13,
+  subtitle: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: MUTED,
     textAlign: 'center',
-    lineHeight: 19,
-    maxWidth: 280,
-  },
-
-  // Stepper
-  stepper: {
-    flexDirection: 'row',
-    paddingHorizontal: 8,
+    lineHeight: 22,
     marginBottom: 28,
+    maxWidth: 260,
   },
-  stepItem: {
-    flex: 1,
-    alignItems: 'center',
+  summaryContainer: {
+    width: '100%',
+    gap: 8,
+    marginBottom: 32,
   },
-  stepTrack: {
+  summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: SURFACE,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
   },
-  stepLine: {
+  summaryLabel: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    color: LABEL,
+  },
+  summaryValue: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
+    color: '#fff',
     flex: 1,
-    height: 1.5,
+    textAlign: 'right',
+    paddingLeft: 16,
   },
-  stepDot: {
-    width: 36, height: 36, borderRadius: 18,
-    justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1.5,
-  },
-  stepLabel: {
-    fontSize: 10.5,
-    textAlign: 'center',
-    lineHeight: 14,
-    fontWeight: '500',
-  },
-
-  // Footer
   footer: {
-    gap: 8,
-    paddingBottom: 8,
+    width: '100%',
+    gap: 12,
   },
   primaryBtn: {
-    height: 54, borderRadius: 27,
-    justifyContent: 'center', alignItems: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 16,
+    backgroundColor: G,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  primaryBtnText: { fontSize: 16, fontWeight: '800' },
+  primaryBtnText: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 16,
+    color: DARK,
+  },
   secondaryBtn: {
-    height: 44,
-    justifyContent: 'center', alignItems: 'center',
+    width: '100%',
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  secondaryBtnText: { fontSize: 14, fontWeight: '600' },
+  secondaryBtnText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: LABEL,
+  },
 });

@@ -1,124 +1,93 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../hooks/use-supabase-auth';
-import { AuthService } from '../../lib/auth-service';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED } from '../../constants/tokens';
 
-export default function PrivacySettingsScreen() {
+export default function PrivacyScreen() {
   const router = useRouter();
-  const { user, profile } = useAuth();
 
-  const [shareLocation, setShareLocation] = useState<boolean>(false);
-  const [discoverable, setDiscoverable] = useState<boolean>(true);
-  const [savingLocation, setSavingLocation] = useState(false);
-  const [savingDiscoverable, setSavingDiscoverable] = useState(false);
-
-  useEffect(() => {
-    if (profile) {
-      setShareLocation(profile.share_location ?? false);
-      setDiscoverable(profile.discoverable ?? true);
-    }
-  }, [profile]);
-
-  const handleShareLocationToggle = async (value: boolean) => {
-    setShareLocation(value);
-    if (!user) return;
-    setSavingLocation(true);
-    try {
-      await AuthService.updateUserProfile(user.id, { share_location: value });
-    } catch (e) {
-      console.error(e);
-      setShareLocation(!value); // revert on error
-    } finally {
-      setSavingLocation(false);
-    }
-  };
-
-  const handleDiscoverableToggle = async (value: boolean) => {
-    setDiscoverable(value);
-    if (!user) return;
-    setSavingDiscoverable(true);
-    try {
-      await AuthService.updateUserProfile(user.id, { discoverable: value });
-    } catch (e) {
-      console.error(e);
-      setDiscoverable(!value); // revert on error
-    } finally {
-      setSavingDiscoverable(false);
-    }
-  };
+  const [search, setSearch] = useState(true);
+  const [dms, setDms] = useState(true);
+  const [gps, setGps] = useState(false);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn}>
-          <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
+    <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+      {/* Header */}
+      <View style={s.header}>
+        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+          <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Privacy & Discoverability</Text>
-        <View style={styles.headerIconBtn} />
+        <Text style={s.headerTitle}>Privacy & Discoverability</Text>
+        <View style={{ width: 38 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, paddingTop: 10 }}>
         
-        <Text style={[styles.sectionHeader, { color: LABEL }]}>LOCATION PRIVACY</Text>
-        <View style={[styles.glassCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-          <View style={[styles.navRow, { borderBottomColor: GLASS_BORDER }]}>
-            <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
-              <Ionicons name="location-outline" size={24} color={G} />
+        {/* Visibility */}
+        <Text style={s.sectionTitle}>VISIBILITY</Text>
+        <View style={s.sectionCard}>
+          <View style={s.row}>
+            <View style={s.iconWrap}>
+              <Feather name="user" size={18} color="#fff" />
             </View>
-            <View style={styles.navTextWrap}>
-              <Text style={[styles.navLabel, { color: TEXT_PRIMARY }]}>Share Location with Friends</Text>
-              <Text style={[styles.navSubtext, { color: MUTED }]}>
-                Let mutual friends see you on the map
-              </Text>
+            <View style={s.rowText}>
+              <Text style={s.rowTitle}>Show Profile in Local Search</Text>
+              <Text style={s.rowSub}>Neighbours can find you by name or handle</Text>
             </View>
-            {savingLocation ? (
-              <ActivityIndicator size="small" color={G} />
-            ) : (
-              <Switch
-                value={shareLocation}
-                onValueChange={handleShareLocationToggle}
-                trackColor={{ false: '#353534', true: G }}
-                thumbColor={'#FFFFFF'}
-                ios_backgroundColor="#353534"
-              />
-            )}
+            <Switch
+              value={search}
+              onValueChange={setSearch}
+              trackColor={{ false: '#353534', true: G }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#353534"
+            />
+          </View>
+          <View style={s.divider} />
+          <View style={s.row}>
+            <View style={s.iconWrap}>
+              <Feather name="message-square" size={18} color="#fff" />
+            </View>
+            <View style={s.rowText}>
+              <Text style={s.rowTitle}>Allow Direct Messages</Text>
+              <Text style={s.rowSub}>From verified neighbours only</Text>
+            </View>
+            <Switch
+              value={dms}
+              onValueChange={setDms}
+              trackColor={{ false: '#353534', true: G }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#353534"
+            />
           </View>
         </View>
 
-        <Text style={[styles.sectionHeader, { color: LABEL }]}>COMMUNITY VISIBILITY</Text>
-        <View style={[styles.glassCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-          <View style={[styles.navRow, { borderBottomColor: GLASS_BORDER }]}>
-            <View style={[styles.iconGlow, { backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
-              <Ionicons name="compass-outline" size={24} color={G} />
+        {/* Location */}
+        <Text style={s.sectionTitle}>LOCATION</Text>
+        <View style={s.sectionCard}>
+          <View style={s.row}>
+            <View style={s.iconWrap}>
+              <Feather name="map-pin" size={18} color="#fff" />
             </View>
-            <View style={styles.navTextWrap}>
-              <Text style={[styles.navLabel, { color: TEXT_PRIMARY }]}>Allow Neighbors to Discover Me</Text>
-              <Text style={[styles.navSubtext, { color: MUTED }]}>
-                When enabled, your profile may appear in other users' Discover tab based on your location.
-              </Text>
+            <View style={s.rowText}>
+              <Text style={s.rowTitle}>Share Live GPS Location</Text>
+              <Text style={s.rowSub}>For proximity feed — never stored</Text>
             </View>
-            {savingDiscoverable ? (
-              <ActivityIndicator size="small" color={G} />
-            ) : (
-              <Switch
-                value={discoverable}
-                onValueChange={handleDiscoverableToggle}
-                trackColor={{ false: '#353534', true: G }}
-                thumbColor={'#FFFFFF'}
-                ios_backgroundColor="#353534"
-              />
-            )}
+            <Switch
+              value={gps}
+              onValueChange={setGps}
+              trackColor={{ false: '#353534', true: G }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#353534"
+            />
           </View>
         </View>
 
-        <View style={styles.infoContainer}>
-          <Ionicons name="information-circle-outline" size={18} color={MUTED} style={styles.infoIcon} />
-          <Text style={[styles.infoText, { color: MUTED }]}>
-            We value your privacy. Your exact GPS coordinates are never broadcast to the public — only coarse location (State and LGA) is used for local discovery.
+        {/* Disclaimer */}
+        <View style={s.disclaimer}>
+          <Text style={s.disclaimerTxt}>
+            🔒 Your exact address is never visible to other users. YRDLY only shares your general neighbourhood zone (e.g., "Victoria Island") unless you explicitly opt in to GPS sharing above.
           </Text>
         </View>
 
@@ -127,86 +96,22 @@ export default function PrivacySettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  headerIconBtn: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontFamily: 'Outfit-Bold',
-  },
-  content: {
-    padding: 16,
-  },
-  sectionHeader: {
-    fontSize: 11,
-    fontFamily: 'Inter-Bold',
-    letterSpacing: 1.2,
-    marginTop: 16,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  glassCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
-  navRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  iconGlow: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  navTextWrap: {
-    flex: 1,
-    marginRight: 12,
-  },
-  navLabel: {
-    fontSize: 15,
-    fontFamily: 'Outfit-SemiBold',
-    marginBottom: 2,
-  },
-  navSubtext: {
-    fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    lineHeight: 16,
-  },
-  infoContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginTop: 8,
-    paddingHorizontal: 4,
-  },
-  infoIcon: {
-    marginRight: 8,
-    marginTop: 2,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    lineHeight: 18,
-  },
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#050505' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16 },
+  backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
+
+  sectionTitle: { fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginTop: 16, marginLeft: 4 },
+  sectionCard: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 24, overflow: 'hidden', marginBottom: 12 },
+  
+  row: { flexDirection: 'row', alignItems: 'center', padding: 16 },
+  iconWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  rowText: { flex: 1, marginRight: 12 },
+  rowTitle: { fontFamily: 'Outfit-Medium', fontSize: 15, color: '#fff', marginBottom: 2 },
+  rowSub: { fontFamily: 'Inter', fontSize: 13, color: LABEL },
+  divider: { height: 1, backgroundColor: GLASS_BORDER, marginHorizontal: 16 },
+
+  disclaimer: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, padding: 16, marginTop: 8 },
+  disclaimerTxt: { fontFamily: 'Inter', fontSize: 12, color: LABEL, lineHeight: 19.8 }, // 1.65 * 12
 });

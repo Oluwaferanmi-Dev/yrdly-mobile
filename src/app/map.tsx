@@ -18,16 +18,25 @@ const { width, height } = Dimensions.get('window');
 const SHEET_H = height * 0.62;
 const PEEK = 110;
 
-type FilterType = 'all' | 'friends' | 'businesses' | 'events';
+type FilterType = 'all' | 'posts' | 'marketplace' | 'events' | 'businesses' | 'friends';
 type MapMarker = { id: string; type: 'friend'|'business'|'event'; lat: number; lng: number; title: string; subtitle?: string; targetId: string; avatar_url?: string };
 type ActivityItem = { id: string; kind: 'post'|'market'|'event'|'biz'; title: string; subtitle: string; image?: string; time: string; meta?: string; route: string; lat?: number; lng?: number; };
 
 const FILTERS: { key: FilterType; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
   { key: 'all', label: 'All', icon: 'apps', color: '#82DB7E' },
-  { key: 'friends', label: 'Friends', icon: 'people', color: '#8B5CF6' },
-  { key: 'events', label: 'Events', icon: 'calendar', color: '#F59E0B' },
-  { key: 'businesses', label: 'Businesses', icon: 'briefcase', color: '#3B82F6' },
+  { key: 'posts', label: 'Posts', icon: 'chatbubble', color: '#82DB7E' },
+  { key: 'friends', label: 'Friends', icon: 'people', color: '#82DB7E' },
+  { key: 'events', label: 'Events', icon: 'calendar', color: '#82DB7E' },
+  { key: 'businesses', label: 'Businesses', icon: 'briefcase', color: '#82DB7E' },
 ];
+
+const PIN_COLORS: Record<string, string> = {
+  friend: '#8B5CF6',
+  business: '#3B82F6',
+  event: '#F59E0B',
+  post: '#82DB7E',
+  marketplace: '#82DB7E'
+};
 
 const DARK_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
@@ -110,6 +119,7 @@ export default function MapScreen() {
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
+  const [selectedPin, setSelectedPin] = useState<MapMarker | null>(null);
   const [search, setSearch] = useState('');
   const regionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -330,9 +340,9 @@ export default function MapScreen() {
           const m = p as MapMarker;
           return (
             <Marker key={m.id} coordinate={{ latitude:m.lat, longitude:m.lng }}
-              onPress={() => m.type==='friend' ? router.push(`/profile/${m.targetId}`) : m.type==='event' ? router.push(`/events/${m.targetId}`) : m.type==='business' ? router.push(`/businesses/${m.targetId}` as any) : null}>
+              onPress={() => setSelectedPin(selectedPin?.id === m.id ? null : m)}>
               {m.type==='friend' ? <FriendMarker avatar_url={m.avatar_url} />
-                : m.type==='business' ? <IconMarker icon="storefront-outline" color="#22c55e" bg="rgba(34,197,94,0.15)" />
+                : m.type==='business' ? <IconMarker icon="storefront-outline" color="#3B82F6" bg="rgba(59,130,246,0.15)" />
                 : <IconMarker icon="calendar-outline" color="#F59E0B" bg="rgba(245,158,11,0.15)" />}
             </Marker>
           );
@@ -342,141 +352,108 @@ export default function MapScreen() {
       {/* ── Top overlays ── */}
       <View style={[s.topWrap, { paddingTop: insets.top + 8 }]}>
         <View style={s.searchRow}>
-          <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={24} color="#fff" />
+          <TouchableOpacity style={s.iconBtn} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={22} color="#fff" />
           </TouchableOpacity>
-          <View style={s.searchBox}>
-            <Feather name="search" size={16} color="#8a9bb0" style={{ marginRight:8 }} />
-            <TextInput
-              style={s.searchInput}
-              placeholder="Search streets, estates, events..."
-              placeholderTextColor="#8a9bb0"
-              value={search}
-              onChangeText={setSearch}
-            />
+          <View style={s.locationPill}>
+            <Ionicons name="location" size={12} color="#82DB7E" />
+            <Text style={s.locationPillTxt}>{areaName}, Lagos</Text>
           </View>
-          <TouchableOpacity style={s.nearBtn} onPress={locateMe}>
-            <Ionicons name="location" size={14} color="#82DB7E" style={{ marginRight:4 }} />
-            <Text style={s.nearTxt}>Near Me</Text>
+          <TouchableOpacity style={s.iconBtn} onPress={() => {}}>
+            <Ionicons name="search" size={18} color="rgba(255,255,255,0.7)" />
           </TouchableOpacity>
         </View>
 
         <FlatList
           horizontal showsHorizontalScrollIndicator={false}
           data={FILTERS} keyExtractor={f => f.key}
-          contentContainerStyle={{ paddingHorizontal:16, gap:8, paddingTop:10 }}
+          contentContainerStyle={{ paddingHorizontal:16, gap:8, paddingTop:12 }}
           renderItem={({ item:f }) => {
             const active = filter === f.key;
             return (
               <TouchableOpacity
-                style={[s.chip, active && { backgroundColor: f.color }]}
+                style={[s.chip, active && { backgroundColor: '#82DB7E', borderColor: '#82DB7E' }]}
                 onPress={() => setFilter(f.key)}>
-                <Ionicons name={f.icon} size={14} color={active ? '#0B0D0B' : f.color} style={{ marginRight:5 }} />
-                <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : '#ccc' }]}>{f.label}</Text>
+                <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : 'rgba(255,255,255,0.7)', fontWeight: active ? '700' : '500' }]}>{f.label}</Text>
               </TouchableOpacity>
             );
           }}
         />
       </View>
 
-      {/* ── Estate card ── */}
-      <View style={[s.estateCard, { bottom: PEEK + 24 }]}>
-        <View style={s.estateRow}>
-          <Ionicons name="location" size={14} color="#82DB7E" />
-          <Text style={s.estateName}>{areaName}</Text>
-        </View>
-        <Text style={s.estateMeta}>{evtCount} events nearby</Text>
-        <TouchableOpacity style={s.communityBtn} onPress={() => router.push('/community' as any)}>
-          <Text style={s.communityTxt}>View Community</Text>
-          <Ionicons name="chevron-forward" size={14} color="#0B0D0B" />
-        </TouchableOpacity>
-      </View>
+      {/* ── Recenter button ── */}
+      <TouchableOpacity 
+        style={[s.recenterBtn, { bottom: selectedPin ? 230 : 100 }]} 
+        onPress={locateMe}
+      >
+        <Ionicons name="locate" size={20} color="rgba(255,255,255,0.8)" />
+      </TouchableOpacity>
 
-      {/* ── FABs ── */}
-      <View style={[s.fabs, { bottom: PEEK + 24 }]}>
-        <TouchableOpacity style={[s.fab, s.fabGreen]} onPress={() => router.push('/new-post' as any)}>
-          <Ionicons name="add" size={20} color="#0B0D0B" />
-          <Text style={[s.fabTxt, { color:'#0B0D0B' }]}>Create Post</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* ── Bottom Sheet ── */}
-      <Animated.View style={[s.sheet, { transform:[{ translateY: panY }] }]}>
-        <View style={s.sheetHandle} {...panResponder.panHandlers}>
+      {/* ── Pin preview bottom sheet ── */}
+      {selectedPin && (
+        <View style={s.previewSheet}>
           <View style={s.handleBar} />
-          <View style={s.sheetTitleRow}>
-            <Text style={s.sheetTitle}>Nearby Activity</Text>
+          <View style={s.previewContent}>
+            <View style={s.previewImgWrap}>
+              {selectedPin.avatar_url ? (
+                <Image source={{ uri: selectedPin.avatar_url }} style={s.previewImg} />
+              ) : (
+                <View style={s.previewFallback}>
+                  <Ionicons name={selectedPin.type==='event'?'calendar-outline':selectedPin.type==='business'?'storefront-outline':'person'} size={24} color="#fff" />
+                </View>
+              )}
+            </View>
+            <View style={s.previewInfo}>
+              <View style={s.previewHeader}>
+                <View style={[s.previewBadge, { backgroundColor: `${PIN_COLORS[selectedPin.type]}18`, borderColor: `${PIN_COLORS[selectedPin.type]}40` }]}>
+                  <Text style={[s.previewBadgeTxt, { color: PIN_COLORS[selectedPin.type] }]}>{selectedPin.type}</Text>
+                </View>
+              </View>
+              <Text style={s.previewTitle} numberOfLines={1}>{selectedPin.title}</Text>
+              <Text style={s.previewSub} numberOfLines={1}>{selectedPin.subtitle}</Text>
+            </View>
           </View>
+          <TouchableOpacity 
+            style={s.previewActionBtn} 
+            onPress={() => {
+              if (selectedPin.type === 'friend') router.push(`/profile/${selectedPin.targetId}`);
+              else if (selectedPin.type === 'event') router.push(`/events/${selectedPin.targetId}`);
+              else if (selectedPin.type === 'business') router.push(`/businesses/${selectedPin.targetId}` as any);
+              setSelectedPin(null);
+            }}
+          >
+            <Text style={s.previewActionTxt}>View {selectedPin.type === 'friend' ? 'Profile' : selectedPin.type === 'event' ? 'Event' : 'Business'}</Text>
+          </TouchableOpacity>
         </View>
-
-        <FlatList
-          data={activity} keyExtractor={a => a.id}
-          scrollEnabled showsVerticalScrollIndicator={false}
-          style={{ flex:1 }}
-          renderItem={({ item:a }) => {
-            let distStr = '';
-            if (loc && a.lat && a.lng && !isNaN(a.lat) && !isNaN(a.lng)) {
-              distStr = getDistanceStr(loc.coords.latitude, loc.coords.longitude, a.lat, a.lng);
-            }
-            return (
-              <TouchableOpacity style={s.actRow} onPress={() => router.push(a.route as any)}>
-                <View style={[s.actImg, { backgroundColor: a.kind==='event'?'rgba(245,158,11,0.15)':a.kind==='biz'?'rgba(34,197,94,0.15)':'rgba(130,219,126,0.1)' }]}>
-                  {a.image
-                    ? <Image source={{ uri:a.image }} style={s.actImgInner} resizeMode="cover" />
-                    : <Ionicons name={a.kind==='event'?'calendar-outline':a.kind==='market'?'bag-outline':a.kind==='biz'?'storefront-outline':'person-circle-outline'} size={24} color={a.kind==='event'?'#F59E0B':a.kind==='biz'?'#22c55e':'#82DB7E'} />}
-                </View>
-                <View style={{ flex:1 }}>
-                  <Text style={s.actTitle} numberOfLines={1}>{a.title}</Text>
-                  <Text style={s.actSub} numberOfLines={1}>{a.subtitle}</Text>
-                  {distStr ? <Text style={s.actDist}>{distStr}</Text> : null}
-                </View>
-                <View style={{ alignItems:'flex-end' }}>
-                  <Text style={s.actTime}>{a.time}</Text>
-                  {a.meta ? <Text style={[s.actMeta, { color: a.kind==='market'?'#82DB7E':'#8B5CF6' }]}>{a.meta}</Text> : null}
-                </View>
-              </TouchableOpacity>
-            );
-          }}
-        />
-      </Animated.View>
+      )}
     </View>
   );
 }
 
 const s = StyleSheet.create({
   fill: { flex:1, backgroundColor:'#0B0D0B' },
-  topWrap: { position:'absolute', top:0, left:0, right:0 },
-  searchRow: { flexDirection:'row', paddingHorizontal:16, gap:10 },
-  searchBox: { flex:1, flexDirection:'row', alignItems:'center', backgroundColor:'rgba(13,17,23,0.92)', borderRadius:28, paddingHorizontal:14, height:46, borderWidth:1, borderColor:'rgba(255,255,255,0.08)' },
-  searchInput: { flex:1, color:'#fff', fontSize:14 },
-  backBtn: { width:46, height:46, borderRadius:23, backgroundColor:'rgba(13,17,23,0.92)', alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'rgba(255,255,255,0.08)' },
-  nearBtn: { flexDirection:'row', alignItems:'center', backgroundColor:'rgba(13,17,23,0.92)', borderRadius:28, paddingHorizontal:14, height:46, borderWidth:1, borderColor:'rgba(130,219,126,0.3)' },
-  nearTxt: { color:'#82DB7E', fontWeight:'700', fontSize:13 },
-  chip: { flexDirection:'row', alignItems:'center', paddingHorizontal:14, paddingVertical:8, borderRadius:20, backgroundColor:'rgba(13,17,23,0.88)', borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
-  chipTxt: { fontSize:13, fontWeight:'600' },
-  estateCard: { position:'absolute', left:16, width:220, backgroundColor:'rgba(13,17,23,0.94)', borderRadius:20, padding:14, borderWidth:1, borderColor:'rgba(255,255,255,0.08)' },
-  estateRow: { flexDirection:'row', alignItems:'center', gap:4, marginBottom:4 },
-  estateName: { color:'#fff', fontWeight:'800', fontSize:15 },
-  estateMeta: { color:'#8a9bb0', fontSize:11, marginBottom:10 },
-  communityBtn: { flexDirection:'row', alignItems:'center', justifyContent:'center', backgroundColor:'#82DB7E', borderRadius:12, paddingVertical:8, gap:4 },
-  communityTxt: { color:'#0B0D0B', fontWeight:'800', fontSize:13 },
-  fabs: { position:'absolute', right:16, gap:10 },
-  fab: { flexDirection:'row', alignItems:'center', backgroundColor:'rgba(13,17,23,0.94)', borderRadius:28, paddingHorizontal:14, paddingVertical:10, gap:6, borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
-  fabGreen: { backgroundColor:'#82DB7E', borderColor:'#82DB7E' },
-  fabTxt: { color:'#ccc', fontWeight:'700', fontSize:13 },
-  sheet: { position:'absolute', bottom:0, left:0, right:0, height:SHEET_H, backgroundColor:'#0f1410', borderTopLeftRadius:28, borderTopRightRadius:28, borderWidth:1, borderColor:'rgba(255,255,255,0.08)' },
-  sheetHandle: { paddingTop:10, paddingHorizontal:16, paddingBottom:4 },
-  handleBar: { width:40, height:4, borderRadius:2, backgroundColor:'rgba(255,255,255,0.2)', alignSelf:'center', marginBottom:12 },
-  sheetTitleRow: { flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginBottom:4 },
-  sheetTitle: { color:'#fff', fontWeight:'800', fontSize:17 },
-  actRow: { flexDirection:'row', alignItems:'center', paddingHorizontal:16, paddingVertical:12, gap:12, borderBottomWidth:1, borderBottomColor:'rgba(255,255,255,0.05)' },
-  actImg: { width:48, height:48, borderRadius:14, alignItems:'center', justifyContent:'center', overflow:'hidden' },
-  actImgInner: { width:48, height:48 },
-  actTitle: { color:'#fff', fontWeight:'700', fontSize:14, marginBottom:2 },
-  actSub: { color:'#8a9bb0', fontSize:12 },
-  actDist: { color:'#82DB7E', fontSize:11, marginTop:2, fontWeight:'500' },
-  actTime: { color:'#8a9bb0', fontSize:11 },
-  actMeta: { fontSize:13, fontWeight:'700', marginTop:2 },
+  topWrap: { position:'absolute', top:0, left:0, right:0, zIndex:10 },
+  searchRow: { flexDirection:'row', paddingHorizontal:16, gap:12, alignItems: 'center' },
+  iconBtn: { width:36, height:36, borderRadius:18, backgroundColor:'rgba(0,0,0,0.5)', alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'rgba(255,255,255,0.12)' },
+  locationPill: { flex:1, flexDirection:'row', alignItems:'center', backgroundColor:'rgba(0,0,0,0.5)', borderRadius:14, paddingHorizontal:12, paddingVertical:8, borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
+  locationPillTxt: { color:'#fff', fontWeight:'600', fontSize:13, marginLeft:6, fontFamily: 'Inter-SemiBold' },
+  chip: { flexDirection:'row', alignItems:'center', paddingHorizontal:14, height: 30, borderRadius:15, backgroundColor:'rgba(0,0,0,0.55)', borderWidth:1, borderColor:'rgba(255,255,255,0.12)' },
+  chipTxt: { fontSize:12, fontFamily: 'Inter-Medium' },
+  recenterBtn: { position:'absolute', right:16, width:42, height:42, borderRadius:21, backgroundColor:'rgba(0,0,0,0.7)', borderWidth:1, borderColor:'rgba(255,255,255,0.12)', alignItems:'center', justifyContent:'center', zIndex:10 },
+  previewSheet: { position:'absolute', bottom:0, left:0, right:0, backgroundColor:'#111', borderTopLeftRadius:24, borderTopRightRadius:24, borderWidth:1, borderColor:'rgba(255,255,255,0.09)', paddingHorizontal:20, paddingTop:20, paddingBottom:40, zIndex:20 },
+  handleBar: { width:36, height:4, borderRadius:2, backgroundColor:'rgba(255,255,255,0.12)', alignSelf:'center', marginBottom:18 },
+  previewContent: { flexDirection:'row', alignItems:'flex-start', gap:12 },
+  previewImgWrap: { width:72, height:72, borderRadius:16, overflow:'hidden', backgroundColor:'rgba(255,255,255,0.05)' },
+  previewImg: { width:'100%', height:'100%' },
+  previewFallback: { flex:1, alignItems:'center', justifyContent:'center' },
+  previewInfo: { flex:1 },
+  previewHeader: { flexDirection:'row', alignItems:'center', gap:8, marginBottom:4 },
+  previewBadge: { paddingHorizontal:8, paddingVertical:2, borderRadius:6, borderWidth:1 },
+  previewBadgeTxt: { fontSize:10, fontFamily: 'Outfit-Bold', textTransform:'uppercase' },
+  previewTitle: { color:'#fff', fontSize:16, fontFamily: 'Outfit-Bold', marginBottom:3 },
+  previewSub: { color:LABEL, fontSize:12, fontFamily: 'Inter-Regular' },
+  previewActionBtn: { marginTop:16, width:'100%', paddingVertical:13, borderRadius:14, backgroundColor:G, alignItems:'center' },
+  previewActionTxt: { color:DARK, fontSize:15, fontFamily: 'Outfit-ExtraBold' }
 });
 
 const ms = StyleSheet.create({

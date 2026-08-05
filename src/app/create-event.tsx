@@ -129,9 +129,9 @@ export default function CreateEventScreen() {
       try {
         let coverUrl = '';
         if (coverFile) {
-          const { urls, error: uploadErr } = await StorageService.uploadPostImages(user.id, [coverFile], 'event_images');
-          if (!uploadErr && urls && urls.length > 0) {
-            coverUrl = urls[0];
+          const { url, error: uploadErr } = await StorageService.uploadPostImage(user.id, coverFile);
+          if (!uploadErr && url) {
+            coverUrl = url;
           }
         }
 
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: 'center',
-    justify.content: 'center',
+    justifyContent: 'center',
   },
   btnDisabled: { opacity: 0.4 },
   btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },

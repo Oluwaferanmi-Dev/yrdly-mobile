@@ -1,81 +1,50 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, TextInput, TouchableOpacity,
-  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
-  Alert, Modal,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, {
-  useSharedValue, useAnimatedStyle, withSpring, withDelay, withTiming, Easing,
-} from 'react-native-reanimated';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, TextInput, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { formatPrice } from '../../lib/utils';
-
-const QUICK_AMOUNTS = [5000, 10000, 25000, 50000];
+import { G, DARK, GLASS_BORDER, MUTED, LABEL, SURFACE } from '../../constants/tokens';
 
 export default function WithdrawScreen() {
   const router = useRouter();
   const { user } = useAuth();
 
+  const [step, setStep] = useState<'amount' | 'confirm'>('amount');
+  
   const [balance, setBalance] = useState(0);
-  const [amount, setAmount] = useState('');
-  const [bankInfo, setBankInfo] = useState<{ account_name: string; account_number: string; bank_name: string } | null>(null);
+  const [bankInfo, setBankInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
-  // Confirm modal animation
-  const confirmY = useSharedValue(400);
-  const overlayOp = useSharedValue(0);
-  const confirmStyle = useAnimatedStyle(() => ({ transform: [{ translateY: confirmY.value }] }));
-  const overlayStyle = useAnimatedStyle(() => ({ opacity: overlayOp.value }));
+  const [amount, setAmount] = useState('');
+  const [confirming, setConfirming] = useState(false);
 
-  const openConfirm = () => {
-    setShowConfirm(true);
-    overlayOp.value = withTiming(1, { duration: 220 });
-    confirmY.value = withSpring(0, { damping: 22, stiffness: 200 });
-  };
-
-  const closeConfirm = () => {
-    overlayOp.value = withTiming(0, { duration: 200 });
-    confirmY.value = withSpring(400, { damping: 22, stiffness: 200 });
-    setTimeout(() => setShowConfirm(false), 220);
-  };
+  const fee = 0;
+  const numAmount = Number(amount) || 0;
+  const net = Math.max(0, numAmount - fee);
 
   const fetchData = useCallback(async () => {
     if (!user) return;
+    setLoading(true);
     try {
-      const [{ data: txData }, { data: payoutData }, bankResult] = await Promise.all([
-        supabase
-          .from('escrow_transactions')
-          .select('seller_amount')
-          .eq('seller_id', user.id)
-          .eq('status', 'completed'),
-        supabase
-          .from('payout_requests')
-          .select('amount, status')
-          .eq('seller_id', user.id),
-        api.get('/api/seller/setup-account').catch(() => null),
+      const [txRes, payoutRes, bankRes] = await Promise.all([
+        supabase.from('escrow_transactions').select('seller_amount, status').eq('seller_id', user.id),
+        supabase.from('payout_requests').select('amount, status').eq('seller_id', user.id),
+        api.get('/api/seller/setup-account').catch(() => ({ account: null }))
       ]);
 
-      const earned = (txData ?? []).reduce((sum: number, t: any) => sum + (t.seller_amount ?? 0), 0);
-      const paid = (payoutData ?? [])
-        .filter((p: any) => ['pending', 'processing', 'completed'].includes(p.status))
-        .reduce((sum: number, p: any) => sum + (p.amount ?? 0), 0);
-      setBalance(Math.max(0, earned - paid));
+      const txs = txRes.data ?? [];
+      const pyts = payoutRes.data ?? [];
 
-      if (bankResult?.account) {
-        const acc = bankResult.account;
-        setBankInfo({
-          account_name: acc.accountName ?? '',
-          account_number: acc.accountNumber ?? '',
-          bank_name: acc.bankName ?? 'Bank',
-        });
+      const earned = txs.filter((t: any) => t.status === 'completed').reduce((sum: number, t: any) => sum + (t.seller_amount ?? 0), 0);
+      const paidOut = pyts.filter((p: any) => ['pending', 'processing', 'completed'].includes(p.status)).reduce((sum: number, p: any) => sum + (p.amount ?? 0), 0);
+
+      setBalance(Math.max(0, earned - paidOut));
+      
+      if (bankRes.account) {
+        setBankInfo(bankRes.account);
       }
     } catch (e) {
       console.error(e);
@@ -86,290 +55,213 @@ export default function WithdrawScreen() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const numericAmount = parseFloat(amount.replace(/,/g, '')) || 0;
-  const isValid = numericAmount >= 500 && numericAmount <= balance && !!bankInfo;
-
   const handleWithdraw = async () => {
-    if (!isValid || !user) return;
-    setSubmitting(true);
+    setConfirming(true);
     try {
-      await api.post('/api/seller/payouts/request', {
-        amount: numericAmount,
-        userId: user.id,
-      });
-      closeConfirm();
-      // Small delay for sheet animation to complete
-      setTimeout(() => {
-        router.replace('/settings/withdraw-success' as any);
-      }, 250);
+      await api.post('/api/seller/payout', { amount: numAmount });
+      router.replace({ pathname: '/settings/withdraw-success', params: { amount: numAmount } } as any);
     } catch (e: any) {
-      closeConfirm();
-      Alert.alert('Error', e?.message ?? 'Could not process withdrawal. Please try again.');
+      Alert.alert('Error', e.message || 'Failed to request withdrawal');
+      setStep('amount');
     } finally {
-      setSubmitting(false);
+      setConfirming(false);
     }
-  };
-
-  const formatAmountInput = (val: string) => {
-    const digits = val.replace(/\D/g, '');
-    if (!digits) return '';
-    return Number(digits).toLocaleString('en-NG');
   };
 
   if (loading) {
     return (
-      <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
-        <View style={s.center}>
-          <ActivityIndicator size="large" color={G} />
+      <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+        <View style={s.header}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+            <Ionicons name="chevron-back" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={G} /></View>
+      </SafeAreaView>
+    );
+  }
+
+  if (step === 'confirm') {
+    return (
+      <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+        <View style={s.header}>
+          <TouchableOpacity onPress={() => setStep('amount')} style={s.backBtn}>
+            <Ionicons name="chevron-back" size={20} color="#fff" />
+          </TouchableOpacity>
+          <Text style={s.headerTitle}>Confirm Withdrawal</Text>
+        </View>
+
+        <ScrollView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 24 }}>
+          <View style={{ alignItems: 'center', marginBottom: 24 }}>
+            <Text style={{ fontFamily: 'Inter', fontSize: 13, color: LABEL, marginBottom: 8 }}>You are withdrawing</Text>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 42, color: '#fff', letterSpacing: -1 }}>₦{numAmount.toLocaleString()}</Text>
+          </View>
+
+          <View style={{ gap: 8, marginBottom: 24 }}>
+            {[
+              { l: 'Destination', v: bankInfo?.bankName || 'Bank' },
+              { l: 'Account', v: `**** **** **** ${(bankInfo?.accountNumber || '').slice(-4)}` },
+              { l: 'Account Holder', v: bankInfo?.accountName || '' },
+              { l: 'Transfer Fee', v: fee === 0 ? 'Free' : `₦${fee}` },
+              { l: 'Net Amount', v: `₦${net.toLocaleString()}` },
+            ].map(r => (
+              <View key={r.l} style={s.confirmRow}>
+                <Text style={s.confirmRowL}>{r.l}</Text>
+                <Text style={s.confirmRowR}>{r.v}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={s.warningBox}>
+            <Feather name="alert-circle" size={16} color="#FFB700" style={{ marginTop: 2 }} />
+            <Text style={s.warningTxt}>Transfers usually arrive within 1–5 minutes. This action moves real money and cannot be undone.</Text>
+          </View>
+        </ScrollView>
+
+        <View style={s.footerBtnWrap}>
+          <TouchableOpacity style={s.footerBtn} onPress={handleWithdraw} disabled={confirming}>
+            {confirming ? <ActivityIndicator color={DARK} /> : <Text style={s.footerBtnTxt}>Confirm — Withdraw ₦{numAmount.toLocaleString()}</Text>}
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <SafeAreaView style={s.root} edges={['top', 'bottom']}>
+      <View style={s.header}>
+        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+          <Ionicons name="chevron-back" size={20} color="#fff" />
+        </TouchableOpacity>
+        <Text style={s.headerTitle}>Withdraw Funds</Text>
+      </View>
 
-        {/* Header */}
-        <View style={[s.header, { borderBottomColor: GLASS_BORDER }]}>
-          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
-          </TouchableOpacity>
-          <Text style={[s.headerTitle, { color: TEXT_PRIMARY }]}>Withdraw Funds</Text>
-          <View style={{ width: 28 }} />
+      <ScrollView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }} keyboardShouldPersistTaps="handled">
+        
+        {/* Balance Badge */}
+        <View style={s.availBadge}>
+          <Ionicons name="wallet-outline" size={16} color={G} />
+          <Text style={s.availBadgeTxt}>Available balance: <Text style={{ fontFamily: 'Inter-Bold' }}>₦{balance.toLocaleString()}</Text></Text>
         </View>
 
-        <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-
-          {/* Balance card */}
-          <View style={[s.balanceCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-            <View style={[s.balanceIcon, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
-              <Text style={[s.balanceIconText, { color: G }]}>₦</Text>
-            </View>
-            <Text style={[s.balanceLabel, { color: MUTED }]}>Available Balance</Text>
-            <Text style={[s.balanceAmount, { color: TEXT_PRIMARY }]}>{formatPrice(balance)}</Text>
+        {/* Amount Input */}
+        <View style={{ marginBottom: 20 }}>
+          <Text style={s.amtLabel}>WITHDRAWAL AMOUNT</Text>
+          <View style={s.amtInputBox}>
+            <Text style={s.amtNaira}>₦</Text>
+            <TextInput 
+              value={amount}
+              onChangeText={v => setAmount(v.replace(/\D/g, ''))}
+              placeholder="0"
+              placeholderTextColor={LABEL}
+              keyboardType="number-pad"
+              style={s.amtInput}
+            />
           </View>
-
-          {/* Bank account */}
-          {bankInfo ? (
-            <View style={[s.bankCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-              <Feather name="credit-card" size={18} color={G} />
-              <View style={{ flex: 1 }}>
-                <Text style={[s.bankName, { color: TEXT_PRIMARY }]}>{bankInfo.bank_name}</Text>
-                <Text style={[s.bankAccount, { color: MUTED }]}>
-                  {bankInfo.account_number} · {bankInfo.account_name}
-                </Text>
-              </View>
-              <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)}>
-                <Text style={[s.changeLink, { color: G }]}>Change</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={[s.bankCard, { backgroundColor: SURFACE, borderColor: 'rgba(130, 219, 126, 0.35)', borderStyle: 'dashed' }]}
-              onPress={() => router.push('/settings/payout-settings' as any)}
-            >
-              <Feather name="plus-circle" size={18} color={G} />
-              <Text style={[s.bankName, { color: G }]}>Add Bank Account</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Amount input */}
-          <View style={s.inputSection}>
-            <Text style={[s.inputLabel, { color: MUTED }]}>Amount to withdraw</Text>
-            <View style={[s.inputWrapper, { backgroundColor: SURFACE, borderColor: numericAmount > 0 ? G : GLASS_BORDER }]}>
-              <Text style={[s.nairaSign, { color: MUTED }]}>₦</Text>
-              <TextInput
-                value={amount}
-                onChangeText={v => setAmount(formatAmountInput(v))}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor={LABEL}
-                style={[s.input, { color: TEXT_PRIMARY }]}
-                maxLength={12}
-              />
-            </View>
-            {numericAmount > 0 && numericAmount < 500 && (
-              <Text style={[s.hint, { color: '#EF4444' }]}>Minimum withdrawal is ₦500</Text>
-            )}
-            {numericAmount > balance && (
-              <Text style={[s.hint, { color: '#EF4444' }]}>Amount exceeds available balance</Text>
-            )}
+          <View style={s.quickAmtsRow}>
+            {[10000, 25000, 50000, 100000].map(v => {
+              const isSel = numAmount === v;
+              return (
+                <TouchableOpacity 
+                  key={v}
+                  onPress={() => setAmount(String(v))}
+                  style={[s.quickAmtBtn, isSel && { backgroundColor: 'rgba(130,219,126,0.12)', borderColor: 'rgba(130,219,126,0.3)' }]}
+                >
+                  <Text style={[s.quickAmtTxt, isSel && { color: G }]}>₦{(v/1000)}k</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
+        </View>
 
-          {/* Quick amounts */}
-          <View style={s.quickRow}>
-            {QUICK_AMOUNTS.filter(q => q <= balance).map(q => (
-              <TouchableOpacity
-                key={q}
-                onPress={() => setAmount(q.toLocaleString('en-NG'))}
-                style={[
-                  s.quickChip,
-                  {
-                    backgroundColor: numericAmount === q ? 'rgba(130, 219, 126, 0.15)' : SURFACE,
-                    borderColor: numericAmount === q ? G : GLASS_BORDER,
-                  },
-                ]}
-              >
-                <Text style={[s.quickChipText, { color: numericAmount === q ? G : MUTED }]}>
-                  ₦{(q / 1000).toFixed(0)}k
-                </Text>
-              </TouchableOpacity>
-            ))}
-            {balance > 0 && (
-              <TouchableOpacity
-                onPress={() => setAmount(Math.floor(balance).toLocaleString('en-NG'))}
-                style={[s.quickChip, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
-              >
-                <Text style={[s.quickChipText, { color: MUTED }]}>All</Text>
-              </TouchableOpacity>
-            )}
+        {/* Destination */}
+        <View style={s.destCard}>
+          <View style={s.destIconBox}>
+            <Ionicons name="business" size={20} color={G} />
           </View>
-
-          {/* Fee note */}
-          <Text style={[s.feeNote, { color: MUTED }]}>
-            Processing fee: ₦50 · Arrives within 1–2 business days
-          </Text>
-
-          {/* CTA */}
-          <TouchableOpacity
-            onPress={openConfirm}
-            disabled={!isValid}
-            style={[s.ctaBtn, { backgroundColor: isValid ? G : GLASS_BORDER }]}
-          >
-            <Text style={[s.ctaBtnText, { color: isValid ? '#000000' : LABEL }]}>
-              Continue
-            </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={s.destBank}>{bankInfo?.bankName || 'No bank linked'}</Text>
+            <Text style={s.destUser}>{bankInfo ? `**** ${(bankInfo.accountNumber || '').slice(-4)} · ${bankInfo.accountName}` : 'Tap change to link a bank'}</Text>
+          </View>
+          <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)}>
+            <Text style={s.destChange}>Change</Text>
           </TouchableOpacity>
+        </View>
 
-          <View style={{ height: 40 }} />
-        </ScrollView>
-      </KeyboardAvoidingView>
+        {/* Fee breakdown */}
+        {numAmount > 0 && (
+          <View style={s.feeCard}>
+            <View style={s.feeRow}>
+              <Text style={s.feeRowL}>Withdrawal amount</Text>
+              <Text style={s.feeRowR}>₦{numAmount.toLocaleString()}</Text>
+            </View>
+            <View style={s.feeRow}>
+              <Text style={s.feeRowL}>Transfer fee</Text>
+              <Text style={s.feeRowR}>{fee === 0 ? 'Free' : `₦${fee}`}</Text>
+            </View>
+            <View style={s.feeDiv} />
+            <View style={s.feeRow}>
+              <Text style={s.feeRowNetL}>You receive</Text>
+              <Text style={s.feeRowNetR}>₦{net.toLocaleString()}</Text>
+            </View>
+          </View>
+        )}
 
-      {/* Confirm modal */}
-      {showConfirm && (
-        <Modal transparent animationType="none" visible={showConfirm} onRequestClose={closeConfirm}>
-          <Animated.View style={[s.overlay, overlayStyle]}>
-            <TouchableOpacity style={StyleSheet.absoluteFill} onPress={closeConfirm} activeOpacity={1} />
-            <Animated.View style={[s.confirmSheet, { backgroundColor: DARK, borderColor: GLASS_BORDER, borderWidth: 1 }, confirmStyle]}>
-              <View style={[s.handle, { backgroundColor: GLASS_BORDER }]} />
+      </ScrollView>
 
-              <Text style={[s.confirmTitle, { color: TEXT_PRIMARY }]}>Confirm Withdrawal</Text>
-
-              <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
-                <Text style={[s.confirmLabel, { color: MUTED }]}>Amount</Text>
-                <Text style={[s.confirmValue, { color: TEXT_PRIMARY }]}>₦{numericAmount.toLocaleString('en-NG')}</Text>
-              </View>
-              <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
-                <Text style={[s.confirmLabel, { color: MUTED }]}>Fee</Text>
-                <Text style={[s.confirmValue, { color: TEXT_PRIMARY }]}>₦50</Text>
-              </View>
-              <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
-                <Text style={[s.confirmLabel, { color: MUTED }]}>You receive</Text>
-                <Text style={[s.confirmValue, { color: G }]}>
-                  ₦{Math.max(0, numericAmount - 50).toLocaleString('en-NG')}
-                </Text>
-              </View>
-              {bankInfo && (
-                <View style={[s.confirmRow, { borderColor: GLASS_BORDER }]}>
-                  <Text style={[s.confirmLabel, { color: MUTED }]}>To</Text>
-                  <Text style={[s.confirmValue, { color: TEXT_PRIMARY }]} numberOfLines={1}>
-                    {bankInfo.bank_name} · {bankInfo.account_number}
-                  </Text>
-                </View>
-              )}
-
-              <TouchableOpacity
-                onPress={handleWithdraw}
-                disabled={submitting}
-                style={[s.confirmBtn, { backgroundColor: G }]}
-              >
-                {submitting
-                  ? <ActivityIndicator size="small" color="#000" />
-                  : <Text style={[s.confirmBtnText]}>Withdraw Now</Text>
-                }
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={closeConfirm} style={s.cancelBtn}>
-                <Text style={[s.cancelText, { color: MUTED }]}>Cancel</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </Animated.View>
-        </Modal>
-      )}
+      <View style={s.footerBtnWrap}>
+        <TouchableOpacity 
+          style={[s.footerBtn, (!numAmount || numAmount <= 0 || numAmount > balance) && { backgroundColor: 'rgba(130,219,126,0.2)' }]} 
+          onPress={() => setStep('confirm')} 
+          disabled={!numAmount || numAmount <= 0 || numAmount > balance}
+        >
+          <Text style={[s.footerBtnTxt, (!numAmount || numAmount <= 0 || numAmount > balance) && { color: 'rgba(130,219,126,0.4)' }]}>Continue</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 0.5,
-  },
-  backBtn: { padding: 4 },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18 },
-  scroll: { padding: 20, gap: 16 },
+  root: { flex: 1, backgroundColor: '#050505' },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
+  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
 
-  balanceCard: {
-    borderRadius: 20, padding: 24, borderWidth: 1,
-    alignItems: 'center', gap: 8,
-  },
-  balanceIcon: {
-    width: 48, height: 48, borderRadius: 24,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  balanceIconText: { fontSize: 24, fontFamily: 'Outfit-Black' },
-  balanceLabel: { fontSize: 13, fontFamily: 'Inter-Regular' },
-  balanceAmount: { fontSize: 36, fontFamily: 'Outfit-Black' },
+  availBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', borderRadius: 14, marginBottom: 20 },
+  availBadgeTxt: { fontFamily: 'Inter', fontSize: 13, color: G },
 
-  bankCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    borderRadius: 14, padding: 14, borderWidth: 1,
-  },
-  bankName: { fontSize: 14, fontFamily: 'Outfit-Bold' },
-  bankAccount: { fontSize: 12, marginTop: 2, fontFamily: 'Inter-Regular' },
-  changeLink: { fontSize: 13, fontFamily: 'Outfit-Bold' },
+  amtLabel: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: LABEL, marginBottom: 8, letterSpacing: 1 },
+  amtInputBox: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 64, paddingHorizontal: 16, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER },
+  amtNaira: { fontFamily: 'Outfit-Bold', fontSize: 24, color: LABEL },
+  amtInput: { flex: 1, fontFamily: 'Outfit-Bold', fontSize: 28, color: '#fff', height: '100%' },
+  
+  quickAmtsRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  quickAmtBtn: { flex: 1, paddingVertical: 8, borderRadius: 10, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center' },
+  quickAmtTxt: { fontFamily: 'Inter', fontSize: 11, color: MUTED },
 
-  inputSection: { gap: 8 },
-  inputLabel: { fontSize: 13, fontFamily: 'Inter-SemiBold' },
-  inputWrapper: {
-    flexDirection: 'row', alignItems: 'center',
-    borderRadius: 14, borderWidth: 1.5, paddingHorizontal: 14,
-  },
-  nairaSign: { fontSize: 20, fontFamily: 'Outfit-Bold', marginRight: 4 },
-  input: { flex: 1, fontSize: 28, fontFamily: 'Outfit-ExtraBold', paddingVertical: 14 },
-  hint: { fontSize: 12, marginTop: 4, fontFamily: 'Inter-Regular' },
+  destCard: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 18, marginTop: 20 },
+  destIconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.08)', alignItems: 'center', justifyContent: 'center' },
+  destBank: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+  destUser: { fontFamily: 'Inter', fontSize: 12, color: LABEL },
+  destChange: { fontFamily: 'Inter', fontSize: 12, color: G },
 
-  quickRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  quickChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  quickChipText: { fontSize: 13, fontFamily: 'Outfit-SemiBold' },
+  feeCard: { padding: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 18, marginTop: 20 },
+  feeRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  feeRowL: { fontFamily: 'Inter', fontSize: 13, color: MUTED },
+  feeRowR: { fontFamily: 'Inter', fontSize: 13, color: '#fff' },
+  feeDiv: { height: 1, backgroundColor: GLASS_BORDER, marginVertical: 8 },
+  feeRowNetL: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff' },
+  feeRowNetR: { fontFamily: 'Outfit-Bold', fontSize: 15, color: G },
 
-  feeNote: { fontSize: 12, textAlign: 'center', fontFamily: 'Inter-Regular' },
+  footerBtnWrap: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 34, borderTopWidth: 1, borderTopColor: GLASS_BORDER },
+  footerBtn: { width: '100%', paddingVertical: 16, borderRadius: 18, backgroundColor: G, alignItems: 'center' },
+  footerBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },
 
-  ctaBtn: { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
-  ctaBtnText: { fontSize: 16, fontFamily: 'Outfit-Bold' },
+  confirmRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: '#0f0f0f', borderRadius: 16, borderWidth: 1, borderColor: GLASS_BORDER },
+  confirmRowL: { fontFamily: 'Inter', fontSize: 13, color: LABEL },
+  confirmRowR: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
 
-  // Confirm sheet
-  overlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.65)',
-    justifyContent: 'flex-end',
-  },
-  confirmSheet: {
-    borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    padding: 24, paddingBottom: 40, gap: 4,
-  },
-  handle: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 16 },
-  confirmTitle: { fontSize: 18, fontFamily: 'Outfit-ExtraBold', marginBottom: 12 },
-  confirmRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 12, borderBottomWidth: 0.5,
-  },
-  confirmLabel: { fontSize: 14, fontFamily: 'Inter-Regular' },
-  confirmValue: { fontSize: 14, fontFamily: 'Outfit-SemiBold', flex: 1, textAlign: 'right', marginLeft: 16 },
-  confirmBtn: { borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 20 },
-  confirmBtnText: { fontSize: 16, fontFamily: 'Outfit-Bold', color: '#000' },
-  cancelBtn: { alignItems: 'center', paddingVertical: 14 },
-  cancelText: { fontSize: 15, fontFamily: 'Inter-Regular' },
+  warningBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16, backgroundColor: 'rgba(255,183,28,0.05)', borderWidth: 1, borderColor: 'rgba(255,183,28,0.2)', borderRadius: 16 },
+  warningTxt: { flex: 1, fontFamily: 'Inter', fontSize: 13, color: MUTED, lineHeight: 20 },
 });
