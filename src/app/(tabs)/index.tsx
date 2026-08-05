@@ -361,45 +361,37 @@ export default function HomeTab() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: DARK }]}>
       <Animated.View style={headerAnimatedStyle}>
-        {isLiquidGlassSupported ? (
-          <LiquidGlassView 
-            {...({ intensity: 80, tint: isDarkMode ? 'dark' : 'light', fallbackColor: isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.85)' } as any)}
-            style={StyleSheet.absoluteFill} 
-          />
-        ) : (
-          <BlurView intensity={80} tint={isDarkMode ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-        )}
-        <View style={[styles.headerContent, { paddingTop: insets.top, borderBottomColor: colors.borderLight }]}>
-          <Text style={[styles.headerTitle, { color: colors.tint }]}>YRDLY</Text>
+        <View style={[styles.headerContent, { paddingTop: insets.top, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK }]}>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 22, color: G, letterSpacing: -0.5 }}>YRDLY</Text>
           
-          <View style={{flex: 1, paddingHorizontal: 12, alignItems: 'flex-start'}}>
+          <View style={{ flex: 1, paddingHorizontal: 10, alignItems: 'flex-start' }}>
             <LocationChip />
           </View>
 
           <View style={styles.headerRight}>
-            <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-              <MapIcon size={24} color={colors.text} />
+            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
+              <MapIcon size={20} color={TEXT_PRIMARY} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative' }}>
-              <NotificationsIcon size={24} color={colors.text} />
+            <TouchableOpacity onPress={() => router.push('/alerts')} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+              <NotificationsIcon size={20} color={TEXT_PRIMARY} />
               {unreadCount > 0 && (
                 <View style={{
                   position: 'absolute',
-                  right: -4,
-                  top: -4,
-                  backgroundColor: '#EF4444',
-                  borderRadius: 10,
-                  minWidth: 18,
-                  height: 18,
+                  right: -2,
+                  top: -2,
+                  backgroundColor: RED,
+                  borderRadius: 9,
+                  minWidth: 16,
+                  height: 16,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  paddingHorizontal: 4,
+                  paddingHorizontal: 3,
                   borderWidth: 1.5,
-                  borderColor: colors.background
+                  borderColor: DARK
                 }}>
-                  <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                  <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '800', fontFamily: 'Outfit' }}>
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </Text>
                 </View>

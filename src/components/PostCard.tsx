@@ -426,9 +426,10 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       style={[
         styles.container, 
         { 
-          backgroundColor: colors.card,
-          borderColor: colors.borderLight,
-          shadowColor: colors.shadow,
+          backgroundColor: SURFACE,
+          borderColor: GLASS_BORDER,
+          borderRadius: 24,
+          borderWidth: 1,
         }
       ]}
     >
@@ -441,18 +442,18 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             router.push(`/profile/${post.user_id}` as any);
           }}
         >
-          <View style={[styles.avatar, { backgroundColor: colors.inputBackground }]}>
+          <View style={[styles.avatar, { width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: post.user_id === currentUser?.id ? G : 'rgba(255,255,255,0.1)', backgroundColor: G + '15' }]}>
             {post.user?.avatar_url || post.author_image ? (
               <Image source={{ uri: StorageService.getOptimizedImageUrl(post.user?.avatar_url || post.author_image || null, 150) || '' }} style={styles.avatarImage} />
             ) : (
-              <Text style={[styles.avatarText, { color: colors.tint }]}>
+              <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 16, color: G }}>
                 {getInitials(post.user?.name || post.author_name)}
               </Text>
             )}
           </View>
-          <View style={[styles.authorText, { flex: 1 }]}>
+          <View style={[styles.authorText, { flex: 1, marginLeft: 10 }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={[styles.authorName, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>
+              <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 15, color: TEXT_PRIMARY, flexShrink: 1 }} numberOfLines={1}>
                 {post.user?.name || post.author_name || 'Anonymous'}
               </Text>
               {((post.user as any)?.verified_seller) && (
@@ -460,25 +461,25 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               )}
             </View>
             {(post.ward || post.user?.location?.ward) || (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state) ? (
-              <Text style={[styles.timeAgo, { color: colors.textMuted }]} numberOfLines={1}>
+              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: LABEL, marginTop: 1 }} numberOfLines={1}>
                 {[post.ward || post.user?.location?.ward, (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state)].filter(Boolean).join(', ')} • {timeAgo(post.timestamp || post.created_at)}
               </Text>
             ) : (
-              <Text style={[styles.timeAgo, { color: colors.textMuted }]} numberOfLines={1}>
+              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: LABEL, marginTop: 1 }} numberOfLines={1}>
                 {timeAgo(post.timestamp || post.created_at)}
               </Text>
             )}
           </View>
         </TouchableOpacity>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={[styles.categoryBadge, { backgroundColor: colors.borderLight }]}>
-            <Text style={[styles.categoryText, { color: colors.textSecondary }]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: GLASS_BORDER }}>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 11, color: MUTED }}>
               {post.category || 'General'}
             </Text>
           </View>
           <TouchableOpacity onPress={(e) => { e.stopPropagation(); handleMoreOptions(); }}>
-            <Ionicons name="ellipsis-horizontal" size={20} color={colors.textSecondary} />
+            <Ionicons name="ellipsis-horizontal" size={20} color={MUTED} />
           </TouchableOpacity>
         </View>
       </View>
@@ -486,7 +487,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       {/* Content */}
       <View style={styles.content}>
         {!!post.title && (
-          <Text style={[styles.title, { color: colors.text }]}>{post.title}</Text>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 6 }}>{post.title}</Text>
         )}
         {!!post.text && (() => {
           const maxLength = 180;
@@ -494,12 +495,12 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           const displayText = isExpanded || !shouldTruncate ? post.text : post.text.slice(0, maxLength) + "…";
           return (
             <View>
-              <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+              <Text style={{ fontFamily: 'Inter', fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 22 }}>
                 {displayText}
               </Text>
               {shouldTruncate && (
                 <TouchableOpacity onPress={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} style={{ marginTop: 4 }}>
-                  <Text style={{ color: colors.tint, fontWeight: '600' }}>
+                  <Text style={{ fontFamily: 'Inter', fontWeight: '700', fontSize: 13, color: G }}>
                     {isExpanded ? 'Show less' : 'Read more'}
                   </Text>
                 </TouchableOpacity>
@@ -511,7 +512,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
       {/* Video */}
       {post.video_url && (
-        <View style={[styles.imageContainer, { width: imageDisplayWidth, aspectRatio: 4/5, backgroundColor: '#000' }]}>
+        <View style={[styles.imageContainer, { width: imageDisplayWidth, aspectRatio: 4/5, backgroundColor: '#000', borderRadius: 16, overflow: 'hidden', marginBottom: 12 }]}>
           <PostVideo 
             post={post} 
             isVisible={isVisible} 
@@ -523,7 +524,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
       {/* Images */}
       {urls.length > 0 && (
-        <View style={{ position: 'relative' }}>
+        <View style={{ position: 'relative', marginBottom: 12 }}>
           <ScrollView
             horizontal
             pagingEnabled
@@ -539,12 +540,12 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
                 key={index.toString()}
                 activeOpacity={0.95}
                 onPress={() => handleImageTap(index)}
-                style={[styles.imageContainer, { backgroundColor: colors.borderLight, width: imageDisplayWidth, aspectRatio: 4/5 }]}
+                style={[styles.imageContainer, { backgroundColor: SURFACE, width: imageDisplayWidth, aspectRatio: 4/3, borderRadius: 16, overflow: 'hidden' }]}
               >
-                <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={[styles.postImage, { aspectRatio: 4/5 }]} contentFit="cover" />
+                <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
                 
                 <Animated.View style={[styles.heartOverlay, heartAnimatedStyle]}>
-                  <Ionicons name="heart" size={100} color="#fff" style={styles.heartShadow} />
+                  <Ionicons name="heart" size={100} color={G} style={styles.heartShadow} />
                 </Animated.View>
               </TouchableOpacity>
             ))}
@@ -552,7 +553,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           {urls.length > 1 && (
             <View style={styles.paginationDots}>
               {urls.map((_, i) => (
-                <View key={i} style={[styles.carouselDot, activeImageIndex === i ? [styles.activeDot, { backgroundColor: colors.tint }] : styles.inactiveDot]} />
+                <View key={i} style={[styles.carouselDot, activeImageIndex === i ? [styles.activeDot, { backgroundColor: G }] : styles.inactiveDot]} />
               ))}
             </View>
           )}
@@ -561,7 +562,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
       {/* Price or Ticket Info */}
       {(post.category === 'For Sale' || post.category === 'Event') && post.price !== undefined && (
-        <Text style={[styles.price, { color: G }]}>
+        <Text style={{ fontFamily: 'Outfit', fontWeight: '900', fontSize: 18, color: G, marginBottom: 8 }}>
           {post.category === 'Event' && (post.price === 0 || !post.price) 
             ? 'FREE' 
             : formatPrice(post.price)}
@@ -569,18 +570,18 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       )}
 
       {/* Engagement Row */}
-      <View style={[styles.footer, { borderTopColor: colors.borderLight }]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: GLASS_BORDER, paddingTop: 10, marginTop: 4 }}>
         <View style={[styles.actionRow, { flex: 1 }]}>
           <TouchableOpacity 
-            style={styles.actionButton} 
+            style={[styles.actionButton, isLiked && { backgroundColor: G + '15', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 }]} 
             onPress={(e) => { e.stopPropagation(); handleLike(); }}
           >
             <Ionicons
               name={isLiked ? 'heart' : 'heart-outline'}
-              size={22}
-              color={isLiked ? '#ED1111' : colors.textSecondary}
+              size={20}
+              color={isLiked ? G : MUTED}
             />
-            <Text style={[styles.actionText, { color: colors.textSecondary }]}>
+            <Text style={{ fontFamily: 'Outfit', fontWeight: isLiked ? '800' : '600', fontSize: 13, color: isLiked ? G : MUTED, marginLeft: 6 }}>
               {likesCount > 0 ? likesCount : ''}
             </Text>
           </TouchableOpacity>
@@ -589,8 +590,8 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             style={[styles.actionButton, { marginLeft: 16 }]} 
             onPress={(e) => { e.stopPropagation(); if (onComment) onComment(); }}
           >
-            <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.textSecondary} />
-            <Text style={[styles.actionText, { color: colors.textSecondary }]}>
+            <Ionicons name="chatbubble-ellipses-outline" size={19} color={MUTED} />
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 13, color: MUTED, marginLeft: 6 }}>
               {post.comment_count > 0 ? post.comment_count : ''}
             </Text>
           </TouchableOpacity>
@@ -599,8 +600,8 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             style={[styles.actionButton, { marginLeft: 16 }]} 
             onPress={(e) => { e.stopPropagation(); handleShare(); }}
           >
-            <Entypo name="forward" size={20} color={colors.textSecondary} />
-            <Text style={[styles.actionText, { color: colors.textSecondary }]}>
+            <Entypo name="forward" size={19} color={MUTED} />
+            <Text style={{ fontFamily: 'Outfit', fontWeight: '600', fontSize: 13, color: MUTED, marginLeft: 6 }}>
               {shareCount > 0 ? shareCount : ''}
             </Text>
           </TouchableOpacity>
@@ -610,7 +611,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           style={styles.actionButton} 
           onPress={(e) => { e.stopPropagation(); handleBookmark(); }}
         >
-          <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={20} color={isBookmarked ? colors.tint : colors.textSecondary} />
+          <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={19} color={isBookmarked ? G : MUTED} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
