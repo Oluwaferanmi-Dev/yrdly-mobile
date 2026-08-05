@@ -1,12 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useAuth } from '../../hooks/use-supabase-auth';
 import { DARK, G, GLASS_BORDER, LABEL, MUTED, SURFACE } from '../../constants/tokens';
 
 export default function PrivacySettingsScreen() {
   const router = useRouter();
+  const { profile, updateProfile } = useAuth();
+  const [updating, setUpdating] = useState(false);
+
+  const handleToggle = async (key: 'share_location' | 'discoverable', value: boolean) => {
+    setUpdating(true);
+    try {
+      await updateProfile({ [key]: value });
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Failed to update privacy settings.');
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
@@ -15,16 +29,65 @@ export default function PrivacySettingsScreen() {
           <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Privacy & Discoverability</Text>
-        <View style={{ width: 34 }} />
+        {updating ? (
+          <ActivityIndicator size="small" color={G} style={{ marginRight: 8 }} />
+        ) : (
+          <View style={{ width: 34 }} />
+        )}
       </View>
 
       <ScrollView contentContainerStyle={s.content}>
-        <View style={s.emptyState}>
-          <View style={s.iconCircle}>
-            <Feather name="lock" size={32} color={LABEL} />
+        <Text style={s.desc}>
+          Manage how your location is shared and how others find you in your local neighbourhood.
+        </Text>
+
+        <View style={s.card}>
+          <View style={s.row}>
+            <View style={s.rowLeft}>
+              <View style={s.iconBox}>
+                <Feather name="map-pin" size={18} color="#fff" />
+              </View>
+              <View style={s.rowText}>
+                <Text style={s.rowLabel}>Share Location</Text>
+                <Text style={s.rowSub}>Show your approximate neighbourhood to nearby users</Text>
+              </View>
+            </View>
+            <Switch
+              value={profile?.share_location ?? true}
+              onValueChange={(v) => handleToggle('share_location', v)}
+              trackColor={{ false: 'rgba(255,255,255,0.1)', true: G }}
+              thumbColor="#fff"
+              disabled={updating}
+            />
           </View>
-          <Text style={s.emptyTitle}>Privacy & Discoverability</Text>
-          <Text style={s.emptySub}>This section is currently under construction. Stay tuned for updates!</Text>
+
+          <View style={s.divider} />
+
+          <View style={s.row}>
+            <View style={s.rowLeft}>
+              <View style={s.iconBox}>
+                <Feather name="eye" size={18} color="#fff" />
+              </View>
+              <View style={s.rowText}>
+                <Text style={s.rowLabel}>Profile Discoverability</Text>
+                <Text style={s.rowSub}>Allow neighbours to search and find your profile</Text>
+              </View>
+            </View>
+            <Switch
+              value={profile?.discoverable ?? true}
+              onValueChange={(v) => handleToggle('discoverable', v)}
+              trackColor={{ false: 'rgba(255,255,255,0.1)', true: G }}
+              thumbColor="#fff"
+              disabled={updating}
+            />
+          </View>
+        </View>
+
+        <View style={s.infoCard}>
+          <Feather name="info" size={16} color={LABEL} style={{ marginTop: 2 }} />
+          <Text style={s.infoText}>
+            YRDLY uses your approximate location to connect you with nearby posts and listings. We never share your exact GPS coordinates with anyone.
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -36,10 +99,16 @@ const s = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
   backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  content: { padding: 20, flexGrow: 1, justifyContent: 'center' },
-  
-  emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
-  iconCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-  emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff', marginBottom: 8 },
-  emptySub: { fontFamily: 'Inter', fontSize: 14, color: MUTED, textAlign: 'center', paddingHorizontal: 32, lineHeight: 22 },
+  content: { padding: 20 },
+  desc: { fontFamily: 'Inter', fontSize: 14, color: MUTED, lineHeight: 22, marginBottom: 24 },
+  card: { backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: GLASS_BORDER, paddingHorizontal: 16, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16 },
+  rowLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 16 },
+  iconBox: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  rowText: { flex: 1 },
+  rowLabel: { fontFamily: 'Inter-SemiBold', fontSize: 15, color: '#fff', marginBottom: 2 },
+  rowSub: { fontFamily: 'Inter', fontSize: 12, color: MUTED, lineHeight: 16 },
+  divider: { height: 1, backgroundColor: GLASS_BORDER },
+  infoCard: { flexDirection: 'row', gap: 10, backgroundColor: 'rgba(255,255,255,0.02)', borderWidth: 1, borderColor: GLASS_BORDER, padding: 16, borderRadius: 12, marginTop: 24 },
+  infoText: { flex: 1, fontFamily: 'Inter', fontSize: 12, color: LABEL, lineHeight: 18 },
 });

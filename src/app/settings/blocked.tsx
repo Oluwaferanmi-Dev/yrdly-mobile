@@ -1,12 +1,62 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useAuth } from '../../hooks/use-supabase-auth';
+import { supabase } from '../../lib/supabase';
 import { DARK, G, GLASS_BORDER, LABEL, MUTED, SURFACE } from '../../constants/tokens';
+
+interface SimpleProfile {
+  id: string;
+  name: string;
+  username: string | null;
+  avatar_url: string | null;
+}
 
 export default function BlockedUsersScreen() {
   const router = useRouter();
+  const { profile, updateProfile } = useAuth();
+  const [blockedList, setBlockedList] = useState<SimpleProfile[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [unblockingId, setUnblockingId] = useState<string | null>(null);
+
+  const fetchBlockedUsers = async () => {
+    if (!profile?.blocked_users || profile.blocked_users.length === 0) {
+      setBlockedList([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, username, avatar_url')
+        .in('id', profile.blocked_users);
+
+      if (error) throw error;
+      setBlockedList(data || []);
+    } catch (e) {
+      console.error('Error fetching blocked users:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlockedUsers();
+  }, [profile?.blocked_users]);
+
+  const handleUnblock = async (blockedUserId: string) => {
+    setUnblockingId(blockedUserId);
+    const updated = (profile?.blocked_users || []).filter((id) => id !== blockedUserId);
+    try {
+      await updateProfile({ blocked_users: updated });
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Failed to unblock user.');
+    } finally {
+      setUnblockingId(null);
+    }
+  };
 
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
@@ -19,13 +69,56 @@ export default function BlockedUsersScreen() {
       </View>
 
       <ScrollView contentContainerStyle={s.content}>
-        <View style={s.emptyState}>
-          <View style={s.iconCircle}>
-            <Feather name="shield" size={32} color={LABEL} />
+        <Text style={s.desc}>
+          Blocked users cannot message you, see your posts, or find your profile in local search results.
+        </Text>
+
+        {loading ? (
+          <View style={s.loadingContainer}>
+            <ActivityIndicator size="large" color={G} />
           </View>
-          <Text style={s.emptyTitle}>Blocked Users</Text>
-          <Text style={s.emptySub}>This section is currently under construction. Stay tuned for updates!</Text>
-        </View>
+        ) : blockedList.length > 0 ? (
+          <View style={s.card}>
+            {blockedList.map((user, idx) => (
+              <React.Fragment key={user.id}>
+                {idx > 0 && <View style={s.divider} />}
+                <View style={s.row}>
+                  <Image
+                    source={
+                      user.avatar_url
+                        ? { uri: user.avatar_url }
+                        : require('../../../assets/images/icon.png')
+                    }
+                    style={s.avatar}
+                  />
+                  <View style={s.userInfo}>
+                    <Text style={s.userName}>{user.name}</Text>
+                    {user.username && <Text style={s.userHandle}>@{user.username}</Text>}
+                  </View>
+                  <TouchableOpacity
+                    style={s.unblockBtn}
+                    onPress={() => handleUnblock(user.id)}
+                    disabled={unblockingId !== null}
+                  >
+                    {unblockingId === user.id ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text style={s.unblockBtnText}>Unblock</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </React.Fragment>
+            ))}
+          </View>
+        ) : (
+          <View style={s.emptyState}>
+            <View style={s.iconCircle}>
+              <Feather name="shield" size={32} color={LABEL} />
+            </View>
+            <Text style={s.emptyTitle}>No Blocked Users</Text>
+            <Text style={s.emptySub}>You haven't blocked anyone in your neighbourhood yet.</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -36,9 +129,20 @@ const s = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
   backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  content: { padding: 20, flexGrow: 1, justifyContent: 'center' },
+  content: { padding: 20, flexGrow: 1 },
+  desc: { fontFamily: 'Inter', fontSize: 14, color: MUTED, lineHeight: 22, marginBottom: 24 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 },
+  card: { backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: GLASS_BORDER, paddingHorizontal: 16, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14 },
+  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.05)', marginRight: 12 },
+  userInfo: { flex: 1 },
+  userName: { fontFamily: 'Inter-SemiBold', fontSize: 15, color: '#fff', marginBottom: 2 },
+  userHandle: { fontFamily: 'Inter', fontSize: 13, color: MUTED },
+  unblockBtn: { paddingHorizontal: 16, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
+  unblockBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
+  divider: { height: 1, backgroundColor: GLASS_BORDER },
   
-  emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 80 },
   iconCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
   emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff', marginBottom: 8 },
   emptySub: { fontFamily: 'Inter', fontSize: 14, color: MUTED, textAlign: 'center', paddingHorizontal: 32, lineHeight: 22 },
