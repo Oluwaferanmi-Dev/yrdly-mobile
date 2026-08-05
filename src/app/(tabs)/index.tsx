@@ -308,7 +308,7 @@ export default function HomeTab() {
             <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
               <MapIcon size={20} color={TEXT_PRIMARY} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/alerts')} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
               <NotificationsIcon size={20} color={TEXT_PRIMARY} />
               {unreadCount > 0 && (
                 <View style={{

@@ -481,16 +481,28 @@ export default function NotificationsScreen() {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
+            <Feather name="arrow-left" size={24} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Notifications</Text>
-          {unreadCount > 0 ? (
-            <TouchableOpacity style={[styles.markAllBtn, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]} onPress={handleMarkAllRead}>
-              <Feather name="check-circle" size={20} color={G} />
+          
+          <View>
+            <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Activity</Text>
+          </View>
+          
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity 
+              style={[styles.markAllBtn, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }]}
+              onPress={() => router.push('/alerts')}
+            >
+              <Ionicons name="warning-outline" size={20} color={TEXT_PRIMARY} />
             </TouchableOpacity>
-          ) : (
-            <View style={styles.markAllPlaceholder} />
-          )}
+            
+            <TouchableOpacity 
+              style={[styles.markAllBtn, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }]}
+              onPress={handleMarkAllRead}
+            >
+              <Ionicons name="checkmark-done" size={20} color={G} />
+            </TouchableOpacity>
+          </View>
         </View>
         <Text style={[styles.headerSubtitle, { color: MUTED }]}>Everything happening around your account</Text>
       </View>
