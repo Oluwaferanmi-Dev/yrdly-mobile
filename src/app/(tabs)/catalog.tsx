@@ -7,7 +7,6 @@ import {
 import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ScreenHeader } from '../../components/ScreenHeader';
 import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, GOLD, BLUE } from '../../constants/tokens';
 import { useRouter, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -21,13 +20,16 @@ import { Skeleton } from '../../components/Skeleton';
 import { BusinessHub } from '../../components/BusinessHub';
 import { Post } from '../../types';
 import { formatPrice } from '../../lib/utils';
-import { StorageService } from '../../lib/storage-service';
-import { MapIcon, NotificationsIcon } from '../../components/SvgIcons';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 
 const { width } = Dimensions.get('window');
 type TabType = 'Discover' | 'Marketplace' | 'Events' | 'Businesses';
-const TABS: TabType[] = ['Discover', 'Marketplace', 'Events', 'Businesses'];
+const TABS: { key: TabType; label: string }[] = [
+  { key: 'Discover', label: 'Discover' },
+  { key: 'Marketplace', label: 'Marketplace' },
+  { key: 'Events', label: 'Events' },
+  { key: 'Businesses', label: 'Business' },
+];
 
 const CATEGORIES = [
   { key: '', label: 'All', icon: 'apps-outline' },
@@ -41,47 +43,34 @@ const CATEGORIES = [
 ];
 
 export default function CatalogTab() {
-  const { colors, isDarkMode } = useAppTheme();
+  const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { activeFilter } = useLocation();
   const { unreadCount } = useNotificationBadge();
 
   const [activeTab, setActiveTab] = useState<TabType>('Discover');
+  const [showSearch, setShowSearch] = useState(false);
   const [search, setSearch] = useState('');
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [sort, setSort] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
   const [category, setCategory] = useState('');
-  const [itemCondition, setItemCondition] = useState('');
+  const [sort, setSort] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
   const [items, setItems] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [messagingItem, setMessagingItem] = useState<string | null>(null);
   const [featuredIdx, setFeaturedIdx] = useState(0);
 
-  // Animations
-  const tabIndicatorX = useRef(new Animated.Value(0)).current;
-  const searchFocus = useRef(new Animated.Value(0)).current;
-  const featuredScrollRef = useRef<ScrollView>(null);
+  const formattedLocation = useMemo(() => {
+    if (!profile?.location) return 'Victoria Island, Lagos';
+    const loc = profile.location;
+    const parts = [loc.ward || loc.city, loc.lga, loc.state].filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : 'Neighbourhood';
+  }, [profile?.location]);
 
-  // ─── Data fetching ───────────────────────────────────────────
+  // Data fetching
   const fetchItems = useCallback(async (isRefresh = false) => {
     if (!isRefresh) setLoading(true);
     
-    const filterString = `${activeFilter?.state || ''}_${activeFilter?.lga || ''}_${activeFilter?.ward || ''}_${category}_${search}_${sort}_${itemCondition}`;
-    const cacheFile = FileSystem.documentDirectory + `yrdly_marketplace_cache_${filterString.replace(/\W/g, '_')}.json`;
-    
-    try {
-      if (!isRefresh) {
-        const fileInfo = await FileSystem.getInfoAsync(cacheFile);
-        if (fileInfo.exists) {
-          const cachedData = await FileSystem.readAsStringAsync(cacheFile);
-          if (cachedData) setItems(JSON.parse(cachedData) as Post[]);
-        }
-      }
-    } catch (e) {}
-
     try {
       let q = supabase
         .from('posts')
@@ -93,252 +82,205 @@ export default function CatalogTab() {
       if (activeFilter?.lga)   q = q.eq('lga', activeFilter.lga);
       if (activeFilter?.ward)  q = q.eq('ward', activeFilter.ward);
       if (category)            q = q.ilike('sub_category', `%${category}%`);
-      if (itemCondition)       q = q.eq('condition', itemCondition);
       if (search)              q = q.or(`title.ilike.%${search}%,text.ilike.%${search}%`);
 
       if (sort === 'price_asc')  q = q.order('price', { ascending: true });
       else if (sort === 'price_desc') q = q.order('price', { ascending: false });
-      else q = q.order('timestamp', { ascending: false });
+      else                      q = q.order('timestamp', { ascending: false });
 
-      const { data, error } = await q.limit(40);
-      if (error) throw error;
-      
-      setItems((data as Post[]) || []);
-      
-      // Save to cache
-      if (data) {
-        FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(data)).catch(() => {});
+      const { data, error } = await q.limit(60);
+      if (!error && data) {
+        setItems(data as Post[]);
       }
-    } catch (e) { console.error(e); }
-    finally { if (!isRefresh) setLoading(false); }
-  }, [search, sort, category, itemCondition, activeFilter]);
+    } catch (e) {
+      console.error('Fetch marketplace items error:', e);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [activeFilter, category, search, sort]);
 
-  useFocusEffect(useCallback(() => { fetchItems(); }, [fetchItems]));
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchItems(true);
-    setRefreshing(false);
+  useEffect(() => {
+    fetchItems();
   }, [fetchItems]);
 
-  const handleMessageSeller = useCallback(async (item: Post) => {
-    if (!user) { Alert.alert('Sign in required', 'Please sign in to message the seller.'); return; }
-    if (user.id === item.user_id) { Alert.alert("That's your own listing!"); return; }
-    setMessagingItem(item.id);
-    try {
-      const { data: existing } = await supabase.from('conversations').select('id')
-        .eq('type', 'marketplace').contains('participant_ids', [user.id, item.user_id])
-        .eq('item_id', item.id).limit(1);
-      if (existing && existing.length > 0) { router.push({ pathname: '/chat/[id]', params: { id: existing[0].id } }); return; }
-      const { data: created, error } = await supabase.from('conversations').insert({
-        type: 'marketplace', participant_ids: [user.id, item.user_id],
-        item_id: item.id, item_title: item.title || item.text || 'Listing',
-        item_image: item.image_urls?.[0] || item.image_url || null,
-        item_price: item.price ?? null, last_message_text: '', updated_at: new Date().toISOString(),
-      }).select('id').single();
-      if (error || !created) throw error ?? new Error('Failed to create conversation');
-      router.push({ pathname: '/chat/[id]', params: { id: created.id } });
-    } catch (e) { console.error(e); Alert.alert('Error', 'Could not open chat.'); }
-    finally { setMessagingItem(null); }
-  }, [user, router]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchItems();
+    }, [fetchItems])
+  );
 
-  // ─── Tab switch animation ────────────────────────────────────
-  const TAB_W = (width - 48) / TABS.length;
-  const switchTab = (tab: TabType) => {
-    const idx = TABS.indexOf(tab);
-    setActiveTab(tab);
-    Animated.spring(tabIndicatorX, { toValue: idx * TAB_W, useNativeDriver: true, speed: 20, bounciness: 4 }).start();
-  };
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchItems(true);
+  }, [fetchItems]);
 
-  const featured = items.slice(0, 3);
-  const nearby = items.slice(3);
-
-
+  const featured = useMemo(() => items.slice(0, 5), [items]);
+  const nearby = useMemo(() => items.slice(0), [items]);
 
   const listHeaderElement = useMemo(() => (
     <>
-      {/* Category chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 8 }}>
-        {CATEGORIES.map(cat => {
-          const active = category === cat.key;
+      {/* Categories Horizontal Scroll */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingVertical: 12 }}
+      >
+        {CATEGORIES.map(c => {
+          const isSelected = category === c.key;
           return (
             <TouchableOpacity
-              key={cat.key}
-              onPress={() => setCategory(cat.key)}
-              style={[s.chip, { backgroundColor: active ? G : '#111111', borderColor: active ? G : GLASS_BORDER }]}>
-              <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : LABEL} style={{ marginRight: 4 }} />
-              <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : LABEL }]}>{cat.label}</Text>
+              key={c.key}
+              style={[
+                s.categoryChip,
+                isSelected && s.categoryChipSelected
+              ]}
+              onPress={() => setCategory(c.key)}
+            >
+              <Ionicons name={c.icon as any} size={14} color={isSelected ? DARK : TEXT_PRIMARY} />
+              <Text style={[s.categoryChipText, isSelected && s.categoryChipTextSelected]}>{c.label}</Text>
             </TouchableOpacity>
           );
         })}
       </ScrollView>
 
-      {/* Featured carousel */}
-      {featured.length > 0 && (
-        <View style={{ marginBottom: 24 }}>
+      {/* Featured Items Header */}
+      {featured.length > 0 && !category && !search && (
+        <View style={{ marginBottom: 16 }}>
+          <View style={s.sectionTitleRow}>
+            <Text style={s.sectionTitle}>Featured Items</Text>
+          </View>
           <ScrollView
-            ref={featuredScrollRef}
-            horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={e => setFeaturedIdx(Math.round(e.nativeEvent.contentOffset.x / (width - 32)))}
-            style={{ width: width - 32 }}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={e => {
+              const idx = Math.round(e.nativeEvent.contentOffset.x / (width - 40));
+              setFeaturedIdx(idx);
+            }}
+            scrollEventThrottle={16}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
           >
-            {featured.map(item => {
-              const imgUrl = item.image_urls?.[0] || item.image_url;
+            {featured.map((item) => {
+              const imgUrl = Array.isArray(item.image_urls) ? item.image_urls[0] : (item.image_url || null);
               return (
                 <TouchableOpacity
                   key={item.id}
-                  activeOpacity={0.92}
+                  style={[s.featuredCard, { width: width - 40 }]}
                   onPress={() => router.push(`/marketplace/${item.id}` as any)}
-                  style={[s.featuredCard, { width: width - 32 }]}>
-                  {imgUrl
-                    ? <Image source={{ uri: imgUrl }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
-                    : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#1a2210' }]} />}
-                  <View style={s.featuredOverlay} />
-                  <View style={s.featuredBadge}>
-                    <Text style={s.featuredBadgeTxt}>🔥 Featured Near You</Text>
-                  </View>
+                  activeOpacity={0.9}
+                >
+                  {imgUrl ? (
+                    <Image source={{ uri: imgUrl }} style={s.featuredImg} contentFit="cover" />
+                  ) : (
+                    <View style={[s.featuredImg, s.featuredImgPlaceholder]}>
+                      <Ionicons name="bag-handle-outline" size={40} color={MUTED} />
+                    </View>
+                  )}
                   <View style={s.featuredInfo}>
                     <Text style={s.featuredTitle} numberOfLines={1}>{item.title || item.text}</Text>
-                    {item.condition && <Text style={s.featuredCond}>{item.condition}</Text>}
                     <Text style={s.featuredPrice}>{item.price === 0 ? 'FREE' : formatPrice(item.price || 0)}</Text>
-                    {item.lga && (
-                      <View style={s.featuredLoc}>
-                        <Ionicons name="location-outline" size={12} color="#aaa" />
-                        <Text style={s.featuredLocTxt}>{item.lga}</Text>
-                      </View>
-                    )}
                   </View>
-                  <TouchableOpacity style={s.featuredCTA} onPress={() => router.push(`/marketplace/${item.id}` as any)}>
-                    <Text style={s.featuredCTATxt}>View Listing</Text>
-                    <Ionicons name="chevron-forward" size={14} color="#0B0D0B" />
-                  </TouchableOpacity>
                 </TouchableOpacity>
               );
             })}
           </ScrollView>
-          {featured.length > 1 && (
-            <View style={s.dots}>
-              {featured.map((_, i) => (
-                <View key={i} style={[s.dot, { backgroundColor: i === featuredIdx ? G : GLASS_BORDER }]} />
-              ))}
-            </View>
-          )}
         </View>
       )}
 
-      {/* Nearby header */}
-      <View style={s.nearbyHeader}>
-        <Text style={[s.nearbyTitle, { color: TEXT_PRIMARY }]}>Nearby Listings</Text>
+      {/* Section Title */}
+      <View style={s.sectionTitleRow}>
+        <Text style={s.sectionTitle}>Nearby Listings</Text>
       </View>
-
-      {loading && items.length === 0 && (
-        <View style={s.skeletonGrid}>
-          {[1, 2, 3, 4].map(k => (
-            <View key={k} style={[s.skeletonCard, { backgroundColor: '#111111', borderColor: GLASS_BORDER }]}>
-              <Skeleton width="100%" height={150} />
-              <View style={{ padding: 10 }}>
-                <Skeleton width="80%" height={12} style={{ marginBottom: 6 }} />
-                <Skeleton width="50%" height={18} />
-              </View>
-            </View>
-          ))}
-        </View>
-      )}
     </>
-  ), [featured, featuredIdx, category, colors, loading, items.length, width, router]);
-
-  const cardBg = isDarkMode ? 'rgba(13,17,23,0.94)' : 'rgba(255,255,255,0.96)';
+  ), [featured, category, search, router]);
 
   return (
     <View style={[s.root, { backgroundColor: DARK, paddingTop: insets.top }]}>
-      {/* ── Header ── */}
+      
+      {/* ── Header (Figma 1:1 Matching) ── */}
       <View style={s.header}>
-        <View>
-          <Text style={[s.title, { color: TEXT_PRIMARY }]}>Explore</Text>
-          <Text style={[s.subtitle, { color: LABEL }]}>Discover, buy and sell around you. 💚</Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map' as any)}>
-            <MapIcon size={24} color={TEXT_PRIMARY} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ position: 'relative' }}>
-            <NotificationsIcon size={24} color={TEXT_PRIMARY} />
-            {unreadCount > 0 && (
-              <View style={{
-                position: 'absolute',
-                right: -4,
-                top: -4,
-                backgroundColor: G,
-                borderRadius: 10,
-                minWidth: 16,
-                height: 16,
-                justifyContent: 'center',
-                alignItems: 'center',
-                paddingHorizontal: 3,
-                borderWidth: 1.5,
-                borderColor: DARK
-              }}>
-                <Text style={{ color: '#000', fontSize: 9, fontFamily: 'Outfit-ExtraBold' }}>
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* ── Search + Filter ── */}
-      <View style={s.searchRow}>
-        <Animated.View style={[{ flexDirection: 'row', alignItems: 'center', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 24, paddingHorizontal: 16, height: 48, flex: 1 }]}>
-          <Ionicons name="search-outline" size={18} color={G} style={{ marginRight: 10 }} />
-          <TextInput
-            style={{ flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: '#FFFFFF' }}
-            placeholder="Search catalog, items & services..."
-            placeholderTextColor={MUTED}
-            value={search}
-            onChangeText={setSearch}
-            onFocus={() => Animated.timing(searchFocus, { toValue: 1, duration: 200, useNativeDriver: false }).start()}
-            onBlur={() => Animated.timing(searchFocus, { toValue: 0, duration: 200, useNativeDriver: false }).start()}
-          />
-        </Animated.View>
-        <TouchableOpacity style={[s.filterBtn, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderRadius: 18, width: 48, height: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1 }]}
-          onPress={() => setFilterVisible(true)}>
-          <Ionicons name="options-outline" size={20} color={TEXT_PRIMARY} />
-        </TouchableOpacity>
-      </View>
-
-      {/* ── Pill Tabs ── */}
-      <View style={[s.tabBar, { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: GLASS_BORDER, borderRadius: 24 }]}>
-        <Animated.View style={[s.tabIndicator, { width: TAB_W, transform: [{ translateX: tabIndicatorX }], backgroundColor: G, borderRadius: 20 }]} />
-        {TABS.map((tab) => {
-          const active = activeTab === tab;
-          return (
-            <TouchableOpacity key={tab} style={[s.tab, { width: TAB_W }]} onPress={() => switchTab(tab)} activeOpacity={0.7}>
-              <Ionicons
-                name={tab === 'Discover' ? 'compass-outline' : tab === 'Marketplace' ? 'bag-outline' : tab === 'Events' ? 'calendar-outline' : 'storefront-outline'}
-                size={14} color={active ? DARK : MUTED}
-                style={{ marginRight: 4 }}
+        {showSearch ? (
+          <View style={s.searchBarContainer}>
+            <View style={s.searchInputWrap}>
+              <Ionicons name="search-outline" size={16} color={LABEL} style={{ marginRight: 8 }} />
+              <TextInput
+                autoFocus
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search people, listings, events..."
+                placeholderTextColor={MUTED}
+                style={s.searchInput}
               />
-              <Text style={[s.tabTxt, { color: active ? DARK : MUTED, fontFamily: active ? 'Outfit-Bold' : 'Inter-Regular' }]}>{tab}</Text>
+              {search.length > 0 && (
+                <TouchableOpacity onPress={() => setSearch('')}>
+                  <Ionicons name="close-circle" size={16} color={LABEL} />
+                </TouchableOpacity>
+              )}
+            </View>
+            <TouchableOpacity onPress={() => { setShowSearch(false); setSearch(''); }}>
+              <Text style={s.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <View>
+              <Text style={s.title}>Explore</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                <Ionicons name="location-outline" size={13} color={LABEL} />
+                <Text style={s.subtitle}>{formattedLocation}</Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <TouchableOpacity 
+                style={s.headerIconBtn}
+                onPress={() => setShowSearch(true)}
+              >
+                <Ionicons name="search-outline" size={18} color={TEXT_PRIMARY} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={s.headerIconBtn}
+                onPress={() => router.push('/notifications' as any)}
+              >
+                <Ionicons name="notifications-outline" size={18} color={TEXT_PRIMARY} />
+                {unreadCount > 0 && (
+                  <View style={s.badgeDot} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+      </View>
+
+      {/* ── Section Pills (Figma 1:1 Matching) ── */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingBottom: 12 }}
+      >
+        {TABS.map((tab) => {
+          const isSelected = activeTab === tab.key;
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              style={[
+                s.sectionPill,
+                isSelected && s.sectionPillSelected
+              ]}
+              onPress={() => setActiveTab(tab.key)}
+            >
+              <Text style={[s.sectionPillText, isSelected && s.sectionPillTextSelected]}>
+                {tab.label}
+              </Text>
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
 
-      {/* ── Discover content ── */}
+      {/* ── Tab Content ── */}
       {activeTab === 'Discover' && (
-        <View style={[s.empty, { marginTop: 40 }]}>
-          <Ionicons name="compass-outline" size={48} color={LABEL} style={{ opacity: 0.4, marginBottom: 12 }} />
-          <Text style={[s.emptyTxt, { color: LABEL }]}>
-            Curated Discover feed is coming soon
-          </Text>
-        </View>
-      )}
-
-      {/* ── Marketplace content ── */}
-      {activeTab === 'Marketplace' && (
         <FlatList
-          data={loading && items.length === 0 ? [] : nearby}
+          data={items}
           keyExtractor={i => i.id}
           numColumns={2}
           showsVerticalScrollIndicator={false}
@@ -349,121 +291,185 @@ export default function CatalogTab() {
           renderItem={({ item }) => (
             <MarketplaceItemCard
               item={item}
+              width={(width - 48) / 2}
               onPress={() => router.push(`/marketplace/${item.id}` as any)}
-              onMessageSeller={handleMessageSeller}
-              onBuyNow={item => router.push({ pathname: '/checkout/[id]', params: { id: item.id, type: 'marketplace' } })}
             />
           )}
-          ListEmptyComponent={!loading ? (
-            <View style={s.empty}>
-              <Ionicons name="bag-outline" size={48} color={LABEL} style={{ opacity: 0.4, marginBottom: 12 }} />
-              <Text style={[s.emptyTxt, { color: LABEL }]}>
-                {search ? `No results for "${search}"` : 'No listings in your area yet'}
-              </Text>
-            </View>
-          ) : null}
         />
       )}
 
-      {activeTab === 'Events' && <EventList searchQuery={search} sortOption={sort} />}
-      {activeTab === 'Businesses' && <BusinessHub searchQuery={search} />}
-
-      {/* ── Sort/Filter Modal ── */}
-      <Modal visible={filterVisible} transparent animationType="slide">
-        <TouchableWithoutFeedback onPress={() => setFilterVisible(false)}>
-          <View style={s.overlay} />
-        </TouchableWithoutFeedback>
-        <View style={[s.modal, { backgroundColor: isDarkMode ? '#111' : '#fff' }]}>
-          <View style={s.modalHandle} />
-          
-          {(activeTab === 'Marketplace' || activeTab === 'Discover') && (
-            <>
-              <Text style={[s.modalTitle, { color: TEXT_PRIMARY, marginTop: 10 }]}>Condition</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24, paddingBottom: 8 }} contentContainerStyle={{ gap: 10 }}>
-                {['', 'New', 'Used - Like New', 'Used - Good', 'Used - Fair'].map((cond) => {
-                  const active = itemCondition === cond;
-                  return (
-                    <TouchableOpacity 
-                      key={cond} 
-                      style={[s.condChip, { backgroundColor: active ? G : 'transparent', borderColor: active ? G : GLASS_BORDER }]}
-                      onPress={() => setItemCondition(cond)}
-                    >
-                      <Text style={[s.condChipTxt, { color: active ? '#0B0D0B' : TEXT_PRIMARY }]}>{cond || 'Any'}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </>
+      {activeTab === 'Marketplace' && (
+        <FlatList
+          data={items}
+          keyExtractor={i => i.id}
+          numColumns={2}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />}
+          columnWrapperStyle={{ justifyContent: 'space-between' }}
+          contentContainerStyle={s.listContent}
+          ListHeaderComponent={listHeaderElement}
+          renderItem={({ item }) => (
+            <MarketplaceItemCard
+              item={item}
+              width={(width - 48) / 2}
+              onPress={() => router.push(`/marketplace/${item.id}` as any)}
+            />
           )}
+        />
+      )}
 
-          <Text style={[s.modalTitle, { color: TEXT_PRIMARY }]}>Sort By</Text>
-          {([
-            { key: 'newest',     label: 'Newest First' },
-            { key: 'price_asc',  label: 'Price: Low to High' },
-            { key: 'price_desc', label: 'Price: High to Low' },
-          ] as const).map(opt => (
-            <TouchableOpacity key={opt.key} style={[s.modalOpt, { borderBottomColor: GLASS_BORDER }]}
-              onPress={() => { setSort(opt.key); }}>
-              <Text style={[s.modalOptTxt, { color: TEXT_PRIMARY }]}>{opt.label}</Text>
-              {sort === opt.key && <Ionicons name="checkmark" size={20} color={G} />}
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity style={[s.closeBtn, { backgroundColor: G }]} onPress={() => setFilterVisible(false)}>
-            <Text style={s.closeBtnTxt}>Done</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+      {activeTab === 'Events' && (
+        <EventList />
+      )}
+
+      {activeTab === 'Businesses' && (
+        <BusinessHub />
+      )}
     </View>
   );
 }
 
 const s = StyleSheet.create({
   root: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14 },
-  title: { fontSize: 32, fontFamily: 'Outfit-ExtraBold', letterSpacing: -0.5 },
-  subtitle: { fontSize: 13, marginTop: 2, fontFamily: 'Inter-Regular' },
-  headerActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  iconBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
-  searchRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, marginBottom: 14 },
-  searchBox: { flexDirection: 'row', alignItems: 'center', borderRadius: 24, paddingHorizontal: 14, height: 48, borderWidth: 1 },
-  searchInput: { flex: 1, fontSize: 14, fontFamily: 'Inter-Regular' },
-  filterBtn: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
-  tabBar: { flexDirection: 'row', marginHorizontal: 16, borderRadius: 28, padding: 4, marginBottom: 16, borderWidth: 1, position: 'relative', overflow: 'hidden' },
-  tabIndicator: { position: 'absolute', height: '100%', top: 4, left: 4, borderRadius: 24 },
-  tab: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 9, zIndex: 1 },
-  tabTxt: { fontSize: 12, fontFamily: 'Inter-Bold' },
-  listContent: { paddingHorizontal: 16, paddingBottom: 100 },
-  chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
-  chipTxt: { fontSize: 12, fontFamily: 'Inter-SemiBold' },
-  featuredCard: { height: 220, borderRadius: 24, overflow: 'hidden', marginRight: 0 },
-  featuredOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
-  featuredBadge: { position: 'absolute', top: 14, left: 14, backgroundColor: 'rgba(130,219,126,0.2)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(130,219,126,0.35)' },
-  featuredBadgeTxt: { color: '#82DB7E', fontSize: 11, fontFamily: 'Outfit-ExtraBold' },
-  featuredInfo: { position: 'absolute', bottom: 60, left: 16, right: 110 },
-  featuredTitle: { color: '#fff', fontSize: 20, fontFamily: 'Outfit-ExtraBold', marginBottom: 2 },
-  featuredCond: { color: 'rgba(255,255,255,0.7)', fontSize: 12, marginBottom: 4, fontFamily: 'Inter-Regular' },
-  featuredPrice: { color: '#82DB7E', fontSize: 22, fontFamily: 'Outfit-ExtraBold' },
-  featuredLoc: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 4 },
-  featuredLocTxt: { color: '#aaa', fontSize: 11, fontFamily: 'Inter-Regular' },
-  featuredCTA: { position: 'absolute', bottom: 16, right: 16, flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#82DB7E', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20 },
-  featuredCTATxt: { color: '#0B0D0B', fontFamily: 'Outfit-ExtraBold', fontSize: 13 },
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 10 },
-  dot: { width: 7, height: 7, borderRadius: 4 },
-  nearbyHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
-  nearbyTitle: { fontSize: 20, fontFamily: 'Outfit-ExtraBold' },
-  seeAll: { fontSize: 13, fontFamily: 'Inter-Bold' },
-  skeletonGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  skeletonCard: { width: '48%', borderRadius: 20, overflow: 'hidden', borderWidth: 1, marginBottom: 14 },
-  empty: { paddingVertical: 60, alignItems: 'center' },
-  emptyTxt: { fontSize: 15, textAlign: 'center', fontFamily: 'Inter-Regular' },
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
-  modal: { padding: 24, borderTopLeftRadius: 28, borderTopRightRadius: 28, position: 'absolute', bottom: 0, left: 0, right: 0, paddingBottom: 44 },
-  modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)', alignSelf: 'center', marginBottom: 16 },
-  modalTitle: { fontSize: 18, fontFamily: 'Outfit-ExtraBold', marginBottom: 16 },
-  modalOpt: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth },
-  modalOptTxt: { fontSize: 16, fontFamily: 'Inter-Regular' },
-  closeBtn: { marginTop: 20, paddingVertical: 16, borderRadius: 16, alignItems: 'center' },
-  closeBtnTxt: { color: '#0B0D0B', fontSize: 16, fontFamily: 'Outfit-ExtraBold' },
-  condChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, borderWidth: 1, minWidth: 60, alignItems: 'center' },
-  condChipTxt: { fontSize: 13, fontFamily: 'Inter-SemiBold' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
+  title: { fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' },
+  subtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL },
+  headerIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#111111',
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  badgeDot: {
+    position: 'absolute',
+    top: 7,
+    right: 7,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: G,
+    borderWidth: 1.5,
+    borderColor: DARK,
+  },
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  searchInputWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#111111',
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 40,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
+  cancelText: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
+    color: G,
+  },
+  sectionPill: {
+    height: 36,
+    paddingHorizontal: 18,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sectionPillSelected: {
+    backgroundColor: G,
+    borderColor: G,
+  },
+  sectionPillText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    color: LABEL,
+  },
+  sectionPillTextSelected: {
+    fontFamily: 'Outfit-Bold',
+    color: DARK,
+  },
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: SURFACE,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+  },
+  categoryChipSelected: {
+    backgroundColor: G,
+    borderColor: G,
+  },
+  categoryChipText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 12,
+    color: TEXT_PRIMARY,
+  },
+  categoryChipTextSelected: {
+    color: DARK,
+    fontFamily: 'Outfit-Bold',
+  },
+  sectionTitleRow: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 16,
+    color: TEXT_PRIMARY,
+  },
+  featuredCard: {
+    height: 160,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: SURFACE,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    position: 'relative',
+  },
+  featuredImg: { width: '100%', height: '100%' },
+  featuredImgPlaceholder: { justifyContent: 'center', alignItems: 'center' },
+  featuredInfo: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 14,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+  },
+  featuredTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#FFFFFF' },
+  featuredPrice: { fontFamily: 'Outfit-ExtraBold', fontSize: 15, color: G },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 90,
+  },
 });
