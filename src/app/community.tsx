@@ -460,7 +460,7 @@ export default function CommunityScreen() {
           >
             <Text style={[
               styles.premiumChipText,
-              activeFilterTab === tab ? { color: GText } : { color: LABEL }
+              activeFilterTab === tab ? { color: TEXT_PRIMARY } : { color: LABEL }
             ]}>
               {tab === 'all' ? 'All' : tab === 'neighbors' ? 'Neighbors' : tab === 'mutuals' ? 'Mutuals' : 'Sellers'}
             </Text>
@@ -754,7 +754,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
   },
   premiumBtnText: {
-    color: GText,
+    color: TEXT_PRIMARY,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -865,7 +865,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
   },
   inviteBtnText: {
-    color: GText,
+    color: TEXT_PRIMARY,
     fontWeight: '600',
     fontSize: 15,
   },
@@ -984,7 +984,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     borderRadius: 20,
   },
   premiumDiscoverBtnText: {
-    color: GText,
+    color: TEXT_PRIMARY,
     fontWeight: '700',
     fontSize: 15,
   },
@@ -1148,7 +1148,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
   },
   nearbyFollowBtnText: {
-    color: GText,
+    color: TEXT_PRIMARY,
     fontWeight: '700',
     fontSize: 14,
   },
@@ -1188,7 +1188,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     marginRight: 8,
   },
   smallFollowBtnText: {
-    color: GText,
+    color: TEXT_PRIMARY,
     fontWeight: '700',
     fontSize: 14,
   },
@@ -1288,7 +1288,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     marginTop: 12,
   },
   applyFilterBtnText: {
-    color: GText,
+    color: TEXT_PRIMARY,
     fontSize: 16,
     fontWeight: '700',
   },

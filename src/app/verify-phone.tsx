@@ -58,13 +58,13 @@ export default function VerifyPhoneScreen() {
 
       {isLiquidGlassSupported ? (
         <LiquidGlassView 
-          {...({ intensity: 20, tint: DARK === '#121212' ? 'dark' : 'light', fallbackColor: DARK === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' } as any)}
+          {...({ intensity: 20, tint: 'dark', fallbackColor: 'rgba(0, 0, 0, 0.6)' } as any)}
           style={StyleSheet.absoluteFillObject} 
         />
       ) : Platform.OS === 'ios' ? (
-        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={DARK === '#121212' ? 'dark' : 'light'} />
+        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint='dark' />
       ) : (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: DARK === '#121212' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.4)' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.6)' }]} />
       )}
 
       <View style={{ width: '100%', borderRadius: 28, padding: 24, alignItems: 'center', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
