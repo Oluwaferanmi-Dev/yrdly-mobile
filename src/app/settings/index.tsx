@@ -1,169 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Switch, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Switch, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
-import { Image } from 'expo-image';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { AuthService } from '../../lib/auth-service';
-import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
-import { StorageService } from '../../lib/storage-service';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, RED } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, RED } from '../../constants/tokens';
 
+function SettingSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <View style={{ marginBottom: 24 }}>
+      <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10, marginLeft: 4 }}>
+        {title}
+      </Text>
+      <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, overflow: 'hidden' }}>
+        {children}
+      </View>
+    </View>
+  );
+}
+
+interface SettingRowProps {
+  icon: string;
+  iconColor?: string;
+  label: string;
+  sub: string;
+  onPress?: () => void;
+  isLast?: boolean;
+  value?: string;
+  toggle?: boolean;
+  toggled?: boolean;
+  onToggle?: (val: boolean) => void;
+}
+
+function SettingRow({ icon, iconColor = G, label, sub, onPress, isLast = false, value, toggle, toggled, onToggle }: SettingRowProps) {
+  return (
+    <TouchableOpacity
+      style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: isLast ? 0 : 1, borderBottomColor: GLASS_BORDER }}
+      onPress={toggle ? undefined : onPress}
+      activeOpacity={toggle ? 1 : 0.7}
+    >
+      <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: iconColor + '15', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+        <Ionicons name={icon as any} size={18} color={iconColor} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>{label}</Text>
+        <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: MUTED }}>{sub}</Text>
+      </View>
+      {value ? (
+        <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: G, marginRight: 4 }}>{value}</Text>
+      ) : null}
+      {toggle ? (
+        <Switch
+          value={toggled}
+          onValueChange={onToggle}
+          trackColor={{ false: '#353534', true: G }}
+          thumbColor="#FFFFFF"
+          ios_backgroundColor="#353534"
+        />
+      ) : (
+        <Ionicons name="chevron-forward" size={18} color={MUTED} />
+      )}
+    </TouchableOpacity>
+  );
+}
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, profile, signOut, loading: authLoading } = useAuth();
-  const { isDarkMode, toggleTheme, colors } = useAppTheme();
-
-  const [name, setName] = useState(profile?.name || user?.user_metadata?.name || '');
-  const [legalName, setLegalName] = useState(profile?.legal_name || user?.user_metadata?.legal_name || '');
-  const [hasLegalName, setHasLegalName] = useState(!!(profile?.legal_name || user?.user_metadata?.legal_name));
-  const [bio, setBio] = useState(profile?.bio || '');
-  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || user?.user_metadata?.avatar_url || '');
-  const [saving, setSaving] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [shareLocation, setShareLocation] = useState<boolean>(profile?.share_location ?? false);
-  const [savingLocation, setSavingLocation] = useState(false);
-
-  useEffect(() => {
-    if (profile) {
-      setName(profile.name || '');
-      setLegalName(profile.legal_name || '');
-      setHasLegalName(!!profile.legal_name);
-      setBio(profile.bio || '');
-      setAvatarUrl(profile.avatar_url || '');
-      setShareLocation(profile.share_location ?? false);
-    }
-  }, [profile]);
-
-  const handlePickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to update your avatar.');
-      return;
-    }
-
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.6,
-      });
-
-      if (!result.canceled && result.assets[0].uri) {
-        uploadAvatar(result.assets[0]);
-      }
-    } catch (e) {
-      console.log("ImagePicker error:", e);
-      Alert.alert('Error', 'Could not access the selected photo. Please try another one.');
-    }
-  };
-
-  const uploadAvatar = async (asset: ImagePicker.ImagePickerAsset) => {
-    if (!user) return;
-    setUploadingImage(true);
-    try {
-      if (avatarUrl && avatarUrl.includes('user-avatars/')) {
-        try {
-          const oldPath = avatarUrl.split('user-avatars/')[1];
-          if (oldPath) {
-            await StorageService.deleteFile('user-avatars', oldPath);
-          }
-        } catch (e) {
-          console.log("Failed to delete old avatar:", e);
-        }
-      }
-
-      const localUri = asset.uri;
-      const mimeType = asset.mimeType || 'image/jpeg';
-      const extMatch = asset.fileName?.match(/\.([^.]+)$/) || localUri.match(/\.([^.]+)$/);
-      let ext = extMatch ? extMatch[1].split('?')[0].toLowerCase() : (mimeType.split('/')[1] || 'jpeg');
-      
-      if (ext === 'heic' || ext === 'heif') {
-        ext = 'jpg';
-      }
-
-      const fileName = `${user.id}_${Date.now()}.${ext}`;
-      const file = {
-        uri: localUri,
-        name: fileName,
-        type: mimeType
-      };
-
-      const { url, error } = await StorageService.uploadUserAvatar(user.id, file);
-      if (error) throw error;
-      if (url) {
-        setAvatarUrl(url);
-        await AuthService.updateUserProfile(user.id, { avatar_url: url });
-        await supabase.auth.updateUser({ data: { avatar_url: url } });
-      }
-    } catch (e) {
-      console.error(e);
-      Alert.alert('Upload Failed', 'There was an error uploading your image.');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  const handleShareLocationToggle = async (value: boolean) => {
-    setShareLocation(value);
-    if (!user) return;
-    setSavingLocation(true);
-    try {
-      await AuthService.updateUserProfile(user.id, { share_location: value });
-    } catch (e) {
-      console.error(e);
-      setShareLocation(!value); // revert on error
-    } finally {
-      setSavingLocation(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!user) return;
-    setSaving(true);
-    try {
-      const updates: any = {
-        name,
-        bio,
-        avatar_url: avatarUrl,
-      };
-      if (!hasLegalName && legalName) {
-        updates.legal_name = legalName;
-      }
-
-      await AuthService.updateUserProfile(user.id, updates);
-
-      const authUpdates: any = {
-        name,
-        avatar_url: avatarUrl,
-      };
-      if (!hasLegalName && legalName) {
-        authUpdates.legal_name = legalName;
-      }
-
-      await supabase.auth.updateUser({
-        data: authUpdates
-      });
-      
-      if (!hasLegalName && legalName) {
-        setHasLegalName(true);
-      }
-
-      Alert.alert('Success', 'Profile updated successfully!', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
-    } catch (e) {
-      console.error(e);
-      Alert.alert('Error', 'Failed to update profile.');
-    } finally {
-      setSaving(false);
-    }
-  };
+  const { isDarkMode, toggleTheme } = useAppTheme();
 
   const handleSignOut = () => {
     Alert.alert(
@@ -176,177 +81,168 @@ export default function SettingsScreen() {
     );
   };
 
+  const isAdmin = (profile as any)?.is_admin || (profile as any)?.role === 'admin';
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      {/* Header */}
+    <SafeAreaView style={{ flex: 1, backgroundColor: DARK }}>
+      {/* ── Detail Header (Figma matching) ── */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 14 }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
+        >
           <Ionicons name="chevron-back" size={20} color={TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: TEXT_PRIMARY }}>Settings</Text>
-        <TouchableOpacity onPress={handleSave} disabled={saving} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: G, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 13, color: DARK }}>{saving ? 'Saving...' : 'Save'}</Text>
-        </TouchableOpacity>
+        <View style={{ width: 38 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, paddingTop: 8 }}>
         
-        {/* Profile Card */}
-        <View style={[styles.profileCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-          <TouchableOpacity style={styles.avatarWrapper} onPress={handlePickImage} disabled={uploadingImage}>
-            {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={[styles.avatarImage, { borderColor: GLASS_BORDER }]} />
-            ) : (
-              <View style={[styles.avatarPlaceholder, { borderColor: GLASS_BORDER, backgroundColor: 'rgba(130, 219, 126, 0.1)' }]}>
-                <Ionicons name="person" size={32} color={G} />
-              </View>
-            )}
-            <View style={[styles.editBadge, { backgroundColor: G, borderColor: DARK }]}>
-              <Ionicons name="pencil" size={12} color="#000000" />
-            </View>
-            {uploadingImage && (
-              <View style={styles.uploadOverlay}>
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              </View>
-            )}
-          </TouchableOpacity>
+        {/* Section 1: Account & Identity */}
+        <SettingSection title="Account & Identity">
+          <SettingRow 
+            icon="person-outline" 
+            label="Edit Profile" 
+            sub="Update your name, photo and bio" 
+            onPress={() => router.push('/profile/edit')} 
+          />
+          <SettingRow 
+            icon="call-outline" 
+            label="Phone Number" 
+            sub={profile?.phone_verified ? `${profile?.phone || 'Phone'} · Verified` : 'Verify phone number for trusted status'} 
+            value={profile?.phone_verified ? 'Verified' : 'Verify'} 
+            onPress={() => router.push('/verify-phone')} 
+          />
+          <SettingRow 
+            icon="mail-outline" 
+            label="Email Address" 
+            sub={user?.email || 'No email linked'} 
+            isLast 
+          />
+        </SettingSection>
 
-          <View style={styles.profileInfo}>
-            <TextInput
-              style={[styles.nameInput, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}
-              value={name}
-              onChangeText={setName}
-              placeholder="Your Name"
-              placeholderTextColor={LABEL}
-            />
-            {hasLegalName ? (
-              <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 6}}>
-                <Ionicons name="shield-checkmark" size={12} color={G} style={{marginRight: 4}} />
-                <Text style={{fontSize: 12, color: MUTED, fontFamily: 'Inter-Medium'}}>
-                  {legalName}
-                </Text>
-              </View>
-            ) : (
-              <TextInput
-                style={[styles.bioInput, { color: TEXT_PRIMARY, marginBottom: 6, fontSize: 13, fontFamily: 'Inter' }]}
-                value={legalName}
-                onChangeText={setLegalName}
-                placeholder="Add Legal Name (Required for Payouts)"
-                placeholderTextColor={G}
-              />
-            )}
-            <View style={styles.locationBadgeRow}>
-              <Ionicons name="location" size={12} color={G} style={{marginRight: 4}} />
-              <TextInput
-                style={[styles.bioInput, { color: MUTED, fontFamily: 'Inter' }]}
-                value={bio}
-                onChangeText={setBio}
-                placeholder="Add a bio or location..."
-                placeholderTextColor={LABEL}
-              />
-            </View>
-            <View style={styles.memberBadge}>
-              <Ionicons name="people" size={12} color={G} style={{marginRight: 6}} />
-              <Text style={[styles.memberBadgeText, { color: G, fontFamily: 'Outfit' }]}>Yrdly member</Text>
-            </View>
-          </View>
-        </View>
+        {/* Section 2: Commerce */}
+        <SettingSection title="Commerce">
+          <SettingRow 
+            icon="bag-handle-outline" 
+            label="Transactions" 
+            sub="Track your orders & marketplace activity" 
+            onPress={() => router.push('/transactions')} 
+          />
+          <SettingRow 
+            icon="wallet-outline" 
+            label="Payouts" 
+            sub="Manage your earnings & balances" 
+            onPress={() => router.push('/settings/payouts')} 
+          />
+          <SettingRow 
+            icon="business-outline" 
+            label="Bank Account" 
+            sub="Manage your linked payout account" 
+            onPress={() => router.push('/settings/payout-settings')} 
+            isLast 
+          />
+        </SettingSection>
 
-        {/* Stronger Together Banner */}
-        <View style={{ padding: 16, borderRadius: 20, backgroundColor: G + '10', borderWidth: 1, borderColor: G + '25', marginBottom: 20, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={{ width: 40, height: 40, borderRadius: 14, backgroundColor: G + '18', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
-            <Ionicons name="home-outline" size={22} color={G} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Stronger together.</Text>
-            <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Buy, sell, connect and look out for your neighborhood.</Text>
-          </View>
-        </View>
+        {/* Section 3: Privacy & Location */}
+        <SettingSection title="Privacy & Location">
+          <SettingRow 
+            icon="lock-closed-outline" 
+            label="Privacy & Discoverability" 
+            sub="Manage location sharing and visibility" 
+            onPress={() => router.push('/settings/privacy')} 
+          />
+          <SettingRow 
+            icon="location-outline" 
+            label="Location" 
+            sub="Your neighbourhood & location alerts" 
+            onPress={() => router.push('/settings/location')} 
+          />
+          <SettingRow 
+            icon="shield-outline" 
+            label="Blocked Users" 
+            sub="Manage who can't see or contact you" 
+            value={profile?.blocked_users?.length ? `${profile.blocked_users.length}` : '0'} 
+            isLast 
+          />
+        </SettingSection>
 
-        {/* Commerce & Account */}
-        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>COMMERCE & ACCOUNT</Text>
-        <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, marginBottom: 20, overflow: 'hidden' }}>
-          {[
-            { icon: 'bag-handle-outline', label: 'Transactions', subtext: 'Track your orders and activity', route: '/transactions' },
-            { icon: 'wallet-outline', label: 'Payouts', subtext: 'Manage your earnings', route: '/settings/payouts' },
-            { icon: 'business-outline', label: 'Bank Account', subtext: 'Manage your linked account', route: '/settings/payout-settings' },
-            { icon: 'location-outline', label: 'Location', subtext: 'Your neighbourhood and alerts', route: '/settings/location', isLast: true },
-          ].map((item) => (
-            <TouchableOpacity
-              key={item.route}
-              style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: item.isLast ? 0 : 1, borderBottomColor: GLASS_BORDER }}
-              onPress={() => router.push(item.route as any)}
-              activeOpacity={0.7}
-            >
-              <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                <Ionicons name={item.icon as any} size={20} color={G} />
+        {/* Section 4: Preferences */}
+        <SettingSection title="Preferences">
+          <SettingRow 
+            icon="notifications-outline" 
+            label="Notifications" 
+            sub="Choose what you want to hear" 
+            onPress={() => router.push('/settings/notifications')} 
+          />
+          <SettingRow 
+            icon="moon-outline" 
+            label="Dark Mode" 
+            sub="Keep it easy on your eyes" 
+            toggle 
+            toggled={isDarkMode} 
+            onToggle={toggleTheme} 
+            isLast 
+          />
+        </SettingSection>
+
+        {/* Section 5: Community & Support */}
+        <SettingSection title="Community & Support">
+          <SettingRow 
+            icon="person-add-outline" 
+            label="Invite Neighbours" 
+            sub="Invite neighbours to join your community" 
+            onPress={() => router.push('/invite' as any)} 
+          />
+          <SettingRow 
+            icon="book-outline" 
+            label="Neighbourhood Guidelines" 
+            sub="What we stand for in every community" 
+            onPress={() => Alert.alert('Neighbourhood Guidelines', 'Be respectful, look out for your neighbours, and support your local marketplace.')} 
+          />
+          <SettingRow 
+            icon="help-circle-outline" 
+            label="Help Center" 
+            sub="FAQs, tutorials and getting support" 
+            onPress={() => Alert.alert('Help Center', 'Need help? Contact support@yrdly.app')} 
+          />
+          <SettingRow 
+            icon="flag-outline" 
+            label="Report an Issue" 
+            sub="Flag a problem or inappropriate content" 
+            onPress={() => Alert.alert('Report an Issue', 'Thank you for keeping Yrdly safe. Please email safety@yrdly.app to report an issue.')} 
+            isLast 
+          />
+        </SettingSection>
+
+        {/* Section 6: Admin Tools (Figma matching) */}
+        {isAdmin && (
+          <View style={{ marginBottom: 24 }}>
+            <View style={{ padding: 16, borderRadius: 20, backgroundColor: G + '10', borderWidth: 1, borderColor: G + '25', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '18', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="shield-checkmark" size={18} color={G} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>{item.label}</Text>
-                <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>{item.subtext}</Text>
+                <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: G }}>Admin Portal</Text>
+                <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>You have administrator privileges</Text>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={MUTED} />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Privacy */}
-        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>PRIVACY</Text>
-        <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, marginBottom: 20, overflow: 'hidden' }}>
-          <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }}
-            onPress={() => router.push('/settings/privacy' as any)}
-            activeOpacity={0.7}
-          >
-            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-              <Ionicons name="lock-closed-outline" size={20} color={G} />
+              <TouchableOpacity 
+                style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: G, justifyContent: 'center', alignItems: 'center' }}
+                onPress={() => router.push('/(admin)/disputes' as any)}
+              >
+                <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 12, color: DARK }}>Open</Text>
+              </TouchableOpacity>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Privacy & Discoverability</Text>
-              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Manage location sharing and visibility</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={MUTED} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Preferences */}
-        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, marginLeft: 4 }}>PREFERENCES</Text>
-        <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, marginBottom: 20, overflow: 'hidden' }}>
-          <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}
-            onPress={() => router.push('/settings/notifications' as any)}
-            activeOpacity={0.7}
-          >
-            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-              <Ionicons name="notifications-outline" size={20} color={TEXT_PRIMARY} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Notifications</Text>
-              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Choose what you want to hear</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={MUTED} />
-          </TouchableOpacity>
-
-          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }}>
-            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-              <Ionicons name="moon-outline" size={20} color={TEXT_PRIMARY} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 15, color: TEXT_PRIMARY, marginBottom: 2 }}>Dark Mode</Text>
-              <Text style={{ fontFamily: 'Inter', fontSize: 12, color: MUTED }}>Keep it easy on your eyes</Text>
-            </View>
-            <Switch
-              value={isDarkMode}
-              onValueChange={toggleTheme}
-              trackColor={{ false: '#353534', true: G }}
-              thumbColor={'#FFFFFF'}
-              ios_backgroundColor="#353534"
-            />
           </View>
-        </View>
+        )}
 
-        {/* Sign Out */}
-        <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 20, backgroundColor: 'rgba(239, 68, 68, 0.08)', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.2)', marginTop: 8 }} onPress={handleSignOut} disabled={authLoading}>
+        {/* Section 7: Account Actions */}
+        <TouchableOpacity 
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 20, backgroundColor: 'rgba(239, 68, 68, 0.08)', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.2)', marginTop: 4 }} 
+          onPress={handleSignOut} 
+          disabled={authLoading}
+        >
           <Ionicons name="log-out-outline" size={20} color={RED} style={{ marginRight: 8 }} />
           <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: RED }}>Sign Out</Text>
         </TouchableOpacity>
@@ -355,150 +251,3 @@ export default function SettingsScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: DARK },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 12,
-  },
-  headerIconBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', color: TEXT_PRIMARY },
-  saveText: { color: G, fontSize: 16, fontFamily: 'Outfit-Bold' },
-  
-  content: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 12 },
-  
-  profileCard: {
-    backgroundColor: SURFACE,
-    borderRadius: 28,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderColor: GLASS_BORDER,
-    borderWidth: 1,
-    marginBottom: 24,
-  },
-  avatarWrapper: {
-    width: 80, height: 80,
-    position: 'relative',
-    marginRight: 16,
-  },
-  avatarImage: {
-    width: 80, height: 80,
-    borderRadius: 40,
-    borderColor: GLASS_BORDER,
-    borderWidth: 1,
-  },
-  avatarPlaceholder: {
-    width: 80, height: 80, borderRadius: 40,
-    backgroundColor: 'rgba(130, 225, 87, 0.1)',
-    justifyContent: 'center', alignItems: 'center',
-    borderColor: GLASS_BORDER,
-    borderWidth: 1,
-  },
-  editBadge: {
-    position: 'absolute', bottom: 0, right: 0,
-    backgroundColor: '#82E157',
-    width: 24, height: 24, borderRadius: 12,
-    justifyContent: 'center', alignItems: 'center',
-    borderWidth: 2, borderColor: DARK,
-  },
-  uploadOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 40,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  nameInput: {
-    fontSize: 20, fontFamily: 'Outfit-Bold', color: TEXT_PRIMARY,
-    marginBottom: 2, padding: 0,
-  },
-  locationBadgeRow: {
-    flexDirection: 'row', alignItems: 'center',
-    marginBottom: 8,
-  },
-  bioInput: {
-    fontSize: 14, color: MUTED,
-    flex: 1, padding: 0,
-  },
-  memberBadge: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(130, 225, 87, 0.1)',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8, paddingVertical: 2,
-    borderRadius: 12,
-    borderColor: 'rgba(130, 225, 87, 0.2)',
-    borderWidth: 1,
-  },
-  memberBadgeText: {
-    color: G, fontSize: 11, fontFamily: 'Inter-SemiBold'
-  },
-  
-  bannerContainer: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: DARK,
-    borderRadius: 24, padding: 20,
-    borderColor: GLASS_BORDER, borderWidth: 1,
-    marginBottom: 24,
-  },
-  bannerIconWrap: {
-    width: 48, height: 48, borderRadius: 24,
-    backgroundColor: 'rgba(130, 225, 87, 0.1)',
-    borderColor: 'rgba(130, 225, 87, 0.2)', borderWidth: 1,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 16,
-  },
-  bannerTextWrap: { flex: 1 },
-  bannerTitle: { color: G, fontSize: 14, fontFamily: 'Outfit-Bold', marginBottom: 4 },
-  bannerSubtitle: { color: MUTED, fontSize: 12, lineHeight: 16 },
-
-  sectionHeader: {
-    color: MUTED, fontSize: 12, fontFamily: 'Inter-Bold',
-    letterSpacing: 1.2, marginLeft: 8, marginBottom: 12,
-  },
-  glassCard: {
-    backgroundColor: SURFACE,
-    borderRadius: 24,
-    borderColor: GLASS_BORDER, borderWidth: 1,
-    marginBottom: 24,
-    overflow: 'hidden',
-  },
-  navRow: {
-    flexDirection: 'row', alignItems: 'center',
-    padding: 16,
-  },
-  navRowBorder: {
-    borderBottomWidth: 1, borderBottomColor: GLASS_BORDER,
-  },
-  iconGlow: {
-    width: 40, height: 40, borderRadius: 20,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 16,
-    backgroundColor: 'rgba(130, 225, 87, 0.1)',
-  },
-  iconWrapPlain: {
-    width: 40, height: 40, borderRadius: 12,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 16,
-  },
-  navTextWrap: { flex: 1 },
-  navLabel: { color: TEXT_PRIMARY, fontSize: 16, fontFamily: 'Outfit-SemiBold', marginBottom: 2 },
-  navSubtext: { color: MUTED, fontSize: 12 },
-
-  logoutButton: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(26, 17, 17, 0.4)',
-    borderColor: 'rgba(229, 62, 62, 0.2)', borderWidth: 1,
-    borderRadius: 24, padding: 16,
-  },
-  logoutIconWrap: {
-    width: 40, height: 40, borderRadius: 12,
-    backgroundColor: 'rgba(229, 62, 62, 0.1)',
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 16,
-  },
-  logoutLabel: { color: RED, fontSize: 16, fontFamily: 'Outfit-SemiBold', marginBottom: 2 },
-});

@@ -50,7 +50,6 @@ export default function ProfileTab() {
   const { user, profile } = useAuth();
   const router = useRouter();
   const { colors } = useAppTheme();
-  const styles = React.useMemo(() => dynamicStyles(colors), [colors]);
   const { width: windowWidth } = useWindowDimensions();
   const TARGET_TILE_WIDTH = 120;
   const numColumns = Math.max(3, Math.floor(windowWidth / TARGET_TILE_WIDTH));
@@ -140,7 +139,6 @@ export default function ProfileTab() {
   }, [fetchUserPosts, fetchSavedPosts]);
 
   const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
-  const isOnline = true;
 
   const formattedLocation = useMemo(() => {
     if (!profile?.location) return null;
@@ -172,8 +170,8 @@ export default function ProfileTab() {
   const listHeader = useMemo(() => (
     <View style={styles.headerContainer}>
       
-      {/* ── Top Header Navigation Bar ── */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 8 }}>
+      {/* ── Nav bar (YRDLY New Designs matching) ── */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 }}>
         <View style={{ width: 38 }} />
         <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: '#FFFFFF' }}>Profile</Text>
         <TouchableOpacity 
@@ -185,9 +183,10 @@ export default function ProfileTab() {
         </TouchableOpacity>
       </View>
 
-      {/* ── Identity Block (No cover) ── */}
-      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20 }}>
+      {/* ── Identity Block (Figma New Design matching) ── */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 20 }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16, marginBottom: 16 }}>
+          {/* Avatar with ring */}
           <View style={{ position: 'relative' }}>
             <View style={{ width: 80, height: 80, borderRadius: 40, padding: 3, borderWidth: 2, borderColor: G, justifyContent: 'center', alignItems: 'center' }}>
               <View style={{ width: '100%', height: '100%', borderRadius: 40, overflow: 'hidden', backgroundColor: DARK }}>
@@ -210,6 +209,7 @@ export default function ProfileTab() {
             </TouchableOpacity>
           </View>
 
+          {/* Name & Handle */}
           <View style={{ flex: 1, paddingTop: 4 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
               <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 20, color: '#FFFFFF' }} numberOfLines={1}>
@@ -220,7 +220,7 @@ export default function ProfileTab() {
               )}
             </View>
             <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL, marginBottom: 6 }}>
-              @{(profile as any)?.handle || (profile as any)?.username || user?.email?.split('@')[0] || 'user'}
+              @{(profile as any)?.username || (profile as any)?.handle || user?.email?.split('@')[0] || 'user'}
             </Text>
             {formattedLocation && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
@@ -246,7 +246,7 @@ export default function ProfileTab() {
         </TouchableOpacity>
       </View>
 
-      {/* ── Stats Bar ── */}
+      {/* ── Stats Bar (New Design 3-Column with border dividers) ── */}
       <View style={{ flexDirection: 'row', marginHorizontal: 20, marginBottom: 20, borderTopWidth: 1, borderBottomWidth: 1, borderColor: GLASS_BORDER, paddingVertical: 16 }}>
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{posts.length}</Text>
@@ -270,16 +270,16 @@ export default function ProfileTab() {
         </TouchableOpacity>
       </View>
 
-      {/* ── Quick Access 2x2 Grid ── */}
-      <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
-        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>Quick Access</Text>
+      {/* ── Quick Access 2x2 Grid (Figma 1:1) ── */}
+      <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>QUICK ACCESS</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
           <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/community')}>
             <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
               <Ionicons name="people-outline" size={18} color={G} />
             </View>
             <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Community</Text>
-            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: LABEL }}>Connections & people</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: LABEL }}>Connections & people</Text>
           </PressableCard>
 
           <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/tickets')}>
@@ -287,7 +287,7 @@ export default function ProfileTab() {
               <MaterialCommunityIcons name="ticket-outline" size={18} color={G} />
             </View>
             <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Tickets</Text>
-            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: G }}>2 upcoming</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: G }}>2 upcoming</Text>
           </PressableCard>
 
           <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/my-events' as any)}>
@@ -295,7 +295,7 @@ export default function ProfileTab() {
               <Ionicons name="calendar-outline" size={18} color={G} />
             </View>
             <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>My Events</Text>
-            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: LABEL }}>Events you run</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: LABEL }}>Events you run</Text>
           </PressableCard>
 
           <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={handleManageStore}>
@@ -303,13 +303,48 @@ export default function ProfileTab() {
               <Ionicons name="storefront-outline" size={18} color={G} />
             </View>
             <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>My Business</Text>
-            <Text style={{ fontFamily: 'Inter', fontSize: 11, color: LABEL }}>Business presence</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: LABEL }}>Business presence</Text>
           </PressableCard>
         </View>
       </View>
 
+      {/* ── Subtly underlined Posts / Saved Tabs (Figma 1:1) ── */}
+      <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
+        <View style={{ flexDirection: 'row', gap: 24, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, paddingBottom: 10 }}>
+          <TouchableOpacity 
+            onPress={() => {
+              Haptics.selectionAsync();
+              setActiveTab('posts');
+            }}
+            style={{ position: 'relative', paddingBottom: 6 }}
+          >
+            <Text style={{ fontFamily: activeTab === 'posts' ? 'Outfit-Bold' : 'Outfit-Medium', fontSize: 14, color: activeTab === 'posts' ? '#FFFFFF' : LABEL }}>
+              Posts
+            </Text>
+            {activeTab === 'posts' && (
+              <View style={{ position: 'absolute', bottom: -11, left: 0, right: 0, height: 2, backgroundColor: G, borderRadius: 1 }} />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={() => {
+              Haptics.selectionAsync();
+              setActiveTab('saved');
+            }}
+            style={{ position: 'relative', paddingBottom: 6 }}
+          >
+            <Text style={{ fontFamily: activeTab === 'saved' ? 'Outfit-Bold' : 'Outfit-Medium', fontSize: 14, color: activeTab === 'saved' ? '#FFFFFF' : LABEL }}>
+              Saved
+            </Text>
+            {activeTab === 'saved' && (
+              <View style={{ position: 'absolute', bottom: -11, left: 0, right: 0, height: 2, backgroundColor: G, borderRadius: 1 }} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+
     </View>
-  ), [avatarUri, profile, user, posts.length, followersCount, followingCount, isOnline, formattedLocation, styles, colors, handleManageStore, router]);
+  ), [avatarUri, profile, user, posts.length, followersCount, followingCount, formattedLocation, handleManageStore, router, activeTab]);
 
   const activeData = activeTab === 'posts' ? posts : savedPosts;
   const isLoading = activeTab === 'posts' ? loadingPosts : loadingSaved;
@@ -321,35 +356,7 @@ export default function ProfileTab() {
         data={activeData}
         keyExtractor={(item) => item.id}
         numColumns={numColumns}
-        ListHeaderComponent={
-          <>
-            {listHeader}
-            {/* Sticky Tabs Header */}
-            <View style={styles.tabsContainer}>
-              <TouchableOpacity 
-                style={[styles.tab, activeTab === 'posts' && styles.activeTab]} 
-                onPress={() => {
-                  Haptics.selectionAsync();
-                  setActiveTab('posts');
-                }}
-              >
-                <Feather name="grid" size={18} color={activeTab === 'posts' ? '#82DB7E' : '#A1A1AA'} />
-                <Text style={[styles.tabText, activeTab === 'posts' && styles.activeTabText]}>Posts</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.tab, activeTab === 'saved' && styles.activeTab]} 
-                onPress={() => {
-                  Haptics.selectionAsync();
-                  setActiveTab('saved');
-                }}
-              >
-                <Feather name="bookmark" size={18} color={activeTab === 'saved' ? '#82DB7E' : '#A1A1AA'} />
-                <Text style={[styles.tabText, activeTab === 'saved' && styles.activeTabText]}>Saved</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        }
+        ListHeaderComponent={listHeader}
         renderItem={({ item }) => (
           <Animated.View layout={Layout.springify()} entering={FadeIn} exiting={FadeOut}>
             <ProfilePostGridItem 
@@ -374,22 +381,22 @@ export default function ProfileTab() {
             />
           </Animated.View>
         )}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#82DB7E" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           isLoading && !refreshing ? (
-            <View style={{flexDirection: 'row', padding: 8}}>
+            <View style={{ flexDirection: 'row', padding: 8 }}>
               <PostSkeleton />
             </View>
           ) : (
             <Animated.View entering={FadeIn} style={styles.emptyContainer}>
-              <Ionicons name="images-outline" size={56} color="#333" style={{marginBottom: 16}} />
+              <Ionicons name="images-outline" size={56} color="#333" style={{ marginBottom: 16 }} />
               <Text style={styles.emptyHeadline}>No posts yet</Text>
-              <Text style={styles.emptySub}>Share something with your neighborhood.</Text>
+              <Text style={styles.emptySub}>Share something with your neighbourhood.</Text>
               <TouchableOpacity 
                 style={styles.createBtn}
-                onPress={() => router.push('/create')}
+                onPress={() => router.push('/create-post')}
               >
                 <Text style={styles.createBtnText}>Create Post</Text>
               </TouchableOpacity>
@@ -401,344 +408,40 @@ export default function ProfileTab() {
   );
 }
 
-const dynamicStyles = (colors: any) => StyleSheet.create({
-  container: {
-    flex: 1,
+const styles = StyleSheet.create({
+  headerContainer: {
     backgroundColor: DARK,
   },
-  listContent: { 
-    paddingBottom: 100 
+  listContent: {
+    paddingBottom: 90,
   },
-  headerContainer: { 
-    paddingHorizontal: 16, 
-    paddingBottom: 8 
-  },
-  
-  // ── Header Navigation Bar ──
-  navHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    marginBottom: 8,
-  },
-  headerBackBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  emptyContainer: {
+    padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  navSpacer: { 
-    width: 40 
-  },
-  navTitle: { 
-    flex: 1,
-    color: TEXT_PRIMARY, 
-    fontSize: 20, 
-    fontFamily: 'Outfit-ExtraBold',
-    textAlign: 'center',
-    letterSpacing: -0.4,
-  },
-  settingsBtn: {
-    width: 40, 
-    height: 40, 
-    borderRadius: 20, 
-    borderWidth: 1, 
-    borderColor: GLASS_BORDER,
-    backgroundColor: '#111111',
-    alignItems: 'center', 
-    justifyContent: 'center'
-  },
-
-  // ── Hero Floating Profile Card ──
-  heroCard: {
-    backgroundColor: '#0f0f0f',
-    borderRadius: 26,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  heroTopRow: {
-    flexDirection: 'row', 
-    alignItems: 'flex-start',
-    gap: 14,
-    marginBottom: 18,
-  },
-  avatarWrapper: { 
-    position: 'relative' 
-  },
-  avatarRingBorder: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    borderWidth: 2,
-    borderColor: '#82DB7E',
-    padding: 3,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarImage: { 
-    width: 74, 
-    height: 74, 
-    borderRadius: 37 
-  },
-  avatarPlaceholder: {
-    width: 74, 
-    height: 74, 
-    borderRadius: 37, 
-    alignItems: 'center', 
-    justifyContent: 'center'
-  },
-  avatarText: { 
-    fontSize: 28, 
-    fontFamily: 'Outfit-ExtraBold' 
-  },
-  onlineBadgeDot: {
-    position: 'absolute', 
-    bottom: 2, 
-    right: 2, 
-    width: 18, 
-    height: 18,
-    borderRadius: 9, 
-    backgroundColor: '#82DB7E', 
-    borderWidth: 3, 
-    borderColor: '#0f0f0f'
-  },
-
-  heroInfoCol: {
-    flex: 1,
-    borderRadius: 48,
-    borderWidth: 2,
-    borderColor: G,
-    marginBottom: 12,
-    position: 'relative',
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: SURFACE,
-  },
-  cameraBadge: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    backgroundColor: G,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: DARK,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  name: {
-    color: TEXT_PRIMARY,
-    fontFamily: 'Outfit-ExtraBold',
-    fontSize: 20,
-    marginBottom: 2,
-    letterSpacing: -0.3,
-  },
-  handle: {
-    color: LABEL,
-    fontFamily: 'Inter-Medium',
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  bio: {
-    color: MUTED,
-    fontFamily: 'Inter',
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: 24,
-    marginTop: 6,
-  },
-  memberSinceText: {
-    color: LABEL,
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 12,
-  },
-
-  editProfileBtn: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 9,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    marginTop: 14,
-  },
-  editProfileText: {
-    color: TEXT_PRIMARY,
-    fontFamily: 'Outfit-SemiBold',
-    fontSize: 14,
-  },
-
-  // ── Stats Row ──
-  statsRow: {
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-around',
-    paddingVertical: 14, 
-    borderTopWidth: 1, 
-    borderBottomWidth: 1,
-    borderColor: GLASS_BORDER,
-    marginBottom: 16,
-  },
-  statItem: { 
-    alignItems: 'center', 
-    flex: 1 
-  },
-  statValue: { 
-    color: TEXT_PRIMARY,
-    fontFamily: 'Outfit-ExtraBold',
-    fontSize: 20, 
-    letterSpacing: -0.3,
-  },
-  statLabel: { 
-    color: LABEL,
-    fontFamily: 'Inter-Medium',
-    fontSize: 12, 
-    marginTop: 2 
-  },
-  statDivider: { 
-    width: 1, 
-    height: 28, 
-    backgroundColor: GLASS_BORDER 
-  },
-
-  // ── Bio & Location ──
-  bioText: { 
-    color: TEXT_PRIMARY, 
-    fontFamily: 'Inter-Regular',
-    fontSize: 14, 
-    lineHeight: 20, 
-    marginBottom: 12 
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 2,
-  },
-  locationText: {
-    color: MUTED,
-    fontFamily: 'Inter-Medium',
-    fontSize: 13,
-  },
-
-  // ── Quick Action Cards ──
-  quickActionsRow: {
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    gap: 8, 
-    marginBottom: 20
-  },
-  actionCard: {
-    flex: 1, 
-    backgroundColor: SURFACE, 
-    borderRadius: 20, 
-    padding: 14,
-    borderWidth: 1, 
-    borderColor: GLASS_BORDER,
-    justifyContent: 'space-between',
-    minHeight: 88,
-  },
-  actionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  actionIconWrapper: {
-    width: 34, 
-    height: 34, 
-    borderRadius: 17, 
-    backgroundColor: 'rgba(130, 219, 126, 0.12)',
-    alignItems: 'center', 
-    justifyContent: 'center',
-  },
-  actionTitle: { 
-    color: TEXT_PRIMARY, 
+  emptyHeadline: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 13, 
-    marginBottom: 2 
+    fontSize: 18,
+    color: TEXT_PRIMARY,
+    marginBottom: 6,
   },
-  actionSub: { 
-    color: MUTED, 
+  emptySub: {
     fontFamily: 'Inter-Regular',
-    fontSize: 11,
-  },
-
-  // ── Tabs ──
-  tabsContainer: {
-    flexDirection: 'row', 
-    backgroundColor: DARK,
-    paddingHorizontal: 16, 
-    borderBottomWidth: 1, 
-    borderBottomColor: GLASS_BORDER,
-    marginBottom: 8
-  },
-  tab: {
-    flex: 1, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    gap: 8,
-    paddingVertical: 14, 
-    borderBottomWidth: 2, 
-    borderBottomColor: 'transparent'
-  },
-  activeTab: { 
-    borderBottomColor: '#82DB7E' 
-  },
-  tabText: { 
-    color: LABEL,
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 15, 
-  },
-  activeTabText: { 
-    color: TEXT_PRIMARY 
-  },
-
-  // ── Empty State ──
-  emptyContainer: { 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    paddingVertical: 60, 
-    paddingHorizontal: 20 
-  },
-  emptyHeadline: { 
-    color: TEXT_PRIMARY, 
-    fontFamily: 'Outfit-Bold',
-    fontSize: 18, 
-    marginBottom: 6 
-  },
-  emptySub: { 
-    color: MUTED, 
-    fontFamily: 'Inter',
-    fontSize: 14, 
-    textAlign: 'center', 
-    marginBottom: 20 
+    fontSize: 14,
+    color: MUTED,
+    textAlign: 'center',
+    marginBottom: 20,
   },
   createBtn: {
-    backgroundColor: '#82DB7E', 
-    paddingHorizontal: 24, 
-    paddingVertical: 12, 
-    borderRadius: 24
+    backgroundColor: G,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
   },
-  createBtnText: { 
-    color: '#000', 
+  createBtnText: {
     fontFamily: 'Outfit-Bold',
-    fontSize: 15, 
-  }
+    fontSize: 14,
+    color: DARK,
+  },
 });
