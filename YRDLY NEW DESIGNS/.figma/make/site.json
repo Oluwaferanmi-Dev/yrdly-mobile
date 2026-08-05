@@ -1,0 +1,10 @@
+{
+  "description": "Streamline your onboarding process with an intuitive flow that transforms markdown files into engaging screens, enhancing user experience for YRDLY.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

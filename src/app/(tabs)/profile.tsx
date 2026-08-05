@@ -12,7 +12,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 import Animated, { FadeIn, FadeOut, Layout, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { G, GLASS_BORDER, LABEL, TEXT_PRIMARY } from '../../constants/tokens';
+import { G, GLASS_BORDER, LABEL, TEXT_PRIMARY, DARK, SURFACE, MUTED } from '../../constants/tokens';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -347,7 +347,7 @@ export default function ProfileTab() {
   const isLoading = activeTab === 'posts' ? loadingPosts : loadingSaved;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={{ flex: 1, backgroundColor: DARK, paddingTop: insets.top }}>
       <FlatList
         key={numColumns}
         data={activeData}
@@ -434,9 +434,9 @@ export default function ProfileTab() {
 }
 
 const dynamicStyles = (colors: any) => StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: colors.background 
+  container: {
+    flex: 1,
+    backgroundColor: DARK,
   },
   listContent: { 
     paddingBottom: 100 
@@ -477,19 +477,19 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     height: 40, 
     borderRadius: 20, 
     borderWidth: 1, 
-    borderColor: colors.borderLight,
-    backgroundColor: colors.card,
+    borderColor: GLASS_BORDER,
+    backgroundColor: '#111111',
     alignItems: 'center', 
     justifyContent: 'center'
   },
 
   // ── Hero Floating Profile Card ──
   heroCard: {
-    backgroundColor: colors.card,
+    backgroundColor: '#0f0f0f',
     borderRadius: 26,
     padding: 20,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
@@ -541,7 +541,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     borderRadius: 9, 
     backgroundColor: '#82DB7E', 
     borderWidth: 3, 
-    borderColor: colors.card
+    borderColor: '#0f0f0f'
   },
 
   heroInfoCol: {
@@ -555,13 +555,15 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     marginBottom: 2 
   },
   displayName: { 
-    color: colors.text, 
+    color: TEXT_PRIMARY,
+    fontFamily: 'Outfit',
     fontSize: 22, 
     fontWeight: '800',
     letterSpacing: -0.3,
   },
   handleText: { 
-    color: colors.textSecondary, 
+    color: MUTED,
+    fontFamily: 'Inter',
     fontSize: 14, 
     fontWeight: '500',
     marginBottom: 6,
@@ -605,7 +607,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     paddingVertical: 14, 
     borderTopWidth: 1, 
     borderBottomWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
     marginBottom: 16,
   },
   statItem: { 
@@ -613,13 +615,15 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     flex: 1 
   },
   statValue: { 
-    color: colors.text, 
+    color: TEXT_PRIMARY,
+    fontFamily: 'Outfit',
     fontSize: 20, 
     fontWeight: '800',
     letterSpacing: -0.3,
   },
   statLabel: { 
-    color: colors.textSecondary, 
+    color: LABEL,
+    fontFamily: 'Inter',
     fontSize: 12, 
     fontWeight: '500',
     marginTop: 2 
@@ -627,7 +631,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   statDivider: { 
     width: 1, 
     height: 28, 
-    backgroundColor: colors.borderLight 
+    backgroundColor: GLASS_BORDER 
   },
 
   // ── Bio & Location ──
@@ -696,10 +700,10 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   // ── Tabs ──
   tabsContainer: {
     flexDirection: 'row', 
-    backgroundColor: colors.background,
+    backgroundColor: DARK,
     paddingHorizontal: 16, 
     borderBottomWidth: 1, 
-    borderBottomColor: colors.borderLight,
+    borderBottomColor: GLASS_BORDER,
     marginBottom: 8
   },
   tab: {
@@ -716,12 +720,13 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     borderBottomColor: '#82DB7E' 
   },
   tabText: { 
-    color: colors.textSecondary, 
+    color: LABEL,
+    fontFamily: 'Inter',
     fontSize: 15, 
     fontWeight: '600' 
   },
   activeTabText: { 
-    color: colors.text 
+    color: TEXT_PRIMARY 
   },
 
   // ── Empty State ──

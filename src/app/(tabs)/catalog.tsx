@@ -163,9 +163,9 @@ export default function CatalogTab() {
             <TouchableOpacity
               key={cat.key}
               onPress={() => setCategory(cat.key)}
-              style={[s.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
-              <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : colors.textMuted} style={{ marginRight: 4 }} />
-              <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat.label}</Text>
+              style={[s.chip, { backgroundColor: active ? G : '#111111', borderColor: active ? G : GLASS_BORDER }]}>
+              <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : LABEL} style={{ marginRight: 4 }} />
+              <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : LABEL }]}>{cat.label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -217,7 +217,7 @@ export default function CatalogTab() {
           {featured.length > 1 && (
             <View style={s.dots}>
               {featured.map((_, i) => (
-                <View key={i} style={[s.dot, { backgroundColor: i === featuredIdx ? colors.tint : colors.borderLight }]} />
+                <View key={i} style={[s.dot, { backgroundColor: i === featuredIdx ? G : GLASS_BORDER }]} />
               ))}
             </View>
           )}
@@ -226,13 +226,13 @@ export default function CatalogTab() {
 
       {/* Nearby header */}
       <View style={s.nearbyHeader}>
-        <Text style={[s.nearbyTitle, { color: colors.text }]}>Nearby Listings</Text>
+        <Text style={[s.nearbyTitle, { color: TEXT_PRIMARY }]}>Nearby Listings</Text>
       </View>
 
       {loading && items.length === 0 && (
         <View style={s.skeletonGrid}>
           {[1, 2, 3, 4].map(k => (
-            <View key={k} style={[s.skeletonCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+            <View key={k} style={[s.skeletonCard, { backgroundColor: '#111111', borderColor: GLASS_BORDER }]}>
               <Skeleton width="100%" height={150} />
               <View style={{ padding: 10 }}>
                 <Skeleton width="80%" height={12} style={{ marginBottom: 6 }} />
@@ -248,35 +248,35 @@ export default function CatalogTab() {
   const cardBg = isDarkMode ? 'rgba(13,17,23,0.94)' : 'rgba(255,255,255,0.96)';
 
   return (
-    <View style={[s.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+    <View style={[s.root, { backgroundColor: DARK, paddingTop: insets.top }]}>
       {/* ── Header ── */}
       <View style={s.header}>
         <View>
-          <Text style={[s.title, { color: colors.text }]}>Explore</Text>
-          <Text style={[s.subtitle, { color: colors.textMuted }]}>Discover, buy and sell around you. 💚</Text>
+          <Text style={[s.title, { color: TEXT_PRIMARY }]}>Explore</Text>
+          <Text style={[s.subtitle, { color: LABEL }]}>Discover, buy and sell around you. 💚</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map' as any)}>
-            <MapIcon size={24} color={colors.text} />
+            <MapIcon size={24} color={TEXT_PRIMARY} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ position: 'relative' }}>
-            <NotificationsIcon size={24} color={colors.text} />
+            <NotificationsIcon size={24} color={TEXT_PRIMARY} />
             {unreadCount > 0 && (
               <View style={{
                 position: 'absolute',
                 right: -4,
                 top: -4,
-                backgroundColor: '#EF4444',
+                backgroundColor: G,
                 borderRadius: 10,
-                minWidth: 18,
-                height: 18,
+                minWidth: 16,
+                height: 16,
                 justifyContent: 'center',
                 alignItems: 'center',
-                paddingHorizontal: 4,
+                paddingHorizontal: 3,
                 borderWidth: 1.5,
-                borderColor: colors.background
+                borderColor: DARK
               }}>
-                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                <Text style={{ color: '#000', fontSize: 9, fontWeight: '800', fontFamily: 'Outfit' }}>
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </Text>
               </View>
@@ -299,25 +299,25 @@ export default function CatalogTab() {
             onBlur={() => Animated.timing(searchFocus, { toValue: 0, duration: 200, useNativeDriver: false }).start()}
           />
         </Animated.View>
-        <TouchableOpacity style={[s.filterBtn, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
+        <TouchableOpacity style={[s.filterBtn, { backgroundColor: '#111111', borderColor: GLASS_BORDER }]}
           onPress={() => setFilterVisible(true)}>
-          <Ionicons name="options-outline" size={20} color={colors.text} />
+          <Ionicons name="options-outline" size={20} color={TEXT_PRIMARY} />
         </TouchableOpacity>
       </View>
 
       {/* ── Pill Tabs ── */}
-      <View style={[s.tabBar, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-        <Animated.View style={[s.tabIndicator, { width: TAB_W, transform: [{ translateX: tabIndicatorX }], backgroundColor: colors.tint }]} />
+      <View style={[s.tabBar, { backgroundColor: '#111111', borderColor: GLASS_BORDER }]}>
+        <Animated.View style={[s.tabIndicator, { width: TAB_W, transform: [{ translateX: tabIndicatorX }], backgroundColor: G }]} />
         {TABS.map((tab) => {
           const active = activeTab === tab;
           return (
             <TouchableOpacity key={tab} style={[s.tab, { width: TAB_W }]} onPress={() => switchTab(tab)} activeOpacity={0.7}>
               <Ionicons
                 name={tab === 'Marketplace' ? 'bag-outline' : tab === 'Events' ? 'calendar-outline' : 'storefront-outline'}
-                size={14} color={active ? '#0B0D0B' : colors.textMuted}
+                size={14} color={active ? '#0B0D0B' : LABEL}
                 style={{ marginRight: 4 }}
               />
-              <Text style={[s.tabTxt, { color: active ? '#0B0D0B' : colors.textMuted }]}>{tab}</Text>
+              <Text style={[s.tabTxt, { color: active ? '#0B0D0B' : LABEL }]}>{tab}</Text>
             </TouchableOpacity>
           );
         })}
@@ -330,7 +330,7 @@ export default function CatalogTab() {
           keyExtractor={i => i.id}
           numColumns={2}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />}
           columnWrapperStyle={{ justifyContent: 'space-between' }}
           contentContainerStyle={s.listContent}
           ListHeaderComponent={listHeaderElement}
@@ -344,8 +344,8 @@ export default function CatalogTab() {
           )}
           ListEmptyComponent={!loading ? (
             <View style={s.empty}>
-              <Ionicons name="bag-outline" size={48} color={colors.textMuted} style={{ opacity: 0.4, marginBottom: 12 }} />
-              <Text style={[s.emptyTxt, { color: colors.textMuted }]}>
+              <Ionicons name="bag-outline" size={48} color={LABEL} style={{ opacity: 0.4, marginBottom: 12 }} />
+              <Text style={[s.emptyTxt, { color: LABEL }]}>
                 {search ? `No results for "${search}"` : 'No listings in your area yet'}
               </Text>
             </View>
@@ -361,21 +361,21 @@ export default function CatalogTab() {
         <TouchableWithoutFeedback onPress={() => setFilterVisible(false)}>
           <View style={s.overlay} />
         </TouchableWithoutFeedback>
-        <View style={[s.modal, { backgroundColor: colors.card }]}>
+        <View style={[s.modal, { backgroundColor: '#0A0A0A' }]}>
           <View style={s.modalHandle} />
-          <Text style={[s.modalTitle, { color: colors.text }]}>Sort Listings</Text>
+          <Text style={[s.modalTitle, { color: TEXT_PRIMARY }]}>Sort Listings</Text>
           {([
             { key: 'newest',     label: 'Newest First' },
             { key: 'price_asc',  label: 'Price: Low to High' },
             { key: 'price_desc', label: 'Price: High to Low' },
           ] as const).map(opt => (
-            <TouchableOpacity key={opt.key} style={[s.modalOpt, { borderBottomColor: colors.borderLight }]}
+            <TouchableOpacity key={opt.key} style={[s.modalOpt, { borderBottomColor: GLASS_BORDER }]}
               onPress={() => { setSort(opt.key); setFilterVisible(false); }}>
-              <Text style={[s.modalOptTxt, { color: colors.text }]}>{opt.label}</Text>
-              {sort === opt.key && <Ionicons name="checkmark" size={20} color={colors.tint} />}
+              <Text style={[s.modalOptTxt, { color: TEXT_PRIMARY }]}>{opt.label}</Text>
+              {sort === opt.key && <Ionicons name="checkmark" size={20} color={G} />}
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={[s.closeBtn, { backgroundColor: colors.tint }]} onPress={() => setFilterVisible(false)}>
+          <TouchableOpacity style={[s.closeBtn, { backgroundColor: G }]} onPress={() => setFilterVisible(false)}>
             <Text style={s.closeBtnTxt}>Done</Text>
           </TouchableOpacity>
         </View>

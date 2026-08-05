@@ -109,33 +109,19 @@ const QuickPostBox = memo(() => {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     borderWidth: 1,
-    borderColor: isDarkMode ? GLASS_BORDER : 'rgba(0, 0, 0, 0.05)',
+    borderColor: GLASS_BORDER,
+    backgroundColor: 'rgba(255,255,255,0.04)',
   };
 
   return (
-    <TouchableOpacity 
-      activeOpacity={0.9} 
+    <TouchableOpacity
+      activeOpacity={0.9}
       onPress={() => router.push('/new-post' as any)}
-      style={{ overflow: 'hidden', marginHorizontal: 16, marginTop: 12, marginBottom: 8, borderRadius: 20 }}
+      style={{ overflow: 'hidden', marginHorizontal: 16, marginTop: 12, marginBottom: 8, borderRadius: 24 }}
     >
-      {isLiquidGlassSupported ? (
-        <LiquidGlassView
-          {...({ intensity: 80, tint: isDarkMode ? 'dark' : 'light', fallbackColor: isDarkMode ? GLASS_BG : 'rgba(255, 255, 255, 0.95)' } as any)}
-          style={containerStyle}
-          pointerEvents="none"
-        >
-          {content}
-        </LiquidGlassView>
-      ) : (
-        <BlurView
-          intensity={80}
-          tint={isDarkMode ? 'dark' : 'light'}
-          style={[containerStyle, { backgroundColor: isDarkMode ? 'rgba(8, 8, 8, 0.74)' : 'rgba(255, 255, 255, 0.5)' }]}
-          pointerEvents="none"
-        >
-          {content}
-        </BlurView>
-      )}
+      <View style={containerStyle}>
+        {content}
+      </View>
     </TouchableOpacity>
   );
 });
@@ -304,53 +290,21 @@ export default function HomeTab() {
 
   if (loading && posts.length === 0 && !refreshing) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <Animated.View style={headerAnimatedStyle}>
-          {isLiquidGlassSupported ? (
-            <LiquidGlassView 
-              {...({ intensity: 80, tint: isDarkMode ? 'dark' : 'light', fallbackColor: isDarkMode ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.85)' } as any)}
-              style={StyleSheet.absoluteFill} 
-            />
-          ) : (
-            <BlurView intensity={80} tint={isDarkMode ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
-          )}
-          <View style={[styles.headerContent, { paddingTop: insets.top, borderBottomColor: colors.borderLight }]}>
-            <Text style={[styles.headerTitle, { color: colors.tint }]}>YRDLY</Text>
-            
-            <View style={{flex: 1, paddingHorizontal: 12, alignItems: 'flex-start'}}>
-              <LocationChip />
-            </View>
-
-            <View style={styles.headerRight}>
-              <TouchableOpacity style={{ marginRight: 16 }} onPress={() => router.push('/map')}>
-                <MapIcon size={24} color={colors.text} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative' }}>
-                <NotificationsIcon size={24} color={colors.text} />
-                {unreadCount > 0 && (
-                  <View style={{
-                    position: 'absolute',
-                    right: -4,
-                    top: -4,
-                    backgroundColor: '#EF4444',
-                    borderRadius: 10,
-                    minWidth: 18,
-                    height: 18,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingHorizontal: 4,
-                    borderWidth: 1.5,
-                    borderColor: colors.background
-                  }}>
-                    <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
+      <View style={[styles.container, { backgroundColor: DARK }]}>
+        <View style={[styles.headerContent, { paddingTop: insets.top, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }]}>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 22, color: G, letterSpacing: -0.5 }}>YRDLY</Text>
+          <View style={{ flex: 1, paddingHorizontal: 10, alignItems: 'flex-start' }}>
+            <LocationChip />
           </View>
-        </Animated.View>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
+              <MapIcon size={20} color={TEXT_PRIMARY} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/alerts')} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+              <NotificationsIcon size={20} color={TEXT_PRIMARY} />
+            </TouchableOpacity>
+          </View>
+        </View>
         <View style={{ paddingTop: HEADER_HEIGHT }}>
           <PostSkeleton />
           <PostSkeleton />

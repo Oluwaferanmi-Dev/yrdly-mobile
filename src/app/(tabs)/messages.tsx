@@ -417,36 +417,36 @@ export default function MessagesTab() {
   }, [friendsList, modalSearch]);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: DARK }]}>
       <ScreenHeader
         title="Messages"
         rightContent={
           <TouchableOpacity style={{ marginLeft: 12 }} onPress={openNewChatModal}>
-            <Feather name="edit" size={22} color={colors.text} />
+            <Feather name="edit" size={22} color={TEXT_PRIMARY} />
           </TouchableOpacity>
         }
       />
       {/* Search */}
-      <View style={[styles.searchContainer, { backgroundColor: 'transparent', borderColor: colors.borderLight }]}>
-        <Feather name="search" size={18} color={colors.textMuted} style={styles.searchIcon} />
+      <View style={[styles.searchContainer, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: GLASS_BORDER }]}>
+        <Feather name="search" size={18} color={LABEL} style={styles.searchIcon} />
         <TextInput
-          style={[styles.searchInput, { color: colors.text }]}
-          placeholder="Search conversations..."
-          placeholderTextColor={colors.textMuted}
+          style={[styles.searchInput, { color: TEXT_PRIMARY }]}
+          placeholder="Search messages"
+          placeholderTextColor={LABEL}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
       </View>
 
       {/* Filter tabs */}
-      <View style={[styles.filterRow, { backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.filterRow, { backgroundColor: 'transparent', borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }]}>
         {FILTERS.map(({ key, label }) => (
           <TouchableOpacity
             key={key}
-            style={[styles.filterTab, activeFilter === key && [styles.filterTabActive, { backgroundColor: colors.tint + '15' }]]}
+            style={[styles.filterTab, activeFilter === key && [styles.filterTabActive, { backgroundColor: G + '15' }]]}
             onPress={() => setActiveFilter(key)}
           >
-            <Text style={[styles.filterTabText, { color: colors.textMuted }, activeFilter === key && [styles.filterTabTextActive, { color: colors.tint }]]}>
+            <Text style={[styles.filterTabText, { color: LABEL }, activeFilter === key && [styles.filterTabTextActive, { color: G }]]}>
               {label}
             </Text>
           </TouchableOpacity>
@@ -456,12 +456,12 @@ export default function MessagesTab() {
       {/* List */}
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.tint} />
+          <ActivityIndicator size="large" color={G} />
         </View>
       ) : filtered.length === 0 ? (
         <View style={styles.center}>
-          <Feather name="message-square" size={48} color={colors.textMuted} />
-          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+          <Feather name="message-square" size={48} color={LABEL} />
+          <Text style={[styles.emptyText, { color: LABEL }]}>
             {searchQuery ? 'No results found' : 'No conversations yet'}
           </Text>
         </View>
@@ -470,7 +470,7 @@ export default function MessagesTab() {
           {...({ estimatedItemSize: 70 } as any)}
           data={filtered}
           keyExtractor={(item: any) => item.id}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -480,12 +480,12 @@ export default function MessagesTab() {
       {/* New Message Modal */}
       <Modal visible={isModalOpen} animationType="slide" transparent onRequestClose={() => setIsModalOpen(false)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
-          <View style={{ backgroundColor: colors.background, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '80%', padding: 20, paddingBottom: insets.bottom + 20 }}>
+          <View style={{ backgroundColor: '#0A0A0A', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '80%', padding: 20, paddingBottom: insets.bottom + 20 }}>
             {/* Header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.text }}>New Message</Text>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: TEXT_PRIMARY, fontFamily: 'Outfit' }}>New Message</Text>
               <TouchableOpacity onPress={() => setIsModalOpen(false)} style={{ padding: 4 }}>
-                <Feather name="x" size={24} color={colors.text} />
+                <Feather name="x" size={24} color={TEXT_PRIMARY} />
               </TouchableOpacity>
             </View>
 
@@ -530,8 +530,8 @@ export default function MessagesTab() {
                         </Text>
                       </View>
                     )}
-                    <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, flex: 1 }}>{item.name}</Text>
-                    <Feather name="chevron-right" size={18} color={colors.textMuted} />
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: TEXT_PRIMARY, flex: 1, fontFamily: 'Inter' }}>{item.name}</Text>
+                    <Feather name="chevron-right" size={18} color={LABEL} />
                   </TouchableOpacity>
                 )}
               />
