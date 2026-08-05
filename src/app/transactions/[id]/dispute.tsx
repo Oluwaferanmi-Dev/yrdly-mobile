@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import {
@@ -134,11 +134,11 @@ export default function DisputeScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Open Dispute</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Open Dispute</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -146,25 +146,25 @@ export default function DisputeScreen() {
         {/* Info Banner */}
         <View style={[styles.infoBanner, { backgroundColor: SURFACE }]}>
           <Feather name="shield" size={20} color="#1565C0" />
-          <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+          <Text style={[styles.infoText, { color: LABEL }]}>
             Disputes are reviewed by our team within 24 hours. The transaction will be paused until resolved.
           </Text>
         </View>
 
         {/* Reason Picker */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>REASON FOR DISPUTE</Text>
+          <Text style={[styles.sectionLabel, { color: MUTED }]}>REASON FOR DISPUTE</Text>
           {DISPUTE_REASONS.map(r => (
             <TouchableOpacity
               key={r.value}
-              style={[styles.reasonRow, { backgroundColor: SURFACE, borderColor: colors.borderLight }, selectedReason === r.value && { borderColor: colors.tint, backgroundColor: colors.inputBackground }]}
+              style={[styles.reasonRow, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, selectedReason === r.value && { borderColor: G, backgroundColor: SURFACE }]}
               onPress={() => setSelectedReason(r.value)}
               activeOpacity={0.7}
             >
-              <View style={[styles.radio, { borderColor: colors.textMuted }, selectedReason === r.value && { borderColor: colors.tint }]}>
-                {selectedReason === r.value && <View style={[styles.radioDot, { backgroundColor: colors.tint }]} />}
+              <View style={[styles.radio, { borderColor: MUTED }, selectedReason === r.value && { borderColor: G }]}>
+                {selectedReason === r.value && <View style={[styles.radioDot, { backgroundColor: G }]} />}
               </View>
-              <Text style={[styles.reasonLabel, { color: colors.text }, selectedReason === r.value && { fontWeight: '700' }]}>
+              <Text style={[styles.reasonLabel, { color: TEXT_PRIMARY }, selectedReason === r.value && { fontWeight: '700' }]}>
                 {r.label}
               </Text>
             </TouchableOpacity>
@@ -173,25 +173,25 @@ export default function DisputeScreen() {
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>DESCRIBE THE ISSUE</Text>
+          <Text style={[styles.sectionLabel, { color: MUTED }]}>DESCRIBE THE ISSUE</Text>
           <TextInput
-            style={[styles.textArea, { backgroundColor: SURFACE, borderColor: colors.borderLight, color: colors.text }]}
+            style={[styles.textArea, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, color: TEXT_PRIMARY }]}
             value={description}
             onChangeText={setDescription}
             placeholder="Tell us what happened in as much detail as possible..."
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={MUTED}
             multiline
             numberOfLines={6}
             textAlignVertical="top"
             maxLength={2000}
           />
-          <Text style={[styles.charCount, { color: colors.textMuted }]}>{description.length}/2000</Text>
+          <Text style={[styles.charCount, { color: MUTED }]}>{description.length}/2000</Text>
         </View>
 
         {/* Photo Evidence */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>PHOTO EVIDENCE (OPTIONAL)</Text>
-          <Text style={[styles.sectionSub, { color: colors.textMuted }]}>Attach photos of the item or chat screenshots (max 5)</Text>
+          <Text style={[styles.sectionLabel, { color: MUTED }]}>PHOTO EVIDENCE (OPTIONAL)</Text>
+          <Text style={[styles.sectionSub, { color: MUTED }]}>Attach photos of the item or chat screenshots (max 5)</Text>
           <View style={styles.photosRow}>
             {photos.map((uri, i) => (
               <View key={i} style={styles.photoWrapper}>
@@ -202,10 +202,10 @@ export default function DisputeScreen() {
               </View>
             ))}
             {photos.length < 5 && (
-              <TouchableOpacity style={[styles.addPhotoBtn, { backgroundColor: SURFACE, borderColor: colors.borderLight }]} onPress={pickPhotos} disabled={uploading}>
+              <TouchableOpacity style={[styles.addPhotoBtn, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]} onPress={pickPhotos} disabled={uploading}>
                 {uploading
-                  ? <ActivityIndicator size="small" color={colors.tint} />
-                  : <Feather name="plus" size={28} color={colors.tint} />
+                  ? <ActivityIndicator size="small" color={G} />
+                  : <Feather name="plus" size={28} color={G} />
                 }
               </TouchableOpacity>
             )}
@@ -214,12 +214,12 @@ export default function DisputeScreen() {
 
         {/* Submit */}
         <TouchableOpacity
-          style={[styles.submitBtn, (!selectedReason || submitting) && [styles.submitBtnDisabled, { backgroundColor: colors.textMuted }]]}
+          style={[styles.submitBtn, (!selectedReason || submitting) && [styles.submitBtnDisabled, { backgroundColor: MUTED }]]}
           onPress={handleSubmit}
           disabled={!selectedReason || submitting}
         >
           {submitting
-            ? <ActivityIndicator size="small" color={colors.card} />
+            ? <ActivityIndicator size="small" color={DARK} />
             : <Text style={styles.submitBtnText}>Open Dispute</Text>
           }
         </TouchableOpacity>

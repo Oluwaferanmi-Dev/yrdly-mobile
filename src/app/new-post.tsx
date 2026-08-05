@@ -519,12 +519,12 @@ export default function CreateTab() {
           <View style={styles.postSuccessBackdrop} />
           <Animated.View style={[styles.postSuccessSheet, { backgroundColor: SURFACE, paddingBottom: insets.bottom + 90 }, successSheetStyle]}>
             <View style={styles.postSuccessHandle} />
-            <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: colors.tint + '20', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-              <Ionicons name="checkmark-circle" size={80} color={colors.tint} />
+            <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: G + '20', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <Ionicons name="checkmark-circle" size={80} color={G} />
             </View>
             <Animated.View style={[{ alignItems: 'center', paddingHorizontal: 32 }, successContentStyle]}>
-              <Text style={[styles.postSuccessTitle, { color: colors.text }]}>Posted! 🎉</Text>
-              <Text style={[styles.postSuccessBody, { color: colors.textMuted }]}>
+              <Text style={[styles.postSuccessTitle, { color: TEXT_PRIMARY }]}>Posted! 🎉</Text>
+              <Text style={[styles.postSuccessBody, { color: MUTED }]}>
                 Your post is live on Yrdly. Taking you to the feed…
               </Text>
             </Animated.View>

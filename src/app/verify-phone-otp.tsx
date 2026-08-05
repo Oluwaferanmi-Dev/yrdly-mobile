@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
@@ -125,34 +125,34 @@ export default function VerifyPhoneOtpScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={StyleSheet.absoluteFillObject}>
-        <View style={[styles.blob, { top: height * 0.05, left: width * 0.1, backgroundColor: colors.tint }]} />
-        <View style={[styles.blob, { top: height * 0.75, left: width * 0.75, backgroundColor: colors.tint }]} />
+        <View style={[styles.blob, { top: height * 0.05, left: width * 0.1, backgroundColor: G }]} />
+        <View style={[styles.blob, { top: height * 0.75, left: width * 0.75, backgroundColor: G }]} />
       </View>
 
       {isLiquidGlassSupported ? (
         <LiquidGlassView 
-          {...({ intensity: 20, tint: colors.background === '#121212' ? 'dark' : 'light', fallbackColor: colors.background === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' } as any)}
+          {...({ intensity: 20, tint: DARK === '#121212' ? 'dark' : 'light', fallbackColor: DARK === '#121212' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.4)' } as any)}
           style={StyleSheet.absoluteFillObject} 
         />
       ) : Platform.OS === 'ios' ? (
-        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={colors.background === '#121212' ? 'dark' : 'light'} />
+        <BlurView intensity={20} style={StyleSheet.absoluteFillObject} tint={DARK === '#121212' ? 'dark' : 'light'} />
       ) : (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background === '#121212' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.4)' }]} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: DARK === '#121212' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.4)' }]} />
       )}
 
-      <View style={[styles.card, { backgroundColor: SURFACE, shadowColor: colors.text }]}>
+      <View style={[styles.card, { backgroundColor: SURFACE, shadowColor: TEXT_PRIMARY }]}>
         <TouchableOpacity style={styles.back} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
 
-        <View style={[styles.iconRing, { backgroundColor: colors.inputBackground }]}>
-          <Feather name="message-square" size={36} color={colors.tint} />
+        <View style={[styles.iconRing, { backgroundColor: SURFACE }]}>
+          <Feather name="message-square" size={36} color={G} />
         </View>
 
-        <Text style={[styles.title, { color: colors.text }]}>Check your phone</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+        <Text style={[styles.title, { color: TEXT_PRIMARY }]}>Check your phone</Text>
+        <Text style={[styles.subtitle, { color: LABEL }]}>
           We sent a 6-digit SMS code to{'\n'}
-          <Text style={[styles.phoneText, { color: colors.text }]}>{phone}</Text>
+          <Text style={[styles.phoneText, { color: TEXT_PRIMARY }]}>{phone}</Text>
         </Text>
 
         <View style={styles.otpRow}>
@@ -160,7 +160,7 @@ export default function VerifyPhoneOtpScreen() {
             <TextInput
               key={i}
               ref={(r) => { inputRefs.current[i] = r; }}
-              style={[styles.otpBox, { backgroundColor: SURFACE, borderColor: colors.borderLight, color: colors.text }, d && [styles.otpBoxFilled, { borderColor: colors.tint, backgroundColor: colors.inputBackground }]]}
+              style={[styles.otpBox, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, color: TEXT_PRIMARY }, d && [styles.otpBoxFilled, { borderColor: G, backgroundColor: SURFACE }]]}
               value={d}
               onChangeText={(v) => handleDigitChange(v, i)}
               onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, i)}
@@ -176,25 +176,25 @@ export default function VerifyPhoneOtpScreen() {
         <ErrorMessage error={error} />
 
         <TouchableOpacity
-          style={[styles.verifyBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }, loading && styles.verifyBtnDisabled]}
+          style={[styles.verifyBtn, { backgroundColor: G, shadowColor: G }, loading && styles.verifyBtnDisabled]}
           onPress={() => handleVerify()}
           disabled={loading}
           activeOpacity={0.85}
         >
           {loading ? (
-            <ActivityIndicator color={colors.card} />
+            <ActivityIndicator color={DARK} />
           ) : (
-            <Text style={[styles.verifyBtnText, { color: colors.card }]}>Verify</Text>
+            <Text style={[styles.verifyBtnText, { color: DARK }]}>Verify</Text>
           )}
         </TouchableOpacity>
 
         <View style={styles.resendRow}>
-          <Text style={[styles.resendLabel, { color: colors.textMuted }]}>Didn't get the SMS? </Text>
+          <Text style={[styles.resendLabel, { color: MUTED }]}>Didn't get the SMS? </Text>
           <TouchableOpacity onPress={handleResend} disabled={resendCooldown > 0 || resending}>
             {resending ? (
-              <ActivityIndicator size="small" color={colors.tint} />
+              <ActivityIndicator size="small" color={G} />
             ) : (
-              <Text style={[styles.resendLink, { color: colors.tint }, resendCooldown > 0 && [styles.resendLinkDisabled, { color: colors.textMuted }]]}>
+              <Text style={[styles.resendLink, { color: G }, resendCooldown > 0 && [styles.resendLinkDisabled, { color: MUTED }]]}>
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
               </Text>
             )}

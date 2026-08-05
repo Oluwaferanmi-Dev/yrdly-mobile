@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Linking, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -45,7 +45,7 @@ export default function AlertDetailsScreen() {
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={G} />
       </View>
     );
   }
@@ -53,16 +53,16 @@ export default function AlertDetailsScreen() {
   if (!alert) {
     return (
       <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
-        <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+        <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={28} color={colors.text} />
+            <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Alert Details</Text>
+          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Alert Details</Text>
           <View style={{ width: 24 }} />
         </View>
         <View style={styles.emptyContainer}>
-          <Ionicons name="alert-circle-outline" size={48} color={colors.textMuted} />
-          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Alert not found.</Text>
+          <Ionicons name="alert-circle-outline" size={48} color={MUTED} />
+          <Text style={[styles.emptyText, { color: LABEL }]}>Alert not found.</Text>
         </View>
       </View>
     );
@@ -73,7 +73,7 @@ export default function AlertDetailsScreen() {
       case 'amber': return '#ef4444'; // Red
       case 'missing_person': return '#f59e0b'; // Amber
       case 'community_safety': return '#3b82f6'; // Blue
-      default: return colors.tint;
+      default: return G;
     }
   };
 
@@ -81,11 +81,11 @@ export default function AlertDetailsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Alert Details</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Alert Details</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -98,22 +98,22 @@ export default function AlertDetailsScreen() {
           </Text>
         </View>
 
-        <Text style={[styles.title, { color: colors.text }]}>{alert.title}</Text>
-        <Text style={[styles.time, { color: colors.textSecondary }]}>
+        <Text style={[styles.title, { color: TEXT_PRIMARY }]}>{alert.title}</Text>
+        <Text style={[styles.time, { color: LABEL }]}>
           {new Date(alert.created_at).toLocaleString()}
         </Text>
 
-        <Text style={[styles.description, { color: colors.text }]}>{alert.description}</Text>
+        <Text style={[styles.description, { color: TEXT_PRIMARY }]}>{alert.description}</Text>
 
         {alert.subject_photo_url && (
           <Image source={{ uri: alert.subject_photo_url }} style={styles.photo} resizeMode="cover" />
         )}
 
-        <View style={[styles.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+        <View style={[styles.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
           {alert.subject_name && (
             <View style={styles.infoRow}>
-              <Feather name="user" size={18} color={colors.textSecondary} />
-              <Text style={[styles.infoText, { color: colors.text }]}>
+              <Feather name="user" size={18} color={LABEL} />
+              <Text style={[styles.infoText, { color: TEXT_PRIMARY }]}>
                 {alert.subject_name} {alert.subject_age ? `(${alert.subject_age} years old)` : ''}
               </Text>
             </View>
@@ -121,8 +121,8 @@ export default function AlertDetailsScreen() {
 
           {alert.last_seen_address && (
             <View style={styles.infoRow}>
-              <Feather name="map-pin" size={18} color={colors.textSecondary} />
-              <Text style={[styles.infoText, { color: colors.text }]}>
+              <Feather name="map-pin" size={18} color={LABEL} />
+              <Text style={[styles.infoText, { color: TEXT_PRIMARY }]}>
                 Last seen: {alert.last_seen_address}
               </Text>
             </View>
@@ -130,8 +130,8 @@ export default function AlertDetailsScreen() {
 
           {alert.source && (
             <View style={styles.infoRow}>
-              <Feather name="info" size={18} color={colors.textSecondary} />
-              <Text style={[styles.infoText, { color: colors.text }]}>
+              <Feather name="info" size={18} color={LABEL} />
+              <Text style={[styles.infoText, { color: TEXT_PRIMARY }]}>
                 Source: {alert.source}
               </Text>
             </View>

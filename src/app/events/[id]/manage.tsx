@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -69,16 +69,16 @@ export default function ManageEventScreen() {
   }, [tickets]);
 
   if (loading) {
-    return <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}><ActivityIndicator size="large" color={colors.tint} /></SafeAreaView>;
+    return <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}><ActivityIndicator size="large" color={G} /></SafeAreaView>;
   }
 
   if (accessDenied || !event) {
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: DARK, padding: 28 }]}>
-        <Feather name="lock" size={44} color={colors.textMuted} />
-        <Text style={[styles.emptyTitle, { color: colors.text }]}>Organizer access only</Text>
-        <Text style={[styles.emptyText, { color: colors.textMuted }]}>Only the event organizer can view ticket buyers and check-ins.</Text>
-        <TouchableOpacity style={[styles.backAction, { backgroundColor: colors.tint }]} onPress={() => router.back()}>
+        <Feather name="lock" size={44} color={MUTED} />
+        <Text style={[styles.emptyTitle, { color: TEXT_PRIMARY }]}>Organizer access only</Text>
+        <Text style={[styles.emptyText, { color: MUTED }]}>Only the event organizer can view ticket buyers and check-ins.</Text>
+        <TouchableOpacity style={[styles.backAction, { backgroundColor: G }]} onPress={() => router.back()}>
           <Text style={styles.backActionText}>Go back</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -89,40 +89,40 @@ export default function ManageEventScreen() {
   const renderTicket = ({ item }: { item: Ticket }) => {
     const checkedIn = item.status === 'USED';
     return (
-      <View style={[styles.ticketCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[styles.ticketCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
         <View style={styles.ticketTopRow}>
-          <View style={[styles.attendeeIcon, { backgroundColor: colors.tint + '18' }]}><Feather name="user" size={18} color={colors.tint} /></View>
+          <View style={[styles.attendeeIcon, { backgroundColor: G + '18' }]}><Feather name="user" size={18} color={G} /></View>
           <View style={styles.ticketInfo}>
-            <Text style={[styles.ticketName, { color: colors.text }]}>{item.attendee_name || 'Attendee'}</Text>
-            <Text style={[styles.ticketEmail, { color: colors.textMuted }]}>{item.attendee_email || 'Email unavailable'}</Text>
+            <Text style={[styles.ticketName, { color: TEXT_PRIMARY }]}>{item.attendee_name || 'Attendee'}</Text>
+            <Text style={[styles.ticketEmail, { color: MUTED }]}>{item.attendee_email || 'Email unavailable'}</Text>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: checkedIn ? colors.tint + '20' : colors.borderLight }]}>
-            <Feather name={checkedIn ? 'check-circle' : 'clock'} size={12} color={checkedIn ? colors.tint : colors.textMuted} />
-            <Text style={{ color: checkedIn ? colors.tint : colors.textMuted, fontSize: 11, fontWeight: '700' }}>{checkedIn ? 'Scanned' : 'Not scanned'}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: checkedIn ? G + '20' : GLASS_BORDER }]}>
+            <Feather name={checkedIn ? 'check-circle' : 'clock'} size={12} color={checkedIn ? G : MUTED} />
+            <Text style={{ color: checkedIn ? G : MUTED, fontSize: 11, fontWeight: '700' }}>{checkedIn ? 'Scanned' : 'Not scanned'}</Text>
           </View>
         </View>
-        <View style={[styles.ticketDivider, { backgroundColor: colors.borderLight }]} />
+        <View style={[styles.ticketDivider, { backgroundColor: GLASS_BORDER }]} />
         <View style={styles.ticketMeta}>
           <View style={styles.metaItem}>
-            <Text style={[styles.metaLabel, { color: colors.textMuted }]}>PURCHASED</Text>
-            <Text style={[styles.metaValue, { color: colors.text }]}>{formatDateTime(item.created_at)}</Text>
+            <Text style={[styles.metaLabel, { color: MUTED }]}>PURCHASED</Text>
+            <Text style={[styles.metaValue, { color: TEXT_PRIMARY }]}>{formatDateTime(item.created_at)}</Text>
           </View>
           <View style={styles.metaItem}>
-            <Text style={[styles.metaLabel, { color: colors.textMuted }]}>SCANNED</Text>
-            <Text style={[styles.metaValue, { color: checkedIn ? colors.tint : colors.textMuted }]}>{formatDateTime(item.scanned_at)}</Text>
+            <Text style={[styles.metaLabel, { color: MUTED }]}>SCANNED</Text>
+            <Text style={[styles.metaValue, { color: checkedIn ? G : MUTED }]}>{formatDateTime(item.scanned_at)}</Text>
           </View>
         </View>
-        <Text style={[styles.tierText, { color: colors.textSecondary }]}>{item.tier?.name || 'Ticket'} · ₦{Number(item.amount_paid || 0).toLocaleString()}</Text>
+        <Text style={[styles.tierText, { color: LABEL }]}>{item.tier?.name || 'Ticket'} · ₦{Number(item.amount_paid || 0).toLocaleString()}</Text>
       </View>
     );
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}><Ionicons name="chevron-back" size={28} color={colors.text} /></TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Event Dashboard</Text>
-        <TouchableOpacity onPress={() => router.push(`/events/${id}/scan` as any)} style={[styles.scanIcon, { backgroundColor: colors.tint + '20' }]}><Ionicons name="qr-code-outline" size={20} color={colors.tint} /></TouchableOpacity>
+      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}><Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} /></TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Event Dashboard</Text>
+        <TouchableOpacity onPress={() => router.push(`/events/${id}/scan` as any)} style={[styles.scanIcon, { backgroundColor: G + '20' }]}><Ionicons name="qr-code-outline" size={20} color={G} /></TouchableOpacity>
       </View>
 
       <FlatList
@@ -130,13 +130,13 @@ export default function ManageEventScreen() {
         keyExtractor={ticket => ticket.id}
         renderItem={renderTicket}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />}
         ListHeaderComponent={<>
-          <View style={[styles.eventCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+          <View style={[styles.eventCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
             {event.cover_image_url && <Image source={{ uri: event.cover_image_url }} style={styles.eventImage} contentFit="cover" />}
             <View style={styles.eventBody}>
-              <Text style={[styles.eventTitle, { color: colors.text }]}>{event.title}</Text>
-              <Text style={[styles.eventDate, { color: colors.textSecondary }]}>{eventDate}</Text>
+              <Text style={[styles.eventTitle, { color: TEXT_PRIMARY }]}>{event.title}</Text>
+              <Text style={[styles.eventDate, { color: LABEL }]}>{eventDate}</Text>
             </View>
           </View>
           <View style={styles.metricsRow}>
@@ -144,19 +144,19 @@ export default function ManageEventScreen() {
             <Metric label="Revenue" value={`₦${metrics.revenue.toLocaleString()}`} colors={colors} />
             <Metric label="Scanned" value={String(metrics.checkedIn)} colors={colors} />
           </View>
-          <TouchableOpacity style={[styles.scanButton, { backgroundColor: colors.tint }]} onPress={() => router.push(`/events/${id}/scan` as any)}>
+          <TouchableOpacity style={[styles.scanButton, { backgroundColor: G }]} onPress={() => router.push(`/events/${id}/scan` as any)}>
             <Ionicons name="qr-code" size={22} color="#000" /><Text style={styles.scanButtonText}>Scan Attendee Tickets</Text>
           </TouchableOpacity>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Ticket buyers ({metrics.sold})</Text>
+          <Text style={[styles.sectionTitle, { color: TEXT_PRIMARY }]}>Ticket buyers ({metrics.sold})</Text>
         </>}
-        ListEmptyComponent={<View style={styles.emptyList}><Feather name="users" size={42} color={colors.textMuted} /><Text style={[styles.emptyText, { color: colors.textMuted }]}>No tickets sold yet.</Text></View>}
+        ListEmptyComponent={<View style={styles.emptyList}><Feather name="users" size={42} color={MUTED} /><Text style={[styles.emptyText, { color: MUTED }]}>No tickets sold yet.</Text></View>}
       />
     </SafeAreaView>
   );
 }
 
 function Metric({ label, value, colors }: { label: string; value: string; colors: any }) {
-  return <View style={[styles.metric, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}><Text style={[styles.metricValue, { color: colors.text }]} numberOfLines={1}>{value}</Text><Text style={[styles.metricLabel, { color: colors.textMuted }]}>{label}</Text></View>;
+  return <View style={[styles.metric, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}><Text style={[styles.metricValue, { color: TEXT_PRIMARY }]} numberOfLines={1}>{value}</Text><Text style={[styles.metricLabel, { color: MUTED }]}>{label}</Text></View>;
 }
 
 const styles = StyleSheet.create({

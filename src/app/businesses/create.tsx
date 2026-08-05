@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -92,7 +92,7 @@ export default function CreateBusinessScreen() {
   if (checkingVerification) {
     return (
       <SafeAreaView style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={G} />
       </SafeAreaView>
     );
   }
@@ -100,10 +100,10 @@ export default function CreateBusinessScreen() {
   if (!isVerified) {
     return (
       <SafeAreaView style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <Ionicons name="alert-circle-outline" size={48} color={colors.tint} style={{ marginBottom: 16 }} />
-        <Text style={[s.errorTxt, { color: colors.text }]}>Verification Required</Text>
-        <Text style={[s.subErrorTxt, { color: colors.textMuted }]}>You must be a verified seller to create a business.</Text>
-        <TouchableOpacity style={[s.btn, { backgroundColor: colors.tint, marginTop: 24 }]} onPress={() => router.back()}>
+        <Ionicons name="alert-circle-outline" size={48} color={G} style={{ marginBottom: 16 }} />
+        <Text style={[s.errorTxt, { color: TEXT_PRIMARY }]}>Verification Required</Text>
+        <Text style={[s.subErrorTxt, { color: MUTED }]}>You must be a verified seller to create a business.</Text>
+        <TouchableOpacity style={[s.btn, { backgroundColor: G, marginTop: 24 }]} onPress={() => router.back()}>
           <Text style={[s.btnTxt, { color: '#000' }]}>Go Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -207,66 +207,66 @@ export default function CreateBusinessScreen() {
   return (
     <SafeAreaView style={[s.root, { backgroundColor: DARK }]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={[s.header, { borderBottomColor: colors.borderLight }]}>
+      <View style={[s.header, { borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[s.headerTitle, { color: colors.text }]}>Create Business</Text>
+        <Text style={[s.headerTitle, { color: TEXT_PRIMARY }]}>Create Business</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.scrollPad} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         
-        <Text style={[s.sectionTitle, { color: colors.text }]}>Branding</Text>
+        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY }]}>Branding</Text>
         
         <View style={s.brandingRow}>
           <View style={s.logoContainer}>
-            <Text style={[s.label, { color: colors.textSecondary, textAlign: 'center' }]}>Logo</Text>
-            <TouchableOpacity style={[s.logoPicker, { backgroundColor: colors.inputBackground }]} onPress={() => pickImage('logo')}>
+            <Text style={[s.label, { color: LABEL, textAlign: 'center' }]}>Logo</Text>
+            <TouchableOpacity style={[s.logoPicker, { backgroundColor: SURFACE }]} onPress={() => pickImage('logo')}>
               {logoUri ? (
                 <Image source={{ uri: logoUri }} style={s.logoPreview} />
               ) : (
-                <Ionicons name="camera-outline" size={32} color={colors.textMuted} />
+                <Ionicons name="camera-outline" size={32} color={MUTED} />
               )}
             </TouchableOpacity>
           </View>
           
           <View style={s.coverContainer}>
-            <Text style={[s.label, { color: colors.textSecondary }]}>Cover Image</Text>
-            <TouchableOpacity style={[s.coverPicker, { backgroundColor: colors.inputBackground }]} onPress={() => pickImage('cover')}>
+            <Text style={[s.label, { color: LABEL }]}>Cover Image</Text>
+            <TouchableOpacity style={[s.coverPicker, { backgroundColor: SURFACE }]} onPress={() => pickImage('cover')}>
               {coverUri ? (
                 <Image source={{ uri: coverUri }} style={s.coverPreview} />
               ) : (
-                <Ionicons name="image-outline" size={32} color={colors.textMuted} />
+                <Ionicons name="image-outline" size={32} color={MUTED} />
               )}
             </TouchableOpacity>
           </View>
         </View>
 
-        <Text style={[s.sectionTitle, { color: colors.text, marginTop: 16 }]}>Business Details</Text>
+        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY, marginTop: 16 }]}>Business Details</Text>
         
-        <Text style={[s.label, { color: colors.textSecondary }]}>Business Name *</Text>
+        <Text style={[s.label, { color: LABEL }]}>Business Name *</Text>
         <TextInput
-          style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+          style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
           placeholder="e.g. Jane's Bakery"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={MUTED}
           value={name}
           onChangeText={setName}
         />
 
-        <Text style={[s.label, { color: colors.textSecondary }]}>Category *</Text>
+        <Text style={[s.label, { color: LABEL }]}>Category *</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
           {CATEGORIES.map(cat => (
             <TouchableOpacity 
               key={cat}
               style={[
                 s.categoryChip, 
-                { backgroundColor: category === cat ? colors.tint : colors.inputBackground }
+                { backgroundColor: category === cat ? G : SURFACE }
               ]}
               onPress={() => setCategory(cat)}
             >
               <Text style={{ 
-                color: category === cat ? '#000' : colors.text,
+                color: category === cat ? '#000' : TEXT_PRIMARY,
                 fontWeight: category === cat ? 'bold' : 'normal'
               }}>
                 {cat}
@@ -275,20 +275,20 @@ export default function CreateBusinessScreen() {
           ))}
         </ScrollView>
 
-        <Text style={[s.label, { color: colors.textSecondary }]}>Description</Text>
+        <Text style={[s.label, { color: LABEL }]}>Description</Text>
         <TextInput
-          style={[s.input, s.textarea, { backgroundColor: colors.inputBackground, color: colors.text }]}
+          style={[s.input, s.textarea, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
           placeholder="Tell customers about your business..."
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={MUTED}
           multiline
           numberOfLines={4}
           value={description}
           onChangeText={setDescription}
         />
 
-        <Text style={[s.sectionTitle, { color: colors.text, marginTop: 16 }]}>Contact Info</Text>
+        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY, marginTop: 16 }]}>Contact Info</Text>
 
-        <Text style={[s.label, { color: colors.textSecondary }]}>Location / Address *</Text>
+        <Text style={[s.label, { color: LABEL }]}>Location / Address *</Text>
         <View style={{ zIndex: 50 }}>
           <GooglePlacesAutocomplete
             placeholder="e.g. 123 Main St, Lagos"
@@ -300,13 +300,13 @@ export default function CreateBusinessScreen() {
             styles={{
               container: { flex: 0, marginBottom: 20 },
               textInputContainer: { width: '100%' },
-              textInput: [s.input, { backgroundColor: colors.inputBackground, color: colors.text, marginBottom: 0 }],
+              textInput: [s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY, marginBottom: 0 }],
               row: { backgroundColor: DARK, padding: 13, minHeight: 44, flexDirection: 'row' },
-              description: { color: colors.text },
-              listView: { backgroundColor: DARK, borderRadius: 12, borderWidth: 1, borderColor: colors.borderLight, marginTop: 4, position: 'absolute', top: '100%', width: '100%', zIndex: 100 },
+              description: { color: TEXT_PRIMARY },
+              listView: { backgroundColor: DARK, borderRadius: 12, borderWidth: 1, borderColor: GLASS_BORDER, marginTop: 4, position: 'absolute', top: '100%', width: '100%', zIndex: 100 },
             }}
             textInputProps={{ 
-              placeholderTextColor: colors.textMuted,
+              placeholderTextColor: MUTED,
               onChangeText: (text) => setLocation(text),
               value: location
             }}
@@ -314,49 +314,49 @@ export default function CreateBusinessScreen() {
           />
         </View>
 
-        <Text style={[s.label, { color: colors.textSecondary }]}>Phone Number</Text>
+        <Text style={[s.label, { color: LABEL }]}>Phone Number</Text>
         <TextInput
-          style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+          style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
           placeholder="+234..."
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={MUTED}
           keyboardType="phone-pad"
           value={phone}
           onChangeText={setPhone}
         />
 
-        <Text style={[s.label, { color: colors.textSecondary }]}>Email Address</Text>
+        <Text style={[s.label, { color: LABEL }]}>Email Address</Text>
         <TextInput
-          style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+          style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
           placeholder="e.g. contact@business.com"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={MUTED}
           keyboardType="email-address"
           autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
         />
 
-        <Text style={[s.label, { color: colors.textSecondary }]}>Website</Text>
+        <Text style={[s.label, { color: LABEL }]}>Website</Text>
         <TextInput
-          style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+          style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
           placeholder="e.g. https://mybusiness.com"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={MUTED}
           keyboardType="url"
           autoCapitalize="none"
           value={website}
           onChangeText={setWebsite}
         />
 
-        <Text style={[s.label, { color: colors.textSecondary }]}>Operating Hours</Text>
+        <Text style={[s.label, { color: LABEL }]}>Operating Hours</Text>
         
         {/* Days Presets */}
-        <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 6 }}>Select Days</Text>
+        <Text style={{ color: MUTED, fontSize: 12, marginBottom: 6 }}>Select Days</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
           {['Mon - Fri', 'Mon - Sat', 'Everyday', 'Weekends', '24/7'].map(preset => (
             <TouchableOpacity
               key={preset}
               style={[
                 s.categoryChip,
-                { backgroundColor: dayPreset === preset && !isCustomHours ? colors.tint : colors.inputBackground }
+                { backgroundColor: dayPreset === preset && !isCustomHours ? G : SURFACE }
               ]}
               onPress={() => {
                 setIsCustomHours(false);
@@ -364,7 +364,7 @@ export default function CreateBusinessScreen() {
               }}
             >
               <Text style={{ 
-                color: dayPreset === preset && !isCustomHours ? '#000' : colors.text,
+                color: dayPreset === preset && !isCustomHours ? '#000' : TEXT_PRIMARY,
                 fontWeight: dayPreset === preset && !isCustomHours ? 'bold' : 'normal',
                 fontSize: 13
               }}>
@@ -377,35 +377,35 @@ export default function CreateBusinessScreen() {
         {dayPreset !== '24/7' && !isCustomHours && (
           <View style={{ marginBottom: 16 }}>
             {/* Open Time */}
-            <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 6 }}>Opening Time</Text>
+            <Text style={{ color: MUTED, fontSize: 12, marginBottom: 6 }}>Opening Time</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }}>
               {['7:00 AM', '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '11:00 AM'].map(t => (
                 <TouchableOpacity
                   key={t}
                   style={[
                     s.categoryChip,
-                    { backgroundColor: openTime === t ? colors.tint : colors.inputBackground, paddingHorizontal: 12, paddingVertical: 6 }
+                    { backgroundColor: openTime === t ? G : SURFACE, paddingHorizontal: 12, paddingVertical: 6 }
                   ]}
                   onPress={() => setOpenTime(t)}
                 >
-                  <Text style={{ color: openTime === t ? '#000' : colors.text, fontSize: 12 }}>{t}</Text>
+                  <Text style={{ color: openTime === t ? '#000' : TEXT_PRIMARY, fontSize: 12 }}>{t}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
 
             {/* Close Time */}
-            <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 6 }}>Closing Time</Text>
+            <Text style={{ color: MUTED, fontSize: 12, marginBottom: 6 }}>Closing Time</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {['4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM', '10:00 PM', '11:00 PM'].map(t => (
                 <TouchableOpacity
                   key={t}
                   style={[
                     s.categoryChip,
-                    { backgroundColor: closeTime === t ? colors.tint : colors.inputBackground, paddingHorizontal: 12, paddingVertical: 6 }
+                    { backgroundColor: closeTime === t ? G : SURFACE, paddingHorizontal: 12, paddingVertical: 6 }
                   ]}
                   onPress={() => setCloseTime(t)}
                 >
-                  <Text style={{ color: closeTime === t ? '#000' : colors.text, fontSize: 12 }}>{t}</Text>
+                  <Text style={{ color: closeTime === t ? '#000' : TEXT_PRIMARY, fontSize: 12 }}>{t}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -415,28 +415,28 @@ export default function CreateBusinessScreen() {
         {/* Display hours result / Custom toggle */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="time-outline" size={16} color={colors.tint} />
-            <Text style={{ color: colors.text, fontWeight: '600', fontSize: 13 }}>{hours || 'Not set'}</Text>
+            <Ionicons name="time-outline" size={16} color={G} />
+            <Text style={{ color: TEXT_PRIMARY, fontWeight: '600', fontSize: 13 }}>{hours || 'Not set'}</Text>
           </View>
           <TouchableOpacity onPress={() => setIsCustomHours(!isCustomHours)}>
-            <Text style={{ color: colors.tint, fontSize: 12 }}>{isCustomHours ? 'Use Presets' : 'Custom Text'}</Text>
+            <Text style={{ color: G, fontSize: 12 }}>{isCustomHours ? 'Use Presets' : 'Custom Text'}</Text>
           </TouchableOpacity>
         </View>
 
         {isCustomHours && (
           <TextInput
-            style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+            style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
             placeholder="e.g. Mon-Fri: 9AM - 5PM, Sat: 10AM - 2PM"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={MUTED}
             value={hours}
             onChangeText={setHours}
           />
         )}
 
-        <Text style={[s.sectionTitle, { color: colors.text, marginTop: 16 }]}>Gallery</Text>
+        <Text style={[s.sectionTitle, { color: TEXT_PRIMARY, marginTop: 16 }]}>Gallery</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.galleryScroll}>
-          <TouchableOpacity style={[s.addGalleryBtn, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]} onPress={() => pickImage('gallery')}>
-            <Ionicons name="add" size={32} color={colors.textMuted} />
+          <TouchableOpacity style={[s.addGalleryBtn, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]} onPress={() => pickImage('gallery')}>
+            <Ionicons name="add" size={32} color={MUTED} />
           </TouchableOpacity>
           {galleryUris.map((uri, index) => (
             <View key={index} style={s.galleryImgWrapper}>
@@ -449,7 +449,7 @@ export default function CreateBusinessScreen() {
         </ScrollView>
 
         <TouchableOpacity 
-          style={[s.submitBtn, { backgroundColor: colors.tint, opacity: loading ? 0.7 : 1 }]} 
+          style={[s.submitBtn, { backgroundColor: G, opacity: loading ? 0.7 : 1 }]} 
           onPress={handleCreate}
           disabled={loading}
         >

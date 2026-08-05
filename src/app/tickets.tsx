@@ -182,8 +182,8 @@ export default function TicketsScreen() {
           </TouchableOpacity>
         ) : (
           <View style={styles.qrSection}>
-            <Feather name="maximize" size={40} color={colors.tint} />
-            <Text style={[styles.tapText, { color: colors.textMuted }]}>Tap to view</Text>
+            <Feather name="maximize" size={40} color={G} />
+            <Text style={[styles.tapText, { color: MUTED }]}>Tap to view</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -192,28 +192,28 @@ export default function TicketsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: colors.borderLight }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>My Tickets</Text>
+      <View style={[styles.header, { backgroundColor: DARK, borderBottomColor: GLASS_BORDER }]}>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>My Tickets</Text>
       </View>
 
-      <View style={[styles.tabRow, { borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.tabRow, { borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity 
-          style={[styles.tab, activeTab === 'active' && { borderBottomColor: colors.tint }]} 
+          style={[styles.tab, activeTab === 'active' && { borderBottomColor: G }]} 
           onPress={() => setActiveTab('active')}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'active' ? colors.tint : colors.textMuted }]}>Active</Text>
+          <Text style={[styles.tabText, { color: activeTab === 'active' ? G : MUTED }]}>Active</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.tab, activeTab === 'past' && { borderBottomColor: colors.tint }]} 
+          style={[styles.tab, activeTab === 'past' && { borderBottomColor: G }]} 
           onPress={() => setActiveTab('past')}
         >
-          <Text style={[styles.tabText, { color: activeTab === 'past' ? colors.tint : colors.textMuted }]}>Past / Used</Text>
+          <Text style={[styles.tabText, { color: activeTab === 'past' ? G : MUTED }]}>Past / Used</Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={colors.tint} />
+          <ActivityIndicator size="large" color={G} />
         </View>
       ) : (
         <FlatList
@@ -222,14 +222,14 @@ export default function TicketsScreen() {
           renderItem={renderTicket}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Feather name="tag" size={72} color={colors.border} />
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>No Tickets Yet</Text>
-              <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>Buy tickets to events to see them here.</Text>
+              <Text style={[styles.emptyTitle, { color: TEXT_PRIMARY }]}>No Tickets Yet</Text>
+              <Text style={[styles.emptySubtitle, { color: MUTED }]}>Buy tickets to events to see them here.</Text>
               <TouchableOpacity
-                style={[styles.browseButton, { backgroundColor: colors.tint }]}
+                style={[styles.browseButton, { backgroundColor: G }]}
                 onPress={() => router.push('/catalog')}
               >
                 <Text style={styles.browseButtonText}>Browse Events</Text>
@@ -247,18 +247,18 @@ export default function TicketsScreen() {
         onRequestClose={() => setSelectedTicket(null)}
       >
         <SafeAreaView style={[styles.modalContainer, { backgroundColor: DARK }]}>
-          <View style={[styles.modalHeader, { borderBottomColor: colors.borderLight }]}>
+          <View style={[styles.modalHeader, { borderBottomColor: GLASS_BORDER }]}>
             <TouchableOpacity onPress={() => setSelectedTicket(null)} style={styles.modalClose}>
-              <Feather name="x" size={26} color={colors.text} />
+              <Feather name="x" size={26} color={TEXT_PRIMARY} />
             </TouchableOpacity>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Your Ticket</Text>
+            <Text style={[styles.modalTitle, { color: TEXT_PRIMARY }]}>Your Ticket</Text>
             <View style={{ width: 40 }} />
           </View>
 
           {selectedTicket && (
             <Animated.View style={[styles.modalContent, animatedTicketStyle]}>
               {/* Event card */}
-              <View style={[styles.modalEventCard, { backgroundColor: colors.inputBackground }]}>
+              <View style={[styles.modalEventCard, { backgroundColor: SURFACE }]}>
                 {(selectedTicket.event?.cover_image_url) && (
                   <Image
                     source={{ uri: selectedTicket.event?.cover_image_url }}
@@ -267,8 +267,8 @@ export default function TicketsScreen() {
                   />
                 )}
                 <View style={styles.modalEventInfo}>
-                  <Text style={[styles.modalEventTitle, { color: colors.text }]}>{selectedTicket.event?.title || 'Event'}</Text>
-                  <Text style={[styles.modalEventDate, { color: colors.textSecondary }]}>
+                  <Text style={[styles.modalEventTitle, { color: TEXT_PRIMARY }]}>{selectedTicket.event?.title || 'Event'}</Text>
+                  <Text style={[styles.modalEventDate, { color: LABEL }]}>
                     {selectedTicket.event?.start_time
                       ? new Date(selectedTicket.event.start_time).toLocaleDateString('en-US', {
                           weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
@@ -284,25 +284,25 @@ export default function TicketsScreen() {
                 <QRCode
                   value={selectedTicket.id}
                   size={220}
-                  color={colors.text}
-                  backgroundColor={colors.card}
+                  color={TEXT_PRIMARY}
+                  backgroundColor={DARK}
                 />
               </View>
 
               {/* Ticket token */}
-              <Text style={[styles.tokenLabel, { color: colors.textMuted }]}>TICKET ID</Text>
-              <Text style={[styles.tokenValue, { color: colors.text }]}>{(selectedTicket.id).slice(0, 16).toUpperCase()}</Text>
+              <Text style={[styles.tokenLabel, { color: MUTED }]}>TICKET ID</Text>
+              <Text style={[styles.tokenValue, { color: TEXT_PRIMARY }]}>{(selectedTicket.id).slice(0, 16).toUpperCase()}</Text>
 
               <View style={[
                 styles.modalStatusBadge,
-                getTicketStatusInfo(selectedTicket).isValid ? styles.activeBadge : [styles.usedBadge, { backgroundColor: colors.inputBackground }]
+                getTicketStatusInfo(selectedTicket).isValid ? styles.activeBadge : [styles.usedBadge, { backgroundColor: SURFACE }]
               ]}>
-                <Text style={[styles.modalStatusText, { color: getTicketStatusInfo(selectedTicket).isExpired ? '#FFA000' : colors.tint }]}>
+                <Text style={[styles.modalStatusText, { color: getTicketStatusInfo(selectedTicket).isExpired ? '#FFA000' : G }]}>
                   {getTicketStatusInfo(selectedTicket).isValid ? '✓ Valid Ticket' : getTicketStatusInfo(selectedTicket).text}
                 </Text>
               </View>
 
-              <Text style={[styles.scanInstructions, { color: colors.textMuted }]}>
+              <Text style={[styles.scanInstructions, { color: MUTED }]}>
                 Present this QR code to the event organizer for check-in
               </Text>
             </Animated.View>

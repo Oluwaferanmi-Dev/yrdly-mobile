@@ -55,10 +55,12 @@ export default function ProfileEditScreen() {
       let finalAvatarUrl = (profile as any)?.avatar_url;
 
       if (avatarUri) {
-        finalAvatarUrl = await StorageService.uploadAvatar(user.id, avatarUri);
+        const file = { uri: avatarUri, name: 'avatar.jpg', type: 'image/jpeg' };
+        const { url } = await StorageService.uploadUserAvatar(user.id, file);
+        if (url) finalAvatarUrl = url;
       }
 
-      await AuthService.updateProfile(user.id, {
+      await AuthService.updateUserProfile(user.id, {
         name: name.trim(),
         username: username.trim() || undefined,
         bio: bio.trim() || undefined,

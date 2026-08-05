@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert, SafeAreaView, Platform, Dimensions,
@@ -124,11 +124,11 @@ export default function TicketScannerScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>Scan Attendee Tickets</Text>
+        <Text style={[styles.title, { color: TEXT_PRIMARY }]}>Scan Attendee Tickets</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -146,9 +146,9 @@ export default function TicketScannerScreen() {
           </View>
         ) : (
           <View style={[styles.noPermBox, { backgroundColor: SURFACE }]}>
-            <Ionicons name="camera-outline" size={48} color={colors.textMuted} />
-            <Text style={[styles.noPermText, { color: colors.text }]}>Camera Permission Required</Text>
-            <TouchableOpacity style={[styles.permBtn, { backgroundColor: colors.tint }]} onPress={requestPermission}>
+            <Ionicons name="camera-outline" size={48} color={MUTED} />
+            <Text style={[styles.noPermText, { color: TEXT_PRIMARY }]}>Camera Permission Required</Text>
+            <TouchableOpacity style={[styles.permBtn, { backgroundColor: G }]} onPress={requestPermission}>
               <Text style={styles.permBtnText}>Grant Camera Permission</Text>
             </TouchableOpacity>
           </View>
@@ -177,19 +177,19 @@ export default function TicketScannerScreen() {
         )}
 
         {/* Manual Code Input */}
-        <View style={[styles.manualCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-          <Text style={[styles.manualTitle, { color: colors.text }]}>Enter Ticket Code Manually</Text>
+        <View style={[styles.manualCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+          <Text style={[styles.manualTitle, { color: TEXT_PRIMARY }]}>Enter Ticket Code Manually</Text>
           <View style={styles.inputRow}>
             <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.borderLight, backgroundColor: colors.inputBackground }]}
+              style={[styles.input, { color: TEXT_PRIMARY, borderColor: GLASS_BORDER, backgroundColor: SURFACE }]}
               placeholder="e.g. tkt_9f2a41..."
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={MUTED}
               value={manualCode}
               onChangeText={setManualCode}
               autoCapitalize="none"
             />
             <TouchableOpacity
-              style={[styles.verifyBtn, { backgroundColor: colors.tint }]}
+              style={[styles.verifyBtn, { backgroundColor: G }]}
               onPress={() => verifyTicketCode(manualCode)}
               disabled={verifying}
             >

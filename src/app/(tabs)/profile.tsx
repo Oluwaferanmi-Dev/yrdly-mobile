@@ -434,7 +434,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   navTitle: { 
     flex: 1,
-    color: colors.text, 
+    color: TEXT_PRIMARY, 
     fontSize: 20, 
     fontWeight: '800',
     textAlign: 'center',

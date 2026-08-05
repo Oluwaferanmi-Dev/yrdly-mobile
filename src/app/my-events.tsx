@@ -69,38 +69,38 @@ export default function MyEventsScreen() {
         </View>
 
         <View style={styles.eventContent}>
-          <Text style={[styles.eventTitle, { color: colors.text }]} numberOfLines={2}>
+          <Text style={[styles.eventTitle, { color: TEXT_PRIMARY }]} numberOfLines={2}>
             {item.title}
           </Text>
           
           <View style={styles.eventInfoRow}>
-            <Feather name="calendar" size={14} color={colors.textSecondary} />
-            <Text style={[styles.eventInfoText, { color: colors.textSecondary }]}>
+            <Feather name="calendar" size={14} color={LABEL} />
+            <Text style={[styles.eventInfoText, { color: LABEL }]}>
               {formattedDate}
             </Text>
           </View>
 
           <View style={[styles.statsContainer, { backgroundColor: DARK, borderColor: colors.border }]}>
             <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: colors.text }]}>{totalSold}</Text>
-              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Sold</Text>
+              <Text style={[styles.statValue, { color: TEXT_PRIMARY }]}>{totalSold}</Text>
+              <Text style={[styles.statLabel, { color: MUTED }]}>Sold</Text>
             </View>
             <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
             <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: colors.text }]}>
+              <Text style={[styles.statValue, { color: TEXT_PRIMARY }]}>
                 ₦{totalRevenue.toLocaleString()}
               </Text>
-              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Revenue</Text>
+              <Text style={[styles.statLabel, { color: MUTED }]}>Revenue</Text>
             </View>
             <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
             <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: colors.text }]}>{item.attendee_count || 0}</Text>
-              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Attendees</Text>
+              <Text style={[styles.statValue, { color: TEXT_PRIMARY }]}>{item.attendee_count || 0}</Text>
+              <Text style={[styles.statLabel, { color: MUTED }]}>Attendees</Text>
             </View>
           </View>
 
           <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: colors.tint, paddingVertical: 8, borderRadius: 12, marginTop: 10 }}
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: G, paddingVertical: 8, borderRadius: 12, marginTop: 10 }}
             onPress={() => router.push({ pathname: '/events/scan' as any, params: { eventId: item.id } })}
           >
             <Ionicons name="qr-code" size={16} color="#000" />
@@ -114,14 +114,14 @@ export default function MyEventsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>My Events</Text>
-        <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: colors.tint + '20', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14 }} onPress={() => router.push('/events/scan' as any)}>
-          <Ionicons name="qr-code-outline" size={16} color={colors.tint} />
-          <Text style={{ color: colors.tint, fontWeight: '700', fontSize: 12 }}>Scan</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>My Events</Text>
+        <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: G + '20', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14 }} onPress={() => router.push('/events/scan' as any)}>
+          <Ionicons name="qr-code-outline" size={16} color={G} />
+          <Text style={{ color: G, fontWeight: '700', fontSize: 12 }}>Scan</Text>
         </TouchableOpacity>
       </View>
 
@@ -131,18 +131,18 @@ export default function MyEventsScreen() {
         renderItem={renderEvent}
         contentContainerStyle={styles.listContainer}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />
         }
         ListEmptyComponent={
           !loading ? (
             <View style={styles.emptyState}>
               <Feather name="calendar" size={48} color={colors.border} />
-              <Text style={[styles.emptyStateTitle, { color: colors.text }]}>No Events Yet</Text>
-              <Text style={[styles.emptyStateDesc, { color: colors.textSecondary }]}>
+              <Text style={[styles.emptyStateTitle, { color: TEXT_PRIMARY }]}>No Events Yet</Text>
+              <Text style={[styles.emptyStateDesc, { color: LABEL }]}>
                 You haven't organized any events yet.
               </Text>
               <TouchableOpacity
-                style={[styles.createButton, { backgroundColor: colors.tint }]}
+                style={[styles.createButton, { backgroundColor: G }]}
                 onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}
               >
                 <Text style={styles.createButtonText}>Create Event</Text>
@@ -150,7 +150,7 @@ export default function MyEventsScreen() {
             </View>
           ) : (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={colors.tint} />
+              <ActivityIndicator size="large" color={G} />
             </View>
           )
         }

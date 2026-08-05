@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
@@ -94,8 +94,8 @@ export default function AdminDisputesScreen() {
     return (
       <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
         <View style={s.center}>
-          <Feather name="lock" size={48} color={colors.textMuted} />
-          <Text style={[s.accessText, { color: colors.textSecondary }]}>Admin access required</Text>
+          <Feather name="lock" size={48} color={MUTED} />
+          <Text style={[s.accessText, { color: LABEL }]}>Admin access required</Text>
         </View>
       </SafeAreaView>
     );
@@ -109,7 +109,7 @@ export default function AdminDisputesScreen() {
 
     return (
       <TouchableOpacity
-        style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
+        style={[s.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
         onPress={() => router.push(`/(admin)/disputes/${item.id}` as any)}
         activeOpacity={0.75}
       >
@@ -120,11 +120,11 @@ export default function AdminDisputesScreen() {
               {item.status.replace('_', ' ').toUpperCase()}
             </Text>
           </View>
-          <Text style={[s.dateText, { color: colors.textMuted }]}>{formatDate(item.created_at)}</Text>
+          <Text style={[s.dateText, { color: MUTED }]}>{formatDate(item.created_at)}</Text>
         </View>
 
         {/* Reason */}
-        <Text style={[s.reason, { color: colors.text }]} numberOfLines={2}>
+        <Text style={[s.reason, { color: TEXT_PRIMARY }]} numberOfLines={2}>
           {item.reason?.replace(/_/g, ' ') ?? 'Dispute'}
         </Text>
 
@@ -133,41 +133,41 @@ export default function AdminDisputesScreen() {
           <View style={s.party}>
             {buyer?.avatar_url
               ? <Image source={{ uri: buyer.avatar_url }} style={s.avatar} />
-              : <View style={[s.avatar, s.avatarFallback, { backgroundColor: colors.inputBackground }]}>
-                  <Feather name="user" size={14} color={colors.textMuted} />
+              : <View style={[s.avatar, s.avatarFallback, { backgroundColor: SURFACE }]}>
+                  <Feather name="user" size={14} color={MUTED} />
                 </View>
             }
             <View style={{ flex: 1 }}>
-              <Text style={[s.partyRole, { color: colors.textMuted }]}>Buyer</Text>
-              <Text style={[s.partyName, { color: colors.text }]} numberOfLines={1}>{buyer?.name ?? '—'}</Text>
+              <Text style={[s.partyRole, { color: MUTED }]}>Buyer</Text>
+              <Text style={[s.partyName, { color: TEXT_PRIMARY }]} numberOfLines={1}>{buyer?.name ?? '—'}</Text>
             </View>
           </View>
 
-          <Feather name="arrow-right" size={16} color={colors.textMuted} />
+          <Feather name="arrow-right" size={16} color={MUTED} />
 
           <View style={[s.party, { justifyContent: 'flex-end' }]}>
             <View style={{ flex: 1, alignItems: 'flex-end' }}>
-              <Text style={[s.partyRole, { color: colors.textMuted }]}>Seller</Text>
-              <Text style={[s.partyName, { color: colors.text }]} numberOfLines={1}>{seller?.name ?? '—'}</Text>
+              <Text style={[s.partyRole, { color: MUTED }]}>Seller</Text>
+              <Text style={[s.partyName, { color: TEXT_PRIMARY }]} numberOfLines={1}>{seller?.name ?? '—'}</Text>
             </View>
             {seller?.avatar_url
               ? <Image source={{ uri: seller.avatar_url }} style={s.avatar} />
-              : <View style={[s.avatar, s.avatarFallback, { backgroundColor: colors.inputBackground }]}>
-                  <Feather name="user" size={14} color={colors.textMuted} />
+              : <View style={[s.avatar, s.avatarFallback, { backgroundColor: SURFACE }]}>
+                  <Feather name="user" size={14} color={MUTED} />
                 </View>
             }
           </View>
         </View>
 
         {tx?.amount != null && (
-          <Text style={[s.amount, { color: colors.textSecondary }]}>
+          <Text style={[s.amount, { color: LABEL }]}>
             Order: ₦{Number(tx.amount).toLocaleString()}
           </Text>
         )}
 
         <View style={s.chevronRow}>
-          <Text style={[s.viewDetail, { color: colors.tint }]}>View Details</Text>
-          <Feather name="chevron-right" size={16} color={colors.tint} />
+          <Text style={[s.viewDetail, { color: G }]}>View Details</Text>
+          <Feather name="chevron-right" size={16} color={G} />
         </View>
       </TouchableOpacity>
     );
@@ -176,11 +176,11 @@ export default function AdminDisputesScreen() {
   return (
     <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
       {/* Header */}
-      <View style={[s.header, { borderBottomColor: colors.borderLight }]}>
+      <View style={[s.header, { borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[s.headerTitle, { color: colors.text }]}>Disputes</Text>
+        <Text style={[s.headerTitle, { color: TEXT_PRIMARY }]}>Disputes</Text>
         <View style={{ width: 28 }} />
       </View>
 
@@ -195,12 +195,12 @@ export default function AdminDisputesScreen() {
               style={[
                 s.filterPill,
                 {
-                  backgroundColor: active ? colors.tint + '22' : 'transparent',
-                  borderColor: active ? colors.tint : colors.borderLight,
+                  backgroundColor: active ? G + '22' : 'transparent',
+                  borderColor: active ? G : GLASS_BORDER,
                 },
               ]}
             >
-              <Text style={[s.filterLabel, { color: active ? colors.tint : colors.textMuted }]}>
+              <Text style={[s.filterLabel, { color: active ? G : MUTED }]}>
                 {f.label}
               </Text>
             </TouchableOpacity>
@@ -210,7 +210,7 @@ export default function AdminDisputesScreen() {
 
       {loading ? (
         <View style={s.center}>
-          <ActivityIndicator size="large" color={colors.tint} />
+          <ActivityIndicator size="large" color={G} />
         </View>
       ) : (
         <FlatList
@@ -219,11 +219,11 @@ export default function AdminDisputesScreen() {
           renderItem={renderItem}
           contentContainerStyle={s.list}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />}
           ListEmptyComponent={
             <View style={s.center}>
-              <Feather name="check-circle" size={48} color={colors.textMuted} />
-              <Text style={[s.emptyText, { color: colors.textSecondary }]}>No disputes found</Text>
+              <Feather name="check-circle" size={48} color={MUTED} />
+              <Text style={[s.emptyText, { color: LABEL }]}>No disputes found</Text>
             </View>
           }
         />

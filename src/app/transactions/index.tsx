@@ -206,7 +206,7 @@ export default function TransactionsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchTransactions(true)}
-              tintColor={colors.tint}
+              tintColor={G}
             />
           }
           ListEmptyComponent={
@@ -217,8 +217,8 @@ export default function TransactionsScreen() {
                 style={{ width: 160, height: 160 }}
                 source={{ uri: 'https://lottie.host/1c248ba5-2d9a-4898-9b94-b0f7d3e9c90a/hhyaO2TJBJ.json' }}
               />
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>No {tab} yet</Text>
-              <Text style={[styles.emptyBody, { color: colors.textMuted }]}>
+              <Text style={[styles.emptyTitle, { color: TEXT_PRIMARY }]}>No {tab} yet</Text>
+              <Text style={[styles.emptyBody, { color: MUTED }]}>
                 {tab === 'purchases'
                   ? 'Items you buy on the marketplace will appear here.'
                   : 'Items you sell will appear here.'}

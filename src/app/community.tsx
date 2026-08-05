@@ -274,21 +274,21 @@ export default function CommunityScreen() {
     return (
       <Animated.View entering={FadeInUp.delay(index * 100).springify()} style={[styles.premiumCard, styles.requestCard]}>
         <TouchableOpacity style={styles.userInfo} onPress={() => router.push(`/profile/${sender.id}` as any)}>
-          <View style={[styles.avatar, { backgroundColor: colors.tint + '20' }]}>
+          <View style={[styles.avatar, { backgroundColor: G + '20' }]}>
             {sender.avatar_url ? (
               <Image source={{ uri: sender.avatar_url }} style={styles.avatarImage} />
             ) : (
-              <Text style={[styles.avatarText, { color: colors.tint }]}>{sender.name ? sender.name.charAt(0).toUpperCase() : '?'}</Text>
+              <Text style={[styles.avatarText, { color: G }]}>{sender.name ? sender.name.charAt(0).toUpperCase() : '?'}</Text>
             )}
           </View>
           <View>
-            <Text style={[styles.userName, { color: colors.text }]}>{sender.name || 'Anonymous'}</Text>
-            <Text style={[styles.userSubtitle, { color: colors.textMuted }]}>Wants to be friends</Text>
+            <Text style={[styles.userName, { color: TEXT_PRIMARY }]}>{sender.name || 'Anonymous'}</Text>
+            <Text style={[styles.userSubtitle, { color: MUTED }]}>Wants to be friends</Text>
           </View>
         </TouchableOpacity>
         <View style={styles.actionButtonsRow}>
           <TouchableOpacity
-            style={[styles.premiumBtn, { backgroundColor: colors.tint }]}
+            style={[styles.premiumBtn, { backgroundColor: G }]}
             onPress={() => handleRequestAction(item.id, 'accepted')}
           >
             <Text style={styles.premiumBtnText}>Accept</Text>
@@ -316,18 +316,18 @@ export default function CommunityScreen() {
         >
           <View style={styles.friendRow}>
             <View style={styles.avatarContainer}>
-              <View style={[styles.avatarMedium, { backgroundColor: colors.tint + '30' }]}>
+              <View style={[styles.avatarMedium, { backgroundColor: G + '30' }]}>
                 {user.avatar_url ? (
                   <Image source={{ uri: user.avatar_url }} style={styles.avatarImage} />
                 ) : (
-                  <Text style={[styles.avatarTextMedium, { color: colors.tint }]}>{user.name ? user.name.charAt(0).toUpperCase() : '?'}</Text>
+                  <Text style={[styles.avatarTextMedium, { color: G }]}>{user.name ? user.name.charAt(0).toUpperCase() : '?'}</Text>
                 )}
               </View>
               <View style={styles.onlineBadge} />
             </View>
             <View style={styles.friendInfo}>
-              <Text style={[styles.userNameSmall, { color: colors.text }]}>{user.name || 'Anonymous'}</Text>
-              <Text style={[styles.userSubtitle, { color: colors.textSecondary }]}>YRDLY User</Text>
+              <Text style={[styles.userNameSmall, { color: TEXT_PRIMARY }]}>{user.name || 'Anonymous'}</Text>
+              <Text style={[styles.userSubtitle, { color: LABEL }]}>YRDLY User</Text>
             </View>
             {removingId === reqId ? (
               <ActivityIndicator size="small" color="#E53935" />
@@ -337,7 +337,7 @@ export default function CommunityScreen() {
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 onPress={() => handleFriendOptions(item)}
               >
-                <Feather name="more-horizontal" size={20} color={colors.textSecondary} />
+                <Feather name="more-horizontal" size={20} color={LABEL} />
               </TouchableOpacity>
             )}
           </View>
@@ -352,29 +352,29 @@ export default function CommunityScreen() {
         <View style={styles.premiumFriendCard}>
           <View style={styles.friendRow}>
             <TouchableOpacity style={styles.friendInfoRow} onPress={() => router.push(`/profile/${item.id}` as any)}>
-              <View style={[styles.avatarMedium, { backgroundColor: colors.tint + '30' }]}>
+              <View style={[styles.avatarMedium, { backgroundColor: G + '30' }]}>
                 {item.avatar_url ? (
                   <Image source={{ uri: item.avatar_url }} style={styles.avatarImage} />
                 ) : (
-                  <Text style={[styles.avatarTextMedium, { color: colors.tint }]}>{item.name ? item.name.charAt(0).toUpperCase() : '?'}</Text>
+                  <Text style={[styles.avatarTextMedium, { color: G }]}>{item.name ? item.name.charAt(0).toUpperCase() : '?'}</Text>
                 )}
               </View>
               <View style={styles.friendInfo}>
-                <Text style={[styles.userNameSmall, { color: colors.text }]}>{item.name || 'Anonymous'}</Text>
-                <Text style={[styles.userSubtitle, { color: colors.textSecondary }]}>
+                <Text style={[styles.userNameSmall, { color: TEXT_PRIMARY }]}>{item.name || 'Anonymous'}</Text>
+                <Text style={[styles.userSubtitle, { color: LABEL }]}>
                   {item.location?.lga ? `${item.location.lga} • ` : ''}Discover
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.smallActionBtn, { backgroundColor: colors.tint + '15' }]}
+              style={[styles.smallActionBtn, { backgroundColor: G + '15' }]}
               onPress={() => handleAddFriend(item.id)}
               disabled={actionInProgress[item.id]}
             >
               {actionInProgress[item.id] ? (
-                <ActivityIndicator size="small" color={colors.tint} />
+                <ActivityIndicator size="small" color={G} />
               ) : (
-                <Feather name="user-plus" size={16} color={colors.tint} />
+                <Feather name="user-plus" size={16} color={G} />
               )}
             </TouchableOpacity>
           </View>
@@ -387,7 +387,7 @@ export default function CommunityScreen() {
     <View style={styles.listHeaderContainer}>
       {requests.length > 0 && (
         <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitlePremium, { color: colors.text }]}>Requests ({requests.length})</Text>
+          <Text style={[styles.sectionTitlePremium, { color: TEXT_PRIMARY }]}>Requests ({requests.length})</Text>
           <FlatList
             data={requests}
             keyExtractor={(item: any) => item.id}
@@ -402,19 +402,19 @@ export default function CommunityScreen() {
       <Animated.View entering={FadeInDown.duration(400)} style={styles.heroCard}>
         <View style={styles.heroContent}>
           <View style={styles.heroTextContent}>
-            <Text style={[styles.heroTitle, { color: colors.text }]}>My Friends</Text>
-            <Text style={[styles.heroSubtitle, { color: colors.tint }]}>{friends.length} connections</Text>
+            <Text style={[styles.heroTitle, { color: TEXT_PRIMARY }]}>My Friends</Text>
+            <Text style={[styles.heroSubtitle, { color: G }]}>{friends.length} connections</Text>
           </View>
-          <View style={[styles.heroIconContainer, { backgroundColor: colors.tint + '20' }]}>
-            <Feather name="users" size={32} color={colors.tint} />
+          <View style={[styles.heroIconContainer, { backgroundColor: G + '20' }]}>
+            <Feather name="users" size={32} color={G} />
           </View>
         </View>
-        <View style={[styles.searchContainerPremium, { backgroundColor: colors.tint + '1A' }]}>
-          <Feather name="search" size={18} color={colors.textSecondary} />
+        <View style={[styles.searchContainerPremium, { backgroundColor: G + '1A' }]}>
+          <Feather name="search" size={18} color={LABEL} />
           <TextInput
-            style={[styles.searchInputPremium, { color: colors.text }]}
+            style={[styles.searchInputPremium, { color: TEXT_PRIMARY }]}
             placeholder="Search friends..."
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={MUTED}
             value={searchQuery}
             onChangeText={setSearchQuery}
             returnKeyType="search"
@@ -423,18 +423,18 @@ export default function CommunityScreen() {
       </Animated.View>
 
       <View style={styles.inviteCard}>
-        <View style={[styles.inviteGlow, { borderColor: colors.tint }]} />
+        <View style={[styles.inviteGlow, { borderColor: G }]} />
         <View style={styles.inviteContent}>
           <View style={styles.inviteTextRow}>
-            <View style={[styles.inviteIconBg, { backgroundColor: colors.tint + '20' }]}>
-              <Ionicons name="gift-outline" size={24} color={colors.tint} />
+            <View style={[styles.inviteIconBg, { backgroundColor: G + '20' }]}>
+              <Ionicons name="gift-outline" size={24} color={G} />
             </View>
             <View style={styles.inviteTexts}>
-              <Text style={[styles.inviteTitle, { color: colors.text }]}>Invite Friends</Text>
-              <Text style={[styles.inviteSubtitle, { color: colors.textSecondary }]}>Build your community on YRDLY.</Text>
+              <Text style={[styles.inviteTitle, { color: TEXT_PRIMARY }]}>Invite Friends</Text>
+              <Text style={[styles.inviteSubtitle, { color: LABEL }]}>Build your community on YRDLY.</Text>
             </View>
           </View>
-          <TouchableOpacity style={[styles.inviteBtn, { backgroundColor: colors.tint }]} onPress={handleInvite}>
+          <TouchableOpacity style={[styles.inviteBtn, { backgroundColor: G }]} onPress={handleInvite}>
             <Text style={styles.inviteBtnText}>Share Link</Text>
           </TouchableOpacity>
         </View>
@@ -445,7 +445,7 @@ export default function CommunityScreen() {
   const discoverHeader = (
     <View style={styles.discoverHeaderContainer}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Text style={[styles.sectionTitlePremium, { color: colors.text, marginBottom: 0 }]}>Find People</Text>
+        <Text style={[styles.sectionTitlePremium, { color: TEXT_PRIMARY, marginBottom: 0 }]}>Find People</Text>
         
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsRowPremium}>
@@ -454,13 +454,13 @@ export default function CommunityScreen() {
             key={tab}
             style={[
               styles.premiumChip,
-              activeFilterTab === tab ? { backgroundColor: colors.tint, borderColor: colors.tint } : { backgroundColor: 'transparent', borderColor: colors.borderLight }
+              activeFilterTab === tab ? { backgroundColor: G, borderColor: G } : { backgroundColor: 'transparent', borderColor: GLASS_BORDER }
             ]}
             onPress={() => setActiveFilterTab(tab)}
           >
             <Text style={[
               styles.premiumChipText,
-              activeFilterTab === tab ? { color: colors.tintText } : { color: colors.textSecondary }
+              activeFilterTab === tab ? { color: GText } : { color: LABEL }
             ]}>
               {tab === 'all' ? 'All' : tab === 'neighbors' ? 'Neighbors' : tab === 'mutuals' ? 'Mutuals' : 'Sellers'}
             </Text>
@@ -491,10 +491,10 @@ export default function CommunityScreen() {
         ListEmptyComponent={
           <View style={styles.emptyContainerPremium}>
             <View style={[styles.emptyIconBg, { backgroundColor: SURFACE }]}>
-              <Feather name="compass" size={40} color={colors.textSecondary} />
+              <Feather name="compass" size={40} color={LABEL} />
             </View>
-            <Text style={[styles.emptyTitlePremium, { color: colors.text }]}>No one found</Text>
-            <Text style={[styles.emptySubtitlePremium, { color: colors.textMuted }]}>Try changing your filter or location.</Text>
+            <Text style={[styles.emptyTitlePremium, { color: TEXT_PRIMARY }]}>No one found</Text>
+            <Text style={[styles.emptySubtitlePremium, { color: MUTED }]}>Try changing your filter or location.</Text>
           </View>
         }
       />
@@ -505,11 +505,11 @@ export default function CommunityScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       {/* Premium Header */}
       <View style={styles.premiumHeader}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.glassBtn, { backgroundColor: colors.tint + '1A' }]}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+        <TouchableOpacity onPress={() => router.back()} style={[styles.glassBtn, { backgroundColor: G + '1A' }]}>
+          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
         <View style={styles.headerTitleCenter}>
-          <Text style={[styles.premiumHeaderTitle, { color: colors.text }]}>Community</Text>
+          <Text style={[styles.premiumHeaderTitle, { color: TEXT_PRIMARY }]}>Community</Text>
           
         </View>
         <View style={{ width: 40 }} />
@@ -519,25 +519,25 @@ export default function CommunityScreen() {
       <View style={styles.segmentedControlContainer}>
         <View style={[styles.segmentedControl, { backgroundColor: SURFACE }]}>
           <TouchableOpacity 
-            style={[styles.segmentBtn, activeTab === 'friends' && { backgroundColor: colors.tint + '1A' }]} 
+            style={[styles.segmentBtn, activeTab === 'friends' && { backgroundColor: G + '1A' }]} 
             onPress={() => setActiveTab('friends')}
           >
-            <Text style={[styles.segmentText, activeTab === 'friends' ? { color: colors.text } : { color: colors.textMuted }]}>Friends</Text>
-            {activeTab === 'friends' && <Animated.View layout={Layout.springify()} style={[styles.activeIndicator, { backgroundColor: colors.tint }]} />}
+            <Text style={[styles.segmentText, activeTab === 'friends' ? { color: TEXT_PRIMARY } : { color: MUTED }]}>Friends</Text>
+            {activeTab === 'friends' && <Animated.View layout={Layout.springify()} style={[styles.activeIndicator, { backgroundColor: G }]} />}
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.segmentBtn, activeTab === 'discover' && { backgroundColor: colors.tint + '1A' }]} 
+            style={[styles.segmentBtn, activeTab === 'discover' && { backgroundColor: G + '1A' }]} 
             onPress={() => setActiveTab('discover')}
           >
-            <Text style={[styles.segmentText, activeTab === 'discover' ? { color: colors.text } : { color: colors.textMuted }]}>Discover</Text>
-            {activeTab === 'discover' && <Animated.View layout={Layout.springify()} style={[styles.activeIndicator, { backgroundColor: colors.tint }]} />}
+            <Text style={[styles.segmentText, activeTab === 'discover' ? { color: TEXT_PRIMARY } : { color: MUTED }]}>Discover</Text>
+            {activeTab === 'discover' && <Animated.View layout={Layout.springify()} style={[styles.activeIndicator, { backgroundColor: G }]} />}
           </TouchableOpacity>
         </View>
       </View>
 
       {loading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={colors.tint} />
+          <ActivityIndicator size="large" color={G} />
         </View>
       ) : activeTab === 'friends' ? (
         <FlashList
@@ -551,15 +551,15 @@ export default function CommunityScreen() {
           ListEmptyComponent={
             <Animated.View entering={FadeInUp} style={styles.emptyContainerPremium}>
               <View style={[styles.emptyIconBg, { backgroundColor: SURFACE }]}>
-                <Feather name="users" size={40} color={colors.textSecondary} />
+                <Feather name="users" size={40} color={LABEL} />
               </View>
-              <Text style={[styles.emptyTitlePremium, { color: colors.text }]}>No Friends Yet</Text>
-              <Text style={[styles.emptySubtitlePremium, { color: colors.textMuted }]}>
+              <Text style={[styles.emptyTitlePremium, { color: TEXT_PRIMARY }]}>No Friends Yet</Text>
+              <Text style={[styles.emptySubtitlePremium, { color: MUTED }]}>
                 {searchQuery ? "No friends match your search." : "Discover neighbors and send friend requests to build your community."}
               </Text>
               {!searchQuery && (
                 <TouchableOpacity
-                  style={[styles.premiumDiscoverBtn, { backgroundColor: colors.tint }]}
+                  style={[styles.premiumDiscoverBtn, { backgroundColor: G }]}
                   onPress={() => setActiveTab('discover')}
                 >
                   <Text style={styles.premiumDiscoverBtnText}>Discover People</Text>
@@ -578,34 +578,34 @@ export default function CommunityScreen() {
         index={0}
         snapPoints={snapPoints}
         backgroundStyle={{ backgroundColor: SURFACE }}
-        handleIndicatorStyle={{ backgroundColor: colors.borderLight }}
+        handleIndicatorStyle={{ backgroundColor: GLASS_BORDER }}
         backdropComponent={(props) => (
           <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.7} />
         )}
       >
         <View style={styles.bottomSheetContent}>
-          <Text style={[styles.bottomSheetTitle, { color: colors.text }]}>Filters</Text>
-          <Text style={[styles.bottomSheetSubtitle, { color: colors.textSecondary }]}>Discover settings</Text>
+          <Text style={[styles.bottomSheetTitle, { color: TEXT_PRIMARY }]}>Filters</Text>
+          <Text style={[styles.bottomSheetSubtitle, { color: LABEL }]}>Discover settings</Text>
           
-          <Text style={[styles.filterSectionTitle, { color: colors.text }]}>Distance</Text>
+          <Text style={[styles.filterSectionTitle, { color: TEXT_PRIMARY }]}>Distance</Text>
           <View style={styles.filterChipsRow}>
             {['500m', '1km', '5km', '10km'].map(d => (
               <TouchableOpacity key={d} style={styles.filterChip}>
-                <Text style={{ color: colors.text }}>{d}</Text>
+                <Text style={{ color: TEXT_PRIMARY }}>{d}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          <Text style={[styles.filterSectionTitle, { color: colors.text }]}>Interests</Text>
+          <Text style={[styles.filterSectionTitle, { color: TEXT_PRIMARY }]}>Interests</Text>
           <View style={styles.filterChipsRow}>
             {['Anime', 'Gaming', 'Food', 'Business', 'Technology'].map(i => (
               <TouchableOpacity key={i} style={styles.filterChip}>
-                <Text style={{ color: colors.text }}>{i}</Text>
+                <Text style={{ color: TEXT_PRIMARY }}>{i}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          <TouchableOpacity style={[styles.applyFilterBtn, { backgroundColor: colors.tint }]} onPress={() => bottomSheetModalRef.current?.dismiss()}>
+          <TouchableOpacity style={[styles.applyFilterBtn, { backgroundColor: G }]} onPress={() => bottomSheetModalRef.current?.dismiss()}>
             <Text style={styles.applyFilterBtnText}>Apply</Text>
           </TouchableOpacity>
         </View>
@@ -708,7 +708,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
   },
   requestCard: {
     width: width * 0.75,
@@ -754,7 +754,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
   },
   premiumBtnText: {
-    color: colors.tintText,
+    color: GText,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -775,7 +775,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     padding: 20,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
   },
   heroContent: {
     flexDirection: 'row',
@@ -833,7 +833,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
   },
   inviteContent: {
     padding: 20,
-    backgroundColor: colors.tint + '1A',
+    backgroundColor: G + '1A',
   },
   inviteTextRow: {
     flexDirection: 'row',
@@ -865,7 +865,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
   },
   inviteBtnText: {
-    color: colors.tintText,
+    color: GText,
     fontWeight: '600',
     fontSize: 15,
   },
@@ -912,7 +912,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#82DB7E',
     borderWidth: 2,
-    borderColor: colors.card,
+    borderColor: DARK,
   },
   friendInfo: {
     flex: 1,
@@ -927,7 +927,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 18,
-    backgroundColor: colors.borderLight,
+    backgroundColor: GLASS_BORDER,
   },
   smallActionBtn: {
     width: 36,
@@ -984,7 +984,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     borderRadius: 20,
   },
   premiumDiscoverBtnText: {
-    color: colors.tintText,
+    color: GText,
     fontWeight: '700',
     fontSize: 15,
   },
@@ -995,7 +995,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     padding: 20,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
   },
   discoverHeroContent: {
     flexDirection: 'row',
@@ -1101,7 +1101,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
   },
   nearbyAvatarContainer: {
     position: 'relative',
@@ -1124,7 +1124,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#82DB7E',
     borderWidth: 3,
-    borderColor: colors.card,
+    borderColor: DARK,
   },
   nearbyName: {
     fontSize: 16,
@@ -1148,7 +1148,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
   },
   nearbyFollowBtnText: {
-    color: colors.tintText,
+    color: GText,
     fontWeight: '700',
     fontSize: 14,
   },
@@ -1160,7 +1160,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
   },
   mutualInfoRow: {
     flexDirection: 'row',
@@ -1188,7 +1188,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     marginRight: 8,
   },
   smallFollowBtnText: {
-    color: colors.tintText,
+    color: GText,
     fontWeight: '700',
     fontSize: 14,
   },
@@ -1196,7 +1196,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.tint + '1A',
+    backgroundColor: G + '1A',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1207,7 +1207,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     padding: 16,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
   },
   sellerTopRow: {
     flexDirection: 'row',
@@ -1275,11 +1275,11 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: colors.tint + '1A',
+    backgroundColor: G + '1A',
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: GLASS_BORDER,
   },
   applyFilterBtn: {
     paddingVertical: 16,
@@ -1288,7 +1288,7 @@ const dynamicStyles = (colors: any) => StyleSheet.create({
     marginTop: 12,
   },
   applyFilterBtnText: {
-    color: colors.tintText,
+    color: GText,
     fontSize: 16,
     fontWeight: '700',
   },

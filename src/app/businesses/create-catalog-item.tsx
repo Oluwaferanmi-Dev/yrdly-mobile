@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image, Switch } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -157,7 +157,7 @@ export default function CreateCatalogItemScreen() {
   if (initLoading) {
     return (
       <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={G} />
       </View>
     );
   }
@@ -165,11 +165,11 @@ export default function CreateCatalogItemScreen() {
   return (
     <SafeAreaView style={[s.root, { backgroundColor: DARK }]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[s.header, { borderBottomColor: colors.borderLight }]}>
+        <View style={[s.header, { borderBottomColor: GLASS_BORDER }]}>
           <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={28} color={colors.text} />
+            <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[s.headerTitle, { color: colors.text }]}>
+          <Text style={[s.headerTitle, { color: TEXT_PRIMARY }]}>
             {isEditMode ? 'Edit Catalog Item' : 'Add Catalog Item'}
           </Text>
           <View style={{ width: 40 }} />
@@ -177,55 +177,55 @@ export default function CreateCatalogItemScreen() {
 
         <ScrollView contentContainerStyle={s.scrollPad} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           
-          <Text style={[s.label, { color: colors.textSecondary }]}>Item Title *</Text>
+          <Text style={[s.label, { color: LABEL }]}>Item Title *</Text>
           <TextInput
-            style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+            style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
             placeholder="e.g. Handmade Soap"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={MUTED}
             value={title}
             onChangeText={setTitle}
           />
 
-          <Text style={[s.label, { color: colors.textSecondary }]}>Price (₦) *</Text>
+          <Text style={[s.label, { color: LABEL }]}>Price (₦) *</Text>
           <TextInput
-            style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+            style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
             placeholder="e.g. 5000"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={MUTED}
             keyboardType="numeric"
             value={price}
             onChangeText={setPrice}
           />
 
-          <Text style={[s.label, { color: colors.textSecondary }]}>Stock Quantity *</Text>
+          <Text style={[s.label, { color: LABEL }]}>Stock Quantity *</Text>
           <TextInput
-            style={[s.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+            style={[s.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
             placeholder="e.g. 5"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={MUTED}
             keyboardType="numeric"
             value={quantity}
             onChangeText={setQuantity}
           />
 
-          <Text style={[s.label, { color: colors.textSecondary }]}>Category *</Text>
+          <Text style={[s.label, { color: LABEL }]}>Category *</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
             {CATALOG_CATEGORIES.map(cat => (
               <TouchableOpacity 
                 key={cat}
-                style={[s.categoryChip, { backgroundColor: category === cat ? colors.tint : colors.inputBackground }]}
+                style={[s.categoryChip, { backgroundColor: category === cat ? G : SURFACE }]}
                 onPress={() => setCategory(cat)}
               >
-                <Text style={{ color: category === cat ? '#000' : colors.text, fontWeight: category === cat ? 'bold' : 'normal' }}>
+                <Text style={{ color: category === cat ? '#000' : TEXT_PRIMARY, fontWeight: category === cat ? 'bold' : 'normal' }}>
                   {cat}
                 </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
 
-          <Text style={[s.label, { color: colors.textSecondary }]}>Description</Text>
+          <Text style={[s.label, { color: LABEL }]}>Description</Text>
           <TextInput
-            style={[s.input, s.textarea, { backgroundColor: colors.inputBackground, color: colors.text }]}
+            style={[s.input, s.textarea, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
             placeholder="Describe the item..."
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={MUTED}
             multiline
             numberOfLines={4}
             value={description}
@@ -233,18 +233,18 @@ export default function CreateCatalogItemScreen() {
           />
 
           <View style={s.switchRow}>
-            <Text style={[s.label, { color: colors.text, marginBottom: 0 }]}>In Stock</Text>
+            <Text style={[s.label, { color: TEXT_PRIMARY, marginBottom: 0 }]}>In Stock</Text>
             <Switch
               value={inStock}
               onValueChange={setInStock}
-              trackColor={{ false: colors.borderLight, true: colors.tint }}
+              trackColor={{ false: GLASS_BORDER, true: G }}
             />
           </View>
 
-          <Text style={[s.label, { color: colors.textSecondary, marginTop: 16 }]}>Images</Text>
+          <Text style={[s.label, { color: LABEL, marginTop: 16 }]}>Images</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.galleryScroll}>
-            <TouchableOpacity style={[s.addGalleryBtn, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]} onPress={pickImage}>
-              <Ionicons name="add" size={32} color={colors.textMuted} />
+            <TouchableOpacity style={[s.addGalleryBtn, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]} onPress={pickImage}>
+              <Ionicons name="add" size={32} color={MUTED} />
             </TouchableOpacity>
             {/* Existing remote images */}
             {existingImageUrls.map((url, index) => (
@@ -267,7 +267,7 @@ export default function CreateCatalogItemScreen() {
           </ScrollView>
 
           <TouchableOpacity 
-            style={[s.submitBtn, { backgroundColor: colors.tint, opacity: loading ? 0.7 : 1 }]} 
+            style={[s.submitBtn, { backgroundColor: G, opacity: loading ? 0.7 : 1 }]} 
             onPress={handleSubmit}
             disabled={loading}
           >

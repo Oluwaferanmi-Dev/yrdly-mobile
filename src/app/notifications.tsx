@@ -1,4 +1,4 @@
-import { DARK, SURFACE, GLASS_BORDER, G, MUTED, LABEL } from '../constants/tokens';
+import { DARK, SURFACE, GLASS_BORDER, G, MUTED, LABEL, TEXT_PRIMARY } from '../constants/tokens';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, useWindowDimensions,
@@ -71,12 +71,12 @@ const SkeletonCard = () => {
   const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }, animStyle]}>
-      <View style={[styles.avatar, { backgroundColor: colors.border }]} />
+    <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, animStyle]}>
+      <View style={[styles.avatar, { backgroundColor: GLASS_BORDER }]} />
       <View style={styles.contentContainer}>
-        <View style={{ height: 16, width: '60%', backgroundColor: colors.border, borderRadius: 4, marginBottom: 8 }} />
-        <View style={{ height: 12, width: '80%', backgroundColor: colors.border, borderRadius: 4, marginBottom: 8 }} />
-        <View style={{ height: 10, width: '30%', backgroundColor: colors.border, borderRadius: 4 }} />
+        <View style={{ height: 16, width: '60%', backgroundColor: GLASS_BORDER, borderRadius: 4, marginBottom: 8 }} />
+        <View style={{ height: 12, width: '80%', backgroundColor: GLASS_BORDER, borderRadius: 4, marginBottom: 8 }} />
+        <View style={{ height: 10, width: '30%', backgroundColor: GLASS_BORDER, borderRadius: 4 }} />
       </View>
     </Animated.View>
   );
@@ -381,7 +381,7 @@ export default function NotificationsScreen() {
       case 'marketplace_item_interest':
         return <Ionicons name="cart" size={14} color="#FBBF24" />;
       default:
-        return <Ionicons name="notifications" size={14} color={colors.textMuted} />;
+        return <Ionicons name="notifications" size={14} color={MUTED} />;
     }
   };
 
@@ -431,8 +431,8 @@ export default function NotificationsScreen() {
             {item.from_user_avatar ? (
               <Image source={{ uri: item.from_user_avatar }} style={styles.avatar} contentFit="cover" />
             ) : (
-              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.tint + '40' }]}>
-                <Text style={[styles.avatarFallbackText, { color: colors.tint }]}>
+              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
+                <Text style={[styles.avatarFallbackText, { color: G, fontFamily: 'Outfit' }]}>
                   {item.from_user_name ? item.from_user_name.charAt(0).toUpperCase() : 
                     (item.type === 'payment_successful' ? '💰' : 
                      item.type === 'payout_processed' ? '💳' :
@@ -446,29 +446,29 @@ export default function NotificationsScreen() {
                 </Text>
               </View>
             )}
-            <View style={[styles.typeIconBadge, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+            <View style={[styles.typeIconBadge, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
               {renderIcon(item.type)}
             </View>
           </View>
 
           <View style={styles.contentContainer}>
-            <Text style={[styles.messageText, { color: isUnread ? colors.text : colors.textSecondary }]}>
-              <Text style={[styles.boldText, { color: colors.text }]}>{item.from_user_name || item.title} </Text>
+            <Text style={[styles.messageText, { color: isUnread ? TEXT_PRIMARY : MUTED, fontFamily: 'Inter' }]}>
+              <Text style={[styles.boldText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{item.from_user_name || item.title} </Text>
               {item.from_user_name ? item.message : ''}
             </Text>
             {!item.from_user_name && (
-              <Text style={[styles.subMessageText, { color: colors.textSecondary }]}>{item.message}</Text>
+              <Text style={[styles.subMessageText, { color: MUTED, fontFamily: 'Inter' }]}>{item.message}</Text>
             )}
-            <Text style={[styles.timeText, { color: colors.textMuted }]}>{timeAgo(item.created_at)}</Text>
+            <Text style={[styles.timeText, { color: LABEL, fontFamily: 'Inter' }]}>{timeAgo(item.created_at)}</Text>
           </View>
 
           <View style={styles.rightContent}>
             {item.data?.item_image ? (
               <Image source={{ uri: item.data.item_image }} style={styles.thumbnail} contentFit="cover" />
             ) : (
-              <Feather name="chevron-right" size={20} color={colors.textMuted} />
+              <Feather name="chevron-right" size={20} color={LABEL} />
             )}
-            {isUnread && <View style={[styles.unreadDot, { backgroundColor: colors.tint }]} />}
+            {isUnread && <View style={[styles.unreadDot, { backgroundColor: G }]} />}
           </View>
         </TouchableOpacity>
       </Swipeable>
@@ -481,18 +481,18 @@ export default function NotificationsScreen() {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={28} color={colors.text} />
+            <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
+          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Notifications</Text>
           {unreadCount > 0 ? (
-            <TouchableOpacity style={[styles.markAllBtn, { backgroundColor: colors.tint + '20' }]} onPress={handleMarkAllRead}>
-              <Feather name="check-circle" size={20} color={colors.tint} />
+            <TouchableOpacity style={[styles.markAllBtn, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]} onPress={handleMarkAllRead}>
+              <Feather name="check-circle" size={20} color={G} />
             </TouchableOpacity>
           ) : (
             <View style={styles.markAllPlaceholder} />
           )}
         </View>
-        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Everything happening around your account</Text>
+        <Text style={[styles.headerSubtitle, { color: MUTED, fontFamily: 'Inter' }]}>Everything happening around your account</Text>
       </View>
 
       {/* Pill Filters */}
@@ -509,19 +509,19 @@ export default function NotificationsScreen() {
               <TouchableOpacity
                 style={[
                   styles.filterPill, 
-                  { backgroundColor: isActive ? colors.tint : colors.card }
+                  { backgroundColor: isActive ? G : SURFACE, borderWidth: 1, borderColor: isActive ? G : GLASS_BORDER }
                 ]}
                 onPress={() => setActiveFilter(item)}
                 activeOpacity={0.8}
               >
                 <Text style={[
                   styles.filterPillText, 
-                  { color: isActive ? '#000000' : colors.text }
+                  { color: isActive ? '#000000' : TEXT_PRIMARY, fontFamily: 'Outfit' }
                 ]}>
                   {item}
                 </Text>
                 {item === 'Unread' && unreadCount > 0 && (
-                  <View style={[styles.filterBadge, { backgroundColor: isActive ? 'rgba(0,0,0,0.2)' : colors.tint }]}>
+                  <View style={[styles.filterBadge, { backgroundColor: isActive ? 'rgba(0,0,0,0.2)' : G }]}>
                     <Text style={[styles.filterBadgeText, { color: isActive ? '#000' : '#FFF' }]}>
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </Text>
@@ -544,18 +544,18 @@ export default function NotificationsScreen() {
         </View>
       ) : filteredNotifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <View style={[styles.emptyIconCircle, { backgroundColor: SURFACE }]}>
-            <Feather name="bell" size={48} color={colors.textSecondary} />
+          <View style={[styles.emptyIconCircle, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}>
+            <Feather name="bell" size={48} color={LABEL} />
           </View>
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>No notifications yet</Text>
-          <Text style={[styles.emptySubtitle, { color: colors.textMuted }]}>
+          <Text style={[styles.emptyTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>No notifications yet</Text>
+          <Text style={[styles.emptySubtitle, { color: MUTED, fontFamily: 'Inter' }]}>
             When people interact with you, you'll see everything here.
           </Text>
           <TouchableOpacity 
-            style={[styles.exploreBtn, { backgroundColor: colors.tint }]}
+            style={[styles.exploreBtn, { backgroundColor: G }]}
             onPress={() => router.push('/(tabs)/' as any)}
           >
-            <Text style={styles.exploreBtnText}>Explore YRDLY</Text>
+            <Text style={[styles.exploreBtnText, { color: '#000000', fontFamily: 'Outfit' }]}>Explore YRDLY</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -570,7 +570,7 @@ export default function NotificationsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchNotifications(true)}
-              tintColor={colors.tint}
+              tintColor={G}
             />
           }
         />

@@ -221,7 +221,7 @@ export default function BusinessProfileScreen() {
   if (loading) {
     return (
       <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={G} />
       </View>
     );
   }
@@ -229,7 +229,7 @@ export default function BusinessProfileScreen() {
   if (!business) {
     return (
       <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: colors.text }}>Business not found</Text>
+        <Text style={{ color: TEXT_PRIMARY }}>Business not found</Text>
       </View>
     );
   }
@@ -239,11 +239,11 @@ export default function BusinessProfileScreen() {
   if (isArchivedOrInactive && !isOwner) {
     return (
       <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }]}>
-        <Ionicons name="storefront-outline" size={64} color={colors.textMuted} style={{ marginBottom: 16, opacity: 0.4 }} />
-        <Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>Business No Longer Active</Text>
-        <Text style={{ color: colors.textMuted, fontSize: 15, textAlign: 'center', lineHeight: 22 }}>This business has been deactivated by the owner and is no longer available.</Text>
+        <Ionicons name="storefront-outline" size={64} color={MUTED} style={{ marginBottom: 16, opacity: 0.4 }} />
+        <Text style={{ color: TEXT_PRIMARY, fontSize: 20, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>Business No Longer Active</Text>
+        <Text style={{ color: MUTED, fontSize: 15, textAlign: 'center', lineHeight: 22 }}>This business has been deactivated by the owner and is no longer available.</Text>
         <TouchableOpacity
-          style={{ marginTop: 28, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24, backgroundColor: colors.tint }}
+          style={{ marginTop: 28, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24, backgroundColor: G }}
           onPress={() => router.back()}
         >
           <Text style={{ color: '#000', fontWeight: '700', fontSize: 15 }}>Go Back</Text>
@@ -260,11 +260,11 @@ export default function BusinessProfileScreen() {
       {/* Owner menu modal */}
       <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)}>
         <TouchableOpacity style={s.modalOverlay} activeOpacity={1} onPress={() => setMenuVisible(false)}>
-          <View style={[s.menuSheet, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+          <View style={[s.menuSheet, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
             {!(business as any).is_active ? (
               <View style={[s.menuItem, { opacity: 0.5 }]}>
-                <Ionicons name="archive-outline" size={18} color={colors.textMuted} />
-                <Text style={[s.menuItemTxt, { color: colors.textMuted }]}>Already Archived</Text>
+                <Ionicons name="archive-outline" size={18} color={MUTED} />
+                <Text style={[s.menuItemTxt, { color: MUTED }]}>Already Archived</Text>
               </View>
             ) : (
               <TouchableOpacity style={s.menuItem} onPress={handleDeactivate}>
@@ -281,7 +281,7 @@ export default function BusinessProfileScreen() {
           {coverImg ? (
             <Image source={{ uri: coverImg }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
           ) : (
-            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.tint, opacity: 0.2 }]} />
+            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: G, opacity: 0.2 }]} />
           )}
           <View style={s.coverOverlay} />
 
@@ -304,12 +304,12 @@ export default function BusinessProfileScreen() {
           )}
 
           {/* Logo */}
-          <View style={[s.logoContainer, { backgroundColor: DARK, borderColor: colors.background }]}>
+          <View style={[s.logoContainer, { backgroundColor: DARK, borderColor: DARK }]}>
             {logoImg ? (
               <Image source={{ uri: logoImg }} style={s.logo} contentFit="cover" />
             ) : (
-              <View style={[s.logo, { backgroundColor: colors.borderLight, justifyContent: 'center', alignItems: 'center' }]}>
-                <Ionicons name="storefront" size={32} color={colors.textMuted} />
+              <View style={[s.logo, { backgroundColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }]}>
+                <Ionicons name="storefront" size={32} color={MUTED} />
               </View>
             )}
           </View>
@@ -318,29 +318,29 @@ export default function BusinessProfileScreen() {
         {/* Info */}
         <View style={s.infoPad}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={[s.nameTxt, { color: colors.text, flexShrink: 1 }]}>{business.name}</Text>
+            <Text style={[s.nameTxt, { color: TEXT_PRIMARY, flexShrink: 1 }]}>{business.name}</Text>
             <VerifiedBadge size={20} />
           </View>
-          <View style={[s.catBadge, { borderColor: colors.borderLight }]}>
-            <Text style={[s.catBadgeTxt, { color: colors.textSecondary }]}>{business.category}</Text>
+          <View style={[s.catBadge, { borderColor: GLASS_BORDER }]}>
+            <Text style={[s.catBadgeTxt, { color: LABEL }]}>{business.category}</Text>
           </View>
 
           <View style={s.metaRow}>
             <View style={s.metaItem}>
               <Ionicons name="star" size={14} color="#FBBF24" />
-              <Text style={[s.metaTxt, { color: colors.text, fontWeight: '700' }]}>{business.rating?.toFixed(1) || "0.0"}</Text>
-              <Text style={[s.metaTxt, { color: colors.textMuted }]}>({business.review_count || 0})</Text>
+              <Text style={[s.metaTxt, { color: TEXT_PRIMARY, fontWeight: '700' }]}>{business.rating?.toFixed(1) || "0.0"}</Text>
+              <Text style={[s.metaTxt, { color: MUTED }]}>({business.review_count || 0})</Text>
             </View>
             <View style={s.metaItem}>
-              <Ionicons name="time-outline" size={14} color={colors.textMuted} />
-              <Text style={[s.metaTxt, { color: colors.textMuted }]}>{business.hours}</Text>
+              <Ionicons name="time-outline" size={14} color={MUTED} />
+              <Text style={[s.metaTxt, { color: MUTED }]}>{business.hours}</Text>
             </View>
           </View>
 
           <View style={s.metaRow}>
             <View style={s.metaItem}>
-              <Ionicons name="location-outline" size={16} color={colors.tint} />
-              <Text style={[s.metaTxt, { color: colors.textMuted }]}>{getLocStr()}</Text>
+              <Ionicons name="location-outline" size={16} color={G} />
+              <Text style={[s.metaTxt, { color: MUTED }]}>{getLocStr()}</Text>
             </View>
           </View>
 
@@ -364,12 +364,12 @@ export default function BusinessProfileScreen() {
         </View>
 
         {/* Tabs */}
-        <View style={[s.tabRow, { borderBottomColor: colors.borderLight }]}>
+        <View style={[s.tabRow, { borderBottomColor: GLASS_BORDER }]}>
           {(['Catalog', 'Gallery', 'About', 'Reviews'] as Tab[]).map(tab => {
             const active = activeTab === tab;
             return (
-              <TouchableOpacity key={tab} style={[s.tabItem, active && { borderBottomColor: colors.tint, borderBottomWidth: 2 }]} onPress={() => setActiveTab(tab)}>
-                <Text style={[s.tabItemTxt, { color: active ? colors.text : colors.textMuted }]}>{tab}</Text>
+              <TouchableOpacity key={tab} style={[s.tabItem, active && { borderBottomColor: G, borderBottomWidth: 2 }]} onPress={() => setActiveTab(tab)}>
+                <Text style={[s.tabItemTxt, { color: active ? TEXT_PRIMARY : MUTED }]}>{tab}</Text>
               </TouchableOpacity>
             );
           })}
@@ -380,22 +380,22 @@ export default function BusinessProfileScreen() {
           {activeTab === 'Catalog' && (
             <View>
               {isOwner && (
-                <TouchableOpacity style={[s.addBtn, { backgroundColor: SURFACE, borderColor: colors.borderLight }]} onPress={() => router.push({ pathname: '/businesses/create-catalog-item', params: { businessId: business.id } } as any)}>
-                  <Ionicons name="add" size={20} color={colors.tint} />
-                  <Text style={[s.addBtnTxt, { color: colors.tint }]}>Add Catalog Item</Text>
+                <TouchableOpacity style={[s.addBtn, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]} onPress={() => router.push({ pathname: '/businesses/create-catalog-item', params: { businessId: business.id } } as any)}>
+                  <Ionicons name="add" size={20} color={G} />
+                  <Text style={[s.addBtnTxt, { color: G }]}>Add Catalog Item</Text>
                 </TouchableOpacity>
               )}
               {catalogItems.length === 0 ? (
                 <View style={s.emptyTab}>
-                  <Ionicons name="cube-outline" size={48} color={colors.textMuted} style={{ opacity: 0.5, marginBottom: 12 }} />
-                  <Text style={{ color: colors.textMuted }}>No items in catalog yet.</Text>
+                  <Ionicons name="cube-outline" size={48} color={MUTED} style={{ opacity: 0.5, marginBottom: 12 }} />
+                  <Text style={{ color: MUTED }}>No items in catalog yet.</Text>
                 </View>
               ) : (
                 <View style={s.catalogGrid}>
                   {catalogItems.map(item => (
                     <TouchableOpacity 
                       key={item.id} 
-                      style={[s.catalogCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
+                      style={[s.catalogCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
                       activeOpacity={0.8}
                       onPress={() => router.push(`/businesses/catalog/${item.id}` as any)}
                     >
@@ -408,8 +408,8 @@ export default function BusinessProfileScreen() {
                         )}
                       </View>
                       <View style={s.catalogInfo}>
-                        <Text style={[s.catalogTitle, { color: colors.text }]} numberOfLines={1}>{item.title}</Text>
-                        <Text style={[s.catalogPrice, { color: colors.tint }]}>₦{item.price.toLocaleString()}</Text>
+                        <Text style={[s.catalogTitle, { color: TEXT_PRIMARY }]} numberOfLines={1}>{item.title}</Text>
+                        <Text style={[s.catalogPrice, { color: G }]}>₦{item.price.toLocaleString()}</Text>
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -422,8 +422,8 @@ export default function BusinessProfileScreen() {
             <View>
               {(!business.image_urls || business.image_urls.length === 0) ? (
                 <View style={s.emptyTab}>
-                  <Ionicons name="image-outline" size={48} color={colors.textMuted} style={{ opacity: 0.5, marginBottom: 12 }} />
-                  <Text style={{ color: colors.textMuted }}>No gallery images yet.</Text>
+                  <Ionicons name="image-outline" size={48} color={MUTED} style={{ opacity: 0.5, marginBottom: 12 }} />
+                  <Text style={{ color: MUTED }}>No gallery images yet.</Text>
                 </View>
               ) : (
                 <>
@@ -454,20 +454,20 @@ export default function BusinessProfileScreen() {
 
           {activeTab === 'About' && (
             <View style={s.aboutTab}>
-              <Text style={[s.aboutHeading, { color: colors.text }]}>About</Text>
-              <Text style={[s.aboutDesc, { color: colors.textSecondary }]}>{business.description}</Text>
+              <Text style={[s.aboutHeading, { color: TEXT_PRIMARY }]}>About</Text>
+              <Text style={[s.aboutDesc, { color: LABEL }]}>{business.description}</Text>
 
-              <Text style={[s.aboutHeading, { color: colors.text, marginTop: 24 }]}>Contact Information</Text>
+              <Text style={[s.aboutHeading, { color: TEXT_PRIMARY, marginTop: 24 }]}>Contact Information</Text>
               {business.email && (
                 <View style={s.contactRow}>
-                  <Ionicons name="mail-outline" size={18} color={colors.textMuted} />
-                  <Text style={{ color: colors.textSecondary }}>{business.email}</Text>
+                  <Ionicons name="mail-outline" size={18} color={MUTED} />
+                  <Text style={{ color: LABEL }}>{business.email}</Text>
                 </View>
               )}
               {business.phone && (
                 <View style={s.contactRow}>
-                  <Ionicons name="call-outline" size={18} color={colors.textMuted} />
-                  <Text style={{ color: colors.textSecondary }}>{business.phone}</Text>
+                  <Ionicons name="call-outline" size={18} color={MUTED} />
+                  <Text style={{ color: LABEL }}>{business.phone}</Text>
                 </View>
               )}
               <TouchableOpacity 
@@ -479,8 +479,8 @@ export default function BusinessProfileScreen() {
                   }
                 }}
               >
-                <Ionicons name="location-outline" size={18} color={colors.textMuted} />
-                <Text style={{ color: colors.textSecondary }}>{getLocStr()}</Text>
+                <Ionicons name="location-outline" size={18} color={MUTED} />
+                <Text style={{ color: LABEL }}>{getLocStr()}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -489,22 +489,22 @@ export default function BusinessProfileScreen() {
             <View>
               {reviews.length === 0 ? (
                 <View style={s.emptyTab}>
-                  <Text style={{ color: colors.textMuted }}>No reviews yet.</Text>
+                  <Text style={{ color: MUTED }}>No reviews yet.</Text>
                 </View>
               ) : (
                 reviews.map(review => (
-                  <View key={review.id} style={[s.reviewCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+                  <View key={review.id} style={[s.reviewCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
                     <View style={s.reviewHeader}>
                       <Image source={{ uri: review.users?.avatar_url || 'https://via.placeholder.com/150' }} style={s.reviewerAvatar} />
                       <View style={s.reviewerInfo}>
-                        <Text style={[s.reviewerName, { color: colors.text }]}>{review.users?.name || 'Anonymous'}</Text>
+                        <Text style={[s.reviewerName, { color: TEXT_PRIMARY }]}>{review.users?.name || 'Anonymous'}</Text>
                         <View style={s.reviewRating}>
                           <Ionicons name="star" size={12} color="#FBBF24" />
-                          <Text style={{ fontSize: 12, color: colors.text, fontWeight: '600' }}>{review.rating}</Text>
+                          <Text style={{ fontSize: 12, color: TEXT_PRIMARY, fontWeight: '600' }}>{review.rating}</Text>
                         </View>
                       </View>
                     </View>
-                    <Text style={{ color: colors.textSecondary, marginTop: 8 }}>{review.comment}</Text>
+                    <Text style={{ color: LABEL, marginTop: 8 }}>{review.comment}</Text>
                   </View>
                 ))
               )}

@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 import React, { useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Dimensions,
@@ -99,25 +99,25 @@ export default function CheckoutSuccessScreen() {
 
           {/* ── Title + pill ─────────────────────────── */}
           <Animated.View style={[styles.titleBlock, titleStyle]}>
-            <Text style={[styles.title, { color: colors.text }]}>Payment Successful!</Text>
+            <Text style={[styles.title, { color: TEXT_PRIMARY }]}>Payment Successful!</Text>
 
             <View style={[styles.escrowPill, {
-              backgroundColor: colors.tint + '15',
-              borderColor: colors.tint + '35',
+              backgroundColor: G + '15',
+              borderColor: G + '35',
             }]}>
-              <Ionicons name="lock-closed-outline" size={13} color={colors.tint} style={{ marginRight: 5 }} />
-              <Text style={[styles.pillText, { color: colors.tint }]}>
+              <Ionicons name="lock-closed-outline" size={13} color={G} style={{ marginRight: 5 }} />
+              <Text style={[styles.pillText, { color: G }]}>
                 {formatPrice(amountNum)} held in escrow
               </Text>
             </View>
 
             {!!itemTitle && (
-              <Text style={[styles.itemLabel, { color: colors.textMuted }]} numberOfLines={2}>
-                for <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>{itemTitle}</Text>
+              <Text style={[styles.itemLabel, { color: MUTED }]} numberOfLines={2}>
+                for <Text style={{ color: LABEL, fontWeight: '600' }}>{itemTitle}</Text>
               </Text>
             )}
 
-            <Text style={[styles.body, { color: colors.textMuted }]}>
+            <Text style={[styles.body, { color: MUTED }]}>
               Your funds are protected until you confirm receipt of the item.
             </Text>
           </Animated.View>
@@ -128,19 +128,19 @@ export default function CheckoutSuccessScreen() {
               <View key={i} style={styles.stepItem}>
                 <View style={styles.stepTrack}>
                   {i > 0 && (
-                    <View style={[styles.stepLine, { backgroundColor: colors.tint + '35' }]} />
+                    <View style={[styles.stepLine, { backgroundColor: G + '35' }]} />
                   )}
                   <View style={[styles.stepDot, {
-                    backgroundColor: isDarkMode ? colors.tint + '20' : colors.tint + '12',
-                    borderColor: colors.tint + '50',
+                    backgroundColor: isDarkMode ? G + '20' : G + '12',
+                    borderColor: G + '50',
                   }]}>
-                    <Ionicons name={step.icon} size={15} color={colors.tint} />
+                    <Ionicons name={step.icon} size={15} color={G} />
                   </View>
                   {i < STEPS.length - 1 && (
-                    <View style={[styles.stepLine, { backgroundColor: colors.tint + '35' }]} />
+                    <View style={[styles.stepLine, { backgroundColor: G + '35' }]} />
                   )}
                 </View>
-                <Text style={[styles.stepLabel, { color: colors.textMuted }]}>{step.label}</Text>
+                <Text style={[styles.stepLabel, { color: MUTED }]}>{step.label}</Text>
               </View>
             ))}
           </Animated.View>
@@ -148,7 +148,7 @@ export default function CheckoutSuccessScreen() {
           {/* ── Footer buttons ────────────────────────── */}
           <Animated.View style={[styles.footer, footerStyle]}>
             <TouchableOpacity
-              style={[styles.primaryBtn, { backgroundColor: colors.tint, shadowColor: colors.tint }]}
+              style={[styles.primaryBtn, { backgroundColor: G, shadowColor: G }]}
               onPress={() => router.replace(`/transactions/${transactionId}` as any)}
               activeOpacity={0.85}
             >
@@ -160,7 +160,7 @@ export default function CheckoutSuccessScreen() {
               onPress={() => router.replace('/(tabs)/' as any)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.secondaryBtnText, { color: colors.textMuted }]}>Back to Home</Text>
+              <Text style={[styles.secondaryBtnText, { color: MUTED }]}>Back to Home</Text>
             </TouchableOpacity>
           </Animated.View>
 

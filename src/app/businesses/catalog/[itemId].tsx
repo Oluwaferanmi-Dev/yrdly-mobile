@@ -262,7 +262,7 @@ export default function CatalogItemScreen() {
   if (loading) {
     return (
       <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={G} />
       </View>
     );
   }
@@ -270,10 +270,10 @@ export default function CatalogItemScreen() {
   if (!item) {
     return (
       <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
-        <Ionicons name="cube-outline" size={48} color={colors.textMuted} style={{ opacity: 0.5, marginBottom: 16 }} />
-        <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Item not found</Text>
-        <Text style={{ color: colors.textMuted, fontSize: 14, textAlign: 'center', marginBottom: 24 }}>The item you&apos;re looking for doesn&apos;t exist or has been removed.</Text>
-        <TouchableOpacity style={{ backgroundColor: colors.tint, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 25 }} onPress={() => router.back()}>
+        <Ionicons name="cube-outline" size={48} color={MUTED} style={{ opacity: 0.5, marginBottom: 16 }} />
+        <Text style={{ color: TEXT_PRIMARY, fontSize: 18, fontWeight: '600', fontFamily: 'Outfit', marginBottom: 8 }}>Item not found</Text>
+        <Text style={{ color: MUTED, fontSize: 14, fontFamily: 'Inter', textAlign: 'center', marginBottom: 24 }}>The item you&apos;re looking for doesn&apos;t exist or has been removed.</Text>
+        <TouchableOpacity style={{ backgroundColor: G, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 25 }} onPress={() => router.back()}>
           <Text style={{ color: '#000', fontWeight: '700' }}>Go Back</Text>
         </TouchableOpacity>
       </View>

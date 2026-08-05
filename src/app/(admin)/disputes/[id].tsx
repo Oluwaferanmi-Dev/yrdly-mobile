@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
@@ -145,8 +145,8 @@ export default function AdminDisputeDetailScreen() {
     return (
       <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
         <View style={s.center}>
-          <Feather name="lock" size={48} color={colors.textMuted} />
-          <Text style={[s.centerText, { color: colors.textSecondary }]}>Admin access required</Text>
+          <Feather name="lock" size={48} color={MUTED} />
+          <Text style={[s.centerText, { color: LABEL }]}>Admin access required</Text>
         </View>
       </SafeAreaView>
     );
@@ -156,7 +156,7 @@ export default function AdminDisputeDetailScreen() {
     return (
       <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
         <View style={s.center}>
-          <ActivityIndicator size="large" color={colors.tint} />
+          <ActivityIndicator size="large" color={G} />
         </View>
       </SafeAreaView>
     );
@@ -166,7 +166,7 @@ export default function AdminDisputeDetailScreen() {
     return (
       <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
         <View style={s.center}>
-          <Text style={[s.centerText, { color: colors.textSecondary }]}>Dispute not found.</Text>
+          <Text style={[s.centerText, { color: LABEL }]}>Dispute not found.</Text>
         </View>
       </SafeAreaView>
     );
@@ -184,11 +184,11 @@ export default function AdminDisputeDetailScreen() {
     <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {/* Header */}
-        <View style={[s.header, { borderBottomColor: colors.borderLight }]}>
+        <View style={[s.header, { borderBottomColor: GLASS_BORDER }]}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={28} color={colors.text} />
+            <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[s.headerTitle, { color: colors.text }]}>Dispute Detail</Text>
+          <Text style={[s.headerTitle, { color: TEXT_PRIMARY }]}>Dispute Detail</Text>
           <View style={[s.statusBadge, { backgroundColor: statusColor + '22', borderColor: statusColor + '55' }]}>
             <Text style={[s.statusText, { color: statusColor }]}>
               {dispute.status.replace('_', ' ').toUpperCase()}
@@ -199,20 +199,20 @@ export default function AdminDisputeDetailScreen() {
         <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
           {/* Parties */}
-          <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-            <Text style={[s.sectionTitle, { color: colors.textMuted }]}>PARTIES</Text>
+          <View style={[s.section, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+            <Text style={[s.sectionTitle, { color: MUTED }]}>PARTIES</Text>
             {[{ role: 'Buyer', p: buyer }, { role: 'Seller', p: seller }].map(({ role, p }) => (
               <View key={role} style={s.partyRow}>
                 {p?.avatar_url
                   ? <Image source={{ uri: p.avatar_url }} style={s.avatar} />
-                  : <View style={[s.avatar, s.avatarFallback, { backgroundColor: colors.inputBackground }]}>
-                      <Feather name="user" size={16} color={colors.textMuted} />
+                  : <View style={[s.avatar, s.avatarFallback, { backgroundColor: SURFACE }]}>
+                      <Feather name="user" size={16} color={MUTED} />
                     </View>
                 }
                 <View style={{ flex: 1 }}>
-                  <Text style={[s.partyRole, { color: colors.textMuted }]}>{role}</Text>
-                  <Text style={[s.partyName, { color: colors.text }]}>{p?.name ?? '—'}</Text>
-                  {p?.email && <Text style={[s.partyEmail, { color: colors.textMuted }]}>{p.email}</Text>}
+                  <Text style={[s.partyRole, { color: MUTED }]}>{role}</Text>
+                  <Text style={[s.partyName, { color: TEXT_PRIMARY }]}>{p?.name ?? '—'}</Text>
+                  {p?.email && <Text style={[s.partyEmail, { color: MUTED }]}>{p.email}</Text>}
                 </View>
               </View>
             ))}
@@ -220,47 +220,47 @@ export default function AdminDisputeDetailScreen() {
 
           {/* Transaction info */}
           {tx && (
-            <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-              <Text style={[s.sectionTitle, { color: colors.textMuted }]}>ORDER</Text>
+            <View style={[s.section, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+              <Text style={[s.sectionTitle, { color: MUTED }]}>ORDER</Text>
               {item && (
-                <Text style={[s.detailRow, { color: colors.text }]}>
-                  <Text style={{ color: colors.textMuted }}>Item: </Text>{item.name}
+                <Text style={[s.detailRow, { color: TEXT_PRIMARY }]}>
+                  <Text style={{ color: MUTED }}>Item: </Text>{item.name}
                 </Text>
               )}
-              <Text style={[s.detailRow, { color: colors.text }]}>
-                <Text style={{ color: colors.textMuted }}>Amount: </Text>₦{Number(tx.amount).toLocaleString()}
+              <Text style={[s.detailRow, { color: TEXT_PRIMARY }]}>
+                <Text style={{ color: MUTED }}>Amount: </Text>₦{Number(tx.amount).toLocaleString()}
               </Text>
-              <Text style={[s.detailRow, { color: colors.text }]}>
-                <Text style={{ color: colors.textMuted }}>Escrow: </Text>
+              <Text style={[s.detailRow, { color: TEXT_PRIMARY }]}>
+                <Text style={{ color: MUTED }}>Escrow: </Text>
                 {tx.escrow_status ?? '—'}
               </Text>
-              <Text style={[s.detailRow, { color: colors.text }]}>
-                <Text style={{ color: colors.textMuted }}>Transaction ID: </Text>
+              <Text style={[s.detailRow, { color: TEXT_PRIMARY }]}>
+                <Text style={{ color: MUTED }}>Transaction ID: </Text>
                 {tx.id.slice(0, 8)}…
               </Text>
             </View>
           )}
 
           {/* Dispute info */}
-          <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-            <Text style={[s.sectionTitle, { color: colors.textMuted }]}>DISPUTE</Text>
-            <Text style={[s.detailRow, { color: colors.text }]}>
-              <Text style={{ color: colors.textMuted }}>Reason: </Text>
+          <View style={[s.section, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+            <Text style={[s.sectionTitle, { color: MUTED }]}>DISPUTE</Text>
+            <Text style={[s.detailRow, { color: TEXT_PRIMARY }]}>
+              <Text style={{ color: MUTED }}>Reason: </Text>
               {(dispute.reason ?? 'Unknown').replace(/_/g, ' ')}
             </Text>
-            <Text style={[s.detailRow, { color: colors.text }]}>
-              <Text style={{ color: colors.textMuted }}>Filed: </Text>
+            <Text style={[s.detailRow, { color: TEXT_PRIMARY }]}>
+              <Text style={{ color: MUTED }}>Filed: </Text>
               {formatDate(dispute.created_at)}
             </Text>
             {dispute.description && (
-              <Text style={[s.description, { color: colors.textSecondary }]}>{dispute.description}</Text>
+              <Text style={[s.description, { color: LABEL }]}>{dispute.description}</Text>
             )}
           </View>
 
           {/* Evidence images */}
           {evidence.length > 0 && (
-            <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-              <Text style={[s.sectionTitle, { color: colors.textMuted }]}>EVIDENCE ({evidence.length})</Text>
+            <View style={[s.section, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+              <Text style={[s.sectionTitle, { color: MUTED }]}>EVIDENCE ({evidence.length})</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                 {evidence.map((url, i) => (
                   <Image key={i} source={{ uri: url }} style={s.evidenceImg} contentFit="cover" />
@@ -271,11 +271,11 @@ export default function AdminDisputeDetailScreen() {
 
           {/* Admin note (if already resolved) */}
           {isResolved && dispute.admin_note && (
-            <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-              <Text style={[s.sectionTitle, { color: colors.textMuted }]}>RESOLUTION NOTE</Text>
-              <Text style={[s.description, { color: colors.textSecondary }]}>{dispute.admin_note}</Text>
+            <View style={[s.section, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+              <Text style={[s.sectionTitle, { color: MUTED }]}>RESOLUTION NOTE</Text>
+              <Text style={[s.description, { color: LABEL }]}>{dispute.admin_note}</Text>
               {dispute.resolution && (
-                <Text style={[s.detailRow, { color: colors.tint }]}>
+                <Text style={[s.detailRow, { color: G }]}>
                   Action: {dispute.resolution.replace(/_/g, ' ')}
                 </Text>
               )}
@@ -284,8 +284,8 @@ export default function AdminDisputeDetailScreen() {
 
           {/* Resolution controls — only for non-resolved disputes */}
           {!isResolved && (
-            <View style={[s.section, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-              <Text style={[s.sectionTitle, { color: colors.textMuted }]}>RESOLUTION</Text>
+            <View style={[s.section, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
+              <Text style={[s.sectionTitle, { color: MUTED }]}>RESOLUTION</Text>
 
               {RESOLUTION_OPTIONS.map(opt => {
                 const active = selectedResolution === opt.value;
@@ -296,16 +296,16 @@ export default function AdminDisputeDetailScreen() {
                     style={[
                       s.resolutionOption,
                       {
-                        backgroundColor: active ? colors.tint + '18' : 'transparent',
-                        borderColor: active ? colors.tint : colors.borderLight,
+                        backgroundColor: active ? G + '18' : 'transparent',
+                        borderColor: active ? G : GLASS_BORDER,
                       },
                     ]}
                   >
-                    <Feather name={opt.icon} size={18} color={active ? colors.tint : colors.textMuted} />
-                    <Text style={[s.resolutionLabel, { color: active ? colors.tint : colors.text }]}>
+                    <Feather name={opt.icon} size={18} color={active ? G : MUTED} />
+                    <Text style={[s.resolutionLabel, { color: active ? G : TEXT_PRIMARY }]}>
                       {opt.label}
                     </Text>
-                    {active && <Feather name="check" size={16} color={colors.tint} style={{ marginLeft: 'auto' }} />}
+                    {active && <Feather name="check" size={16} color={G} style={{ marginLeft: 'auto' }} />}
                   </TouchableOpacity>
                 );
               })}
@@ -314,12 +314,12 @@ export default function AdminDisputeDetailScreen() {
                 value={adminNote}
                 onChangeText={setAdminNote}
                 placeholder="Admin note (optional)…"
-                placeholderTextColor={colors.textMuted}
+                placeholderTextColor={MUTED}
                 multiline
                 numberOfLines={3}
                 style={[
                   s.noteInput,
-                  { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.borderLight },
+                  { backgroundColor: SURFACE, color: TEXT_PRIMARY, borderColor: GLASS_BORDER },
                 ]}
               />
 
@@ -328,7 +328,7 @@ export default function AdminDisputeDetailScreen() {
                 disabled={resolving || !selectedResolution}
                 style={[
                   s.resolveBtn,
-                  { backgroundColor: selectedResolution ? colors.tint : colors.borderLight },
+                  { backgroundColor: selectedResolution ? G : GLASS_BORDER },
                 ]}
               >
                 {resolving

@@ -57,7 +57,7 @@ const SkeletonCard = ({ height = 20, width = '100%', style }: any) => {
   const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Animated.View style={[{ height, width, backgroundColor: colors.borderLight, borderRadius: 8 }, style, animStyle]} />
+    <Animated.View style={[{ height, width, backgroundColor: GLASS_BORDER, borderRadius: 8 }, style, animStyle]} />
   );
 };
 
@@ -361,7 +361,7 @@ export default function EventDetailScreen() {
     if (end && now > end) return { label: 'Ended', color: '#6B7280' };
     if (start && now > start && (!end || now < end)) return { label: 'Live Now', color: '#EF4444' };
     if (start && start - now < 86400000 && start > now) return { label: 'Starting Soon', color: '#F59E0B' };
-    return { label: 'Upcoming', color: colors.tint };
+    return { label: 'Upcoming', color: G };
   };
 
   const scrollToTickets = () => {
@@ -373,8 +373,8 @@ export default function EventDetailScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}><Ionicons name="chevron-back" size={28} color={colors.text} /></TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Event Details</Text>
+          <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}><Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} /></TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Event Details</Text>
           <View style={styles.headerRightActions}>
              <View style={styles.iconBtn} />
              <View style={styles.iconBtn} />
@@ -396,9 +396,9 @@ export default function EventDetailScreen() {
   if (!event) {
     return (
       <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
-        <Text style={[styles.errorText, { color: colors.text }]}>Event not found</Text>
-        <TouchableOpacity style={[styles.backBtnWrapper, { backgroundColor: colors.inputBackground }]} onPress={() => router.back()}>
-          <Text style={[styles.backBtnText, { color: colors.text }]}>Go Back</Text>
+        <Text style={[styles.errorText, { color: TEXT_PRIMARY }]}>Event not found</Text>
+        <TouchableOpacity style={[styles.backBtnWrapper, { backgroundColor: SURFACE }]} onPress={() => router.back()}>
+          <Text style={[styles.backBtnText, { color: TEXT_PRIMARY }]}>Go Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -434,7 +434,7 @@ export default function EventDetailScreen() {
               <Feather name="share" size={20} color="#FFF" />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleBookmark} style={[styles.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-              <Feather name={isBookmarked ? "bookmark" : "bookmark"} size={20} color={isBookmarked ? colors.tint : "#FFF"} />
+              <Feather name={isBookmarked ? "bookmark" : "bookmark"} size={20} color={isBookmarked ? G : "#FFF"} />
             </TouchableOpacity>
           </View>
         </View>
@@ -466,8 +466,8 @@ export default function EventDetailScreen() {
               ))}
             </ScrollView>
           ) : (
-            <View style={[styles.placeholderImage, { backgroundColor: colors.inputBackground }]}>
-              <Ionicons name="calendar-outline" size={64} color={colors.textSecondary} />
+            <View style={[styles.placeholderImage, { backgroundColor: SURFACE }]}>
+              <Ionicons name="calendar-outline" size={64} color={LABEL} />
             </View>
           )}
           {imageUrls.length > 1 && (
@@ -487,55 +487,55 @@ export default function EventDetailScreen() {
         <View style={styles.infoSection}>
           {/* TITLE & STATUS */}
           <View style={styles.titleRow}>
-            <Text style={[styles.title, { color: colors.text }]}>{event.title}</Text>
+            <Text style={[styles.title, { color: TEXT_PRIMARY }]}>{event.title}</Text>
             <View style={[styles.statusBadge, { backgroundColor: statusObj.color + '20' }]}>
               <Text style={[styles.statusBadgeText, { color: statusObj.color }]}>{statusObj.label}</Text>
             </View>
           </View>
           
           {/* PREMIUM INFO CARD */}
-          <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+          <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
             <View style={styles.infoRow}>
-              <View style={[styles.iconBox, { backgroundColor: colors.tint + '15' }]}>
-                <Feather name="calendar" size={20} color={colors.tint} />
+              <View style={[styles.iconBox, { backgroundColor: G + '15' }]}>
+                <Feather name="calendar" size={20} color={G} />
               </View>
               <View style={styles.infoTextContainer}>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Date</Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>{formattedDate}</Text>
+                <Text style={[styles.infoLabel, { color: LABEL }]}>Date</Text>
+                <Text style={[styles.infoValue, { color: TEXT_PRIMARY }]}>{formattedDate}</Text>
               </View>
             </View>
             
             <View style={styles.infoRow}>
-              <View style={[styles.iconBox, { backgroundColor: colors.tint + '15' }]}>
-                <Feather name="clock" size={20} color={colors.tint} />
+              <View style={[styles.iconBox, { backgroundColor: G + '15' }]}>
+                <Feather name="clock" size={20} color={G} />
               </View>
               <View style={styles.infoTextContainer}>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Time</Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>{formattedTime}</Text>
+                <Text style={[styles.infoLabel, { color: LABEL }]}>Time</Text>
+                <Text style={[styles.infoValue, { color: TEXT_PRIMARY }]}>{formattedTime}</Text>
               </View>
             </View>
 
             <View style={styles.infoRow}>
-              <View style={[styles.iconBox, { backgroundColor: colors.tint + '15' }]}>
-                <Feather name={event.location_online ? "video" : "map-pin"} size={20} color={colors.tint} />
+              <View style={[styles.iconBox, { backgroundColor: G + '15' }]}>
+                <Feather name={event.location_online ? "video" : "map-pin"} size={20} color={G} />
               </View>
               <View style={styles.infoTextContainer}>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{event.location_online ? 'Platform' : 'Location'}</Text>
-                <Text style={[styles.infoValue, { color: colors.text }]} numberOfLines={2}>
+                <Text style={[styles.infoLabel, { color: LABEL }]}>{event.location_online ? 'Platform' : 'Location'}</Text>
+                <Text style={[styles.infoValue, { color: TEXT_PRIMARY }]} numberOfLines={2}>
                   {event.location_online ? 'Online Event' : (event.location_address || [event.ward, event.lga, event.state].filter(Boolean).join(', ') || 'TBA')}
                 </Text>
               </View>
             </View>
 
             <View style={styles.infoRow}>
-              <View style={[styles.iconBox, { backgroundColor: colors.tint + '15' }]}>
-                <Feather name="users" size={20} color={colors.tint} />
+              <View style={[styles.iconBox, { backgroundColor: G + '15' }]}>
+                <Feather name="users" size={20} color={G} />
               </View>
               <View style={styles.infoTextContainer}>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Attendees</Text>
+                <Text style={[styles.infoLabel, { color: LABEL }]}>Attendees</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
                   <AttendeeAvatars attendees={event.attendees as any} totalCount={event.attendee_count} size={22} showIcon={false} showCountBadge={false} />
-                  <Text style={[styles.infoValue, { color: colors.text }]}>{event.attendee_count || 0} attending</Text>
+                  <Text style={[styles.infoValue, { color: TEXT_PRIMARY }]}>{event.attendee_count || 0} attending</Text>
                 </View>
               </View>
             </View>
@@ -553,31 +553,31 @@ export default function EventDetailScreen() {
           </View>
 
           {/* ABOUT SECTION */}
-          <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+          <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
             <View style={styles.aboutHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>About this event</Text>
+              <Text style={[styles.sectionTitle, { color: TEXT_PRIMARY }]}>About this event</Text>
             </View>
             <Text 
-              style={[styles.description, { color: colors.textSecondary }]} 
+              style={[styles.description, { color: LABEL }]} 
               numberOfLines={aboutExpanded ? undefined : 4}
             >
               {event.description || 'No description has been added.'}
             </Text>
             {event.description && event.description.length > 150 && (
               <TouchableOpacity onPress={() => setAboutExpanded(!aboutExpanded)} style={{ marginTop: 8 }}>
-                <Text style={[styles.readMoreText, { color: colors.tint }]}>{aboutExpanded ? 'Read Less' : 'Read More'}</Text>
+                <Text style={[styles.readMoreText, { color: G }]}>{aboutExpanded ? 'Read Less' : 'Read More'}</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {/* ORGANIZER CARD */}
           <TouchableOpacity 
-            style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }, styles.organizerCard]}
+            style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, styles.organizerCard]}
             onPress={() => { if (event.organizer_id) router.push(`/profile/${event.organizer_id}` as any); }}
             activeOpacity={0.8}
           >
             <View style={styles.organizerRow}>
-              <View style={[styles.avatar, { backgroundColor: colors.tint }]}>
+              <View style={[styles.avatar, { backgroundColor: G }]}>
                 {event.organizer?.avatar_url ? (
                   <Image source={{ uri: event.organizer.avatar_url }} style={styles.avatarImage} />
                 ) : (
@@ -587,32 +587,32 @@ export default function EventDetailScreen() {
                 )}
               </View>
               <View style={[styles.organizerInfo, { marginRight: 8 }]}>
-                <Text style={[styles.organizerLabel, { color: colors.textSecondary }]}>Organizer</Text>
+                <Text style={[styles.organizerLabel, { color: LABEL }]}>Organizer</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={[styles.sellerName, { color: colors.text, flexShrink: 1 }]} numberOfLines={1}>
+                  <Text style={[styles.sellerName, { color: TEXT_PRIMARY, flexShrink: 1 }]} numberOfLines={1}>
                     {event.organizer?.name || 'Unknown Organizer'}
                   </Text>
-                  <Ionicons name="checkmark-circle" size={16} color={colors.tint} style={{ marginLeft: 4, flexShrink: 0 }} />
+                  <Ionicons name="checkmark-circle" size={16} color={G} style={{ marginLeft: 4, flexShrink: 0 }} />
                 </View>
               </View>
               {!isOwner && (
                 <TouchableOpacity 
-                  style={[styles.followBtn, { backgroundColor: isFollowingOrganizer ? colors.inputBackground : colors.tint }]}
+                  style={[styles.followBtn, { backgroundColor: isFollowingOrganizer ? SURFACE : G }]}
                   onPress={(e) => { e.stopPropagation(); handleFollow(); }}
                 >
-                  <Text style={[styles.followBtnText, { color: isFollowingOrganizer ? colors.text : '#FFF' }]}>
+                  <Text style={[styles.followBtnText, { color: isFollowingOrganizer ? TEXT_PRIMARY : '#FFF' }]}>
                     {isFollowingOrganizer ? 'Following' : 'Follow'}
                   </Text>
                 </TouchableOpacity>
               )}
-              {isOwner && <Feather name="chevron-right" size={20} color={colors.textSecondary} />}
+              {isOwner && <Feather name="chevron-right" size={20} color={LABEL} />}
             </View>
           </TouchableOpacity>
 
           {/* MAP PREVIEW */}
           {!event.location_online && event.lat && event.lng && (
             <TouchableOpacity 
-              style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: colors.borderLight, padding: 0, overflow: 'hidden' }]}
+              style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, padding: 0, overflow: 'hidden' }]}
               onPress={getDirections}
               activeOpacity={0.9}
             >
@@ -633,7 +633,7 @@ export default function EventDetailScreen() {
                 customMapStyle={Platform.OS === 'android' ? (false ? DARK_STYLE : []) : undefined}
               >
                 <Marker coordinate={{ latitude: event.lat, longitude: event.lng }}>
-                  <View style={[styles.mapMarker, { backgroundColor: colors.tint }]}>
+                  <View style={[styles.mapMarker, { backgroundColor: G }]}>
                     <Feather name="map-pin" size={16} color="#FFF" />
                   </View>
                 </Marker>
@@ -642,7 +642,7 @@ export default function EventDetailScreen() {
           )}
 
           {/* TICKETS SECTION */}
-          <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 12, marginBottom: 12 }]}>Tickets</Text>
+          <Text style={[styles.sectionTitle, { color: TEXT_PRIMARY, marginTop: 12, marginBottom: 12 }]}>Tickets</Text>
           {event.ticket_tiers?.filter(t => t.is_visible).length ? (
             event.ticket_tiers.filter(t => t.is_visible).map((tier) => {
               const remaining = tier.capacity !== null ? Math.max(0, tier.capacity - tier.sold) : null;
@@ -650,23 +650,23 @@ export default function EventDetailScreen() {
               return (
               <TouchableOpacity 
                 key={tier.id} 
-                style={[styles.tierCard, { backgroundColor: SURFACE, borderColor: tier.price === 0 ? colors.tint : colors.borderLight }]}
+                style={[styles.tierCard, { backgroundColor: SURFACE, borderColor: tier.price === 0 ? G : GLASS_BORDER }]}
                 disabled={tier.is_sold_out || isExpired || isOwner}
                 onPress={() => setSelectedTier(tier)}
                 activeOpacity={0.8}
               >
-                <View style={[styles.tierIconBox, { backgroundColor: colors.inputBackground }]}>
-                  <Feather name="tag" size={24} color={colors.textSecondary} />
+                <View style={[styles.tierIconBox, { backgroundColor: SURFACE }]}>
+                  <Feather name="tag" size={24} color={LABEL} />
                 </View>
                 <View style={styles.tierInfo}>
-                  <Text style={[styles.tierName, { color: colors.text }]}>{tier.name}</Text>
-                  {tier.description && <Text style={[styles.tierDesc, { color: colors.textSecondary }]} numberOfLines={2}>{tier.description}</Text>}
+                  <Text style={[styles.tierName, { color: TEXT_PRIMARY }]}>{tier.name}</Text>
+                  {tier.description && <Text style={[styles.tierDesc, { color: LABEL }]} numberOfLines={2}>{tier.description}</Text>}
                   {isLimited && (
                     <Text style={{ color: '#F59E0B', fontSize: 11, fontWeight: '700', marginTop: 3 }}>
                       ⚡ Limited tickets available
                     </Text>
                   )}
-                  <Text style={[styles.tierPrice, { color: tier.price === 0 ? colors.tint : colors.text }]}>
+                  <Text style={[styles.tierPrice, { color: tier.price === 0 ? G : TEXT_PRIMARY }]}>
                     {tier.price === 0 ? 'FREE' : formatPrice(tier.price)}
                   </Text>
                 </View>
@@ -676,33 +676,33 @@ export default function EventDetailScreen() {
                   ) : tier.is_sold_out ? (
                     <View style={[styles.tierBadge, { backgroundColor: '#EF444420' }]}><Text style={{ color: '#EF4444', fontSize: 12, fontWeight: 'bold' }}>Sold Out</Text></View>
                   ) : (
-                    <Feather name="chevron-right" size={20} color={colors.textSecondary} />
+                    <Feather name="chevron-right" size={20} color={LABEL} />
                   )}
                 </View>
               </TouchableOpacity>
             );})
           ) : (
-            <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: colors.borderLight, alignItems: 'center', paddingVertical: 32 }]}>
-              <Feather name="tag" size={48} color={colors.textMuted} style={{ marginBottom: 12 }} />
-              <Text style={{ color: colors.textSecondary, fontSize: 16 }}>No tickets available.</Text>
+            <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, alignItems: 'center', paddingVertical: 32 }]}>
+              <Feather name="tag" size={48} color={MUTED} style={{ marginBottom: 12 }} />
+              <Text style={{ color: LABEL, fontSize: 16 }}>No tickets available.</Text>
             </View>
           )}
 
           {/* RELATED EVENTS */}
           {relatedEvents.length > 0 && (
             <View style={styles.relatedSection}>
-              <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 16 }]}>More Events Near You</Text>
+              <Text style={[styles.sectionTitle, { color: TEXT_PRIMARY, marginBottom: 16 }]}>More Events Near You</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
                 {relatedEvents.map(rel => (
                   <TouchableOpacity 
                     key={rel.id} 
-                    style={[styles.relatedCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
+                    style={[styles.relatedCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
                     onPress={() => { router.push(`/events/${rel.id}`); }}
                   >
                     <Image source={{ uri: rel.cover_image_url }} style={styles.relatedImg} contentFit="cover" />
                     <View style={styles.relatedInfo}>
-                      <Text style={[styles.relatedTitle, { color: colors.text }]} numberOfLines={1}>{rel.title}</Text>
-                      <Text style={[styles.relatedLoc, { color: colors.textSecondary }]} numberOfLines={1}>
+                      <Text style={[styles.relatedTitle, { color: TEXT_PRIMARY }]} numberOfLines={1}>{rel.title}</Text>
+                      <Text style={[styles.relatedLoc, { color: LABEL }]} numberOfLines={1}>
                         {rel.location_online ? 'Online' : rel.location_address || 'TBA'}
                       </Text>
                     </View>
@@ -740,14 +740,14 @@ export default function EventDetailScreen() {
       </Animated.ScrollView>
 
       {/* FLOATING ACTION BAR */}
-      <View style={[styles.bottomActionBar, { backgroundColor: SURFACE, borderTopColor: colors.borderLight }]}>
+      <View style={[styles.bottomActionBar, { backgroundColor: SURFACE, borderTopColor: GLASS_BORDER }]}>
         
         
         <TouchableOpacity 
           style={[styles.bottomPrimaryBtn, { 
-            backgroundColor: isOwner ? colors.card : (isExpired || allTicketsSoldOut ? colors.borderLight : colors.tint),
+            backgroundColor: isOwner ? DARK : (isExpired || allTicketsSoldOut ? GLASS_BORDER : G),
             borderWidth: isOwner ? 1 : 0,
-            borderColor: isOwner ? colors.borderLight : 'transparent'
+            borderColor: isOwner ? GLASS_BORDER : 'transparent'
           }]}
           disabled={!isOwner && (isExpired || allTicketsSoldOut)}
           onPress={() => {
@@ -756,7 +756,7 @@ export default function EventDetailScreen() {
             else if (event?.ticket_tiers && event.ticket_tiers.length > 0) setSelectedTier(event.ticket_tiers[0]);
           }}
         >
-          <Text style={[styles.bottomPrimaryText, { color: isOwner ? colors.text : (isExpired || allTicketsSoldOut ? colors.textMuted : '#FFF') }]}>
+          <Text style={[styles.bottomPrimaryText, { color: isOwner ? TEXT_PRIMARY : (isExpired || allTicketsSoldOut ? MUTED : '#FFF') }]}>
             {isOwner ? 'Manage Event' : isExpired ? 'Event Ended' : allTicketsSoldOut ? 'Sold Out' : userHasTickets ? 'View My Tickets' : 'View Tickets'}
           </Text>
         </TouchableOpacity>
@@ -770,62 +770,62 @@ export default function EventDetailScreen() {
         >
           <View style={[styles.modalContent, { backgroundColor: DARK }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>Get Tickets</Text>
+              <Text style={[styles.modalTitle, { color: TEXT_PRIMARY }]}>Get Tickets</Text>
               <TouchableOpacity onPress={() => { setSelectedTier(null); setQuantity(1); }}>
-                <Ionicons name="close" size={24} color={colors.textSecondary} />
+                <Ionicons name="close" size={24} color={LABEL} />
               </TouchableOpacity>
             </View>
             
             {selectedTier && (
-              <View style={[styles.modalTierSummary, { backgroundColor: colors.inputBackground }]}>
+              <View style={[styles.modalTierSummary, { backgroundColor: SURFACE }]}>
                 <View>
-                  <Text style={[styles.modalTierName, { color: colors.text }]}>{selectedTier.name}</Text>
-                  <Text style={[styles.modalTierPrice, { color: colors.tint }]}>{selectedTier.price === 0 ? 'FREE' : formatPrice(selectedTier.price * quantity)}</Text>
+                  <Text style={[styles.modalTierName, { color: TEXT_PRIMARY }]}>{selectedTier.name}</Text>
+                  <Text style={[styles.modalTierPrice, { color: G }]}>{selectedTier.price === 0 ? 'FREE' : formatPrice(selectedTier.price * quantity)}</Text>
                 </View>
                 <View style={styles.quantityContainer}>
-                  <TouchableOpacity onPress={() => setQuantity(q => Math.max(1, q - 1))} style={[styles.quantityBtn, { backgroundColor: colors.borderLight }]}>
-                    <Ionicons name="remove" size={20} color={colors.text} />
+                  <TouchableOpacity onPress={() => setQuantity(q => Math.max(1, q - 1))} style={[styles.quantityBtn, { backgroundColor: GLASS_BORDER }]}>
+                    <Ionicons name="remove" size={20} color={TEXT_PRIMARY} />
                   </TouchableOpacity>
-                  <Text style={[styles.quantityText, { color: colors.text }]}>{quantity}</Text>
-                  <TouchableOpacity onPress={() => setQuantity(q => Math.min(10, q + 1))} style={[styles.quantityBtn, { backgroundColor: colors.borderLight }]}>
-                    <Ionicons name="add" size={20} color={colors.text} />
+                  <Text style={[styles.quantityText, { color: TEXT_PRIMARY }]}>{quantity}</Text>
+                  <TouchableOpacity onPress={() => setQuantity(q => Math.min(10, q + 1))} style={[styles.quantityBtn, { backgroundColor: GLASS_BORDER }]}>
+                    <Ionicons name="add" size={20} color={TEXT_PRIMARY} />
                   </TouchableOpacity>
                 </View>
               </View>
             )}
 
             <ScrollView style={styles.modalForm}>
-              <Text style={[styles.inputLabel, { color: colors.text }]}>Name *</Text>
+              <Text style={[styles.inputLabel, { color: TEXT_PRIMARY }]}>Name *</Text>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+                style={[styles.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
                 value={attendeeName}
                 onChangeText={setAttendeeName}
                 placeholder="Enter your name"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={LABEL}
               />
-              <Text style={[styles.inputLabel, { color: colors.text }]}>Email *</Text>
+              <Text style={[styles.inputLabel, { color: TEXT_PRIMARY }]}>Email *</Text>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+                style={[styles.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
                 value={attendeeEmail}
                 onChangeText={setAttendeeEmail}
                 placeholder="Enter your email"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={LABEL}
               />
-              <Text style={[styles.inputLabel, { color: colors.text }]}>Phone (Optional)</Text>
+              <Text style={[styles.inputLabel, { color: TEXT_PRIMARY }]}>Phone (Optional)</Text>
               <TextInput
-                style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text }]}
+                style={[styles.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
                 value={attendeePhone}
                 onChangeText={setAttendeePhone}
                 placeholder="Enter your phone number"
                 keyboardType="phone-pad"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={LABEL}
               />
             </ScrollView>
 
             <TouchableOpacity 
-              style={[styles.purchaseBtn, { backgroundColor: purchasing ? colors.borderLight : colors.tint }]}
+              style={[styles.purchaseBtn, { backgroundColor: purchasing ? GLASS_BORDER : G }]}
               disabled={purchasing}
               onPress={handlePurchase}
             >
@@ -862,20 +862,20 @@ export default function EventDetailScreen() {
               <Ionicons name="checkmark-circle" size={100} color="#82DB7E" />
             </View>
             <Animated.View style={[{ alignItems: 'center', paddingHorizontal: 32, width: '100%' }, successContentStyle]}>
-              <Text style={[styles.successTitle, { color: colors.text }]}>You're In! 🎟️</Text>
-              <Text style={[styles.successTier, { color: colors.tint }]}>{successTierName}</Text>
-              <Text style={[styles.successBody, { color: colors.textSecondary }]}>
+              <Text style={[styles.successTitle, { color: TEXT_PRIMARY }]}>You're In! 🎟️</Text>
+              <Text style={[styles.successTier, { color: G }]}>{successTierName}</Text>
+              <Text style={[styles.successBody, { color: LABEL }]}>
                 Your ticket has been confirmed. Check the Tickets tab to view it.
               </Text>
               <TouchableOpacity
-                style={[styles.successBtn, { backgroundColor: colors.tint }]}
+                style={[styles.successBtn, { backgroundColor: G }]}
                 onPress={() => { dismissTicketSuccess(); router.push('/tickets' as any); }}
                 activeOpacity={0.85}
               >
                 <Text style={styles.successBtnText}>View My Ticket</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.successSecondary} onPress={dismissTicketSuccess}>
-                <Text style={[styles.successSecondaryText, { color: colors.textSecondary }]}>Back to Event</Text>
+                <Text style={[styles.successSecondaryText, { color: LABEL }]}>Back to Event</Text>
               </TouchableOpacity>
             </Animated.View>
             <View style={{ height: 24 }} />

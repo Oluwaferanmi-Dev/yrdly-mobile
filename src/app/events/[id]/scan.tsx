@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Alert, Vibration, Animated,
@@ -102,22 +102,22 @@ export default function ScanTicketScreen() {
   };
 
   if (!permission) {
-    return <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}><Text style={{ color: colors.text }}>Requesting camera permission…</Text></SafeAreaView>;
+    return <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}><Text style={{ color: TEXT_PRIMARY }}>Requesting camera permission…</Text></SafeAreaView>;
   }
 
   if (!permission.granted) {
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}>
-        <Feather name="camera" size={60} color={colors.textMuted} />
-        <Text style={[styles.permText, { color: colors.textSecondary }]}>Camera access is required to scan tickets.</Text>
-        <TouchableOpacity style={[styles.permBtn, { backgroundColor: colors.tint }]} onPress={requestPermission}>
-          <Text style={[styles.permBtnText, { color: colors.card }]}>Grant Permission</Text>
+        <Feather name="camera" size={60} color={MUTED} />
+        <Text style={[styles.permText, { color: LABEL }]}>Camera access is required to scan tickets.</Text>
+        <TouchableOpacity style={[styles.permBtn, { backgroundColor: G }]} onPress={requestPermission}>
+          <Text style={[styles.permBtnText, { color: DARK }]}>Grant Permission</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
-  const flashBg = result?.success ? colors.tint : RED;
+  const flashBg = result?.success ? G : RED;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
@@ -140,7 +140,7 @@ export default function ScanTicketScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
             <Feather name="x" size={28} color="#FFFFFF" />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Scan Ticket</Text>
+          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Scan Ticket</Text>
           <View style={{ width: 48 }} />
         </View>
       </SafeAreaView>
@@ -158,17 +158,17 @@ export default function ScanTicketScreen() {
 
       {/* Result overlay */}
       {result && (
-        <View style={[styles.resultBanner, { backgroundColor: result.success ? colors.inputBackground : '#FFEBEE', shadowColor: colors.text }]}>
+        <View style={[styles.resultBanner, { backgroundColor: result.success ? SURFACE : '#FFEBEE', shadowColor: TEXT_PRIMARY }]}>
           <Feather
             name={result.success ? 'check-circle' : 'x-circle'}
             size={36}
-            color={result.success ? colors.tint : RED}
+            color={result.success ? G : RED}
           />
           <View style={{ flex: 1 }}>
-            <Text style={[styles.resultTitle, { color: result.success ? colors.tint : RED }]}>
+            <Text style={[styles.resultTitle, { color: result.success ? G : RED }]}>
               {result.success ? '✓ Valid Ticket' : '✗ Invalid Ticket'}
             </Text>
-            <Text style={[styles.resultSub, { color: colors.textSecondary }]}>
+            <Text style={[styles.resultSub, { color: LABEL }]}>
               {result.success ? result.attendee : result.message}
             </Text>
           </View>

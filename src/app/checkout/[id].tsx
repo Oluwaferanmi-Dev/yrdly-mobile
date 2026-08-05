@@ -210,7 +210,7 @@ export default function CheckoutScreen() {
   if (stage === 'loading') {
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={G} />
       </SafeAreaView>
     );
   }
@@ -231,18 +231,18 @@ export default function CheckoutScreen() {
           }}
         />
         <View style={styles.payingTextBlock}>
-          <Text style={[styles.payingTitle, { color: colors.text }]}>
+          <Text style={[styles.payingTitle, { color: TEXT_PRIMARY }]}>
             {isVerifying ? 'Confirming Payment' : 'Redirecting to Paystack'}
           </Text>
-          <Text style={[styles.payingSubtitle, { color: colors.textMuted }]}>
+          <Text style={[styles.payingSubtitle, { color: MUTED }]}>
             {isVerifying
               ? 'Verifying your transaction, please wait…'
               : 'A secure browser will open for payment.'}
           </Text>
         </View>
-        <View style={[styles.secureTag, { backgroundColor: colors.inputBackground }]}>
-          <Ionicons name="lock-closed-outline" size={13} color={colors.tint} style={{ marginRight: 5 }} />
-          <Text style={[styles.secureTagText, { color: colors.tint }]}>256-bit encrypted</Text>
+        <View style={[styles.secureTag, { backgroundColor: SURFACE }]}>
+          <Ionicons name="lock-closed-outline" size={13} color={G} style={{ marginRight: 5 }} />
+          <Text style={[styles.secureTagText, { color: G }]}>256-bit encrypted</Text>
         </View>
       </SafeAreaView>
     );
@@ -253,10 +253,10 @@ export default function CheckoutScreen() {
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}>
         <Feather name="alert-circle" size={48} color="#E53935" />
-        <Text style={[styles.errorTitle, { color: colors.text }]}>Payment failed</Text>
-        <Text style={[styles.errorMsg, { color: colors.textSecondary }]}>{errorMsg}</Text>
-        <TouchableOpacity style={[styles.retryBtn, { backgroundColor: colors.inputBackground }]} onPress={() => setStage('summary')}>
-          <Text style={[styles.retryBtnText, { color: colors.text }]}>Go Back</Text>
+        <Text style={[styles.errorTitle, { color: TEXT_PRIMARY }]}>Payment failed</Text>
+        <Text style={[styles.errorMsg, { color: LABEL }]}>{errorMsg}</Text>
+        <TouchableOpacity style={[styles.retryBtn, { backgroundColor: SURFACE }]} onPress={() => setStage('summary')}>
+          <Text style={[styles.retryBtnText, { color: TEXT_PRIMARY }]}>Go Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -265,27 +265,27 @@ export default function CheckoutScreen() {
   // ── Order Summary ────────────────────────────────────────────
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Checkout</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Checkout</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Item card */}
-        <View style={[styles.itemCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+        <View style={[styles.itemCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
           {thumbnail ? (
             <Image source={{ uri: thumbnail }} style={styles.itemThumb} contentFit="cover" />
           ) : (
-            <View style={[styles.itemThumb, styles.itemThumbPlaceholder, { backgroundColor: colors.inputBackground }]}>
-              <Feather name="image" size={32} color={colors.textMuted} />
+            <View style={[styles.itemThumb, styles.itemThumbPlaceholder, { backgroundColor: SURFACE }]}>
+              <Feather name="image" size={32} color={MUTED} />
             </View>
           )}
           <View style={styles.itemInfo}>
-            <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={2}>{item?.title}</Text>
-            <Text style={[styles.sellerName, { color: colors.textMuted }]}>by {item?.seller?.name ?? 'Seller'}</Text>
+            <Text style={[styles.itemTitle, { color: TEXT_PRIMARY }]} numberOfLines={2}>{item?.title}</Text>
+            <Text style={[styles.sellerName, { color: MUTED }]}>by {item?.seller?.name ?? 'Seller'}</Text>
           </View>
         </View>
 

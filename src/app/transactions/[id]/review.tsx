@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import {
@@ -97,7 +97,7 @@ export default function ReviewScreen() {
     }
   };
 
-  if (loading) return <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}><ActivityIndicator size="large" color={colors.tint} /></SafeAreaView>;
+  if (loading) return <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}><ActivityIndicator size="large" color={G} /></SafeAreaView>;
 
   const thumb = tx?.item?.image_urls?.[0];
   const LABELS = ['', 'Terrible', 'Poor', 'Okay', 'Good', 'Excellent!'];
@@ -106,9 +106,9 @@ export default function ReviewScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Feather name="x" size={24} color={colors.text} />
+          <Feather name="x" size={24} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Leave a Review</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Leave a Review</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -117,30 +117,30 @@ export default function ReviewScreen() {
 >
           {thumb
             ? <Image source={{ uri: thumb }} style={styles.itemImage} contentFit="cover" />
-            : <View style={[styles.itemImage, styles.imgPlaceholder, { backgroundColor: colors.borderLight }]}><Feather name="box" size={28} color={colors.textMuted} /></View>
+            : <View style={[styles.itemImage, styles.imgPlaceholder, { backgroundColor: GLASS_BORDER }]}><Feather name="box" size={28} color={MUTED} /></View>
           }
           <View style={styles.cardInfo}>
-            <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={2}>{tx?.item?.title || 'Item'}</Text>
+            <Text style={[styles.itemTitle, { color: TEXT_PRIMARY }]} numberOfLines={2}>{tx?.item?.title || 'Item'}</Text>
             <View style={styles.sellerRow}>
               {tx?.seller?.avatar_url
                 ? <Image source={{ uri: tx.seller.avatar_url }} style={styles.avatar} contentFit="cover" />
-                : <View style={[styles.avatar, styles.avatarFallback]}><Text style={[styles.avatarInitial, { color: colors.tint }]}>{tx?.seller?.name?.[0]?.toUpperCase() ?? '?'}</Text></View>
+                : <View style={[styles.avatar, styles.avatarFallback]}><Text style={[styles.avatarInitial, { color: G }]}>{tx?.seller?.name?.[0]?.toUpperCase() ?? '?'}</Text></View>
               }
-              <Text style={[styles.sellerName, { color: colors.textMuted }]}>Sold by {tx?.seller?.name ?? 'Seller'}</Text>
+              <Text style={[styles.sellerName, { color: MUTED }]}>Sold by {tx?.seller?.name ?? 'Seller'}</Text>
             </View>
           </View>
         </View>
 
         {!canReview && !loading ? (
           <View style={styles.alreadyBox}>
-            <Feather name="check-circle" size={52} color={colors.tint} />
-            <Text style={[styles.alreadyTitle, { color: colors.text }]}>Already Reviewed</Text>
-            <Text style={[styles.alreadySub, { color: colors.textMuted }]}>You've already submitted a review for this transaction.</Text>
+            <Feather name="check-circle" size={52} color={G} />
+            <Text style={[styles.alreadyTitle, { color: TEXT_PRIMARY }]}>Already Reviewed</Text>
+            <Text style={[styles.alreadySub, { color: MUTED }]}>You've already submitted a review for this transaction.</Text>
           </View>
         ) : (
           <>
             <View style={styles.section}>
-              <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>YOUR RATING</Text>
+              <Text style={[styles.sectionLabel, { color: MUTED }]}>YOUR RATING</Text>
               <View style={styles.starsRow}>
                 {[1,2,3,4,5].map(s => (
                   <TouchableOpacity key={s} onPress={() => setRating(s)} activeOpacity={0.7}>
@@ -148,27 +148,27 @@ export default function ReviewScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-              <Text style={[styles.ratingLabel, { color: colors.textMuted }]}>{LABELS[rating] || 'Tap to rate'}</Text>
+              <Text style={[styles.ratingLabel, { color: MUTED }]}>{LABELS[rating] || 'Tap to rate'}</Text>
             </View>
 
             <View style={styles.section}>
-              <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>YOUR REVIEW (OPTIONAL)</Text>
+              <Text style={[styles.sectionLabel, { color: MUTED }]}>YOUR REVIEW (OPTIONAL)</Text>
               <TextInput
-                style={[styles.textArea, { backgroundColor: SURFACE, borderColor: colors.border, color: colors.text }]}
+                style={[styles.textArea, { backgroundColor: SURFACE, borderColor: colors.border, color: TEXT_PRIMARY }]}
                 value={comment}
                 onChangeText={setComment}
                 placeholder="Share your experience with this seller..."
-                placeholderTextColor={colors.textMuted}
+                placeholderTextColor={MUTED}
                 multiline
                 numberOfLines={5}
                 textAlignVertical="top"
                 maxLength={500}
               />
-              <Text style={[styles.charCount, { color: colors.textMuted }]}>{comment.length}/500</Text>
+              <Text style={[styles.charCount, { color: MUTED }]}>{comment.length}/500</Text>
             </View>
 
             <TouchableOpacity
-              style={[styles.submitBtn, { backgroundColor: colors.tint }, (rating === 0 || submitting) && styles.submitBtnDisabled]}
+              style={[styles.submitBtn, { backgroundColor: G }, (rating === 0 || submitting) && styles.submitBtnDisabled]}
               onPress={handleSubmit}
               disabled={rating === 0 || submitting}
             >

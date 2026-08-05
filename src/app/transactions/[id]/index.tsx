@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../../constants/tokens';
+import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -39,7 +39,7 @@ interface TxDetail {
 const getStatusMeta = (status: EscrowStatus, isDarkMode: boolean, colors: any) => {
   const meta: Record<EscrowStatus, { label: string; color: string; bg: string; icon: string }> = {
     pending:   { label: 'Awaiting Payment', color: isDarkMode ? '#FFB74D' : '#E65100', bg: isDarkMode ? '#3E2723' : '#FFF3E0', icon: 'clock' },
-    paid:      { label: 'Paid — Awaiting Handover', color: colors.tint, bg: isDarkMode ? colors.inputBackground : '#E3F2FD', icon: 'box' },
+    paid:      { label: 'Paid — Awaiting Handover', color: G, bg: isDarkMode ? SURFACE : '#E3F2FD', icon: 'box' },
     shipped:   { label: 'Item Sent / Handed Over', color: isDarkMode ? '#CE93D8' : '#6A1B9A', bg: isDarkMode ? '#311B92' : '#F3E5F5', icon: 'truck' },
     delivered: { label: 'Delivered', color: isDarkMode ? '#81C784' : '#2E7D32', bg: isDarkMode ? '#1B5E20' : '#E8F5E9', icon: 'check-circle' },
     completed: { label: 'Completed', color: isDarkMode ? '#81C784' : '#2E7D32', bg: isDarkMode ? '#1B5E20' : '#E8F5E9', icon: 'check-circle' },
@@ -301,7 +301,7 @@ export default function TransactionDetailScreen() {
   if (loading || !tx) {
     return (
       <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={G} />
       </SafeAreaView>
     );
   }
@@ -355,11 +355,11 @@ export default function TransactionDetailScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: colors.borderLight }]}>
+      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Transaction</Text>
+        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Transaction</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -371,65 +371,65 @@ export default function TransactionDetailScreen() {
           </View>
           <View style={styles.statusTextGroup}>
             <Text style={[styles.statusLabel, { color: meta.color }]}>{meta.label}</Text>
-            <Text style={[styles.statusSub, { color: colors.textMuted }]}>Transaction #{tx.id.slice(0, 8).toUpperCase()}</Text>
+            <Text style={[styles.statusSub, { color: MUTED }]}>Transaction #{tx.id.slice(0, 8).toUpperCase()}</Text>
           </View>
         </Animated.View>
 
         {/* Item card */}
-        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }, card1Style]}>
+        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, card1Style]}>
           <View style={styles.itemRow}>
             {thumb ? (
               <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" />
             ) : (
-              <View style={[styles.thumb, styles.thumbPlaceholder, { backgroundColor: colors.inputBackground }]}>
-                <Feather name="box" size={24} color={colors.textMuted} />
+              <View style={[styles.thumb, styles.thumbPlaceholder, { backgroundColor: SURFACE }]}>
+                <Feather name="box" size={24} color={MUTED} />
               </View>
             )}
             <View style={styles.itemInfo}>
-              <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={2}>{tx.item?.title ?? 'Item'}</Text>
-              <Text style={[styles.txId, { color: colors.textMuted }]} numberOfLines={1}>ID: {tx.id.slice(0, 8)}…</Text>
+              <Text style={[styles.itemTitle, { color: TEXT_PRIMARY }]} numberOfLines={2}>{tx.item?.title ?? 'Item'}</Text>
+              <Text style={[styles.txId, { color: MUTED }]} numberOfLines={1}>ID: {tx.id.slice(0, 8)}…</Text>
             </View>
           </View>
 
-          <View style={[styles.divider, { backgroundColor: colors.borderLight }]} />
+          <View style={[styles.divider, { backgroundColor: GLASS_BORDER }]} />
 
           <View style={styles.priceRow}>
-            <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>Item price</Text>
-            <Text style={[styles.priceValue, { color: colors.text }]}>{formatPrice(tx.amount)}</Text>
+            <Text style={[styles.priceLabel, { color: LABEL }]}>Item price</Text>
+            <Text style={[styles.priceValue, { color: TEXT_PRIMARY }]}>{formatPrice(tx.amount)}</Text>
           </View>
           {isSeller && (
             <View style={styles.priceRow}>
-              <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>You'll receive</Text>
-              <Text style={[styles.priceValue, { color: colors.tint }]}>{formatPrice(tx.seller_amount)}</Text>
+              <Text style={[styles.priceLabel, { color: LABEL }]}>You'll receive</Text>
+              <Text style={[styles.priceValue, { color: G }]}>{formatPrice(tx.seller_amount)}</Text>
             </View>
           )}
         </Animated.View>
 
         {/* Counterparty */}
-        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }, card2Style]}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{isBuyer ? 'Seller' : 'Buyer'}</Text>
+        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, card2Style]}>
+          <Text style={[styles.sectionTitle, { color: LABEL }]}>{isBuyer ? 'Seller' : 'Buyer'}</Text>
           <View style={styles.personRow}>
             {counterparty?.avatar_url ? (
               <Image source={{ uri: counterparty.avatar_url }} style={styles.avatar} contentFit="cover" />
             ) : (
-              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.inputBackground }]}>
-                <Text style={[styles.avatarInitial, { color: colors.tint }]}>{counterparty?.name?.[0]?.toUpperCase() ?? '?'}</Text>
+              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: SURFACE }]}>
+                <Text style={[styles.avatarInitial, { color: G }]}>{counterparty?.name?.[0]?.toUpperCase() ?? '?'}</Text>
               </View>
             )}
-            <Text style={[styles.personName, { color: colors.text }]}>{counterparty?.name ?? 'User'}</Text>
+            <Text style={[styles.personName, { color: TEXT_PRIMARY }]}>{counterparty?.name ?? 'User'}</Text>
             <TouchableOpacity
-              style={[styles.messageBtn, { borderColor: colors.tint }]}
+              style={[styles.messageBtn, { borderColor: G }]}
               onPress={handleMessageCounterparty}
             >
-              <Feather name="message-circle" size={16} color={colors.tint} />
-              <Text style={[styles.messageBtnText, { color: colors.tint }]}>Message</Text>
+              <Feather name="message-circle" size={16} color={G} />
+              <Text style={[styles.messageBtnText, { color: G }]}>Message</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
 
         {/* Timeline */}
-        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }, card3Style]}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Timeline</Text>
+        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, card3Style]}>
+          <Text style={[styles.sectionTitle, { color: LABEL }]}>Timeline</Text>
           {TIMELINE_STEPS.map((step, i) => {
             const done = STATUS_ORDER.indexOf(step.status) <= currentStepIndex
               && tx.status !== 'cancelled';
@@ -437,21 +437,21 @@ export default function TransactionDetailScreen() {
             return (
               <View key={step.status} style={styles.timelineRow}>
                 <View style={styles.timelineLeft}>
-                  <View style={[styles.timelineDot, { borderColor: colors.borderLight, backgroundColor: SURFACE }, done && [styles.timelineDotDone, { backgroundColor: colors.tint, borderColor: colors.tint }]]}>
+                  <View style={[styles.timelineDot, { borderColor: GLASS_BORDER, backgroundColor: SURFACE }, done && [styles.timelineDotDone, { backgroundColor: G, borderColor: G }]]}>
                     {done && <Feather name="check" size={12} color="#FFF" />}
                   </View>
                   {i < TIMELINE_STEPS.length - 1 && (
-                    <View style={[styles.timelineLine, { backgroundColor: colors.borderLight }, done && [styles.timelineLineDone, { backgroundColor: colors.tint }]]} />
+                    <View style={[styles.timelineLine, { backgroundColor: GLASS_BORDER }, done && [styles.timelineLineDone, { backgroundColor: G }]]} />
                   )}
                 </View>
                 <View style={styles.timelineContent}>
-                  <Text style={[styles.timelineLabel, { color: colors.textMuted }, done && [styles.timelineLabelDone, { color: colors.text }]]}>
+                  <Text style={[styles.timelineLabel, { color: MUTED }, done && [styles.timelineLabelDone, { color: TEXT_PRIMARY }]]}>
                     {step.label}
                   </Text>
                   {ts ? (
-                    <Text style={[styles.timelineTs, { color: colors.textMuted }]}>{fmt(ts)}</Text>
+                    <Text style={[styles.timelineTs, { color: MUTED }]}>{fmt(ts)}</Text>
                   ) : (
-                    <Text style={[styles.timelinePending, { color: colors.textMuted }]}>Pending</Text>
+                    <Text style={[styles.timelinePending, { color: MUTED }]}>Pending</Text>
                   )}
                 </View>
               </View>
@@ -472,17 +472,17 @@ export default function TransactionDetailScreen() {
         {/* Action buttons */}
         {canMarkSent && (
           <TouchableOpacity
-            style={[styles.primaryAction, { backgroundColor: colors.tint, shadowColor: colors.tint }]}
+            style={[styles.primaryAction, { backgroundColor: G, shadowColor: G }]}
             onPress={handleMarkSent}
             disabled={actionLoading}
             activeOpacity={0.85}
           >
             {actionLoading ? (
-              <ActivityIndicator color={colors.card} />
+              <ActivityIndicator color={DARK} />
             ) : (
               <>
-                <Feather name="box" size={20} color={colors.card} style={{ marginRight: 8 }} />
-                <Text style={[styles.primaryActionText, { color: colors.card }]}>Mark Item as Sent</Text>
+                <Feather name="box" size={20} color={DARK} style={{ marginRight: 8 }} />
+                <Text style={[styles.primaryActionText, { color: DARK }]}>Mark Item as Sent</Text>
               </>
             )}
           </TouchableOpacity>
@@ -490,17 +490,17 @@ export default function TransactionDetailScreen() {
 
         {canConfirmReceipt && (
           <TouchableOpacity
-            style={[styles.primaryAction, { backgroundColor: colors.tint, shadowColor: colors.tint }]}
+            style={[styles.primaryAction, { backgroundColor: G, shadowColor: G }]}
             onPress={handleConfirmReceipt}
             disabled={actionLoading}
             activeOpacity={0.85}
           >
             {actionLoading ? (
-              <ActivityIndicator color={colors.card} />
+              <ActivityIndicator color={DARK} />
             ) : (
               <>
-                <Feather name="check-circle" size={20} color={colors.card} style={{ marginRight: 8 }} />
-                <Text style={[styles.primaryActionText, { color: colors.card }]}>Confirm I Received the Item</Text>
+                <Feather name="check-circle" size={20} color={DARK} style={{ marginRight: 8 }} />
+                <Text style={[styles.primaryActionText, { color: DARK }]}>Confirm I Received the Item</Text>
               </>
             )}
           </TouchableOpacity>
@@ -519,11 +519,11 @@ export default function TransactionDetailScreen() {
 
         {canReview && (
           <TouchableOpacity
-            style={[styles.reviewAction, { borderColor: colors.tint, backgroundColor: colors.inputBackground }]}
+            style={[styles.reviewAction, { borderColor: G, backgroundColor: SURFACE }]}
             onPress={() => router.push(`/transactions/${tx.id}/review` as any)}
           >
-            <Feather name="star" size={18} color={colors.tint} style={{ marginRight: 8 }} />
-            <Text style={[styles.reviewActionText, { color: colors.tint }]}>Leave a Review</Text>
+            <Feather name="star" size={18} color={G} style={{ marginRight: 8 }} />
+            <Text style={[styles.reviewActionText, { color: G }]}>Leave a Review</Text>
           </TouchableOpacity>
         )}
 
