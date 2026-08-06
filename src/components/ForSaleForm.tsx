@@ -1,3 +1,4 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 /**
  * ForSaleForm.tsx
  * Premium presentation layer for the "Sell an Item" flow.
@@ -5,14 +6,12 @@
  */
 import React, { useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, TextInput,
+  StyleSheet, View, Text, TouchableOpacity, TextInput,
   ScrollView, Animated, Dimensions, Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../context/ThemeContext';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
-
 const { width } = Dimensions.get('window');
 const PHOTO_SIZE = (width - 48 - 24) / 3; // 3-up with margins
 
@@ -60,6 +59,11 @@ interface ForSaleFormProps {
 
 // ── Animated segmented control ────────────────────────────────────────────────
 function PriceTypeSelector({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+    const { styles: stylesheet, theme } = useStyles(sStylesheet);
+    const { styles: pt } = useStyles(ptStylesheet);
+    const { styles: pg } = useStyles(pgStylesheet);
+    const { styles: dd } = useStyles(ddStylesheet);
+
   const { colors } = useAppTheme();
   const slide = useRef(new Animated.Value(value ? 1 : 0)).current;
 
@@ -90,6 +94,11 @@ function Dropdown({
   label: string; value: string; placeholder: string;
   options: string[]; onSelect: (v: string) => void; icon: string;
 }) {
+    const { styles: stylesheet, theme } = useStyles(sStylesheet);
+    const { styles: pt } = useStyles(ptStylesheet);
+    const { styles: pg } = useStyles(pgStylesheet);
+    const { styles: dd } = useStyles(ddStylesheet);
+
   const { colors } = useAppTheme();
   const [open, setOpen] = useState(false);
   const heightAnim = useRef(new Animated.Value(0)).current;
@@ -105,7 +114,7 @@ function Dropdown({
 
   return (
     <View style={{ zIndex: open ? 20 : 1 }}>
-      <View style={[dd.row, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[dd.row, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <View style={dd.labelRow}>
           <Ionicons name={icon as any} size={16} color={colors.tint} />
           <Text style={[dd.label, { color: colors.text }]}>{label}</Text>
@@ -118,17 +127,23 @@ function Dropdown({
         </TouchableOpacity>
       </View>
       {open && (
-        <Animated.View style={[dd.menu, { backgroundColor: SURFACE, borderColor: colors.borderLight, maxHeight: heightAnim }]}>
+        <Animated.View style={[dd.menu, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight, maxHeight: heightAnim }]}>
           <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
-            {options.map(opt => (
-              <TouchableOpacity key={opt} style={[dd.item, { borderBottomColor: colors.borderLight }]}
-                onPress={() => { onSelect(opt); toggle(); }}>
-                <Text style={[dd.itemTxt, { color: opt === value ? colors.tint : colors.text, fontWeight: opt === value ? '700' : '400' }]}>
-                  {opt}
-                </Text>
-                {opt === value && <Ionicons name="checkmark" size={16} color={colors.tint} />}
-              </TouchableOpacity>
-            ))}
+            {options.map(opt => {
+            const { styles: s } = useStyles(sStylesheet);
+            const { styles: pt } = useStyles(ptStylesheet);
+            const { styles: pg } = useStyles(pgStylesheet);
+            const { styles: dd } = useStyles(ddStylesheet);
+            return (
+                          <TouchableOpacity key={opt} style={[dd.item, { borderBottomColor: colors.borderLight }]}
+                            onPress={() => { onSelect(opt); toggle(); }}>
+                            <Text style={[dd.itemTxt, { color: opt === value ? colors.tint : colors.text, fontWeight: opt === value ? '700' : '400' }]}>
+                              {opt}
+                            </Text>
+                            {opt === value && <Ionicons name="checkmark" size={16} color={colors.tint} />}
+                          </TouchableOpacity>
+                        );
+            })}
           </ScrollView>
         </Animated.View>
       )}
@@ -140,6 +155,11 @@ function Dropdown({
 function PhotoGallery({ images, onAdd, onRemove, colors }: {
   images: PostImage[]; onAdd: () => void; onRemove: (i: number) => void; colors: any;
 }) {
+    const { styles: stylesheet, theme } = useStyles(sStylesheet);
+    const { styles: pt } = useStyles(ptStylesheet);
+    const { styles: pg } = useStyles(pgStylesheet);
+    const { styles: dd } = useStyles(ddStylesheet);
+
   const [activeDot, setActiveDot] = useState(0);
 
   return (
@@ -158,27 +178,33 @@ function PhotoGallery({ images, onAdd, onRemove, colors }: {
         onMomentumScrollEnd={e => setActiveDot(Math.round(e.nativeEvent.contentOffset.x / (PHOTO_SIZE + 10)))}>
 
         {/* Add photo slot */}
-        <TouchableOpacity onPress={onAdd} style={[pg.addSlot, { borderColor: colors.tint, backgroundColor: SURFACE }]}>
+        <TouchableOpacity onPress={onAdd} style={[pg.addSlot, { borderColor: colors.tint, backgroundColor: theme.colors.SURFACE }]}>
           <Ionicons name="camera-outline" size={28} color={colors.tint} />
           <Text style={[pg.addLabel, { color: colors.tint }]}>Add Photo</Text>
         </TouchableOpacity>
 
         {/* Uploaded images */}
-        {images.map((img, i) => (
-          <View key={i} style={pg.imgWrap}>
-            <Image source={{ uri: img.thumbnailUri || img.uri }} style={pg.img} contentFit="cover" transition={200} />
-            {img.type === 'video' && (
-              <View style={pg.videoIcon}><Ionicons name="play-circle" size={28} color="rgba(255,255,255,0.9)" /></View>
-            )}
-            <TouchableOpacity style={[pg.removeBtn, { backgroundColor: DARK }]}
-              onPress={() => onRemove(i)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-              <Ionicons name="close" size={12} color={colors.text} />
-            </TouchableOpacity>
-            {i === 0 && (
-              <View style={pg.coverBadge}><Text style={pg.coverBadgeTxt}>Cover</Text></View>
-            )}
-          </View>
-        ))}
+        {images.map((img, i) => {
+        const { styles: s } = useStyles(sStylesheet);
+        const { styles: pt } = useStyles(ptStylesheet);
+        const { styles: pg } = useStyles(pgStylesheet);
+        const { styles: dd } = useStyles(ddStylesheet);
+        return (
+                  <View key={i} style={pg.imgWrap}>
+                    <Image source={{ uri: img.thumbnailUri || img.uri }} style={pg.img} contentFit="cover" transition={200} />
+                    {img.type === 'video' && (
+                      <View style={pg.videoIcon}><Ionicons name="play-circle" size={28} color="rgba(255,255,255,0.9)" /></View>
+                    )}
+                    <TouchableOpacity style={[pg.removeBtn, { backgroundColor: theme.colors.DARK }]}
+                      onPress={() => onRemove(i)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                      <Ionicons name="close" size={12} color={colors.text} />
+                    </TouchableOpacity>
+                    {i === 0 && (
+                      <View style={pg.coverBadge}><Text style={pg.coverBadgeTxt}>Cover</Text></View>
+                    )}
+                  </View>
+                );
+        })}
       </ScrollView>
 
       {/* Dot indicators */}
@@ -195,6 +221,11 @@ function PhotoGallery({ images, onAdd, onRemove, colors }: {
 
 // ── Main ForSaleForm ──────────────────────────────────────────────────────────
 export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profile, isSubmitting, onSubmit, showCategoryMenu, onCategoryChange, categories, onSelectCategory }: ForSaleFormProps) {
+    const { styles: stylesheet, theme } = useStyles(sStylesheet);
+    const { styles: pt } = useStyles(ptStylesheet);
+    const { styles: pg } = useStyles(pgStylesheet);
+    const { styles: dd } = useStyles(ddStylesheet);
+
   const { colors } = useAppTheme();
 
   const locationLabel = profile?.location
@@ -213,58 +244,64 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
   return (
     <>
       {/* ── Seller card ── */}
-      <View style={[s.sellerCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.sellerCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         {profile?.avatar_url
-          ? <Image source={{ uri: profile.avatar_url }} style={s.avatar} contentFit="cover" />
-          : <View style={[s.avatar, s.avatarFallback, { backgroundColor: colors.tint }]}>
-              <Text style={s.avatarLetter}>{(profile?.name || '?').charAt(0).toUpperCase()}</Text>
+          ? <Image source={{ uri: profile.avatar_url }} style={stylesheet.avatar} contentFit="cover" />
+          : <View style={[stylesheet.avatar, stylesheet.avatarFallback, { backgroundColor: colors.tint }]}>
+              <Text style={stylesheet.avatarLetter}>{(profile?.name || '?').charAt(0).toUpperCase()}</Text>
             </View>
         }
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[s.sellerName, { color: colors.text }]}>{profile?.name || 'You'}</Text>
+            <Text style={[stylesheet.sellerName, { color: colors.text }]}>{profile?.name || 'You'}</Text>
             <View style={{ position: 'relative', zIndex: 50 }}>
               <TouchableOpacity
-                style={[s.forSalePill, { backgroundColor: colors.tint + '20', borderColor: colors.tint + '60' }]}
+                style={[stylesheet.forSalePill, { backgroundColor: colors.tint + '20', borderColor: colors.tint + '60' }]}
                 onPress={onCategoryChange}>
                 <Ionicons name="pricetag-outline" size={10} color={colors.tint} />
-                <Text style={[s.forSaleLabel, { color: colors.tint }]}>For Sale</Text>
+                <Text style={[stylesheet.forSaleLabel, { color: colors.tint }]}>For Sale</Text>
                 <Ionicons name="chevron-down" size={10} color={colors.tint} />
               </TouchableOpacity>
               {showCategoryMenu && categories && onSelectCategory && (
-                <View style={[s.menu, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-                  {categories.map(cat => (
-                    <TouchableOpacity key={cat} style={s.menuItem} onPress={() => onSelectCategory(cat)}>
-                      <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
-                    </TouchableOpacity>
-                  ))}
+                <View style={[stylesheet.menu, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+                  {categories.map(cat => {
+                  const { styles: s } = useStyles(sStylesheet);
+                  const { styles: pt } = useStyles(ptStylesheet);
+                  const { styles: pg } = useStyles(pgStylesheet);
+                  const { styles: dd } = useStyles(ddStylesheet);
+                  return (
+                                      <TouchableOpacity key={cat} style={stylesheet.menuItem} onPress={() => onSelectCategory(cat)}>
+                                        <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
+                                      </TouchableOpacity>
+                                    );
+                  })}
                 </View>
               )}
             </View>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
-            <Text style={[s.sellerLocation, { color: colors.textMuted }]}>{locationLabel}</Text>
-            <Text style={[s.sellerLocation, { color: colors.textMuted }]}>·</Text>
+            <Text style={[stylesheet.sellerLocation, { color: colors.textMuted }]}>{locationLabel}</Text>
+            <Text style={[stylesheet.sellerLocation, { color: colors.textMuted }]}>·</Text>
             <Ionicons name="globe-outline" size={12} color={colors.tint} />
-            <Text style={[s.sellerLocation, { color: colors.tint }]}>Public</Text>
+            <Text style={[stylesheet.sellerLocation, { color: colors.tint }]}>Public</Text>
           </View>
         </View>
       </View>
 
       {/* ── Photo gallery ── */}
-      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <PhotoGallery images={values.images} onAdd={onAddPhoto} onRemove={onRemovePhoto} colors={colors} />
       </View>
 
       {/* ── Title ── */}
-      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-        <View style={s.fieldHeader}>
+      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+        <View style={stylesheet.fieldHeader}>
           <Ionicons name="diamond-outline" size={15} color={colors.tint} />
-          <Text style={[s.fieldLabel, { color: colors.text }]}>Title</Text>
-          <Text style={s.required}> *</Text>
+          <Text style={[stylesheet.fieldLabel, { color: colors.text }]}>Title</Text>
+          <Text style={stylesheet.required}> *</Text>
         </View>
         <TextInput
-          style={[s.titleInput, { color: colors.text }]}
+          style={[stylesheet.titleInput, { color: colors.text }]}
           placeholder="e.g. iPhone 15 Pro 256GB"
           placeholderTextColor={colors.textMuted}
           value={values.title}
@@ -272,21 +309,21 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
           returnKeyType="next"
           maxLength={80}
         />
-        <Text style={[s.charCount, { color: colors.textMuted }]}>{values.title.length}/80</Text>
+        <Text style={[stylesheet.charCount, { color: colors.textMuted }]}>{values.title.length}/80</Text>
       </View>
 
       {/* ── Price + Category side by side ── */}
-      <View style={s.row}>
-        <View style={[s.card, s.half, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-          <View style={s.fieldHeader}>
+      <View style={stylesheet.row}>
+        <View style={[stylesheet.card, stylesheet.half, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+          <View style={stylesheet.fieldHeader}>
             <Ionicons name="add-circle-outline" size={15} color={colors.tint} />
-            <Text style={[s.fieldLabel, { color: colors.text }]}>Price</Text>
-            <Text style={s.required}> *</Text>
+            <Text style={[stylesheet.fieldLabel, { color: colors.text }]}>Price</Text>
+            <Text style={stylesheet.required}> *</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Text style={[s.currency, { color: colors.textMuted }]}>₦</Text>
+            <Text style={[stylesheet.currency, { color: colors.textMuted }]}>₦</Text>
             <TextInput
-              style={[s.priceInput, { color: colors.text }]}
+              style={[stylesheet.priceInput, { color: colors.text }]}
               placeholder="250,000"
               placeholderTextColor={colors.textMuted}
               value={values.price}
@@ -297,11 +334,11 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
           </View>
         </View>
 
-        <View style={[s.card, s.half, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-          <View style={s.fieldHeader}>
+        <View style={[stylesheet.card, stylesheet.half, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+          <View style={stylesheet.fieldHeader}>
             <Ionicons name="grid-outline" size={15} color={colors.tint} />
-            <Text style={[s.fieldLabel, { color: colors.text }]}>Category</Text>
-            <Text style={s.required}> *</Text>
+            <Text style={[stylesheet.fieldLabel, { color: colors.text }]}>Category</Text>
+            <Text style={stylesheet.required}> *</Text>
           </View>
           <Dropdown
             label="" value={values.subCategory} placeholder="Select category"
@@ -312,14 +349,14 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       </View>
 
       {/* ── Description ── */}
-      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-        <View style={s.fieldHeader}>
+      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+        <View style={stylesheet.fieldHeader}>
           <Ionicons name="document-text-outline" size={15} color={colors.tint} />
-          <Text style={[s.fieldLabel, { color: colors.text }]}>Description</Text>
-          <Text style={s.required}> *</Text>
+          <Text style={[stylesheet.fieldLabel, { color: colors.text }]}>Description</Text>
+          <Text style={stylesheet.required}> *</Text>
         </View>
         <TextInput
-          style={[s.descInput, { color: colors.text }]}
+          style={[stylesheet.descInput, { color: colors.text }]}
           placeholder={"Describe your item, its condition, features and anything buyers should know..."}
           placeholderTextColor={colors.textMuted}
           value={values.text}
@@ -327,25 +364,25 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
           multiline textAlignVertical="top"
           maxLength={1000}
         />
-        <Text style={[s.charCount, { color: colors.textMuted }]}>{values.text.length}/1000</Text>
+        <Text style={[stylesheet.charCount, { color: colors.textMuted }]}>{values.text.length}/1000</Text>
       </View>
 
       {/* ── Location (settings row style) ── */}
-      <View style={[s.settingsCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-        <View style={s.settingsRow}>
-          <View style={[s.settingsIcon, { backgroundColor: 'rgba(130,219,126,0.12)' }]}>
+      <View style={[stylesheet.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+        <View style={stylesheet.settingsRow}>
+          <View style={[stylesheet.settingsIcon, { backgroundColor: 'rgba(130,219,126,0.12)' }]}>
             <Ionicons name="location-outline" size={18} color={colors.tint} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[s.settingsLabel, { color: colors.text }]}>Location <Text style={s.required}>*</Text></Text>
-            <Text style={[s.settingsValue, { color: colors.textMuted }]} numberOfLines={1}>{locationLabel}</Text>
+            <Text style={[stylesheet.settingsLabel, { color: colors.text }]}>Location <Text style={stylesheet.required}>*</Text></Text>
+            <Text style={[stylesheet.settingsValue, { color: colors.textMuted }]} numberOfLines={1}>{locationLabel}</Text>
           </View>
           <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
         </View>
       </View>
 
       {/* ── Condition ── */}
-      <View style={[s.settingsCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <Dropdown
           label="Condition" value={values.condition} placeholder="Select condition"
           options={ITEM_CONDITIONS} icon="shield-checkmark-outline"
@@ -354,12 +391,12 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       </View>
 
       {/* ── Price type ── */}
-      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-        <View style={s.fieldHeader}>
+      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+        <View style={stylesheet.fieldHeader}>
           <Ionicons name="pricetag-outline" size={15} color={colors.tint} />
-          <Text style={[s.fieldLabel, { color: colors.text }]}>Set Price Type</Text>
+          <Text style={[stylesheet.fieldLabel, { color: colors.text }]}>Set Price Type</Text>
         </View>
-        <Text style={[s.fieldHint, { color: colors.textMuted }]}>Choose how you want to sell this item</Text>
+        <Text style={[stylesheet.fieldHint, { color: colors.textMuted }]}>Choose how you want to sell this item</Text>
         <View style={{ marginTop: 12 }}>
           <PriceTypeSelector value={values.negotiable} onChange={v => onChange({ negotiable: v })} />
         </View>
@@ -368,7 +405,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       {/* ── Submit ── */}
       <Animated.View style={{ transform: [{ scale: pressScale }], marginTop: 8, marginBottom: 32 }}>
         <TouchableOpacity
-          style={[s.submitBtn, { backgroundColor: canSubmit ? colors.tint : colors.tint + '55', shadowColor: colors.tint }]}
+          style={[stylesheet.submitBtn, { backgroundColor: canSubmit ? colors.tint : colors.tint + '55', shadowColor: colors.tint }]}
           disabled={!canSubmit}
           onPress={onSubmit}
           onPressIn={onBtnIn}
@@ -379,7 +416,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
             ? <Ionicons name="sync-outline" size={20} color="#0B0D0B" style={{ marginRight: 8 }} />
             : <Ionicons name="pricetag-outline" size={18} color="#0B0D0B" style={{ marginRight: 10 }} />
           }
-          <Text style={s.submitLabel}>
+          <Text style={stylesheet.submitLabel}>
             {isSubmitting ? 'Listing…' : 'List Item for Sale'}
           </Text>
         </TouchableOpacity>
@@ -389,85 +426,85 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-const s = StyleSheet.create({
-  card: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 12 },
-  settingsCard: { borderRadius: 16, borderWidth: 1, marginBottom: 12, overflow: 'hidden' },
-  settingsRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
-  settingsIcon: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
-  settingsLabel: { fontSize: 14, fontWeight: '700' },
-  settingsValue: { fontSize: 12, marginTop: 1 },
-  sellerCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 12 },
-  avatar: { width: 46, height: 46, borderRadius: 23 },
-  avatarFallback: { justifyContent: 'center', alignItems: 'center' },
-  avatarLetter: { color: '#fff', fontSize: 20, fontWeight: '800' },
-  sellerName: { fontSize: 16, fontWeight: '800' },
-  forSalePill: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
-  forSaleLabel: { fontSize: 11, fontWeight: '800' },
-  menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
-  menuItem: { paddingVertical: 10, paddingHorizontal: 16 },
-  sellerLocation: { fontSize: 12 },
-  fieldHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
-  fieldLabel: { fontSize: 14, fontWeight: '700' },
-  fieldHint: { fontSize: 12, marginTop: -4 },
-  required: { color: '#ef4444', fontWeight: '700' },
-  titleInput: { fontSize: 17, fontWeight: '500', paddingVertical: Platform.OS === 'ios' ? 4 : 0 },
-  charCount: { fontSize: 11, textAlign: 'right', marginTop: 6 },
-  row: { flexDirection: 'row', gap: 10, marginBottom: 0 },
-  half: { flex: 1, marginBottom: 12 },
-  currency: { fontSize: 20, fontWeight: '700' },
-  priceInput: { flex: 1, fontSize: 20, fontWeight: '700', paddingVertical: Platform.OS === 'ios' ? 4 : 0 },
-  descInput: { fontSize: 15, minHeight: 110, lineHeight: 22, paddingVertical: 0 },
-  submitBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    borderRadius: 32, paddingVertical: 18,
-    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 6,
-  },
-  submitLabel: { color: '#0B0D0B', fontSize: 17, fontWeight: '900', letterSpacing: 0.2 },
-});
+const sStylesheet = createStyleSheet(theme => ({
+      card: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 12 },
+      settingsCard: { borderRadius: 16, borderWidth: 1, marginBottom: 12, overflow: 'hidden' },
+      settingsRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
+      settingsIcon: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+      settingsLabel: { fontSize: 14, fontWeight: '700' },
+      settingsValue: { fontSize: 12, marginTop: 1 },
+      sellerCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 12 },
+      avatar: { width: 46, height: 46, borderRadius: 23 },
+      avatarFallback: { justifyContent: 'center', alignItems: 'center' },
+      avatarLetter: { color: '#fff', fontSize: 20, fontWeight: '800' },
+      sellerName: { fontSize: 16, fontWeight: '800' },
+      forSalePill: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
+      forSaleLabel: { fontSize: 11, fontWeight: '800' },
+      menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
+      menuItem: { paddingVertical: 10, paddingHorizontal: 16 },
+      sellerLocation: { fontSize: 12 },
+      fieldHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
+      fieldLabel: { fontSize: 14, fontWeight: '700' },
+      fieldHint: { fontSize: 12, marginTop: -4 },
+      required: { color: '#ef4444', fontWeight: '700' },
+      titleInput: { fontSize: 17, fontWeight: '500', paddingVertical: Platform.OS === 'ios' ? 4 : 0 },
+      charCount: { fontSize: 11, textAlign: 'right', marginTop: 6 },
+      row: { flexDirection: 'row', gap: 10, marginBottom: 0 },
+      half: { flex: 1, marginBottom: 12 },
+      currency: { fontSize: 20, fontWeight: '700' },
+      priceInput: { flex: 1, fontSize: 20, fontWeight: '700', paddingVertical: Platform.OS === 'ios' ? 4 : 0 },
+      descInput: { fontSize: 15, minHeight: 110, lineHeight: 22, paddingVertical: 0 },
+      submitBtn: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        borderRadius: 32, paddingVertical: 18,
+        shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 6,
+      },
+      submitLabel: { color: '#0B0D0B', fontSize: 17, fontWeight: '900', letterSpacing: 0.2 },
+    }));
 
 // Price type segment styles
-const pt = StyleSheet.create({
-  wrap: { flexDirection: 'row', borderRadius: 28, borderWidth: 1, overflow: 'hidden', position: 'relative', height: 44 },
-  indicator: { position: 'absolute', top: 0, bottom: 0, width: '50%', borderRadius: 28 },
-  btn: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  label: { fontSize: 13, fontWeight: '700' },
-});
+const ptStylesheet = createStyleSheet(theme => ({
+      wrap: { flexDirection: 'row', borderRadius: 28, borderWidth: 1, overflow: 'hidden', position: 'relative', height: 44 },
+      indicator: { position: 'absolute', top: 0, bottom: 0, width: '50%', borderRadius: 28 },
+      btn: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+      label: { fontSize: 13, fontWeight: '700' },
+    }));
 
 // Photo gallery styles
-const pg = StyleSheet.create({
-  wrap: {},
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  title: { fontSize: 14, fontWeight: '700' },
-  req: { fontWeight: '700' },
-  hint: { fontSize: 12 },
-  scroll: { gap: 10, paddingVertical: 4 },
-  addSlot: {
-    width: PHOTO_SIZE, height: PHOTO_SIZE, borderRadius: 14, borderWidth: 1.5,
-    borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center',
-  },
-  addLabel: { fontSize: 11, fontWeight: '700', marginTop: 6 },
-  imgWrap: { width: PHOTO_SIZE, height: PHOTO_SIZE, borderRadius: 14, overflow: 'hidden', position: 'relative' },
-  img: { width: '100%', height: '100%' },
-  videoIcon: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center' },
-  removeBtn: { position: 'absolute', top: 6, right: 6, width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  coverBadge: { position: 'absolute', bottom: 6, left: 6, backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
-  coverBadgeTxt: { color: '#fff', fontSize: 9, fontWeight: '800' },
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: 5, marginTop: 10 },
-  dot: { width: 7, height: 7, borderRadius: 3.5 },
-});
+const pgStylesheet = createStyleSheet(theme => ({
+      wrap: {},
+      header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+      title: { fontSize: 14, fontWeight: '700' },
+      req: { fontWeight: '700' },
+      hint: { fontSize: 12 },
+      scroll: { gap: 10, paddingVertical: 4 },
+      addSlot: {
+        width: PHOTO_SIZE, height: PHOTO_SIZE, borderRadius: 14, borderWidth: 1.5,
+        borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center',
+      },
+      addLabel: { fontSize: 11, fontWeight: '700', marginTop: 6 },
+      imgWrap: { width: PHOTO_SIZE, height: PHOTO_SIZE, borderRadius: 14, overflow: 'hidden', position: 'relative' },
+      img: { width: '100%', height: '100%' },
+      videoIcon: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center' },
+      removeBtn: { position: 'absolute', top: 6, right: 6, width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+      coverBadge: { position: 'absolute', bottom: 6, left: 6, backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
+      coverBadgeTxt: { color: '#fff', fontSize: 9, fontWeight: '800' },
+      dots: { flexDirection: 'row', justifyContent: 'center', gap: 5, marginTop: 10 },
+      dot: { width: 7, height: 7, borderRadius: 3.5 },
+    }));
 
 // Dropdown styles
-const dd = StyleSheet.create({
-  row: { borderRadius: 12, borderWidth: 1, padding: 12 },
-  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
-  label: { fontSize: 13, fontWeight: '700' },
-  valueRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  value: { fontSize: 14 },
-  menu: {
-    borderRadius: 12, borderWidth: 1, overflow: 'hidden',
-    marginTop: 4, zIndex: 999,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 10, elevation: 8,
-  },
-  item: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
-  itemTxt: { fontSize: 14 },
-});
+const ddStylesheet = createStyleSheet(theme => ({
+      row: { borderRadius: 12, borderWidth: 1, padding: 12 },
+      labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
+      label: { fontSize: 13, fontWeight: '700' },
+      valueRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+      value: { fontSize: 14 },
+      menu: {
+        borderRadius: 12, borderWidth: 1, overflow: 'hidden',
+        marginTop: 4, zIndex: 999,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 10, elevation: 8,
+      },
+      item: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+      itemTxt: { fontSize: 14 },
+    }));

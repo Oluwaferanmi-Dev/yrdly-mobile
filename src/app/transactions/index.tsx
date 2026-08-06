@@ -1,5 +1,6 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -7,8 +8,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { formatPrice } from '../../lib/utils';
-import { G, DARK, GLASS_BORDER, MUTED, LABEL } from '../../constants/tokens';
-
 type EscrowStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled';
 type Tab = 'purchases' | 'sales';
 type Filter = 'all' | 'active' | 'completed' | 'disputed';
@@ -36,17 +35,21 @@ const STATUS_ICONS: Record<EscrowStatus, string> = {
   cancelled: '↩️',
 };
 
-const STATUS_MAP: Record<EscrowStatus, { label: string; color: string }> = {
-  pending:   { label: 'In Escrow', color: '#FFB648' },
-  paid:      { label: 'In Escrow', color: '#FFB648' },
-  shipped:   { label: 'Shipped',   color: '#64B5F6' },
-  delivered: { label: 'Delivered', color: G },
-  completed: { label: 'Completed', color: G },
-  disputed:  { label: 'Refunded',  color: '#ef4444' },
-  cancelled: { label: 'Refunded',  color: '#ef4444' },
-};
+
 
 export default function TransactionsScreen() {
+    const { styles: s, theme } = useStyles(sStylesheet);
+
+  const STATUS_MAP: Record<EscrowStatus, { label: string; color: string }> = {
+    pending:   { label: 'In Escrow', color: '#FFB648' },
+    paid:      { label: 'In Escrow', color: '#FFB648' },
+    shipped:   { label: 'Shipped',   color: '#64B5F6' },
+    delivered: { label: 'Delivered', color: theme.colors.G },
+    completed: { label: 'Completed', color: theme.colors.G },
+    disputed:  { label: 'Refunded',  color: '#ef4444' },
+    cancelled: { label: 'Refunded',  color: '#ef4444' },
+  };
+
   const router = useRouter();
   const { user } = useAuth();
 
@@ -127,6 +130,8 @@ export default function TransactionsScreen() {
   });
 
   const renderItem = ({ item: tx }: { item: Transaction }) => {
+      const { styles: s } = useStyles(sStylesheet);
+
     const meta = STATUS_MAP[tx.status];
     const icon = STATUS_ICONS[tx.status];
     const counterparty = tab === 'purchases' ? tx.seller : tx.buyer;
@@ -189,7 +194,7 @@ export default function TransactionsScreen() {
                 style={[s.roleTab, active && s.roleTabActive]}
                 onPress={() => setTab(t)}
               >
-                <Text style={[s.roleTabTxt, { color: active ? DARK : MUTED }]}>
+                <Text style={[s.roleTabTxt, { color: active ? theme.colors.DARK : theme.colors.MUTED }]}>
                   {t}
                 </Text>
               </TouchableOpacity>
@@ -208,12 +213,12 @@ export default function TransactionsScreen() {
                 key={f.key}
                 onPress={() => setFilter(f.key)}
                 style={[s.filterPill, { 
-                  backgroundColor: active ? G : '#111', 
-                  borderColor: active ? G : GLASS_BORDER 
+                  backgroundColor: active ? theme.colors.G : '#111', 
+                  borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER 
                 }]}
               >
                 <Text style={[s.filterPillTxt, { 
-                  color: active ? DARK : MUTED,
+                  color: active ? theme.colors.DARK : theme.colors.MUTED,
                   fontWeight: active ? '700' : '500'
                 }]}>
                   {f.label}
@@ -227,7 +232,7 @@ export default function TransactionsScreen() {
       {/* List */}
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={G} />
+          <ActivityIndicator size="large" color={theme.colors.G} />
         </View>
       ) : (
         <FlatList
@@ -236,7 +241,7 @@ export default function TransactionsScreen() {
           renderItem={renderItem}
           contentContainerStyle={s.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={() => fetchTransactions(true)} tintColor={G} />
+            <RefreshControl refreshing={refreshing} onRefresh={() => fetchTransactions(true)} tintColor={theme.colors.G} />
           }
           ListEmptyComponent={
             <View style={s.empty}>
@@ -251,39 +256,39 @@ export default function TransactionsScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505' },
-  
-  header: { paddingHorizontal: 20, paddingBottom: 12 },
-  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+const sStylesheet = createStyleSheet(theme => ({
+      root: { flex: 1, backgroundColor: '#050505' },
+      
+      header: { paddingHorizontal: 20, paddingBottom: 12 },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
 
-  roleTabsWrap: { paddingHorizontal: 20, marginBottom: 12 },
-  roleTabsInner: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 4, gap: 4 },
-  roleTab: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 11, backgroundColor: 'transparent' },
-  roleTabActive: { backgroundColor: '#fff' },
-  roleTabTxt: { fontFamily: 'Outfit-Bold', fontSize: 13, textTransform: 'capitalize' },
+      roleTabsWrap: { paddingHorizontal: 20, marginBottom: 12 },
+      roleTabsInner: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 4, gap: 4 },
+      roleTab: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 11, backgroundColor: 'transparent' },
+      roleTabActive: { backgroundColor: '#fff' },
+      roleTabTxt: { fontFamily: 'Outfit-Bold', fontSize: 13, textTransform: 'capitalize' },
 
-  filtersWrap: { marginBottom: 16 },
-  filtersPad: { paddingHorizontal: 20, gap: 8 },
-  filterPill: { height: 32, paddingHorizontal: 14, borderRadius: 16, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
-  filterPillTxt: { fontFamily: 'Inter', fontSize: 13 },
+      filtersWrap: { marginBottom: 16 },
+      filtersPad: { paddingHorizontal: 20, gap: 8 },
+      filterPill: { height: 32, paddingHorizontal: 14, borderRadius: 16, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
+      filterPillTxt: { fontFamily: 'Inter', fontSize: 13 },
 
-  listContent: { paddingHorizontal: 20, paddingBottom: 40 },
-  
-  rowCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, padding: 16, gap: 16 },
-  rowThumbBox: { width: 52, height: 52, borderRadius: 14, backgroundColor: '#111', overflow: 'hidden' },
-  rowMid: { flex: 1 },
-  rowTitle: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff', marginBottom: 2 },
-  rowParty: { fontFamily: 'Inter', fontSize: 12, color: LABEL, marginBottom: 1 },
-  rowDate: { fontFamily: 'Inter', fontSize: 11, color: LABEL },
-  
-  rowRight: { alignItems: 'flex-end', gap: 6 },
-  rowAmount: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff' },
-  statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, borderWidth: 1 },
-  statusBadgeText: { fontFamily: 'Inter-Bold', fontSize: 10 },
+      listContent: { paddingHorizontal: 20, paddingBottom: 40 },
+      
+      rowCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 20, padding: 16, gap: 16 },
+      rowThumbBox: { width: 52, height: 52, borderRadius: 14, backgroundColor: '#111', overflow: 'hidden' },
+      rowMid: { flex: 1 },
+      rowTitle: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff', marginBottom: 2 },
+      rowParty: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL, marginBottom: 1 },
+      rowDate: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL },
+      
+      rowRight: { alignItems: 'flex-end', gap: 6 },
+      rowAmount: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff' },
+      statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, borderWidth: 1 },
+      statusBadgeText: { fontFamily: 'Inter-Bold', fontSize: 10 },
 
-  empty: { alignItems: 'center', paddingTop: 56, gap: 8 },
-  emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
-  emptyBody: { fontFamily: 'Inter', fontSize: 13, color: LABEL },
-});
+      empty: { alignItems: 'center', paddingTop: 56, gap: 8 },
+      emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
+      emptyBody: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL },
+    }));

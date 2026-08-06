@@ -1,13 +1,15 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { DARK, G, GLASS_BORDER, LABEL, MUTED, SURFACE } from '../../constants/tokens';
 
 export default function DeleteAccountScreen() {
+  const { styles: s, theme } = useStyles(sStylesheet);
+
   const router = useRouter();
   const { user, signOut } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -96,42 +98,42 @@ export default function DeleteAccountScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: DARK },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  content: { padding: 20, flexGrow: 1, justifyContent: 'center', paddingBottom: 60 },
-  
-  warningCard: { 
-    backgroundColor: 'rgba(239,68,68,0.05)', 
-    borderWidth: 1, 
-    borderColor: 'rgba(239,68,68,0.2)', 
-    borderRadius: 24, 
-    padding: 24, 
-    alignItems: 'center',
-    marginBottom: 32
-  },
-  iconCircle: { 
-    width: 72, 
-    height: 72, 
-    borderRadius: 36, 
-    backgroundColor: 'rgba(239,68,68,0.1)', 
-    borderWidth: 1, 
-    borderColor: 'rgba(239,68,68,0.3)', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    marginBottom: 20 
-  },
-  warningTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#ef4444', marginBottom: 12 },
-  warningText: { fontFamily: 'Inter', fontSize: 14, color: '#fff', textAlign: 'center', lineHeight: 22, marginBottom: 16 },
-  
-  deleteBtn: {
-    backgroundColor: '#ef4444',
-    height: 54,
-    borderRadius: 27,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deleteBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 16, color: '#fff' },
-});
+const sStylesheet = createStyleSheet(theme => ({
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
+      header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      content: { padding: 20, flexGrow: 1, justifyContent: 'center', paddingBottom: 60 },
+      
+      warningCard: { 
+        backgroundColor: 'rgba(239,68,68,0.05)', 
+        borderWidth: 1, 
+        borderColor: 'rgba(239,68,68,0.2)', 
+        borderRadius: 24, 
+        padding: 24, 
+        alignItems: 'center',
+        marginBottom: 32
+      },
+      iconCircle: { 
+        width: 72, 
+        height: 72, 
+        borderRadius: 36, 
+        backgroundColor: 'rgba(239,68,68,0.1)', 
+        borderWidth: 1, 
+        borderColor: 'rgba(239,68,68,0.3)', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        marginBottom: 20 
+      },
+      warningTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#ef4444', marginBottom: 12 },
+      warningText: { fontFamily: 'Inter', fontSize: 14, color: '#fff', textAlign: 'center', lineHeight: 22, marginBottom: 16 },
+      
+      deleteBtn: {
+        backgroundColor: '#ef4444',
+        height: 54,
+        borderRadius: 27,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      deleteBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 16, color: '#fff' },
+    }));

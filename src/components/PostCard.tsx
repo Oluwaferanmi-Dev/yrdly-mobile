@@ -1,5 +1,6 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image as RNImage, FlatList, Share, Platform, ScrollView, NativeSyntheticEvent, NativeScrollEvent, Alert, ActionSheetIOS } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Image as RNImage, FlatList, Share, Platform, ScrollView, NativeSyntheticEvent, NativeScrollEvent, Alert, ActionSheetIOS } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming } from 'react-native-reanimated';
 import { Image } from 'expo-image';
@@ -14,8 +15,6 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { StorageService } from '../lib/storage-service';
-import { G, GLOW, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, GOLD, BLUE, AMBER } from '../constants/tokens';
-
 const { width } = Dimensions.get('window');
 
 interface PostCardProps {
@@ -32,6 +31,7 @@ import { AppState } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 
 const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted, setIsVideoMuted }: { post: Post, isVisible?: boolean, isVideoMuted: boolean, setIsVideoMuted: (muted: boolean) => void }) {
+  const { styles: stylesheet } = useStyles(_stylesheet);
   const [isReady, setIsReady] = useState(false);
   const [progress, setProgress] = useState(0);
   const isFocused = useIsFocused();
@@ -100,7 +100,7 @@ const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted,
         />
       )}
       <TouchableOpacity 
-        style={[styles.muteButtonOverlay, { zIndex: 2 }]} 
+        style={[stylesheet.muteButtonOverlay, { zIndex: 2 }]} 
         onPress={(e) => { 
           e.stopPropagation(); 
           setIsVideoMuted(!isVideoMuted); 
@@ -142,6 +142,8 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   const [isLiked, setIsLiked] = useState(currentUser ? (post.liked_by || []).includes(currentUser.id) : false);
   const [shareCount, setShareCount] = useState(post.share_count || 0);
   const [isBookmarked, setIsBookmarked] = useState(false);
+
+  const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
   // Sync state when post prop changes (crucial for FlashList cell recycling)
   useEffect(() => {
@@ -439,12 +441,12 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             router.push(`/profile/${post.user_id}` as any);
           }}
         >
-          <View style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: post.user_id === currentUser?.id ? G : 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.05)', overflow: 'hidden', flexShrink: 0 }}>
+          <View style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: post.user_id === currentUser?.id ? theme.colors.G : 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.05)', overflow: 'hidden', flexShrink: 0 }}>
             {post.user?.avatar_url || post.author_image ? (
-              <Image source={{ uri: StorageService.getOptimizedImageUrl(post.user?.avatar_url || post.author_image || null, 150) || '' }} style={styles.avatarImage} />
+              <Image source={{ uri: StorageService.getOptimizedImageUrl(post.user?.avatar_url || post.author_image || null, 150) || '' }} style={stylesheet.avatarImage} />
             ) : (
               <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: G }}>
+                <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: theme.colors.G }}>
                   {getInitials(post.user?.name || post.author_name)}
                 </Text>
               </View>
@@ -460,11 +462,11 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               )}
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginTop: 2 }}>
-              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL }}>
                 {[post.ward || post.user?.location?.ward, (post.lga || post.user?.location?.lga) || (post.state || post.user?.location?.state)].filter(Boolean).join(', ') || '@neighbour'}
               </Text>
-              <Text style={{ color: LABEL, fontSize: 10, marginHorizontal: 4 }}>·</Text>
-              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>
+              <Text style={{ color: theme.colors.LABEL, fontSize: 10, marginHorizontal: 4 }}>·</Text>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL }}>
                 {timeAgo(post.timestamp || post.created_at)}
               </Text>
             </View>
@@ -475,7 +477,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           onPress={(e) => { e.stopPropagation(); handleMoreOptions(); }}
           style={{ padding: 4, marginTop: 2 }}
         >
-          <Ionicons name="ellipsis-horizontal" size={20} color={LABEL} />
+          <Ionicons name="ellipsis-horizontal" size={20} color={theme.colors.LABEL} />
         </TouchableOpacity>
       </View>
 
@@ -485,6 +487,8 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF', marginBottom: 6 }}>{post.title}</Text>
         )}
         {!!post.text && (() => {
+
+
           const maxLength = 180;
           const shouldTruncate = post.text.length > maxLength;
           const displayText = isExpanded || !shouldTruncate ? post.text : post.text.slice(0, maxLength) + "…";
@@ -495,7 +499,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               </Text>
               {shouldTruncate && (
                 <TouchableOpacity onPress={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }} style={{ marginTop: 4 }}>
-                  <Text style={{ fontFamily: 'Inter-SemiBold', fontWeight: '600', fontSize: 13, color: MUTED }}>
+                  <Text style={{ fontFamily: 'Inter-SemiBold', fontWeight: '600', fontSize: 13, color: theme.colors.MUTED }}>
                     {isExpanded ? 'Show less' : 'Read more'}
                   </Text>
                 </TouchableOpacity>
@@ -530,25 +534,28 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               if (slide !== activeImageIndex) setActiveImageIndex(slide);
             }}
           >
-            {urls.map((item, index) => (
-              <TouchableOpacity 
-                key={index.toString()}
-                activeOpacity={0.95}
-                onPress={() => handleImageTap(index)}
-                style={{ width: width - 40, aspectRatio: 4/3, borderRadius: 16, overflow: 'hidden', backgroundColor: SURFACE }}
-              >
-                <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
-                
-                <Animated.View style={[styles.heartOverlay, heartAnimatedStyle]}>
-                  <Ionicons name="heart" size={100} color={G} style={styles.heartShadow} />
-                </Animated.View>
-              </TouchableOpacity>
-            ))}
+            {urls.map((item, index) => {
+
+            return (
+                          <TouchableOpacity 
+                            key={index.toString()}
+                            activeOpacity={0.95}
+                            onPress={() => handleImageTap(index)}
+                            style={{ width: width - 40, aspectRatio: 4/3, borderRadius: 16, overflow: 'hidden', backgroundColor: theme.colors.SURFACE }}
+                          >
+                            <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+                            
+                            <Animated.View style={[stylesheet.heartOverlay, heartAnimatedStyle]}>
+                              <Ionicons name="heart" size={100} color={theme.colors.G} style={stylesheet.heartShadow} />
+                            </Animated.View>
+                          </TouchableOpacity>
+                        );
+            })}
           </ScrollView>
           {urls.length > 1 && (
-            <View style={styles.paginationDots}>
+            <View style={stylesheet.paginationDots}>
               {urls.map((_, i) => (
-                <View key={i} style={[styles.carouselDot, activeImageIndex === i ? [styles.activeDot, { backgroundColor: G }] : styles.inactiveDot]} />
+                <View key={i} style={[stylesheet.carouselDot, activeImageIndex === i ? [stylesheet.activeDot, { backgroundColor: theme.colors.G }] : stylesheet.inactiveDot]} />
               ))}
             </View>
           )}
@@ -558,7 +565,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       {/* Price / Category badge if applicable */}
       {(post.category === 'For Sale' || post.category === 'Event') && post.price !== undefined && (
         <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
-          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 16, color: G }}>
+          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 16, color: theme.colors.G }}>
             {post.category === 'Event' && (post.price === 0 || !post.price) 
               ? 'FREE' 
               : formatPrice(post.price)}
@@ -576,10 +583,10 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             <Ionicons
               name={isLiked ? 'heart' : 'heart-outline'}
               size={20}
-              color={isLiked ? G : MUTED}
+              color={isLiked ? theme.colors.G : theme.colors.MUTED}
             />
             {likesCount > 0 && (
-              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: isLiked ? G : MUTED, marginLeft: 6 }}>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: isLiked ? theme.colors.G : theme.colors.MUTED, marginLeft: 6 }}>
                 {likesCount}
               </Text>
             )}
@@ -589,9 +596,9 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             style={{ flexDirection: 'row', alignItems: 'center' }} 
             onPress={(e) => { e.stopPropagation(); if (onComment) onComment(); }}
           >
-            <Ionicons name="chatbubble-ellipses-outline" size={19} color={MUTED} />
+            <Ionicons name="chatbubble-ellipses-outline" size={19} color={theme.colors.MUTED} />
             {post.comment_count > 0 && (
-              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED, marginLeft: 6 }}>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.MUTED, marginLeft: 6 }}>
                 {post.comment_count}
               </Text>
             )}
@@ -601,9 +608,9 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             style={{ flexDirection: 'row', alignItems: 'center' }} 
             onPress={(e) => { e.stopPropagation(); handleShare(); }}
           >
-            <Entypo name="forward" size={19} color={MUTED} />
+            <Entypo name="forward" size={19} color={theme.colors.MUTED} />
             {shareCount > 0 && (
-              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED, marginLeft: 6 }}>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.MUTED, marginLeft: 6 }}>
                 {shareCount}
               </Text>
             )}
@@ -614,7 +621,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           onPress={(e) => { e.stopPropagation(); handleBookmark(); }}
           style={{ padding: 2 }}
         >
-          <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={19} color={isBookmarked ? G : MUTED} />
+          <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={19} color={isBookmarked ? theme.colors.G : theme.colors.MUTED} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -628,180 +635,180 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   );
 });
 
-const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: 16,
-    marginVertical: 8,
-    padding: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  authorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 10,
-  },
-  avatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-  },
-  avatarText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  authorText: {
-    marginLeft: 10,
-    flex: 1,
-  },
-  authorName: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  timeAgo: {
-    fontSize: 12,
-    marginTop: 1,
-  },
-  categoryBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 10,
-  },
-  categoryText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  actionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 6,
-  },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    marginHorizontal: 12,
-  },
-  paginationDots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: 12,
-    left: 0,
-    right: 0,
-  },
-  carouselDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginHorizontal: 4,
-  },
-  activeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  inactiveDot: {
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-  },
-  content: {
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  bodyText: {
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  imageContainer: {
-    width: '100%',
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginBottom: 12,
-    position: 'relative',
-  },
-  muteButtonOverlay: {
-    position: 'absolute',
-    bottom: 16,
-    right: 16,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  postImage: {
-    width: '100%',
-  },
-  heartOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  heartShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  overlayText: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  price: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 10,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: 10,
-    marginTop: 4,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingRight: 8,
-  },
+const _stylesheet = createStyleSheet(theme => ({
+      container: {
+        marginHorizontal: 16,
+        marginVertical: 8,
+        padding: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        elevation: 3,
+      },
+      header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+      },
+      authorRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+        marginRight: 10,
+      },
+      avatar: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+      },
+      avatarImage: {
+        width: '100%',
+        height: '100%',
+      },
+      avatarText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+      },
+      authorText: {
+        marginLeft: 10,
+        flex: 1,
+      },
+      authorName: {
+        fontSize: 14,
+        fontWeight: '600',
+      },
+      timeAgo: {
+        fontSize: 12,
+        marginTop: 1,
+      },
+      categoryBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 3,
+        borderRadius: 10,
+      },
+      categoryText: {
+        fontSize: 11,
+        fontWeight: '600',
+      },
+      actionText: {
+        fontSize: 14,
+        fontWeight: '500',
+        marginLeft: 6,
+      },
+      dot: {
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        marginHorizontal: 12,
+      },
+      paginationDots: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        bottom: 12,
+        left: 0,
+        right: 0,
+      },
+      carouselDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        marginHorizontal: 4,
+      },
+      activeDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+      },
+      inactiveDot: {
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+      },
+      content: {
+        marginBottom: 10,
+      },
+      title: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 6,
+      },
+      bodyText: {
+        fontSize: 15,
+        lineHeight: 22,
+      },
+      imageContainer: {
+        width: '100%',
+        borderRadius: 16,
+        overflow: 'hidden',
+        marginBottom: 12,
+        position: 'relative',
+      },
+      muteButtonOverlay: {
+        position: 'absolute',
+        bottom: 16,
+        right: 16,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+      },
+      postImage: {
+        width: '100%',
+      },
+      heartOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+      },
+      heartShadow: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+        elevation: 8,
+      },
+      imageOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      overlayText: {
+        color: '#FFFFFF',
+        fontSize: 24,
+        fontWeight: 'bold',
+      },
+      price: {
+        fontSize: 18,
+        fontWeight: '800',
+        marginBottom: 10,
+      },
+      footer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderTopWidth: StyleSheet.hairlineWidth,
+        paddingTop: 10,
+        marginTop: 4,
+      },
+      actionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 4,
+        paddingRight: 8,
+      },
 
-});
+    }));

@@ -1,12 +1,14 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Switch, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { DARK, G, GLASS_BORDER, LABEL, MUTED, SURFACE } from '../../constants/tokens';
 
 export default function NotificationSettingsScreen() {
+  const { styles: s, theme } = useStyles(sStylesheet);
+
   const router = useRouter();
   const { profile, updateProfile } = useAuth();
   const [updating, setUpdating] = useState(false);
@@ -40,7 +42,7 @@ export default function NotificationSettingsScreen() {
         </TouchableOpacity>
         <Text style={s.headerTitle}>Notifications</Text>
         {updating ? (
-          <ActivityIndicator size="small" color={G} style={{ marginRight: 8 }} />
+          <ActivityIndicator size="small" color={theme.colors.G} style={{ marginRight: 8 }} />
         ) : (
           <View style={{ width: 34 }} />
         )}
@@ -66,7 +68,7 @@ export default function NotificationSettingsScreen() {
             <Switch
               value={currentSettings.messages ?? true}
               onValueChange={(v) => handleToggle('messages', v)}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: G }}
+              trackColor={{ false: 'rgba(255,255,255,0.1)', true: theme.colors.G }}
               thumbColor="#fff"
               disabled={updating}
             />
@@ -88,7 +90,7 @@ export default function NotificationSettingsScreen() {
             <Switch
               value={currentSettings.friendRequests ?? true}
               onValueChange={(v) => handleToggle('friendRequests', v)}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: G }}
+              trackColor={{ false: 'rgba(255,255,255,0.1)', true: theme.colors.G }}
               thumbColor="#fff"
               disabled={updating}
             />
@@ -110,7 +112,7 @@ export default function NotificationSettingsScreen() {
             <Switch
               value={currentSettings.comments ?? true}
               onValueChange={(v) => handleToggle('comments', v)}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: G }}
+              trackColor={{ false: 'rgba(255,255,255,0.1)', true: theme.colors.G }}
               thumbColor="#fff"
               disabled={updating}
             />
@@ -132,7 +134,7 @@ export default function NotificationSettingsScreen() {
             <Switch
               value={currentSettings.postLikes ?? true}
               onValueChange={(v) => handleToggle('postLikes', v)}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: G }}
+              trackColor={{ false: 'rgba(255,255,255,0.1)', true: theme.colors.G }}
               thumbColor="#fff"
               disabled={updating}
             />
@@ -154,7 +156,7 @@ export default function NotificationSettingsScreen() {
             <Switch
               value={currentSettings.postUpdates ?? true}
               onValueChange={(v) => handleToggle('postUpdates', v)}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: G }}
+              trackColor={{ false: 'rgba(255,255,255,0.1)', true: theme.colors.G }}
               thumbColor="#fff"
               disabled={updating}
             />
@@ -176,7 +178,7 @@ export default function NotificationSettingsScreen() {
             <Switch
               value={currentSettings.eventInvites ?? true}
               onValueChange={(v) => handleToggle('eventInvites', v)}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: G }}
+              trackColor={{ false: 'rgba(255,255,255,0.1)', true: theme.colors.G }}
               thumbColor="#fff"
               disabled={updating}
             />
@@ -187,19 +189,19 @@ export default function NotificationSettingsScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: DARK },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  content: { padding: 20 },
-  desc: { fontFamily: 'Inter', fontSize: 14, color: MUTED, lineHeight: 22, marginBottom: 24 },
-  card: { backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: GLASS_BORDER, paddingHorizontal: 16, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16 },
-  rowLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 16 },
-  iconBox: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  rowText: { flex: 1 },
-  rowLabel: { fontFamily: 'Inter-SemiBold', fontSize: 15, color: '#fff', marginBottom: 2 },
-  rowSub: { fontFamily: 'Inter', fontSize: 12, color: MUTED, lineHeight: 16 },
-  divider: { height: 1, backgroundColor: GLASS_BORDER },
-});
+const sStylesheet = createStyleSheet(theme => ({
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
+      header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      content: { padding: 20 },
+      desc: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.MUTED, lineHeight: 22, marginBottom: 24 },
+      card: { backgroundColor: theme.colors.SURFACE, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, paddingHorizontal: 16, overflow: 'hidden' },
+      row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16 },
+      rowLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 16 },
+      iconBox: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+      rowText: { flex: 1 },
+      rowLabel: { fontFamily: 'Inter-SemiBold', fontSize: 15, color: '#fff', marginBottom: 2 },
+      rowSub: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.MUTED, lineHeight: 16 },
+      divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER },
+    }));

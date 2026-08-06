@@ -1,4 +1,4 @@
-import { DARK, SURFACE } from '../../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Redirect, Slot } from 'expo-router';
@@ -8,10 +8,11 @@ import { useAppTheme } from '../../context/ThemeContext';
 export default function AdminLayout() {
   const { profile, loading } = useAuth();
   const { colors } = useAppTheme();
+  const { theme } = useStyles();
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: DARK }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.DARK }}>
         <ActivityIndicator size="large" color={colors.tint} />
       </View>
     );

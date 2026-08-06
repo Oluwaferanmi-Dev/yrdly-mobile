@@ -1,8 +1,8 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert,
+  View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle,
@@ -39,7 +39,7 @@ interface TxDetail {
 const getStatusMeta = (status: EscrowStatus, isDarkMode: boolean, colors: any) => {
   const meta: Record<EscrowStatus, { label: string; color: string; bg: string; icon: string }> = {
     pending:   { label: 'Awaiting Payment', color: isDarkMode ? '#FFB74D' : '#E65100', bg: isDarkMode ? '#3E2723' : '#FFF3E0', icon: 'clock' },
-    paid:      { label: 'Paid — Awaiting Handover', color: G, bg: isDarkMode ? SURFACE : '#E3F2FD', icon: 'box' },
+    paid:      { label: 'Paid — Awaiting Handover', color: colors.G, bg: isDarkMode ? colors.SURFACE : '#E3F2FD', icon: 'box' },
     shipped:   { label: 'Item Sent / Handed Over', color: isDarkMode ? '#CE93D8' : '#6A1B9A', bg: isDarkMode ? '#311B92' : '#F3E5F5', icon: 'truck' },
     delivered: { label: 'Delivered', color: isDarkMode ? '#81C784' : '#2E7D32', bg: isDarkMode ? '#1B5E20' : '#E8F5E9', icon: 'check-circle' },
     completed: { label: 'Completed', color: isDarkMode ? '#81C784' : '#2E7D32', bg: isDarkMode ? '#1B5E20' : '#E8F5E9', icon: 'check-circle' },
@@ -67,6 +67,8 @@ function fmt(iso: string | null): string {
 }
 
 export default function TransactionDetailScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors, isDarkMode } = useAppTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -300,8 +302,8 @@ export default function TransactionDetailScreen() {
 
   if (loading || !tx) {
     return (
-      <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color={G} />
+      <SafeAreaView style={stylesheet.center}>
+        <ActivityIndicator size="large" color={theme.colors.G} />
       </SafeAreaView>
     );
   }
@@ -353,105 +355,105 @@ export default function TransactionDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+    <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: SURFACE, borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
+      <View style={[stylesheet.header, { backgroundColor: theme.colors.SURFACE, borderBottomColor: theme.colors.GLASS_BORDER }]}>
+        <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
+          <Ionicons name="chevron-back" size={28} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Transaction</Text>
+        <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY }]}>Transaction</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={stylesheet.scroll} showsVerticalScrollIndicator={false}>
         {/* Status banner */}
-        <Animated.View style={[styles.statusBanner, { backgroundColor: 'transparent', borderColor: meta.color + '50' }, bannerStyle]}>
-          <View style={[styles.statusIconCircle, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+        <Animated.View style={[stylesheet.statusBanner, { backgroundColor: 'transparent', borderColor: meta.color + '50' }, bannerStyle]}>
+          <View style={[stylesheet.statusIconCircle, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
             <Feather name={meta.icon as any} size={20} color={meta.color} />
           </View>
-          <View style={styles.statusTextGroup}>
-            <Text style={[styles.statusLabel, { color: meta.color }]}>{meta.label}</Text>
-            <Text style={[styles.statusSub, { color: MUTED }]}>Transaction #{tx.id.slice(0, 8).toUpperCase()}</Text>
+          <View style={stylesheet.statusTextGroup}>
+            <Text style={[stylesheet.statusLabel, { color: meta.color }]}>{meta.label}</Text>
+            <Text style={[stylesheet.statusSub, { color: theme.colors.MUTED }]}>Transaction #{tx.id.slice(0, 8).toUpperCase()}</Text>
           </View>
         </Animated.View>
 
         {/* Item card */}
-        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, card1Style]}>
-          <View style={styles.itemRow}>
+        <Animated.View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, card1Style]}>
+          <View style={stylesheet.itemRow}>
             {thumb ? (
-              <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" />
+              <Image source={{ uri: thumb }} style={stylesheet.thumb} contentFit="cover" />
             ) : (
-              <View style={[styles.thumb, styles.thumbPlaceholder, { backgroundColor: SURFACE }]}>
-                <Feather name="box" size={24} color={MUTED} />
+              <View style={[stylesheet.thumb, stylesheet.thumbPlaceholder, { backgroundColor: theme.colors.SURFACE }]}>
+                <Feather name="box" size={24} color={theme.colors.MUTED} />
               </View>
             )}
-            <View style={styles.itemInfo}>
-              <Text style={[styles.itemTitle, { color: TEXT_PRIMARY }]} numberOfLines={2}>{tx.item?.title ?? 'Item'}</Text>
-              <Text style={[styles.txId, { color: MUTED }]} numberOfLines={1}>ID: {tx.id.slice(0, 8)}…</Text>
+            <View style={stylesheet.itemInfo}>
+              <Text style={[stylesheet.itemTitle, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={2}>{tx.item?.title ?? 'Item'}</Text>
+              <Text style={[stylesheet.txId, { color: theme.colors.MUTED }]} numberOfLines={1}>ID: {tx.id.slice(0, 8)}…</Text>
             </View>
           </View>
 
-          <View style={[styles.divider, { backgroundColor: GLASS_BORDER }]} />
+          <View style={[stylesheet.divider, { backgroundColor: theme.colors.GLASS_BORDER }]} />
 
-          <View style={styles.priceRow}>
-            <Text style={[styles.priceLabel, { color: LABEL }]}>Item price</Text>
-            <Text style={[styles.priceValue, { color: TEXT_PRIMARY }]}>{formatPrice(tx.amount)}</Text>
+          <View style={stylesheet.priceRow}>
+            <Text style={[stylesheet.priceLabel, { color: theme.colors.LABEL }]}>Item price</Text>
+            <Text style={[stylesheet.priceValue, { color: theme.colors.TEXT_PRIMARY }]}>{formatPrice(tx.amount)}</Text>
           </View>
           {isSeller && (
-            <View style={styles.priceRow}>
-              <Text style={[styles.priceLabel, { color: LABEL }]}>You'll receive</Text>
-              <Text style={[styles.priceValue, { color: G }]}>{formatPrice(tx.seller_amount)}</Text>
+            <View style={stylesheet.priceRow}>
+              <Text style={[stylesheet.priceLabel, { color: theme.colors.LABEL }]}>You'll receive</Text>
+              <Text style={[stylesheet.priceValue, { color: theme.colors.G }]}>{formatPrice(tx.seller_amount)}</Text>
             </View>
           )}
         </Animated.View>
 
         {/* Counterparty */}
-        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, card2Style]}>
-          <Text style={[styles.sectionTitle, { color: LABEL }]}>{isBuyer ? 'Seller' : 'Buyer'}</Text>
-          <View style={styles.personRow}>
+        <Animated.View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, card2Style]}>
+          <Text style={[stylesheet.sectionTitle, { color: theme.colors.LABEL }]}>{isBuyer ? 'Seller' : 'Buyer'}</Text>
+          <View style={stylesheet.personRow}>
             {counterparty?.avatar_url ? (
-              <Image source={{ uri: counterparty.avatar_url }} style={styles.avatar} contentFit="cover" />
+              <Image source={{ uri: counterparty.avatar_url }} style={stylesheet.avatar} contentFit="cover" />
             ) : (
-              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: SURFACE }]}>
-                <Text style={[styles.avatarInitial, { color: G }]}>{counterparty?.name?.[0]?.toUpperCase() ?? '?'}</Text>
+              <View style={[stylesheet.avatar, stylesheet.avatarFallback, { backgroundColor: theme.colors.SURFACE }]}>
+                <Text style={[stylesheet.avatarInitial, { color: theme.colors.G }]}>{counterparty?.name?.[0]?.toUpperCase() ?? '?'}</Text>
               </View>
             )}
-            <Text style={[styles.personName, { color: TEXT_PRIMARY }]}>{counterparty?.name ?? 'User'}</Text>
+            <Text style={[stylesheet.personName, { color: theme.colors.TEXT_PRIMARY }]}>{counterparty?.name ?? 'User'}</Text>
             <TouchableOpacity
-              style={[styles.messageBtn, { borderColor: G }]}
+              style={[stylesheet.messageBtn, { borderColor: theme.colors.G }]}
               onPress={handleMessageCounterparty}
             >
-              <Feather name="message-circle" size={16} color={G} />
-              <Text style={[styles.messageBtnText, { color: G }]}>Message</Text>
+              <Feather name="message-circle" size={16} color={theme.colors.G} />
+              <Text style={[stylesheet.messageBtnText, { color: theme.colors.G }]}>Message</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
 
         {/* Timeline */}
-        <Animated.View style={[styles.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, card3Style]}>
-          <Text style={[styles.sectionTitle, { color: LABEL }]}>Timeline</Text>
+        <Animated.View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, card3Style]}>
+          <Text style={[stylesheet.sectionTitle, { color: theme.colors.LABEL }]}>Timeline</Text>
           {TIMELINE_STEPS.map((step, i) => {
             const done = STATUS_ORDER.indexOf(step.status) <= currentStepIndex
               && tx.status !== 'cancelled';
             const ts = tx[step.tsKey] as string | null;
             return (
-              <View key={step.status} style={styles.timelineRow}>
-                <View style={styles.timelineLeft}>
-                  <View style={[styles.timelineDot, { borderColor: GLASS_BORDER, backgroundColor: SURFACE }, done && [styles.timelineDotDone, { backgroundColor: G, borderColor: G }]]}>
+              <View key={step.status} style={stylesheet.timelineRow}>
+                <View style={stylesheet.timelineLeft}>
+                  <View style={[stylesheet.timelineDot, { borderColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.SURFACE }, done && [stylesheet.timelineDotDone, { backgroundColor: theme.colors.G, borderColor: theme.colors.G }]]}>
                     {done && <Feather name="check" size={12} color="#FFF" />}
                   </View>
                   {i < TIMELINE_STEPS.length - 1 && (
-                    <View style={[styles.timelineLine, { backgroundColor: GLASS_BORDER }, done && [styles.timelineLineDone, { backgroundColor: G }]]} />
+                    <View style={[stylesheet.timelineLine, { backgroundColor: theme.colors.GLASS_BORDER }, done && [stylesheet.timelineLineDone, { backgroundColor: theme.colors.G }]]} />
                   )}
                 </View>
-                <View style={styles.timelineContent}>
-                  <Text style={[styles.timelineLabel, { color: MUTED }, done && [styles.timelineLabelDone, { color: TEXT_PRIMARY }]]}>
+                <View style={stylesheet.timelineContent}>
+                  <Text style={[stylesheet.timelineLabel, { color: theme.colors.MUTED }, done && [stylesheet.timelineLabelDone, { color: theme.colors.TEXT_PRIMARY }]]}>
                     {step.label}
                   </Text>
                   {ts ? (
-                    <Text style={[styles.timelineTs, { color: MUTED }]}>{fmt(ts)}</Text>
+                    <Text style={[stylesheet.timelineTs, { color: theme.colors.MUTED }]}>{fmt(ts)}</Text>
                   ) : (
-                    <Text style={[styles.timelinePending, { color: MUTED }]}>Pending</Text>
+                    <Text style={[stylesheet.timelinePending, { color: theme.colors.MUTED }]}>Pending</Text>
                   )}
                 </View>
               </View>
@@ -461,9 +463,9 @@ export default function TransactionDetailScreen() {
 
         {/* Disputed state */}
         {tx.status === 'disputed' && (
-          <View style={[styles.card, styles.disputeCard]}>
+          <View style={[stylesheet.card, stylesheet.disputeCard]}>
             <Feather name="alert-triangle" size={20} color="#B71C1C" />
-            <Text style={styles.disputeText}>
+            <Text style={stylesheet.disputeText}>
               A dispute has been raised on this transaction. Our team will review and contact both parties within 24 hours.
             </Text>
           </View>
@@ -472,17 +474,17 @@ export default function TransactionDetailScreen() {
         {/* Action buttons */}
         {canMarkSent && (
           <TouchableOpacity
-            style={[styles.primaryAction, { backgroundColor: G, shadowColor: G }]}
+            style={[stylesheet.primaryAction, { backgroundColor: theme.colors.G, shadowColor: theme.colors.G }]}
             onPress={handleMarkSent}
             disabled={actionLoading}
             activeOpacity={0.85}
           >
             {actionLoading ? (
-              <ActivityIndicator color={DARK} />
+              <ActivityIndicator color={theme.colors.DARK} />
             ) : (
               <>
-                <Feather name="box" size={20} color={DARK} style={{ marginRight: 8 }} />
-                <Text style={[styles.primaryActionText, { color: DARK }]}>Mark Item as Sent</Text>
+                <Feather name="box" size={20} color={theme.colors.DARK} style={{ marginRight: 8 }} />
+                <Text style={[stylesheet.primaryActionText, { color: theme.colors.DARK }]}>Mark Item as Sent</Text>
               </>
             )}
           </TouchableOpacity>
@@ -490,17 +492,17 @@ export default function TransactionDetailScreen() {
 
         {canConfirmReceipt && (
           <TouchableOpacity
-            style={[styles.primaryAction, { backgroundColor: G, shadowColor: G }]}
+            style={[stylesheet.primaryAction, { backgroundColor: theme.colors.G, shadowColor: theme.colors.G }]}
             onPress={handleConfirmReceipt}
             disabled={actionLoading}
             activeOpacity={0.85}
           >
             {actionLoading ? (
-              <ActivityIndicator color={DARK} />
+              <ActivityIndicator color={theme.colors.DARK} />
             ) : (
               <>
-                <Feather name="check-circle" size={20} color={DARK} style={{ marginRight: 8 }} />
-                <Text style={[styles.primaryActionText, { color: DARK }]}>Confirm I Received the Item</Text>
+                <Feather name="check-circle" size={20} color={theme.colors.DARK} style={{ marginRight: 8 }} />
+                <Text style={[stylesheet.primaryActionText, { color: theme.colors.DARK }]}>Confirm I Received the Item</Text>
               </>
             )}
           </TouchableOpacity>
@@ -508,22 +510,22 @@ export default function TransactionDetailScreen() {
 
         {canDispute && (
           <TouchableOpacity
-            style={[styles.disputeAction, { backgroundColor: isDarkMode ? 'rgba(229, 115, 115, 0.1)' : 'rgba(211, 47, 47, 0.08)', borderColor: 'transparent' }]}
+            style={[stylesheet.disputeAction, { backgroundColor: isDarkMode ? 'rgba(229, 115, 115, 0.1)' : 'rgba(211, 47, 47, 0.08)', borderColor: 'transparent' }]}
             onPress={() => router.push(`/transactions/${tx.id}/dispute` as any)}
             activeOpacity={0.8}
           >
             <Feather name="alert-triangle" size={18} color={isDarkMode ? '#E57373' : '#D32F2F'} style={{ marginRight: 8 }} />
-            <Text style={[styles.disputeActionText, { color: isDarkMode ? '#E57373' : '#D32F2F' }]}>Report an Issue / Dispute</Text>
+            <Text style={[stylesheet.disputeActionText, { color: isDarkMode ? '#E57373' : '#D32F2F' }]}>Report an Issue / Dispute</Text>
           </TouchableOpacity>
         )}
 
         {canReview && (
           <TouchableOpacity
-            style={[styles.reviewAction, { borderColor: G, backgroundColor: SURFACE }]}
+            style={[stylesheet.reviewAction, { borderColor: theme.colors.G, backgroundColor: theme.colors.SURFACE }]}
             onPress={() => router.push(`/transactions/${tx.id}/review` as any)}
           >
-            <Feather name="star" size={18} color={G} style={{ marginRight: 8 }} />
-            <Text style={[styles.reviewActionText, { color: G }]}>Leave a Review</Text>
+            <Feather name="star" size={18} color={theme.colors.G} style={{ marginRight: 8 }} />
+            <Text style={[stylesheet.reviewActionText, { color: theme.colors.G }]}>Leave a Review</Text>
           </TouchableOpacity>
         )}
 
@@ -533,96 +535,96 @@ export default function TransactionDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
-    paddingVertical: 14, borderBottomWidth: 1,
-  },
-  backBtn: { width: 40 },
-  headerTitle: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
-  scroll: { padding: 16, paddingBottom: 40 },
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+      header: {
+        flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
+        paddingVertical: 14, borderBottomWidth: 1,
+      },
+      backBtn: { width: 40 },
+      headerTitle: { fontSize: 18, fontWeight: '800', flex: 1, textAlign: 'center' },
+      scroll: { padding: 16, paddingBottom: 40 },
 
-  statusBanner: {
-    flexDirection: 'row', alignItems: 'center',
-    borderRadius: 16, padding: 16, marginBottom: 16,
-    borderWidth: 1, gap: 14,
-  },
-  statusIconCircle: {
-    width: 44, height: 44, borderRadius: 22,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  statusTextGroup: { flex: 1 },
-  statusLabel: { fontSize: 16, fontWeight: '800', marginBottom: 2 },
-  statusSub: { fontSize: 11, fontWeight: '500', letterSpacing: 0.3 },
+      statusBanner: {
+        flexDirection: 'row', alignItems: 'center',
+        borderRadius: 16, padding: 16, marginBottom: 16,
+        borderWidth: 1, gap: 14,
+      },
+      statusIconCircle: {
+        width: 44, height: 44, borderRadius: 22,
+        justifyContent: 'center', alignItems: 'center',
+      },
+      statusTextGroup: { flex: 1 },
+      statusLabel: { fontSize: 16, fontWeight: '800', marginBottom: 2 },
+      statusSub: { fontSize: 11, fontWeight: '500', letterSpacing: 0.3 },
 
-  card: {
-    borderRadius: 16, padding: 16, marginBottom: 14,
-    borderWidth: 1, elevation: 0, shadowOpacity: 0,
-  },
-  sectionTitle: { fontSize: 15, fontWeight: '700', marginBottom: 14 },
+      card: {
+        borderRadius: 16, padding: 16, marginBottom: 14,
+        borderWidth: 1, elevation: 0, shadowOpacity: 0,
+      },
+      sectionTitle: { fontSize: 15, fontWeight: '700', marginBottom: 14 },
 
-  itemRow: { flexDirection: 'row', alignItems: 'center' },
-  thumb: { width: 64, height: 64, borderRadius: 12, marginRight: 14 },
-  thumbPlaceholder: { justifyContent: 'center', alignItems: 'center' },
-  itemInfo: { flex: 1 },
-  itemTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  txId: { fontSize: 11 },
-  divider: { height: 1, marginVertical: 14 },
-  priceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  priceLabel: { fontSize: 14 },
-  priceValue: { fontSize: 15, fontWeight: '700' },
+      itemRow: { flexDirection: 'row', alignItems: 'center' },
+      thumb: { width: 64, height: 64, borderRadius: 12, marginRight: 14 },
+      thumbPlaceholder: { justifyContent: 'center', alignItems: 'center' },
+      itemInfo: { flex: 1 },
+      itemTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+      txId: { fontSize: 11 },
+      divider: { height: 1, marginVertical: 14 },
+      priceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+      priceLabel: { fontSize: 14 },
+      priceValue: { fontSize: 15, fontWeight: '700' },
 
-  personRow: { flexDirection: 'row', alignItems: 'center' },
-  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
-  avatarFallback: { justifyContent: 'center', alignItems: 'center' },
-  avatarInitial: { fontSize: 16, fontWeight: '700' },
-  personName: { fontSize: 15, fontWeight: '600', flex: 1 },
-  messageBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1.5,
-  },
-  messageBtnText: { fontSize: 13, fontWeight: '700' },
+      personRow: { flexDirection: 'row', alignItems: 'center' },
+      avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
+      avatarFallback: { justifyContent: 'center', alignItems: 'center' },
+      avatarInitial: { fontSize: 16, fontWeight: '700' },
+      personName: { fontSize: 15, fontWeight: '600', flex: 1 },
+      messageBtn: {
+        flexDirection: 'row', alignItems: 'center', gap: 4,
+        paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+        borderWidth: 1.5,
+      },
+      messageBtnText: { fontSize: 13, fontWeight: '700' },
 
-  // Timeline
-  timelineRow: { flexDirection: 'row', marginBottom: 0 },
-  timelineLeft: { alignItems: 'center', width: 28, marginRight: 12 },
-  timelineDot: {
-    width: 22, height: 22, borderRadius: 11, borderWidth: 2,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  timelineDotDone: {},
-  timelineLine: { width: 2, flex: 1, marginVertical: 2, minHeight: 24 },
-  timelineLineDone: {},
-  timelineContent: { flex: 1, paddingBottom: 20 },
-  timelineLabel: { fontSize: 14, fontWeight: '500' },
-  timelineLabelDone: { fontWeight: '700' },
-  timelineTs: { fontSize: 12, marginTop: 2 },
-  timelinePending: { fontSize: 12, marginTop: 2 },
+      // Timeline
+      timelineRow: { flexDirection: 'row', marginBottom: 0 },
+      timelineLeft: { alignItems: 'center', width: 28, marginRight: 12 },
+      timelineDot: {
+        width: 22, height: 22, borderRadius: 11, borderWidth: 2,
+        justifyContent: 'center', alignItems: 'center',
+      },
+      timelineDotDone: {},
+      timelineLine: { width: 2, flex: 1, marginVertical: 2, minHeight: 24 },
+      timelineLineDone: {},
+      timelineContent: { flex: 1, paddingBottom: 20 },
+      timelineLabel: { fontSize: 14, fontWeight: '500' },
+      timelineLabelDone: { fontWeight: '700' },
+      timelineTs: { fontSize: 12, marginTop: 2 },
+      timelinePending: { fontSize: 12, marginTop: 2 },
 
-  // Disputed
-  disputeCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: '#FFEBEE', borderWidth: 0 },
-  disputeText: { flex: 1, fontSize: 13, color: '#B71C1C', lineHeight: 20 },
+      // Disputed
+      disputeCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: '#FFEBEE', borderWidth: 0 },
+      disputeText: { flex: 1, fontSize: 13, color: '#B71C1C', lineHeight: 20 },
 
-  // Actions
-  primaryAction: {
-    flexDirection: 'row', height: 56, borderRadius: 28,
-    justifyContent: 'center', alignItems: 'center', marginBottom: 12,
-    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
-  },
-  primaryActionText: { fontSize: 16, fontWeight: '800' },
-  disputeAction: {
-    flexDirection: 'row', height: 48, borderRadius: 24,
-    justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1.5, marginBottom: 12,
-  },
-  disputeActionText: { fontSize: 15, fontWeight: '700' },
-  reviewAction: {
-    flexDirection: 'row', height: 48, borderRadius: 24,
-    justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1.5, marginBottom: 12,
-  },
-  reviewActionText: { fontSize: 15, fontWeight: '700' },
-});
+      // Actions
+      primaryAction: {
+        flexDirection: 'row', height: 56, borderRadius: 28,
+        justifyContent: 'center', alignItems: 'center', marginBottom: 12,
+        shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+      },
+      primaryActionText: { fontSize: 16, fontWeight: '800' },
+      disputeAction: {
+        flexDirection: 'row', height: 48, borderRadius: 24,
+        justifyContent: 'center', alignItems: 'center',
+        borderWidth: 1.5, marginBottom: 12,
+      },
+      disputeActionText: { fontSize: 15, fontWeight: '700' },
+      reviewAction: {
+        flexDirection: 'row', height: 48, borderRadius: 24,
+        justifyContent: 'center', alignItems: 'center',
+        borderWidth: 1.5, marginBottom: 12,
+      },
+      reviewActionText: { fontSize: 15, fontWeight: '700' },
+    }));

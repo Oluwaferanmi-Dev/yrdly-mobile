@@ -1,5 +1,6 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Dimensions } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, Dimensions } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
@@ -9,11 +10,11 @@ import { PostCard } from '../components/PostCard';
 import { EventCard } from '../components/EventCard';
 import { useRouter } from 'expo-router';
 import { PostSkeleton } from '../components/Skeleton';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
-
 const { width } = Dimensions.get('window');
 
 export default function BookmarksScreen() {
+    const { styles, theme } = useStyles(sStylesheet);
+
   const { user } = useAuth();
   const { colors } = useAppTheme();
   const router = useRouter();
@@ -94,21 +95,21 @@ export default function BookmarksScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: DARK }]}>
+    <View style={[styles.container, { backgroundColor: theme.colors.DARK }]}>
       <ScreenHeader title="Saved Items"  />
       
-      <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
+      <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER }}>
         <TouchableOpacity 
-          style={[{ flex: 1, paddingVertical: 12, alignItems: 'center' }, activeTab === 'posts' && { borderBottomWidth: 2, borderBottomColor: G }]} 
+          style={[{ flex: 1, paddingVertical: 12, alignItems: 'center' }, activeTab === 'posts' && { borderBottomWidth: 2, borderBottomColor: theme.colors.G }]} 
           onPress={() => setActiveTab('posts')}
         >
-          <Text style={[s.tabText, { color: activeTab === 'posts' ? G : MUTED }]}>Posts & Market</Text>
+          <Text style={[styles.tabText, { color: activeTab === 'posts' ? theme.colors.G : theme.colors.MUTED }]}>Posts & Market</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[{ flex: 1, paddingVertical: 12, alignItems: 'center' }, activeTab === 'events' && { borderBottomWidth: 2, borderBottomColor: G }]} 
+          style={[{ flex: 1, paddingVertical: 12, alignItems: 'center' }, activeTab === 'events' && { borderBottomWidth: 2, borderBottomColor: theme.colors.G }]} 
           onPress={() => setActiveTab('events')}
         >
-          <Text style={[s.tabText, { color: activeTab === 'events' ? G : MUTED }]}>Events</Text>
+          <Text style={[styles.tabText, { color: activeTab === 'events' ? theme.colors.G : theme.colors.MUTED }]}>Events</Text>
         </TouchableOpacity>
       </View>
 
@@ -162,29 +163,27 @@ export default function BookmarksScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  tabText: { fontFamily: 'Outfit-Bold', fontSize: 14 },
-});
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  tabs: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 14,
-  },
-  tabText: {
-    fontSize: 15,
-  },
-  emptyContainer: {
-    padding: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 64,
-  },
-  emptyText: { fontFamily: 'Inter-Regular', fontSize: 16 }
-});
+
+const sStylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      tabs: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+      },
+      tab: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 14,
+      },
+      tabText: {
+        fontSize: 15,
+      },
+      emptyContainer: {
+        padding: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 64,
+      },
+      emptyText: { fontFamily: 'Inter-Regular', fontSize: 16 }
+    }));

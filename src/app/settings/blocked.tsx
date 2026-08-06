@@ -1,11 +1,11 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
-import { DARK, G, GLASS_BORDER, LABEL, MUTED, SURFACE } from '../../constants/tokens';
 
 interface SimpleProfile {
   id: string;
@@ -15,6 +15,8 @@ interface SimpleProfile {
 }
 
 export default function BlockedUsersScreen() {
+  const { styles: s, theme } = useStyles(sStylesheet);
+
   const router = useRouter();
   const { profile, updateProfile } = useAuth();
   const [blockedList, setBlockedList] = useState<SimpleProfile[]>([]);
@@ -75,45 +77,47 @@ export default function BlockedUsersScreen() {
 
         {loading ? (
           <View style={s.loadingContainer}>
-            <ActivityIndicator size="large" color={G} />
+            <ActivityIndicator size="large" color={theme.colors.G} />
           </View>
         ) : blockedList.length > 0 ? (
           <View style={s.card}>
-            {blockedList.map((user, idx) => (
-              <React.Fragment key={user.id}>
-                {idx > 0 && <View style={s.divider} />}
-                <View style={s.row}>
-                  <Image
-                    source={
-                      user.avatar_url
-                        ? { uri: user.avatar_url }
-                        : require('../../../assets/images/icon.png')
-                    }
-                    style={s.avatar}
-                  />
-                  <View style={s.userInfo}>
-                    <Text style={s.userName}>{user.name}</Text>
-                    {user.username && <Text style={s.userHandle}>@{user.username}</Text>}
+            {blockedList.map((user, idx) => {
+              return (
+                <React.Fragment key={user.id}>
+                  {idx > 0 && <View style={s.divider} />}
+                  <View style={s.row}>
+                    <Image
+                      source={
+                        user.avatar_url
+                          ? { uri: user.avatar_url }
+                          : require('../../../assets/images/icon.png')
+                      }
+                      style={s.avatar}
+                    />
+                    <View style={s.userInfo}>
+                      <Text style={s.userName}>{user.name}</Text>
+                      {user.username && <Text style={s.userHandle}>@{user.username}</Text>}
+                    </View>
+                    <TouchableOpacity
+                      style={s.unblockBtn}
+                      onPress={() => handleUnblock(user.id)}
+                      disabled={unblockingId !== null}
+                    >
+                      {unblockingId === user.id ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <Text style={s.unblockBtnText}>Unblock</Text>
+                      )}
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity
-                    style={s.unblockBtn}
-                    onPress={() => handleUnblock(user.id)}
-                    disabled={unblockingId !== null}
-                  >
-                    {unblockingId === user.id ? (
-                      <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                      <Text style={s.unblockBtnText}>Unblock</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </React.Fragment>
-            ))}
+                </React.Fragment>
+              );
+            })}
           </View>
         ) : (
           <View style={s.emptyState}>
             <View style={s.iconCircle}>
-              <Feather name="shield" size={32} color={LABEL} />
+              <Feather name="shield" size={32} color={theme.colors.LABEL} />
             </View>
             <Text style={s.emptyTitle}>No Blocked Users</Text>
             <Text style={s.emptySub}>You haven't blocked anyone in your neighbourhood yet.</Text>
@@ -124,26 +128,26 @@ export default function BlockedUsersScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: DARK },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  content: { padding: 20, flexGrow: 1 },
-  desc: { fontFamily: 'Inter', fontSize: 14, color: MUTED, lineHeight: 22, marginBottom: 24 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 },
-  card: { backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: GLASS_BORDER, paddingHorizontal: 16, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14 },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.05)', marginRight: 12 },
-  userInfo: { flex: 1 },
-  userName: { fontFamily: 'Inter-SemiBold', fontSize: 15, color: '#fff', marginBottom: 2 },
-  userHandle: { fontFamily: 'Inter', fontSize: 13, color: MUTED },
-  unblockBtn: { paddingHorizontal: 16, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
-  unblockBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
-  divider: { height: 1, backgroundColor: GLASS_BORDER },
-  
-  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 80 },
-  iconCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-  emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff', marginBottom: 8 },
-  emptySub: { fontFamily: 'Inter', fontSize: 14, color: MUTED, textAlign: 'center', paddingHorizontal: 32, lineHeight: 22 },
-});
+const sStylesheet = createStyleSheet(theme => ({
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
+      header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      content: { padding: 20, flexGrow: 1 },
+      desc: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.MUTED, lineHeight: 22, marginBottom: 24 },
+      loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 },
+      card: { backgroundColor: theme.colors.SURFACE, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, paddingHorizontal: 16, overflow: 'hidden' },
+      row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14 },
+      avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.05)', marginRight: 12 },
+      userInfo: { flex: 1 },
+      userName: { fontFamily: 'Inter-SemiBold', fontSize: 15, color: '#fff', marginBottom: 2 },
+      userHandle: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.MUTED },
+      unblockBtn: { paddingHorizontal: 16, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
+      unblockBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
+      divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER },
+      
+      emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 80 },
+      iconCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+      emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff', marginBottom: 8 },
+      emptySub: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center', paddingHorizontal: 32, lineHeight: 22 },
+    }));

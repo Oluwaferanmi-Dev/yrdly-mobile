@@ -1,6 +1,6 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert as RNAlert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert as RNAlert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
@@ -20,6 +20,8 @@ const DARK_STYLE = [
 ];
 
 export default function CreateAlertScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const router = useRouter();
   const { profile } = useAuth();
   const { colors, isDarkMode } = useAppTheme();
@@ -68,8 +70,8 @@ export default function CreateAlertScreen() {
   // If user is not admin, they shouldn't even be here, but let's be safe
   if (profile?.role !== 'admin' && !profile?.is_admin) {
     return (
-      <View style={[styles.center, { backgroundColor: DARK }]}>
-        <Text style={styles.errorText}>Unauthorized Access</Text>
+      <View style={[stylesheet.center, { backgroundColor: theme.colors.DARK }]}>
+        <Text style={stylesheet.errorText}>Unauthorized Access</Text>
       </View>
     );
   }
@@ -116,93 +118,93 @@ export default function CreateAlertScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: DARK }]} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
+    <ScrollView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]} contentContainerStyle={stylesheet.content}>
+      <View style={stylesheet.header}>
+        <TouchableOpacity onPress={() => router.back()} style={stylesheet.backButton}>
+          <Ionicons name="chevron-back" size={28} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Create Alert</Text>
+        <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY }]}>Create Alert</Text>
         <View style={{ width: 24 }} />
       </View>
 
-      <Text style={[styles.label, { color: LABEL }]}>Alert Type</Text>
-      <View style={styles.typeSelector}>
+      <Text style={[stylesheet.label, { color: theme.colors.LABEL }]}>Alert Type</Text>
+      <View style={stylesheet.typeSelector}>
         <TouchableOpacity 
-          style={[styles.typeButton, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, type === 'amber' && styles.typeButtonActive]}
+          style={[stylesheet.typeButton, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, type === 'amber' && stylesheet.typeButtonActive]}
           onPress={() => setType('amber')}
         >
-          <Text style={[styles.typeText, { color: LABEL }, type === 'amber' && styles.typeTextActive]}>Amber / Child</Text>
+          <Text style={[stylesheet.typeText, { color: theme.colors.LABEL }, type === 'amber' && stylesheet.typeTextActive]}>Amber / Child</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.typeButton, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, type === 'missing_person' && styles.typeButtonActive]}
+          style={[stylesheet.typeButton, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, type === 'missing_person' && stylesheet.typeButtonActive]}
           onPress={() => setType('missing_person')}
         >
-          <Text style={[styles.typeText, { color: LABEL }, type === 'missing_person' && styles.typeTextActive]}>Missing Person</Text>
+          <Text style={[stylesheet.typeText, { color: theme.colors.LABEL }, type === 'missing_person' && stylesheet.typeTextActive]}>Missing Person</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.typeButton, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, type === 'community_safety' && styles.typeButtonActive]}
+          style={[stylesheet.typeButton, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, type === 'community_safety' && stylesheet.typeButtonActive]}
           onPress={() => setType('community_safety')}
         >
-          <Text style={[styles.typeText, { color: LABEL }, type === 'community_safety' && styles.typeTextActive]}>Safety</Text>
+          <Text style={[stylesheet.typeText, { color: theme.colors.LABEL }, type === 'community_safety' && stylesheet.typeTextActive]}>Safety</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={[styles.label, { color: LABEL }]}>Alert Duration</Text>
-      <View style={styles.typeSelector}>
+      <Text style={[stylesheet.label, { color: theme.colors.LABEL }]}>Alert Duration</Text>
+      <View style={stylesheet.typeSelector}>
         <TouchableOpacity 
-          style={[styles.typeButton, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, duration === '24h' && styles.typeButtonActive]}
+          style={[stylesheet.typeButton, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, duration === '24h' && stylesheet.typeButtonActive]}
           onPress={() => setDuration('24h')}
         >
-          <Text style={[styles.typeText, { color: LABEL }, duration === '24h' && styles.typeTextActive]}>24 Hours</Text>
+          <Text style={[stylesheet.typeText, { color: theme.colors.LABEL }, duration === '24h' && stylesheet.typeTextActive]}>24 Hours</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.typeButton, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, duration === '48h' && styles.typeButtonActive]}
+          style={[stylesheet.typeButton, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, duration === '48h' && stylesheet.typeButtonActive]}
           onPress={() => setDuration('48h')}
         >
-          <Text style={[styles.typeText, { color: LABEL }, duration === '48h' && styles.typeTextActive]}>48 Hours</Text>
+          <Text style={[stylesheet.typeText, { color: theme.colors.LABEL }, duration === '48h' && stylesheet.typeTextActive]}>48 Hours</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.typeButton, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, duration === '7d' && styles.typeButtonActive]}
+          style={[stylesheet.typeButton, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, duration === '7d' && stylesheet.typeButtonActive]}
           onPress={() => setDuration('7d')}
         >
-          <Text style={[styles.typeText, { color: LABEL }, duration === '7d' && styles.typeTextActive]}>7 Days</Text>
+          <Text style={[stylesheet.typeText, { color: theme.colors.LABEL }, duration === '7d' && stylesheet.typeTextActive]}>7 Days</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={[styles.label, { color: LABEL }]}>Alert Title</Text>
+      <Text style={[stylesheet.label, { color: theme.colors.LABEL }]}>Alert Title</Text>
       <TextInput
-        style={[styles.input, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, color: TEXT_PRIMARY }]}
+        style={[stylesheet.input, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, color: theme.colors.TEXT_PRIMARY }]}
         placeholder="e.g., Missing 9yo in Shomolu"
-        placeholderTextColor={MUTED}
+        placeholderTextColor={theme.colors.MUTED}
         value={title}
         onChangeText={setTitle}
       />
 
-      <Text style={[styles.label, { color: LABEL }]}>Description</Text>
+      <Text style={[stylesheet.label, { color: theme.colors.LABEL }]}>Description</Text>
       <TextInput
-        style={[styles.input, styles.textArea, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, color: TEXT_PRIMARY }]}
+        style={[stylesheet.input, stylesheet.textArea, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, color: theme.colors.TEXT_PRIMARY }]}
         placeholder="Provide all known details..."
-        placeholderTextColor={MUTED}
+        placeholderTextColor={theme.colors.MUTED}
         multiline
         numberOfLines={4}
         value={description}
         onChangeText={setDescription}
       />
 
-      <Text style={[styles.label, { color: LABEL }]}>Radius (km)</Text>
+      <Text style={[stylesheet.label, { color: theme.colors.LABEL }]}>Radius (km)</Text>
       <TextInput
-        style={[styles.input, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, color: TEXT_PRIMARY }]}
+        style={[stylesheet.input, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, color: theme.colors.TEXT_PRIMARY }]}
         placeholder="50"
-        placeholderTextColor={MUTED}
+        placeholderTextColor={theme.colors.MUTED}
         keyboardType="numeric"
         value={radiusKm}
         onChangeText={setRadiusKm}
       />
 
-      <Text style={[styles.label, { color: LABEL }]}>Location</Text>
-      <View style={styles.mapContainer}>
+      <Text style={[stylesheet.label, { color: theme.colors.LABEL }]}>Location</Text>
+      <View style={stylesheet.mapContainer}>
         <MapView
-          style={styles.map}
+          style={stylesheet.map}
           initialRegion={{
             latitude: coordinate.latitude,
             longitude: coordinate.longitude,
@@ -221,12 +223,12 @@ export default function CreateAlertScreen() {
         >
           <Marker coordinate={coordinate} />
         </MapView>
-        <View style={styles.addressBox}>
+        <View style={stylesheet.addressBox}>
           {geocoding ? (
             <ActivityIndicator size="small" color="#6b7280" />
           ) : (
             <TextInput
-              style={styles.addressText}
+              style={stylesheet.addressText}
               value={address}
               onChangeText={setAddress}
               placeholder="Tap map or type address..."
@@ -238,139 +240,143 @@ export default function CreateAlertScreen() {
       </View>
 
       <TouchableOpacity 
-        style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+        style={[stylesheet.submitButton, loading && stylesheet.submitButtonDisabled]}
         onPress={handleCreate}
         disabled={loading}
       >
-        <Text style={styles.submitButtonText}>{loading ? 'Broadcasting...' : 'Broadcast Alert'}</Text>
+        <Text style={stylesheet.submitButtonText}>{loading ? 'Broadcasting...' : 'Broadcast Alert'}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-    paddingTop: 60,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 18,
-    color: '#ef4444',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  headerTitle: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 20,
-    color: '#111827',
-  },
-  label: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 14,
-    color: '#374151',
-    marginBottom: 8,
-    marginTop: 16,
-  },
-  input: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#111827',
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  typeSelector: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  typeButton: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  typeButtonActive: {
-    backgroundColor: '#ef4444',
-    borderColor: '#ef4444',
-  },
-  typeText: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 12,
-    color: '#4b5563',
-  },
-  typeTextActive: {
-    color: '#ffffff',
-  },
-  mapContainer: {
-    height: 200,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    marginTop: 4,
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  addressBox: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    right: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    padding: 10,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  addressText: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 12,
-    color: '#374151',
-  },
-  submitButton: {
-    backgroundColor: '#ef4444',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 40,
-  },
-  submitButtonDisabled: {
-    opacity: 0.7,
-  },
-  submitButtonText: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 16,
-    color: '#ffffff',
-  },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: {
+        flex: 1,
+      },
+      content: {
+        padding: 20,
+        paddingTop: 60,
+      },
+      center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      errorText: {
+        fontFamily: 'Inter-Bold',
+        fontSize: 18,
+        color: '#ef4444',
+      },
+      header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 30,
+      },
+      backButton: {
+        padding: 8,
+        marginLeft: -8,
+      },
+      headerTitle: {
+        fontFamily: 'Inter-Bold',
+        fontSize: 20,
+        color: '#111827',
+      },
+      label: {
+        fontFamily: 'Inter-SemiBold',
+        fontSize: 14,
+        color: '#374151',
+        marginBottom: 8,
+        marginTop: 16,
+      },
+      input: {
+        backgroundColor: '#ffffff',
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 16,
+        fontFamily: 'Inter-Regular',
+        color: '#111827',
+      },
+      textArea: {
+        height: 100,
+        textAlignVertical: 'top',
+      },
+      typeSelector: {
+        flexDirection: 'row',
+        gap: 8,
+      },
+      typeButton: {
+        flex: 1,
+        paddingVertical: 10,
+        paddingHorizontal: 8,
+        backgroundColor: '#ffffff',
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        borderRadius: 8,
+        alignItems: 'center',
+      },
+      typeButtonActive: {
+        backgroundColor: '#ef4444',
+        borderColor: '#ef4444',
+      },
+      typeText: {
+        fontFamily: 'Inter-Medium',
+        fontSize: 12,
+        color: '#4b5563',
+      },
+      typeTextActive: {
+        color: '#ffffff',
+      },
+      mapContainer: {
+        height: 200,
+        borderRadius: 8,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        marginTop: 4,
+      },
+      map: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+      },
+      addressBox: {
+        position: 'absolute',
+        bottom: 12,
+        left: 12,
+        right: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        padding: 10,
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+      },
+      addressText: {
+        fontFamily: 'Inter-Medium',
+        fontSize: 12,
+        color: '#374151',
+      },
+      submitButton: {
+        backgroundColor: '#ef4444',
+        padding: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 40,
+      },
+      submitButtonDisabled: {
+        opacity: 0.7,
+      },
+      submitButtonText: {
+        fontFamily: 'Inter-Bold',
+        fontSize: 16,
+        color: '#ffffff',
+      },
+    }));

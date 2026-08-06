@@ -1,5 +1,6 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { Tabs, useRouter } from 'expo-router';
-import { View, Platform, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, Platform, Text, TouchableOpacity } from 'react-native';
 import { Plus } from 'phosphor-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -12,12 +13,12 @@ import { PencilSimple, Storefront, CalendarBlank, WarningCircle, X } from 'phosp
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { G, GLOW_STRONG, GLASS_BG, GLASS_BORDER, DARK, MUTED, RED } from '../../constants/tokens';
-
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 /** Wraps any tab icon with a spring scale animation on focus */
 function TabIconWrapper({ focused, children }: { focused: boolean; children: React.ReactNode }) {
+    const { styles, theme } = useStyles(sStylesheet);
+
   const scale = useSharedValue(1);
 
   useEffect(() => {
@@ -33,6 +34,8 @@ function TabIconWrapper({ focused, children }: { focused: boolean; children: Rea
 
 /** Floating create button with spring press feedback */
 function FloatingCreateButton({ onPress }: { onPress: () => void }) {
+    const { styles, theme } = useStyles(sStylesheet);
+
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -63,6 +66,8 @@ function FloatingCreateButton({ onPress }: { onPress: () => void }) {
 const TAB_BAR_HEIGHT = 64;
 
 function CreateMenuOverlay({ visible, onClose, onSelect }: { visible: boolean, onClose: () => void, onSelect: (route: string) => void }) {
+    const { styles, theme } = useStyles(sStylesheet);
+
   if (!visible) return null;
   
   const OPTIONS = [
@@ -73,28 +78,31 @@ function CreateMenuOverlay({ visible, onClose, onSelect }: { visible: boolean, o
   ];
 
   return (
-    <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} style={StyleSheet.absoluteFill}>
-      <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+    <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
+      <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
+        <TouchableOpacity style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} activeOpacity={1} onPress={onClose} />
       </BlurView>
       <Animated.View entering={SlideInDown.duration(300).springify()} exiting={SlideOutDown.duration(200)} style={styles.overlayContent}>
         <View style={styles.optionsContainer}>
-          {OPTIONS.map((opt, idx) => (
-            <TouchableOpacity 
-              key={opt.id} 
-              activeOpacity={0.8} 
-              style={styles.optionBtn}
-              onPress={() => onSelect(opt.route)}
-            >
-              <View style={styles.optionIconWrap}>
-                <opt.icon size={24} color={G} weight="regular" />
-              </View>
-              <View style={styles.optionTextWrap}>
-                <Text style={styles.optionTitle}>{opt.title}</Text>
-                <Text style={styles.optionDesc}>{opt.desc}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+          {OPTIONS.map((opt, idx) => {
+          const { styles } = useStyles(sStylesheet);
+          return (
+                      <TouchableOpacity 
+                        key={opt.id} 
+                        activeOpacity={0.8} 
+                        style={styles.optionBtn}
+                        onPress={() => onSelect(opt.route)}
+                      >
+                        <View style={styles.optionIconWrap}>
+                          <opt.icon size={24} color={theme.colors.G} weight="regular" />
+                        </View>
+                        <View style={styles.optionTextWrap}>
+                          <Text style={styles.optionTitle}>{opt.title}</Text>
+                          <Text style={styles.optionDesc}>{opt.desc}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+          })}
         </View>
         <TouchableOpacity style={styles.closeBtn} activeOpacity={0.8} onPress={onClose}>
           <X size={24} color="#FFF" weight="bold" />
@@ -105,6 +113,8 @@ function CreateMenuOverlay({ visible, onClose, onSelect }: { visible: boolean, o
 }
 
 export default function TabLayout() {
+    const { styles, theme } = useStyles(sStylesheet);
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors, isDarkMode } = useAppTheme();
@@ -185,17 +195,20 @@ export default function TabLayout() {
               paddingBottom: insets.bottom,
               elevation: 0,
             },
-            tabBarActiveTintColor: G,
+            tabBarActiveTintColor: theme.colors.G,
             tabBarInactiveTintColor: 'rgba(255,255,255,0.42)',
-            tabBarLabel: ({ focused, color }) => (
-              <Text style={{
-                color,
-                fontFamily: focused ? 'Inter-SemiBold' : 'Inter-Regular',
-                fontSize: 10,
-              }}>
-                {/* The label text is determined by the route title or passed down */}
-              </Text>
-            ),
+            tabBarLabel: ({ focused, color }) => {
+            const { styles } = useStyles(sStylesheet);
+            return (
+                          <Text style={{
+                            color,
+                            fontFamily: focused ? 'Inter-SemiBold' : 'Inter-Regular',
+                            fontSize: 10,
+                          }}>
+                            {/* The label text is determined by the route title or passed down */}
+                          </Text>
+                        );
+            },
             tabBarItemStyle: {
               paddingTop: 8,
             },
@@ -205,22 +218,28 @@ export default function TabLayout() {
           name="index"
           options={{
             title: 'Home',
-            tabBarIcon: ({ color, focused }) => (
-              <TabIconWrapper focused={focused}>
-                <HomeIcon color={focused ? G : color} size={26} filled={focused} />
-              </TabIconWrapper>
-            ),
+            tabBarIcon: ({ color, focused }) => {
+            const { styles } = useStyles(sStylesheet);
+            return (
+                          <TabIconWrapper focused={focused}>
+                            <HomeIcon color={focused ? theme.colors.G : color} size={26} filled={focused} />
+                          </TabIconWrapper>
+                        );
+            },
           }}
         />
         <Tabs.Screen
           name="catalog"
           options={{
             title: 'Explore',
-            tabBarIcon: ({ color, focused }) => (
-              <TabIconWrapper focused={focused}>
-                <ExploreIcon color={focused ? G : color} size={26} filled={focused} />
-              </TabIconWrapper>
-            ),
+            tabBarIcon: ({ color, focused }) => {
+            const { styles } = useStyles(sStylesheet);
+            return (
+                          <TabIconWrapper focused={focused}>
+                            <ExploreIcon color={focused ? theme.colors.G : color} size={26} filled={focused} />
+                          </TabIconWrapper>
+                        );
+            },
           }}
         />
         <Tabs.Screen
@@ -246,29 +265,35 @@ export default function TabLayout() {
           name="messages"
           options={{
             title: 'Messages',
-            tabBarIcon: ({ color, focused }) => (
-              <TabIconWrapper focused={focused}>
-                <View>
-                  <MessagesIcon color={focused ? G : color} size={26} filled={focused} />
-                  {unreadMessages > 0 && (
-                    <View style={styles.badge}>
-                      <Text style={styles.badgeText}>{unreadMessages > 99 ? '99+' : unreadMessages}</Text>
-                    </View>
-                  )}
-                </View>
-              </TabIconWrapper>
-            ),
+            tabBarIcon: ({ color, focused }) => {
+            const { styles } = useStyles(sStylesheet);
+            return (
+                          <TabIconWrapper focused={focused}>
+                            <View>
+                              <MessagesIcon color={focused ? theme.colors.G : color} size={26} filled={focused} />
+                              {unreadMessages > 0 && (
+                                <View style={styles.badge}>
+                                  <Text style={styles.badgeText}>{unreadMessages > 99 ? '99+' : unreadMessages}</Text>
+                                </View>
+                              )}
+                            </View>
+                          </TabIconWrapper>
+                        );
+            },
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ color, focused }) => (
-              <TabIconWrapper focused={focused}>
-                <ProfileIcon color={focused ? G : color} size={26} filled={focused} />
-              </TabIconWrapper>
-            ),
+            tabBarIcon: ({ color, focused }) => {
+            const { styles } = useStyles(sStylesheet);
+            return (
+                          <TabIconWrapper focused={focused}>
+                            <ProfileIcon color={focused ? theme.colors.G : color} size={26} filled={focused} />
+                          </TabIconWrapper>
+                        );
+            },
           }}
         />
       </Tabs>
@@ -285,98 +310,98 @@ export default function TabLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  createButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: G,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Platform.OS === 'ios' ? 12 : 8,
-    shadowColor: G,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -8,
-    backgroundColor: G,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 3,
-    borderWidth: 1.5,
-    borderColor: DARK,
-  },
-  badgeText: {
-    color: DARK,
-    fontSize: 9,
-    fontFamily: 'Outfit-ExtraBold',
-  },
-  overlayContent: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 20,
-    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  optionsContainer: {
-    width: '100%',
-    marginBottom: 24,
-  },
-  optionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#111',
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 8,
-    gap: 16,
-  },
-  optionIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(130,219,126,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  optionTextWrap: {
-    flex: 1,
-  },
-  optionTitle: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 16,
-    color: '#FFF',
-    marginBottom: 2,
-  },
-  optionDesc: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 13,
-    color: MUTED,
-  },
-  closeBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#222',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-});
+const sStylesheet = createStyleSheet(theme => ({
+      createButton: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        backgroundColor: theme.colors.G,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: Platform.OS === 'ios' ? 12 : 8,
+        shadowColor: theme.colors.G,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+        elevation: 8,
+      },
+      badge: {
+        position: 'absolute',
+        top: -4,
+        right: -8,
+        backgroundColor: theme.colors.G,
+        minWidth: 16,
+        height: 16,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 3,
+        borderWidth: 1.5,
+        borderColor: theme.colors.DARK,
+      },
+      badgeText: {
+        color: theme.colors.DARK,
+        fontSize: 9,
+        fontFamily: 'Outfit-ExtraBold',
+      },
+      overlayContent: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 20,
+        paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+      },
+      optionsContainer: {
+        width: '100%',
+        marginBottom: 24,
+      },
+      optionBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#111',
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 8,
+        gap: 16,
+      },
+      optionIconWrap: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(130,219,126,0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      optionTextWrap: {
+        flex: 1,
+      },
+      optionTitle: {
+        fontFamily: 'Outfit-Bold',
+        fontSize: 16,
+        color: '#FFF',
+        marginBottom: 2,
+      },
+      optionDesc: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 13,
+        color: theme.colors.MUTED,
+      },
+      closeBtn: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        backgroundColor: '#222',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+      },
+    }));
 
 
 

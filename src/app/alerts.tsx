@@ -1,13 +1,12 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, SectionList, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, SectionList, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertService, Alert } from '../lib/alert-service';
 import { AlertBanner } from '../components/AlertBanner';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../context/ThemeContext';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, RED, AMBER, BLUE } from '../constants/tokens';
-
 type SeverityFilter = 'all' | 'urgent' | 'caution' | 'information';
 
 const FILTERS: { key: SeverityFilter; label: string; color: string; bg: string }[] = [
@@ -18,6 +17,8 @@ const FILTERS: { key: SeverityFilter; label: string; color: string; bg: string }
 ];
 
 export default function AlertsScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useAppTheme();
@@ -57,14 +58,14 @@ export default function AlertsScreen() {
   }, [filtered]);
 
   return (
-    <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ width: 34, height: 34, justifyContent: 'center', alignItems: 'center', borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
-          <Ionicons name="chevron-back" size={18} color={TEXT_PRIMARY} />
+    <View style={[stylesheet.container, { backgroundColor: theme.colors.DARK, paddingTop: insets.top }]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 34, height: 34, justifyContent: 'center', alignItems: 'center', borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}>
+          <Ionicons name="chevron-back" size={18} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 18, color: TEXT_PRIMARY }}>Safety Alerts</Text>
-          <Text style={{ fontFamily: 'Inter', fontSize: 12, color: LABEL }}>Victoria Island & Lekki, Lagos</Text>
+          <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 18, color: theme.colors.TEXT_PRIMARY }}>Safety Alerts</Text>
+          <Text style={{ fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL }}>Victoria Island & Lekki, Lagos</Text>
         </View>
         <View style={{ paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.12)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.25)' }}>
           <Text style={{ fontFamily: 'Outfit', fontWeight: '700', fontSize: 11, color: '#ef4444' }}>
@@ -76,17 +77,21 @@ export default function AlertsScreen() {
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id}
-        renderSectionHeader={({ section: { title } }) => (
-          <Text style={styles.sectionHeader}>{title}</Text>
-        )}
-        renderItem={({ item }) => (
-          <View style={{ paddingHorizontal: 20 }}>
-            <AlertBanner
-              alert={item}
-              onPress={() => router.push(`/alert/${item.id}` as any)}
-            />
-          </View>
-        )}
+        renderSectionHeader={({ section: { title } }) => {
+        return (
+                  <Text style={stylesheet.sectionHeader}>{title}</Text>
+                );
+        }}
+        renderItem={({ item }) => {
+        return (
+                  <View style={{ paddingHorizontal: 20 }}>
+                    <AlertBanner
+                      alert={item}
+                      onPress={() => router.push(`/alert/${item.id}` as any)}
+                    />
+                  </View>
+                );
+        }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -95,12 +100,12 @@ export default function AlertsScreen() {
             colors={[colors.tint]}
           />
         }
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={stylesheet.listContent}
         ListEmptyComponent={
           !loading ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="shield-checkmark-outline" size={48} color={MUTED} />
-              <Text style={[styles.emptyText, { color: LABEL }]}>
+            <View style={stylesheet.emptyContainer}>
+              <Ionicons name="shield-checkmark-outline" size={48} color={theme.colors.MUTED} />
+              <Text style={[stylesheet.emptyText, { color: theme.colors.LABEL }]}>
                 {activeFilter === 'all'
                   ? 'There are no active alerts in your area.'
                   : `No ${activeFilter} alerts right now.`}
@@ -113,30 +118,30 @@ export default function AlertsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  listContent: { paddingVertical: 16, paddingBottom: 32 },
-  sectionHeader: {
-    fontFamily: 'Inter',
-    fontWeight: '700',
-    fontSize: 11,
-    color: LABEL,
-    letterSpacing: 1.1,
-    paddingHorizontal: 20,
-    marginBottom: 10,
-    marginTop: 10,
-  },
-  emptyContainer: {
-    padding: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 40,
-  },
-  emptyText: {
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 16,
-    marginTop: 16,
-    textAlign: 'center',
-  },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      listContent: { paddingVertical: 16, paddingBottom: 32 },
+      sectionHeader: {
+        fontFamily: 'Inter',
+        fontWeight: '700',
+        fontSize: 11,
+        color: theme.colors.LABEL,
+        letterSpacing: 1.1,
+        paddingHorizontal: 20,
+        marginBottom: 10,
+        marginTop: 10,
+      },
+      emptyContainer: {
+        padding: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 40,
+      },
+      emptyText: {
+        fontFamily: 'Inter',
+        fontWeight: '500',
+        fontSize: 16,
+        marginTop: 16,
+        textAlign: 'center',
+      },
+    }));

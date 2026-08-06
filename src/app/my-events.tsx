@@ -1,7 +1,8 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, ActivityIndicator,
+  View, Text, FlatList, ActivityIndicator,
   TouchableOpacity, RefreshControl
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -11,9 +12,10 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { getOrganizerEvents } from '../lib/event-service';
 import type { Event } from '../types/events';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 
 export default function MyEventsScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
@@ -39,6 +41,7 @@ export default function MyEventsScreen() {
   const onRefresh = useCallback(() => { setRefreshing(true); fetchEvents(); }, [fetchEvents]);
 
   const renderEvent = ({ item }: { item: Event }) => {
+
     const imageUrl = item.cover_image_url;
     const formattedDate = item.start_time
       ? new Date(item.start_time).toLocaleDateString('en-US', {
@@ -53,58 +56,58 @@ export default function MyEventsScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.eventCard, { backgroundColor: SURFACE }]}
+        style={[stylesheet.eventCard, { backgroundColor: theme.colors.SURFACE }]}
         onPress={() => router.push(`/events/${item.id}/manage`)}
         activeOpacity={0.8}
       >
-        <View style={styles.eventImageWrapper}>
+        <View style={stylesheet.eventImageWrapper}>
           {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.eventImage} contentFit="cover" />
+            <Image source={{ uri: imageUrl }} style={stylesheet.eventImage} contentFit="cover" />
           ) : (
-            <View style={[styles.eventImage, { backgroundColor: colors.border }]} />
+            <View style={[stylesheet.eventImage, { backgroundColor: colors.border }]} />
           )}
-          <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>{item.status}</Text>
+          <View style={stylesheet.statusBadge}>
+            <Text style={stylesheet.statusText}>{item.status}</Text>
           </View>
         </View>
 
-        <View style={styles.eventContent}>
-          <Text style={[styles.eventTitle, { color: TEXT_PRIMARY }]} numberOfLines={2}>
+        <View style={stylesheet.eventContent}>
+          <Text style={[stylesheet.eventTitle, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={2}>
             {item.title}
           </Text>
           
-          <View style={styles.eventInfoRow}>
-            <Feather name="calendar" size={14} color={LABEL} />
-            <Text style={[styles.eventInfoText, { color: LABEL }]}>
+          <View style={stylesheet.eventInfoRow}>
+            <Feather name="calendar" size={14} color={theme.colors.LABEL} />
+            <Text style={[stylesheet.eventInfoText, { color: theme.colors.LABEL }]}>
               {formattedDate}
             </Text>
           </View>
 
-          <View style={[styles.statsContainer, { backgroundColor: DARK, borderColor: colors.border }]}>
-            <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: TEXT_PRIMARY }]}>{totalSold}</Text>
-              <Text style={[styles.statLabel, { color: MUTED }]}>Sold</Text>
+          <View style={[stylesheet.statsContainer, { backgroundColor: theme.colors.DARK, borderColor: colors.border }]}>
+            <View style={stylesheet.statBox}>
+              <Text style={[stylesheet.statValue, { color: theme.colors.TEXT_PRIMARY }]}>{totalSold}</Text>
+              <Text style={[stylesheet.statLabel, { color: theme.colors.MUTED }]}>Sold</Text>
             </View>
-            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-            <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: TEXT_PRIMARY }]}>
+            <View style={[stylesheet.statDivider, { backgroundColor: colors.border }]} />
+            <View style={stylesheet.statBox}>
+              <Text style={[stylesheet.statValue, { color: theme.colors.TEXT_PRIMARY }]}>
                 ₦{totalRevenue.toLocaleString()}
               </Text>
-              <Text style={[styles.statLabel, { color: MUTED }]}>Revenue</Text>
+              <Text style={[stylesheet.statLabel, { color: theme.colors.MUTED }]}>Revenue</Text>
             </View>
-            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-            <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: TEXT_PRIMARY }]}>{item.attendee_count || 0}</Text>
-              <Text style={[styles.statLabel, { color: MUTED }]}>Attendees</Text>
+            <View style={[stylesheet.statDivider, { backgroundColor: colors.border }]} />
+            <View style={stylesheet.statBox}>
+              <Text style={[stylesheet.statValue, { color: theme.colors.TEXT_PRIMARY }]}>{item.attendee_count || 0}</Text>
+              <Text style={[stylesheet.statLabel, { color: theme.colors.MUTED }]}>Attendees</Text>
             </View>
           </View>
 
             <TouchableOpacity
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: G, paddingVertical: 8, borderRadius: 12, marginTop: 10 }}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: theme.colors.G, paddingVertical: 8, borderRadius: 12, marginTop: 10 }}
               onPress={() => router.push({ pathname: '/events/scan' as any, params: { eventId: item.id } })}
             >
               <Ionicons name="qr-code" size={16} color="#000" />
-              <Text style={styles.scanBtnText}>Scan Attendee Tickets</Text>
+              <Text style={stylesheet.scanBtnText}>Scan Attendee Tickets</Text>
             </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -112,16 +115,16 @@ export default function MyEventsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
+      <View style={[stylesheet.header, { borderBottomColor: theme.colors.GLASS_BORDER }]}>
+        <TouchableOpacity style={stylesheet.backButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={28} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>My Events</Text>
-        <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: G + '20', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14 }} onPress={() => router.push('/events/scan' as any)}>
-          <Ionicons name="qr-code-outline" size={16} color={G} />
-          <Text style={{ color: G, fontFamily: 'Outfit-Bold', fontSize: 12 }}>Scan</Text>
+        <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY }]}>My Events</Text>
+        <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: theme.colors.G + '20', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14 }} onPress={() => router.push('/events/scan' as any)}>
+          <Ionicons name="qr-code-outline" size={16} color={theme.colors.G} />
+          <Text style={{ color: theme.colors.G, fontFamily: 'Outfit-Bold', fontSize: 12 }}>Scan</Text>
         </TouchableOpacity>
       </View>
 
@@ -129,28 +132,28 @@ export default function MyEventsScreen() {
         data={events}
         keyExtractor={(item) => item.id}
         renderItem={renderEvent}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={stylesheet.listContainer}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.G} />
         }
         ListEmptyComponent={
           !loading ? (
-            <View style={styles.emptyState}>
+            <View style={stylesheet.emptyState}>
               <Feather name="calendar" size={48} color={colors.border} />
-              <Text style={[styles.emptyStateTitle, { color: TEXT_PRIMARY }]}>No Events Yet</Text>
-              <Text style={[styles.emptyStateDesc, { color: LABEL }]}>
+              <Text style={[stylesheet.emptyStateTitle, { color: theme.colors.TEXT_PRIMARY }]}>No Events Yet</Text>
+              <Text style={[stylesheet.emptyStateDesc, { color: theme.colors.LABEL }]}>
                 You haven't organized any events yet.
               </Text>
               <TouchableOpacity
-                style={[styles.createButton, { backgroundColor: G }]}
+                style={[stylesheet.createButton, { backgroundColor: theme.colors.G }]}
                 onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}
               >
-                <Text style={styles.createButtonText}>Create Event</Text>
+                <Text style={stylesheet.createButtonText}>Create Event</Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={G} />
+            <View style={stylesheet.loadingContainer}>
+              <ActivityIndicator size="large" color={theme.colors.G} />
             </View>
           )
         }
@@ -159,88 +162,88 @@ export default function MyEventsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  backButton: { width: 40, alignItems: 'flex-start' },
-  headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold' },
-  listContainer: { padding: 16, flexGrow: 1 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
-  eventCard: {
-    borderRadius: 16,
-    marginBottom: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  eventImageWrapper: {
-    height: 140,
-    width: '100%',
-    position: 'relative',
-  },
-  eventImage: {
-    width: '100%',
-    height: '100%',
-  },
-  statusBadge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: { color: '#fff', fontSize: 10, fontFamily: 'Outfit-Bold' },
-  eventContent: {
-    padding: 16,
-  },
-  eventTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', marginBottom: 8 },
-  eventInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  eventInfoText: { fontSize: 14, marginLeft: 6, fontFamily: 'Inter-Regular' },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 12,
-  },
-  statBox: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statDivider: {
-    width: 1,
-    height: '100%',
-  },
-  statValue: { fontSize: 16, fontFamily: 'Outfit-Bold', marginBottom: 2 },
-  statLabel: { fontSize: 11, fontFamily: 'Inter-Regular' },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 80,
-  },
-  emptyStateTitle: { fontSize: 20, fontFamily: 'Outfit-Bold', marginTop: 16, marginBottom: 8 },
-  emptyStateDesc: { fontSize: 15, fontFamily: 'Inter-Regular', textAlign: 'center', marginBottom: 24 },
-  createButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  createButtonText: { color: '#fff', fontFamily: 'Outfit-Bold', fontSize: 16 },
-  scanBtnText: { color: '#000', fontFamily: 'Outfit-ExtraBold', fontSize: 13 },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+      },
+      backButton: { width: 40, alignItems: 'flex-start' },
+      headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold' },
+      listContainer: { padding: 16, flexGrow: 1 },
+      loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
+      eventCard: {
+        borderRadius: 16,
+        marginBottom: 16,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+      },
+      eventImageWrapper: {
+        height: 140,
+        width: '100%',
+        position: 'relative',
+      },
+      eventImage: {
+        width: '100%',
+        height: '100%',
+      },
+      statusBadge: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+      },
+      statusText: { color: '#fff', fontSize: 10, fontFamily: 'Outfit-Bold' },
+      eventContent: {
+        padding: 16,
+      },
+      eventTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', marginBottom: 8 },
+      eventInfoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+      },
+      eventInfoText: { fontSize: 14, marginLeft: 6, fontFamily: 'Inter-Regular' },
+      statsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        borderRadius: 12,
+        borderWidth: 1,
+        padding: 12,
+      },
+      statBox: {
+        flex: 1,
+        alignItems: 'center',
+      },
+      statDivider: {
+        width: 1,
+        height: '100%',
+      },
+      statValue: { fontSize: 16, fontFamily: 'Outfit-Bold', marginBottom: 2 },
+      statLabel: { fontSize: 11, fontFamily: 'Inter-Regular' },
+      emptyState: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 80,
+      },
+      emptyStateTitle: { fontSize: 20, fontFamily: 'Outfit-Bold', marginTop: 16, marginBottom: 8 },
+      emptyStateDesc: { fontSize: 15, fontFamily: 'Inter-Regular', textAlign: 'center', marginBottom: 24 },
+      createButton: {
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 24,
+      },
+      createButtonText: { color: '#fff', fontFamily: 'Outfit-Bold', fontSize: 16 },
+      scanBtnText: { color: '#000', fontFamily: 'Outfit-ExtraBold', fontSize: 13 },
+    }));

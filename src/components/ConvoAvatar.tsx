@@ -1,8 +1,7 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { View, Image } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
-import { GOLD, BLUE, G } from '@/constants/tokens';
-
 export type ConvoType = 'friends' | 'marketplace' | 'business';
 
 interface Props {
@@ -12,12 +11,10 @@ interface Props {
   size?: number;
 }
 
-const BADGE_ICONS: Record<Exclude<ConvoType, 'friends'>, { color: string; icon: React.ReactNode }> = {
-  marketplace: { color: GOLD, icon: <TagIcon /> },
-  business:    { color: G,    icon: <ShopIcon /> },
-};
 
 function TagIcon() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   return (
     <Svg width={8} height={8} viewBox="0 0 24 24" fill="none">
       <Path
@@ -32,6 +29,8 @@ function TagIcon() {
 }
 
 function ShopIcon() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   return (
     <Svg width={8} height={8} viewBox="0 0 24 24" fill="none">
       <Rect x="3" y="10" width="18" height="11" rx="1" stroke="#050505" strokeWidth="2.5" />
@@ -46,6 +45,13 @@ function ShopIcon() {
  * Matches Figma Make's ConvoAvatar({ convo }) component.
  */
 export function ConvoAvatar({ avatarId, type, online = false, size = 48 }: Props) {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
+  const BADGE_ICONS: Record<Exclude<ConvoType, 'friends'>, { color: string; icon: React.ReactNode }> = {
+    marketplace: { color: theme.colors.GOLD, icon: <TagIcon /> },
+    business:    { color: theme.colors.G,    icon: <ShopIcon /> },
+  };
+
   const badgeInfo = type !== 'friends' ? BADGE_ICONS[type] : null;
   const badgeSize = Math.round(size * 0.38);
 
@@ -57,13 +63,13 @@ export function ConvoAvatar({ avatarId, type, online = false, size = 48 }: Props
             ? `https://images.unsplash.com/photo-${avatarId}?w=${size * 2}&h=${size * 2}&fit=crop&auto=format&q=70`
             : `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=${size * 2}&h=${size * 2}&fit=crop&auto=format&q=70`,
         }}
-        style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}
+        style={[stylesheet.avatar, { width: size, height: size, borderRadius: size / 2 }]}
       />
 
       {badgeInfo && (
         <View
           style={[
-            styles.badge,
+            stylesheet.badge,
             {
               width: badgeSize,
               height: badgeSize,
@@ -81,7 +87,7 @@ export function ConvoAvatar({ avatarId, type, online = false, size = 48 }: Props
       {online && (
         <View
           style={[
-            styles.onlineDot,
+            stylesheet.onlineDot,
             { bottom: badgeInfo ? badgeSize - 4 : 2, right: 2 },
           ]}
         />
@@ -90,24 +96,24 @@ export function ConvoAvatar({ avatarId, type, online = false, size = 48 }: Props
   );
 }
 
-const styles = StyleSheet.create({
-  avatar: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  badge: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#050505',
-  },
-  onlineDot: {
-    position: 'absolute',
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#22c55e',
-    borderWidth: 1.5,
-    borderColor: '#050505',
-  },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      avatar: {
+        backgroundColor: 'rgba(255,255,255,0.08)',
+      },
+      badge: {
+        position: 'absolute',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1.5,
+        borderColor: '#050505',
+      },
+      onlineDot: {
+        position: 'absolute',
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#22c55e',
+        borderWidth: 1.5,
+        borderColor: '#050505',
+      },
+    }));

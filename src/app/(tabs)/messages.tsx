@@ -1,6 +1,7 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TextInput,
+  View, Text, FlatList, TextInput,
   TouchableOpacity, ActivityIndicator, Alert, RefreshControl, Modal
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
@@ -11,8 +12,6 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, BLUE, AMBER } from '../../constants/tokens';
-
 type ConvType = 'friend' | 'marketplace' | 'briefcase';
 type FilterTab = 'all' | 'friends' | 'marketplace' | 'business';
 
@@ -45,6 +44,8 @@ function timeLabel(ts: string) {
 }
 
 export default function MessagesTab() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const router = useRouter();
   const { user, profile } = useAuth();
   const { colors } = useAppTheme();
@@ -174,55 +175,55 @@ export default function MessagesTab() {
   }, [conversations]);
 
   return (
-    <View style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}>
+    <View style={[stylesheet.container, { backgroundColor: theme.colors.DARK, paddingTop: insets.top }]}>
       
       {/* ── Header (Figma 1:1 Matching) ── */}
-      <View style={styles.header}>
+      <View style={stylesheet.header}>
         {searching ? (
-          <View style={styles.searchContainer}>
-            <View style={styles.searchInputWrap}>
-              <Ionicons name="search-outline" size={16} color={LABEL} style={{ marginRight: 8 }} />
+          <View style={stylesheet.searchContainer}>
+            <View style={stylesheet.searchInputWrap}>
+              <Ionicons name="search-outline" size={16} color={theme.colors.LABEL} style={{ marginRight: 8 }} />
               <TextInput
                 autoFocus
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder="Search messages..."
-                placeholderTextColor={MUTED}
-                style={styles.searchInput}
+                placeholderTextColor={theme.colors.MUTED}
+                style={stylesheet.searchInput}
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <Ionicons name="close-circle" size={16} color={LABEL} />
+                  <Ionicons name="close-circle" size={16} color={theme.colors.LABEL} />
                 </TouchableOpacity>
               )}
             </View>
             <TouchableOpacity onPress={() => { setSearching(false); setSearchQuery(''); }}>
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={stylesheet.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Text style={styles.headerTitle}>Messages</Text>
+              <Text style={stylesheet.headerTitle}>Messages</Text>
               {totalUnread > 0 && (
-                <View style={styles.totalBadge}>
-                  <Text style={styles.totalBadgeText}>{totalUnread}</Text>
+                <View style={stylesheet.totalBadge}>
+                  <Text style={stylesheet.totalBadgeText}>{totalUnread}</Text>
                 </View>
               )}
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <TouchableOpacity 
-                style={styles.headerIconBtn}
+                style={stylesheet.headerIconBtn}
                 onPress={() => setSearching(true)}
               >
-                <Ionicons name="search-outline" size={18} color={TEXT_PRIMARY} />
+                <Ionicons name="search-outline" size={18} color={theme.colors.TEXT_PRIMARY} />
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.headerIconBtn, { backgroundColor: G, borderWidth: 0 }]}
+                style={[stylesheet.headerIconBtn, { backgroundColor: theme.colors.G, borderWidth: 0 }]}
                 onPress={() => router.push('/community')}
               >
-                <Ionicons name="create-outline" size={18} color={DARK} />
+                <Ionicons name="create-outline" size={18} color={theme.colors.DARK} />
               </TouchableOpacity>
             </View>
           </>
@@ -239,16 +240,17 @@ export default function MessagesTab() {
             keyExtractor={item => item.key}
             contentContainerStyle={{ gap: 8 }}
             renderItem={({ item }) => {
+
               const active = activeFilter === item.key;
               return (
                 <TouchableOpacity
                   style={[
-                    styles.filterPill,
-                    active && styles.filterPillActive
+                    stylesheet.filterPill,
+                    active && stylesheet.filterPillActive
                   ]}
                   onPress={() => setActiveFilter(item.key)}
                 >
-                  <Text style={[styles.filterPillText, active && styles.filterPillTextActive]}>
+                  <Text style={[stylesheet.filterPillText, active && stylesheet.filterPillTextActive]}>
                     {item.label}
                   </Text>
                 </TouchableOpacity>
@@ -260,242 +262,244 @@ export default function MessagesTab() {
 
       {/* ── Conversations List ── */}
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={G} />
+        <View style={stylesheet.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.G} />
         </View>
       ) : filteredConversations.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptyIconCircle}>
-            <Ionicons name="chatbubbles-outline" size={32} color={LABEL} />
+        <View style={stylesheet.emptyContainer}>
+          <View style={stylesheet.emptyIconCircle}>
+            <Ionicons name="chatbubbles-outline" size={32} color={theme.colors.LABEL} />
           </View>
-          <Text style={styles.emptyTitle}>No messages yet</Text>
-          <Text style={styles.emptySubtitle}>Say hello to someone in your neighbourhood.</Text>
+          <Text style={stylesheet.emptyTitle}>No messages yet</Text>
+          <Text style={stylesheet.emptySubtitle}>Say hello to someone in your neighbourhood.</Text>
           <TouchableOpacity 
-            style={styles.startBtn}
+            style={stylesheet.startBtn}
             onPress={() => router.push('/community')}
           >
-            <Text style={styles.startBtnText}>Start a Conversation</Text>
+            <Text style={stylesheet.startBtnText}>Start a Conversation</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <FlashList
           data={filteredConversations}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchConversations(true)} tintColor={G} />}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.convoRow,
-                item.unreadCount > 0 && { backgroundColor: 'rgba(130,219,126,0.03)' }
-              ]}
-              onPress={() => router.push(`/chat/${item.id}`)}
-              activeOpacity={0.7}
-            >
-              {/* Avatar */}
-              <View style={styles.avatarWrapper}>
-                {item.participantAvatar && !item.participantAvatar.startsWith('file://') ? (
-                  <Image source={{ uri: item.participantAvatar }} style={styles.avatarImg} contentFit="cover" />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <Text style={styles.avatarInitial}>{item.participantName.charAt(0).toUpperCase()}</Text>
-                  </View>
-                )}
-                <View style={styles.onlineDot} />
-              </View>
+          contentContainerStyle={stylesheet.listContent}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchConversations(true)} tintColor={theme.colors.G} />}
+          renderItem={({ item }) => {
+          return (
+                      <TouchableOpacity
+                        style={[
+                          stylesheet.convoRow,
+                          item.unreadCount > 0 && { backgroundColor: 'rgba(130,219,126,0.03)' }
+                        ]}
+                        onPress={() => router.push(`/chat/${item.id}`)}
+                        activeOpacity={0.7}
+                      >
+                        {/* Avatar */}
+                        <View style={stylesheet.avatarWrapper}>
+                          {item.participantAvatar && !item.participantAvatar.startsWith('file://') ? (
+                            <Image source={{ uri: item.participantAvatar }} style={stylesheet.avatarImg} contentFit="cover" />
+                          ) : (
+                            <View style={stylesheet.avatarPlaceholder}>
+                              <Text style={stylesheet.avatarInitial}>{item.participantName.charAt(0).toUpperCase()}</Text>
+                            </View>
+                          )}
+                          <View style={stylesheet.onlineDot} />
+                        </View>
 
-              {/* Convo Details */}
-              <View style={styles.convoInfo}>
-                <View style={styles.convoTopRow}>
-                  <Text style={[styles.name, item.unreadCount > 0 && { fontFamily: 'Outfit-Bold' }]} numberOfLines={1}>
-                    {item.participantName}
-                  </Text>
-                  <Text style={[styles.time, item.unreadCount > 0 && { color: G, fontFamily: 'Inter-Medium' }]}>
-                    {timeLabel(item.timestamp)}
-                  </Text>
-                </View>
+                        {/* Convo Details */}
+                        <View style={stylesheet.convoInfo}>
+                          <View style={stylesheet.convoTopRow}>
+                            <Text style={[stylesheet.name, item.unreadCount > 0 && { fontFamily: 'Outfit-Bold' }]} numberOfLines={1}>
+                              {item.participantName}
+                            </Text>
+                            <Text style={[stylesheet.time, item.unreadCount > 0 && { color: theme.colors.G, fontFamily: 'Inter-Medium' }]}>
+                              {timeLabel(item.timestamp)}
+                            </Text>
+                          </View>
 
-                <View style={styles.convoBottomRow}>
-                  <Text style={[styles.lastMsg, item.unreadCount > 0 && { color: TEXT_PRIMARY, fontFamily: 'Inter-Medium' }]} numberOfLines={1}>
-                    {item.lastMessage}
-                  </Text>
-                  {item.unreadCount > 0 && (
-                    <View style={styles.unreadBadge}>
-                      <Text style={styles.unreadBadgeText}>{item.unreadCount}</Text>
-                    </View>
-                  )}
-                </View>
+                          <View style={stylesheet.convoBottomRow}>
+                            <Text style={[stylesheet.lastMsg, item.unreadCount > 0 && { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter-Medium' }]} numberOfLines={1}>
+                              {item.lastMessage}
+                            </Text>
+                            {item.unreadCount > 0 && (
+                              <View style={stylesheet.unreadBadge}>
+                                <Text style={stylesheet.unreadBadgeText}>{item.unreadCount}</Text>
+                              </View>
+                            )}
+                          </View>
 
-                {item.context?.itemTitle && (
-                  <View style={styles.listingContextPill}>
-                    <Ionicons name="bag-handle-outline" size={10} color={LABEL} />
-                    <Text style={styles.listingContextText} numberOfLines={1}>
-                      {item.context.itemTitle}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </TouchableOpacity>
-          )}
+                          {item.context?.itemTitle && (
+                            <View style={stylesheet.listingContextPill}>
+                              <Ionicons name="bag-handle-outline" size={10} color={theme.colors.LABEL} />
+                              <Text style={stylesheet.listingContextText} numberOfLines={1}>
+                                {item.context.itemTitle}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    );
+          }}
         />
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 14,
-  },
-  headerTitle: { fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' },
-  totalBadge: {
-    backgroundColor: G,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  totalBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 11, color: DARK },
-  headerIconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#111111',
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  searchInputWrap: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#0f0f0f',
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    borderRadius: 21,
-    paddingHorizontal: 14,
-    height: 42,
-  },
-  searchInput: {
-    flex: 1,
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
-  cancelText: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: G },
-  filterPill: {
-    height: 32,
-    paddingHorizontal: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  filterPillActive: {
-    backgroundColor: 'rgba(130,219,126,0.1)',
-    borderColor: 'rgba(130,219,126,0.25)',
-  },
-  filterPillText: { fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL },
-  filterPillTextActive: { fontFamily: 'Inter-SemiBold', color: G },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  listContent: { paddingBottom: 90 },
-  convoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 13,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
-    gap: 14,
-  },
-  avatarWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    position: 'relative',
-  },
-  avatarImg: { width: '100%', height: '100%', borderRadius: 24 },
-  avatarPlaceholder: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 24,
-    backgroundColor: 'rgba(130,219,126,0.08)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarInitial: { fontFamily: 'Outfit-Bold', fontSize: 18, color: G },
-  onlineDot: {
-    position: 'absolute',
-    bottom: 1,
-    right: 1,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: G,
-    borderWidth: 2,
-    borderColor: DARK,
-  },
-  convoInfo: { flex: 1 },
-  convoTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 },
-  name: { fontFamily: 'Outfit-SemiBold', fontSize: 15, color: '#FFFFFF', flex: 1 },
-  time: { fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL },
-  convoBottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  lastMsg: { fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL, flex: 1, marginRight: 8 },
-  unreadBadge: {
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: G,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 5,
-  },
-  unreadBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 10, color: DARK },
-  listingContextPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 4,
-  },
-  listingContextText: { fontFamily: 'Inter-Regular', fontSize: 11, color: LABEL },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingTop: 80,
-  },
-  emptyIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#FFFFFF', marginBottom: 6 },
-  emptySubtitle: { fontFamily: 'Inter-Regular', fontSize: 14, color: LABEL, textAlign: 'center', lineHeight: 20, marginBottom: 20 },
-  startBtn: {
-    backgroundColor: G,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 22,
-  },
-  startBtnText: { fontFamily: 'Outfit-Bold', fontSize: 14, color: DARK },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingTop: 12,
+        paddingBottom: 14,
+      },
+      headerTitle: { fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' },
+      totalBadge: {
+        backgroundColor: theme.colors.G,
+        paddingHorizontal: 7,
+        paddingVertical: 2,
+        borderRadius: 10,
+      },
+      totalBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 11, color: theme.colors.DARK },
+      headerIconBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#111111',
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
+      },
+      searchInputWrap: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#0f0f0f',
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        borderRadius: 21,
+        paddingHorizontal: 14,
+        height: 42,
+      },
+      searchInput: {
+        flex: 1,
+        fontFamily: 'Inter-Regular',
+        fontSize: 14,
+        color: '#FFFFFF',
+      },
+      cancelText: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.G },
+      filterPill: {
+        height: 32,
+        paddingHorizontal: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      filterPillActive: {
+        backgroundColor: 'rgba(130,219,126,0.1)',
+        borderColor: 'rgba(130,219,126,0.25)',
+      },
+      filterPillText: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL },
+      filterPillTextActive: { fontFamily: 'Inter-SemiBold', color: theme.colors.G },
+      loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+      listContent: { paddingBottom: 90 },
+      convoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 13,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.04)',
+        gap: 14,
+      },
+      avatarWrapper: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        position: 'relative',
+      },
+      avatarImg: { width: '100%', height: '100%', borderRadius: 24 },
+      avatarPlaceholder: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 24,
+        backgroundColor: 'rgba(130,219,126,0.08)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      avatarInitial: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.G },
+      onlineDot: {
+        position: 'absolute',
+        bottom: 1,
+        right: 1,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: theme.colors.G,
+        borderWidth: 2,
+        borderColor: theme.colors.DARK,
+      },
+      convoInfo: { flex: 1 },
+      convoTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 },
+      name: { fontFamily: 'Outfit-SemiBold', fontSize: 15, color: '#FFFFFF', flex: 1 },
+      time: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL },
+      convoBottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+      lastMsg: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL, flex: 1, marginRight: 8 },
+      unreadBadge: {
+        minWidth: 18,
+        height: 18,
+        borderRadius: 9,
+        backgroundColor: theme.colors.G,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 5,
+      },
+      unreadBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 10, color: theme.colors.DARK },
+      listingContextPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginTop: 4,
+      },
+      listingContextText: { fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL },
+      emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 32,
+        paddingTop: 80,
+      },
+      emptyIconCircle: {
+        width: 60,
+        height: 60,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.04)',
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+      },
+      emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#FFFFFF', marginBottom: 6 },
+      emptySubtitle: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.LABEL, textAlign: 'center', lineHeight: 20, marginBottom: 20 },
+      startBtn: {
+        backgroundColor: theme.colors.G,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 22,
+      },
+      startBtnText: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
+    }));

@@ -1,6 +1,7 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, TextInput,
+  StyleSheet, View, Text, TouchableOpacity, TextInput,
   ScrollView, Switch, Animated, Platform, Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -8,8 +9,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppTheme } from '../context/ThemeContext';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
-
 export const EVENT_CATEGORIES = ['Party','Music','Sports','Food','Networking','Community','Education','Arts','Tech','Other'];
 
 export interface TicketTierInput { id: string; name: string; price: string; capacity: string; }
@@ -43,6 +42,8 @@ interface Props {
 
 // Collapsible ticket card
 function TicketCard({ tier, idx, onChange, onRemove, canRemove, colors }: any) {
+    const { styles: tk, theme } = useStyles(tkStylesheet);
+
   const [open, setOpen] = useState(true);
   const rot = useRef(new Animated.Value(open ? 1 : 0)).current;
   const toggle = () => {
@@ -51,7 +52,7 @@ function TicketCard({ tier, idx, onChange, onRemove, canRemove, colors }: any) {
   };
   const rotate = rot.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
   return (
-    <View style={[tk.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+    <View style={[tk.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
       <TouchableOpacity style={tk.header} onPress={toggle}>
         <View style={[tk.iconWrap, { backgroundColor: colors.tint + '20' }]}>
           <Ionicons name="ticket-outline" size={16} color={colors.tint} />
@@ -108,6 +109,8 @@ function TicketCard({ tier, idx, onChange, onRemove, canRemove, colors }: any) {
 }
 
 export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, profile, isDarkMode, isSubmitting, onSubmit, showCategoryMenu, onCategoryChange, categories, onSelectCategory }: Props) {
+    const { styles: s, theme } = useStyles(sStylesheet);
+
   const { colors } = useAppTheme();
   const [showDate, setShowDate] = useState(false);
   const [showTime, setShowTime] = useState(false);
@@ -128,7 +131,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
   return (
     <>
       {/* Host card */}
-      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           {profile?.avatar_url
             ? <Image source={{ uri: profile.avatar_url }} style={s.avatar} contentFit="cover" />
@@ -147,12 +150,14 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
                 <Ionicons name="chevron-down" size={10} color={colors.tint} />
               </TouchableOpacity>
               {showCategoryMenu && categories && onSelectCategory && (
-                <View style={[s.menu, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-                  {categories.map(cat => (
-                    <TouchableOpacity key={cat} style={s.menuItem} onPress={() => onSelectCategory(cat)}>
-                      <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
-                    </TouchableOpacity>
-                  ))}
+                <View style={[s.menu, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+                  {categories.map(cat => {
+                  return (
+                                      <TouchableOpacity key={cat} style={s.menuItem} onPress={() => onSelectCategory(cat)}>
+                                        <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
+                                      </TouchableOpacity>
+                                    );
+                  })}
                 </View>
               )}
             </View>
@@ -168,7 +173,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Cover */}
-      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="image-outline" size={15} color={colors.tint} />
@@ -186,15 +191,17 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
           </TouchableOpacity>
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }} contentContainerStyle={{ gap: 8 }}>
-            {values.images.map((img, i) => (
-              <View key={i} style={s.coverPreview}>
-                <Image source={{ uri: img.thumbnailUri || img.uri }}
-                  style={s.coverImg} contentFit="cover" transition={200} />
-                <TouchableOpacity style={s.coverRemove} onPress={() => onRemovePhoto(i)}>
-                  <Ionicons name="close-circle" size={26} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            ))}
+            {values.images.map((img, i) => {
+            return (
+                          <View key={i} style={s.coverPreview}>
+                            <Image source={{ uri: img.thumbnailUri || img.uri }}
+                              style={s.coverImg} contentFit="cover" transition={200} />
+                            <TouchableOpacity style={s.coverRemove} onPress={() => onRemovePhoto(i)}>
+                              <Ionicons name="close-circle" size={26} color="#fff" />
+                            </TouchableOpacity>
+                          </View>
+                        );
+            })}
             <TouchableOpacity onPress={onAddPhoto} style={[s.coverEmpty, { borderColor: colors.tint, width: 100, height: 100 }]}>
               <Ionicons name="add" size={24} color={colors.textMuted} />
               <Text style={[{ color: colors.textMuted, fontSize: 12, marginTop: 4 }]}>Add more</Text>
@@ -206,7 +213,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Title */}
-      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
           <Ionicons name="pricetag-outline" size={15} color={colors.tint} />
           <Text style={[s.fieldLabel, { color: colors.text }]}>Event Title <Text style={s.req}>*</Text></Text>
@@ -219,7 +226,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Description */}
-      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
           <Ionicons name="document-text-outline" size={15} color={colors.tint} />
           <Text style={[s.fieldLabel, { color: colors.text }]}>Event Description <Text style={s.req}>*</Text></Text>
@@ -234,7 +241,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
 
       {/* Date + Time */}
       <View style={s.row}>
-        <View style={[s.card, s.half, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+        <View style={[s.card, s.half, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Ionicons name="calendar-outline" size={14} color={colors.tint} />
             <Text style={[s.fieldLabel, { color: colors.text }]}>Date <Text style={s.req}>*</Text></Text>
@@ -250,7 +257,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
             </TouchableOpacity>
           )}
         </View>
-        <View style={[s.card, s.half, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+        <View style={[s.card, s.half, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <Ionicons name="time-outline" size={14} color={colors.tint} />
             <Text style={[s.fieldLabel, { color: colors.text }]}>Time <Text style={s.req}>*</Text></Text>
@@ -278,7 +285,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       )}
 
       {/* Location */}
-      <View style={[s.settingsCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <TouchableOpacity style={s.settingsRow} onPress={() => setShowLocation(o => !o)}>
           <View style={[s.settingsIcon, { backgroundColor: colors.tint + '15' }]}>
             <Ionicons name="location-outline" size={18} color={colors.tint} />
@@ -302,9 +309,9 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
               query={{ key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY, language: 'en', components: 'country:ng' }}
               styles={{
                 textInput: [s.googleInput, { color: colors.text, backgroundColor: colors.inputBackground || colors.background }],
-                row: { backgroundColor: DARK },
+                row: { backgroundColor: theme.colors.DARK },
                 description: { color: colors.text },
-                listView: { backgroundColor: DARK, zIndex: 100 },
+                listView: { backgroundColor: theme.colors.DARK, zIndex: 100 },
               }}
               textInputProps={{ placeholderTextColor: colors.textMuted }}
             />
@@ -313,13 +320,16 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Category */}
-      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
           <Ionicons name="grid-outline" size={15} color={colors.tint} />
           <Text style={[s.fieldLabel, { color: colors.text }]}>Category <Text style={s.req}>*</Text></Text>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {EVENT_CATEGORIES.map(cat => {
+              const { styles: s } = useStyles(sStylesheet);
+              const { styles: tk } = useStyles(tkStylesheet);
+
             const active = values.eventCategory === cat;
             return (
               <TouchableOpacity key={cat} onPress={() => onChange({ eventCategory: cat })}
@@ -332,7 +342,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Ticketed toggle */}
-      <View style={[s.settingsCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <View style={[s.settingsRow, { paddingVertical: 14 }]}>
           <View style={{ flex: 1 }}>
             <Text style={[s.fieldLabel, { color: colors.text }]}>Is this a ticketed event?</Text>
@@ -349,7 +359,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Tickets */}
-      <View style={[s.card, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="ticket-outline" size={15} color={colors.tint} />
@@ -395,56 +405,56 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-const s = StyleSheet.create({
-  card: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 12 },
-  settingsCard: { borderRadius: 16, borderWidth: 1, marginBottom: 12, overflow: 'hidden' },
-  settingsRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
-  settingsIcon: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
-  row: { flexDirection: 'row', gap: 10 },
-  half: { flex: 1, marginBottom: 12 },
-  avatar: { width: 46, height: 46, borderRadius: 23 },
-  hostName: { fontSize: 16, fontWeight: '800' },
-  hostSub: { fontSize: 12 },
-  pill: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 20, paddingHorizontal: 9, paddingVertical: 4, borderWidth: 1 },
-  pillTxt: { fontSize: 11, fontWeight: '800' },
-  fieldLabel: { fontSize: 14, fontWeight: '700' },
-  hint: { fontSize: 12 },
-  menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
-  menuItem: { paddingVertical: 10, paddingHorizontal: 16 },
-  req: { color: '#ef4444', fontWeight: '700' },
-  charCount: { fontSize: 11, textAlign: 'right', marginTop: 6 },
-  coverEmpty: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: 16, height: 160, justifyContent: 'center', alignItems: 'center', gap: 8, marginVertical: 10 },
-  coverEmptyLabel: { fontSize: 15, fontWeight: '700' },
-  coverPreview: { width: 240, height: 180, borderRadius: 14, overflow: 'hidden', marginVertical: 10, position: 'relative' },
-  coverImg: { width: '100%', height: '100%' },
-  coverRemove: { position: 'absolute', top: 8, right: 8 },
-  mediaRow: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12, marginTop: 4, gap: 4 },
-  mediaBtn: { flex: 1, alignItems: 'center', gap: 4 },
-  mediaBtnTxt: { fontSize: 10, fontWeight: '600' },
-  titleInput: { fontSize: 17, fontWeight: '500', paddingVertical: Platform.OS === 'ios' ? 2 : 0 },
-  descInput: { fontSize: 15, minHeight: 100, lineHeight: 22 },
-  pickerBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderRadius: 10, padding: 10 },
-  pickerTxt: { fontSize: 13, flex: 1 },
-  googleInput: { fontSize: 14, borderRadius: 10, paddingHorizontal: 12, height: 44, marginBottom: 0 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  chipTxt: { fontSize: 13, fontWeight: '600' },
-  publishBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    borderRadius: 32, paddingVertical: 18,
-    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
-  },
-  publishTxt: { color: '#0B0D0B', fontSize: 17, fontWeight: '900' },
-});
+const sStylesheet = createStyleSheet(theme => ({
+      card: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 12 },
+      settingsCard: { borderRadius: 16, borderWidth: 1, marginBottom: 12, overflow: 'hidden' },
+      settingsRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
+      settingsIcon: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+      row: { flexDirection: 'row', gap: 10 },
+      half: { flex: 1, marginBottom: 12 },
+      avatar: { width: 46, height: 46, borderRadius: 23 },
+      hostName: { fontSize: 16, fontWeight: '800' },
+      hostSub: { fontSize: 12 },
+      pill: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 20, paddingHorizontal: 9, paddingVertical: 4, borderWidth: 1 },
+      pillTxt: { fontSize: 11, fontWeight: '800' },
+      fieldLabel: { fontSize: 14, fontWeight: '700' },
+      hint: { fontSize: 12 },
+      menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
+      menuItem: { paddingVertical: 10, paddingHorizontal: 16 },
+      req: { color: '#ef4444', fontWeight: '700' },
+      charCount: { fontSize: 11, textAlign: 'right', marginTop: 6 },
+      coverEmpty: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: 16, height: 160, justifyContent: 'center', alignItems: 'center', gap: 8, marginVertical: 10 },
+      coverEmptyLabel: { fontSize: 15, fontWeight: '700' },
+      coverPreview: { width: 240, height: 180, borderRadius: 14, overflow: 'hidden', marginVertical: 10, position: 'relative' },
+      coverImg: { width: '100%', height: '100%' },
+      coverRemove: { position: 'absolute', top: 8, right: 8 },
+      mediaRow: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12, marginTop: 4, gap: 4 },
+      mediaBtn: { flex: 1, alignItems: 'center', gap: 4 },
+      mediaBtnTxt: { fontSize: 10, fontWeight: '600' },
+      titleInput: { fontSize: 17, fontWeight: '500', paddingVertical: Platform.OS === 'ios' ? 2 : 0 },
+      descInput: { fontSize: 15, minHeight: 100, lineHeight: 22 },
+      pickerBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderRadius: 10, padding: 10 },
+      pickerTxt: { fontSize: 13, flex: 1 },
+      googleInput: { fontSize: 14, borderRadius: 10, paddingHorizontal: 12, height: 44, marginBottom: 0 },
+      chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
+      chipTxt: { fontSize: 13, fontWeight: '600' },
+      publishBtn: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        borderRadius: 32, paddingVertical: 18,
+        shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
+      },
+      publishTxt: { color: '#0B0D0B', fontSize: 17, fontWeight: '900' },
+    }));
 
-const tk = StyleSheet.create({
-  card: { borderRadius: 14, borderWidth: 1, marginBottom: 10, overflow: 'hidden' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
-  iconWrap: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
-  name: { flex: 1, fontSize: 14, fontWeight: '700' },
-  price: { fontSize: 13, fontWeight: '800' },
-  body: { paddingHorizontal: 12, paddingBottom: 12 },
-  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14 },
-  label: { fontSize: 11, fontWeight: '600', marginBottom: 4 },
-  removeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12, alignSelf: 'flex-start' },
-  removeTxt: { color: '#ef4444', fontSize: 13, fontWeight: '600' },
-});
+const tkStylesheet = createStyleSheet(theme => ({
+      card: { borderRadius: 14, borderWidth: 1, marginBottom: 10, overflow: 'hidden' },
+      header: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
+      iconWrap: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
+      name: { flex: 1, fontSize: 14, fontWeight: '700' },
+      price: { fontSize: 13, fontWeight: '800' },
+      body: { paddingHorizontal: 12, paddingBottom: 12 },
+      input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14 },
+      label: { fontSize: 11, fontWeight: '600', marginBottom: 4 },
+      removeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12, alignSelf: 'flex-start' },
+      removeTxt: { color: '#ef4444', fontSize: 13, fontWeight: '600' },
+    }));

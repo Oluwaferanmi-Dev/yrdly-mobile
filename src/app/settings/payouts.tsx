@@ -1,13 +1,12 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { G, DARK, GLASS_BORDER, MUTED, LABEL, TEXT_PRIMARY } from '../../constants/tokens';
-
 type PayoutStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 interface PayoutRequest {
@@ -20,9 +19,10 @@ interface PayoutRequest {
   account_number: string;
 }
 
-const STATUS_COLOR: Record<string, string> = { completed: G, processing: '#64B5F6', pending: '#FFB648', failed: '#ef4444' };
-
 export default function PayoutsScreen() {
+  const { styles: s, theme } = useStyles(sStylesheet);
+  const STATUS_COLOR: Record<string, string> = { completed: theme.colors.G, processing: '#64B5F6', pending: '#FFB648', failed: '#ef4444' };
+
   const router = useRouter();
   const { user } = useAuth();
 
@@ -89,6 +89,8 @@ export default function PayoutsScreen() {
   };
 
   const renderItem = ({ item, index }: { item: PayoutRequest, index: number }) => {
+      const { styles: s } = useStyles(sStylesheet);
+
     const col = STATUS_COLOR[item.status] || STATUS_COLOR.pending;
     const dateStr = new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     
@@ -125,12 +127,12 @@ export default function PayoutsScreen() {
       </View>
 
       {loading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={G} /></View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={theme.colors.G} /></View>
       ) : (
         <FlatList
           data={payouts}
           keyExtractor={p => p.id}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={G} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} tintColor={theme.colors.G} />}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             <View style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
@@ -140,7 +142,7 @@ export default function PayoutsScreen() {
                 <View style={s.balanceHeaderRow}>
                   <Text style={s.balanceLabel}>AVAILABLE BALANCE</Text>
                   <TouchableOpacity onPress={() => setBalanceVisible(!balanceVisible)}>
-                    <Ionicons name={balanceVisible ? "eye-outline" : "eye-off-outline"} size={20} color={LABEL} />
+                    <Ionicons name={balanceVisible ? "eye-outline" : "eye-off-outline"} size={20} color={theme.colors.LABEL} />
                   </TouchableOpacity>
                 </View>
                 <Text style={s.balanceValue}>{balanceVisible ? `₦${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '₦•••,•••.••'}</Text>
@@ -153,14 +155,14 @@ export default function PayoutsScreen() {
                   <View style={s.statDivider} />
                   <View style={s.statCol}>
                     <Text style={s.statLabel}>Lifetime Earned</Text>
-                    <Text style={[s.statVal, { color: G }]}>{balanceVisible ? `₦${lifetimeEarned.toLocaleString()}` : '₦•••,•••'}</Text>
+                    <Text style={[s.statVal, { color: theme.colors.G }]}>{balanceVisible ? `₦${lifetimeEarned.toLocaleString()}` : '₦•••,•••'}</Text>
                   </View>
                 </View>
 
                 {/* Bank Preview */}
                 <TouchableOpacity onPress={() => router.push('/settings/payout-settings' as any)} style={s.bankPreview}>
                   <View style={s.bankIconBox}>
-                    <Ionicons name="business" size={16} color={G} />
+                    <Ionicons name="business" size={16} color={theme.colors.G} />
                   </View>
                   {bankInfo ? (
                     <>
@@ -204,12 +206,14 @@ export default function PayoutsScreen() {
               <View style={s.historyContainer}>
                 <View style={{ alignItems: 'center', paddingVertical: 40 }}>
                   <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' }}>No payouts</Text>
-                  <Text style={{ fontFamily: 'Inter', fontSize: 13, color: LABEL, marginTop: 4 }}>Nothing here yet.</Text>
+                  <Text style={{ fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL, marginTop: 4 }}>Nothing here yet.</Text>
                 </View>
               </View>
             </View>
           }
           renderItem={(props) => {
+              const { styles: s } = useStyles(sStylesheet);
+
             const isFirst = props.index === 0;
             const isLast = props.index === payouts.length - 1;
             
@@ -229,51 +233,51 @@ export default function PayoutsScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505' },
-  
-  header: { paddingHorizontal: 20, paddingBottom: 12 },
-  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+const sStylesheet = createStyleSheet(theme => ({
+      root: { flex: 1, backgroundColor: '#050505' },
+      
+      header: { paddingHorizontal: 20, paddingBottom: 12 },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
 
-  balanceCard: { backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.2)', borderRadius: 28, padding: 22 },
-  balanceHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  balanceLabel: { fontFamily: 'Inter', fontSize: 12, color: LABEL, letterSpacing: 1 },
-  balanceValue: { fontFamily: 'Outfit-Bold', fontSize: 38, color: '#fff', marginBottom: 18, letterSpacing: -1 },
-  
-  statsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  statCol: { flex: 1 },
-  statDivider: { width: 1, height: 36, backgroundColor: GLASS_BORDER, marginHorizontal: 16 },
-  statLabel: { fontFamily: 'Inter', fontSize: 11, color: LABEL, marginBottom: 3 },
-  statVal: { fontFamily: 'Outfit-Bold', fontSize: 16 },
+      balanceCard: { backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.2)', borderRadius: 28, padding: 22 },
+      balanceHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+      balanceLabel: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL, letterSpacing: 1 },
+      balanceValue: { fontFamily: 'Outfit-Bold', fontSize: 38, color: '#fff', marginBottom: 18, letterSpacing: -1 },
+      
+      statsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+      statCol: { flex: 1 },
+      statDivider: { width: 1, height: 36, backgroundColor: theme.colors.GLASS_BORDER, marginHorizontal: 16 },
+      statLabel: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL, marginBottom: 3 },
+      statVal: { fontFamily: 'Outfit-Bold', fontSize: 16 },
 
-  bankPreview: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 16 },
-  bankIconBox: { width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(130,219,126,0.08)', alignItems: 'center', justifyContent: 'center' },
-  bankPreviewName: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
-  bankPreviewOwner: { fontFamily: 'Inter', fontSize: 11, color: LABEL },
-  verifiedBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, backgroundColor: 'rgba(130,219,126,0.1)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.2)' },
-  verifiedTxt: { fontFamily: 'Outfit-Bold', fontSize: 10, color: G },
+      bankPreview: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 16 },
+      bankIconBox: { width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(130,219,126,0.08)', alignItems: 'center', justifyContent: 'center' },
+      bankPreviewName: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
+      bankPreviewOwner: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL },
+      verifiedBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, backgroundColor: 'rgba(130,219,126,0.1)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.2)' },
+      verifiedTxt: { fontFamily: 'Outfit-Bold', fontSize: 10, color: theme.colors.G },
 
-  withdrawBtn: { width: '100%', paddingVertical: 14, borderRadius: 16, backgroundColor: G, alignItems: 'center', justifyContent: 'center' },
-  withdrawBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },
+      withdrawBtn: { width: '100%', paddingVertical: 14, borderRadius: 16, backgroundColor: theme.colors.G, alignItems: 'center', justifyContent: 'center' },
+      withdrawBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
 
-  historyHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 32, marginBottom: 12 },
-  historyTitle: { fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1 },
-  historyChangeBank: { fontFamily: 'Inter', fontSize: 12, color: G },
+      historyHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 32, marginBottom: 12 },
+      historyTitle: { fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.LABEL, letterSpacing: 1 },
+      historyChangeBank: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.G },
 
-  historyContainer: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 24, overflow: 'hidden' },
-  historyContainerTop: { backgroundColor: '#0f0f0f', borderTopWidth: 1, borderLeftWidth: 1, borderRightWidth: 1, borderColor: GLASS_BORDER, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
-  historyContainerBot: { backgroundColor: '#0f0f0f', borderBottomWidth: 1, borderLeftWidth: 1, borderRightWidth: 1, borderColor: GLASS_BORDER, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-  historyContainerMid: { backgroundColor: '#0f0f0f', borderLeftWidth: 1, borderRightWidth: 1, borderColor: GLASS_BORDER },
+      historyContainer: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 24, overflow: 'hidden' },
+      historyContainerTop: { backgroundColor: '#0f0f0f', borderTopWidth: 1, borderLeftWidth: 1, borderRightWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+      historyContainerBot: { backgroundColor: '#0f0f0f', borderBottomWidth: 1, borderLeftWidth: 1, borderRightWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
+      historyContainerMid: { backgroundColor: '#0f0f0f', borderLeftWidth: 1, borderRightWidth: 1, borderColor: theme.colors.GLASS_BORDER },
 
-  payoutRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 16 },
-  payoutIconWrap: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  payoutMid: { flex: 1 },
-  payoutBank: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
-  payoutDate: { fontFamily: 'Inter', fontSize: 11, color: LABEL },
-  payoutRight: { alignItems: 'flex-end', gap: 4 },
-  payoutAmount: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff' },
-  payoutStatus: { fontFamily: 'Outfit-Bold', fontSize: 10 },
-  
-  divider: { height: 1, backgroundColor: GLASS_BORDER, marginLeft: 70 },
-});
+      payoutRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 16 },
+      payoutIconWrap: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+      payoutMid: { flex: 1 },
+      payoutBank: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+      payoutDate: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL },
+      payoutRight: { alignItems: 'flex-end', gap: 4 },
+      payoutAmount: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff' },
+      payoutStatus: { fontFamily: 'Outfit-Bold', fontSize: 10 },
+      
+      divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER, marginLeft: 70 },
+    }));

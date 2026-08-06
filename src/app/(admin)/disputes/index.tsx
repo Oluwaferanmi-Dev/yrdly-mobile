@@ -1,7 +1,7 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity,
+  View, Text, FlatList, TouchableOpacity,
   RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -36,6 +36,8 @@ function formatDate(d: string) {
 }
 
 export default function AdminDisputesScreen() {
+    const { styles: sStylesheet, theme } = useStyles(stylesheet);
+
   const router = useRouter();
   const { user } = useAuth();
   const { colors } = useAppTheme();
@@ -92,16 +94,18 @@ export default function AdminDisputesScreen() {
 
   if (accessDenied) {
     return (
-      <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
-        <View style={s.center}>
-          <Feather name="lock" size={48} color={MUTED} />
-          <Text style={[s.accessText, { color: LABEL }]}>Admin access required</Text>
+      <SafeAreaView style={[sStylesheet.container, { backgroundColor: theme.colors.DARK }]}>
+        <View style={sStylesheet.center}>
+          <Feather name="lock" size={48} color={theme.colors.MUTED} />
+          <Text style={[sStylesheet.accessText, { color: theme.colors.LABEL }]}>Admin access required</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   const renderItem = ({ item }: { item: any }) => {
+      const { styles: sStylesheet } = useStyles(stylesheet);
+
     const tx = item.transaction;
     const buyer = tx?.buyer;
     const seller = tx?.seller;
@@ -109,100 +113,102 @@ export default function AdminDisputesScreen() {
 
     return (
       <TouchableOpacity
-        style={[s.card, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
+        style={[sStylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
         onPress={() => router.push(`/(admin)/disputes/${item.id}` as any)}
         activeOpacity={0.75}
       >
         {/* Status badge */}
-        <View style={s.cardHeader}>
-          <View style={[s.statusBadge, { backgroundColor: statusColor + '22', borderColor: statusColor + '55' }]}>
-            <Text style={[s.statusText, { color: statusColor }]}>
+        <View style={sStylesheet.cardHeader}>
+          <View style={[sStylesheet.statusBadge, { backgroundColor: statusColor + '22', borderColor: statusColor + '55' }]}>
+            <Text style={[sStylesheet.statusText, { color: statusColor }]}>
               {item.status.replace('_', ' ').toUpperCase()}
             </Text>
           </View>
-          <Text style={[s.dateText, { color: MUTED }]}>{formatDate(item.created_at)}</Text>
+          <Text style={[sStylesheet.dateText, { color: theme.colors.MUTED }]}>{formatDate(item.created_at)}</Text>
         </View>
 
         {/* Reason */}
-        <Text style={[s.reason, { color: TEXT_PRIMARY }]} numberOfLines={2}>
+        <Text style={[sStylesheet.reason, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={2}>
           {item.reason?.replace(/_/g, ' ') ?? 'Dispute'}
         </Text>
 
         {/* Parties */}
-        <View style={s.parties}>
-          <View style={s.party}>
+        <View style={sStylesheet.parties}>
+          <View style={sStylesheet.party}>
             {buyer?.avatar_url
-              ? <Image source={{ uri: buyer.avatar_url }} style={s.avatar} />
-              : <View style={[s.avatar, s.avatarFallback, { backgroundColor: SURFACE }]}>
-                  <Feather name="user" size={14} color={MUTED} />
+              ? <Image source={{ uri: buyer.avatar_url }} style={sStylesheet.avatar} />
+              : <View style={[sStylesheet.avatar, sStylesheet.avatarFallback, { backgroundColor: theme.colors.SURFACE }]}>
+                  <Feather name="user" size={14} color={theme.colors.MUTED} />
                 </View>
             }
             <View style={{ flex: 1 }}>
-              <Text style={[s.partyRole, { color: MUTED }]}>Buyer</Text>
-              <Text style={[s.partyName, { color: TEXT_PRIMARY }]} numberOfLines={1}>{buyer?.name ?? '—'}</Text>
+              <Text style={[sStylesheet.partyRole, { color: theme.colors.MUTED }]}>Buyer</Text>
+              <Text style={[sStylesheet.partyName, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>{buyer?.name ?? '—'}</Text>
             </View>
           </View>
 
-          <Feather name="arrow-right" size={16} color={MUTED} />
+          <Feather name="arrow-right" size={16} color={theme.colors.MUTED} />
 
-          <View style={[s.party, { justifyContent: 'flex-end' }]}>
+          <View style={[sStylesheet.party, { justifyContent: 'flex-end' }]}>
             <View style={{ flex: 1, alignItems: 'flex-end' }}>
-              <Text style={[s.partyRole, { color: MUTED }]}>Seller</Text>
-              <Text style={[s.partyName, { color: TEXT_PRIMARY }]} numberOfLines={1}>{seller?.name ?? '—'}</Text>
+              <Text style={[sStylesheet.partyRole, { color: theme.colors.MUTED }]}>Seller</Text>
+              <Text style={[sStylesheet.partyName, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>{seller?.name ?? '—'}</Text>
             </View>
             {seller?.avatar_url
-              ? <Image source={{ uri: seller.avatar_url }} style={s.avatar} />
-              : <View style={[s.avatar, s.avatarFallback, { backgroundColor: SURFACE }]}>
-                  <Feather name="user" size={14} color={MUTED} />
+              ? <Image source={{ uri: seller.avatar_url }} style={sStylesheet.avatar} />
+              : <View style={[sStylesheet.avatar, sStylesheet.avatarFallback, { backgroundColor: theme.colors.SURFACE }]}>
+                  <Feather name="user" size={14} color={theme.colors.MUTED} />
                 </View>
             }
           </View>
         </View>
 
         {tx?.amount != null && (
-          <Text style={[s.amount, { color: LABEL }]}>
+          <Text style={[sStylesheet.amount, { color: theme.colors.LABEL }]}>
             Order: ₦{Number(tx.amount).toLocaleString()}
           </Text>
         )}
 
-        <View style={s.chevronRow}>
-          <Text style={[s.viewDetail, { color: G }]}>View Details</Text>
-          <Feather name="chevron-right" size={16} color={G} />
+        <View style={sStylesheet.chevronRow}>
+          <Text style={[sStylesheet.viewDetail, { color: theme.colors.G }]}>View Details</Text>
+          <Feather name="chevron-right" size={16} color={theme.colors.G} />
         </View>
       </TouchableOpacity>
     );
   };
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: DARK }]}>
+    <SafeAreaView style={[sStylesheet.container, { backgroundColor: theme.colors.DARK }]}>
       {/* Header */}
-      <View style={[s.header, { borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
+      <View style={[sStylesheet.header, { borderBottomColor: theme.colors.GLASS_BORDER }]}>
+        <TouchableOpacity onPress={() => router.back()} style={sStylesheet.backBtn}>
+          <Ionicons name="chevron-back" size={28} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[s.headerTitle, { color: TEXT_PRIMARY }]}>Disputes</Text>
-        <TouchableOpacity onPress={() => router.push('/(admin)/requests' as any)} style={s.backBtn}>
-          <Ionicons name="person-remove-outline" size={20} color={TEXT_PRIMARY} />
+        <Text style={[sStylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY }]}>Disputes</Text>
+        <TouchableOpacity onPress={() => router.push('/(admin)/requests' as any)} style={sStylesheet.backBtn}>
+          <Ionicons name="person-remove-outline" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
       </View>
 
       {/* Filter pills */}
-      <View style={s.filterRow}>
+      <View style={sStylesheet.filterRow}>
         {STATUS_FILTERS.map(f => {
+            const { styles: sStylesheet } = useStyles(stylesheet);
+
           const active = activeFilter === f.key;
           return (
             <TouchableOpacity
               key={f.key}
               onPress={() => setActiveFilter(f.key)}
               style={[
-                s.filterPill,
+                sStylesheet.filterPill,
                 {
-                  backgroundColor: active ? G + '22' : 'transparent',
-                  borderColor: active ? G : GLASS_BORDER,
+                  backgroundColor: active ? theme.colors.G + '22' : 'transparent',
+                  borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER,
                 },
               ]}
             >
-              <Text style={[s.filterLabel, { color: active ? G : MUTED }]}>
+              <Text style={[sStylesheet.filterLabel, { color: active ? theme.colors.G : theme.colors.MUTED }]}>
                 {f.label}
               </Text>
             </TouchableOpacity>
@@ -211,21 +217,21 @@ export default function AdminDisputesScreen() {
       </View>
 
       {loading ? (
-        <View style={s.center}>
-          <ActivityIndicator size="large" color={G} />
+        <View style={sStylesheet.center}>
+          <ActivityIndicator size="large" color={theme.colors.G} />
         </View>
       ) : (
         <FlatList
           data={filtered}
           keyExtractor={item => item.id}
           renderItem={renderItem}
-          contentContainerStyle={s.list}
+          contentContainerStyle={sStylesheet.list}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.G} />}
           ListEmptyComponent={
-            <View style={s.center}>
-              <Feather name="check-circle" size={48} color={MUTED} />
-              <Text style={[s.emptyText, { color: LABEL }]}>No disputes found</Text>
+            <View style={sStylesheet.center}>
+              <Feather name="check-circle" size={48} color={theme.colors.MUTED} />
+              <Text style={[sStylesheet.emptyText, { color: theme.colors.LABEL }]}>No disputes found</Text>
             </View>
           }
         />
@@ -234,50 +240,50 @@ export default function AdminDisputesScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 0.5,
-  },
-  backBtn: { padding: 4 },
-  headerTitle: { fontFamily: 'Inter-Bold', fontSize: 18 },
-  filterRow: {
-    flexDirection: 'row', flexWrap: 'wrap', gap: 8,
-    paddingHorizontal: 16, paddingVertical: 12,
-  },
-  filterPill: {
-    paddingHorizontal: 14, paddingVertical: 6,
-    borderRadius: 20, borderWidth: 1,
-  },
-  filterLabel: { fontSize: 13, fontWeight: '600' },
-  list: { padding: 16, gap: 12, paddingBottom: 40 },
-  card: {
-    borderRadius: 16, padding: 16,
-    borderWidth: 1, gap: 10,
-  },
-  cardHeader: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-  },
-  statusBadge: {
-    paddingHorizontal: 10, paddingVertical: 4,
-    borderRadius: 20, borderWidth: 1,
-  },
-  statusText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
-  dateText: { fontSize: 12 },
-  reason: { fontSize: 15, fontWeight: '600', textTransform: 'capitalize' },
-  parties: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-  },
-  party: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  avatar: { width: 32, height: 32, borderRadius: 16 },
-  avatarFallback: { alignItems: 'center', justifyContent: 'center' },
-  partyRole: { fontSize: 11 },
-  partyName: { fontSize: 13, fontWeight: '600' },
-  amount: { fontSize: 13 },
-  chevronRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4 },
-  viewDetail: { fontSize: 13, fontWeight: '600' },
-  accessText: { marginTop: 12, fontSize: 16, fontFamily: 'Inter-Medium' },
-  emptyText: { marginTop: 12, fontSize: 16, fontFamily: 'Inter-Medium' },
-});
+const stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
+      header: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 0.5,
+      },
+      backBtn: { padding: 4 },
+      headerTitle: { fontFamily: 'Inter-Bold', fontSize: 18 },
+      filterRow: {
+        flexDirection: 'row', flexWrap: 'wrap', gap: 8,
+        paddingHorizontal: 16, paddingVertical: 12,
+      },
+      filterPill: {
+        paddingHorizontal: 14, paddingVertical: 6,
+        borderRadius: 20, borderWidth: 1,
+      },
+      filterLabel: { fontSize: 13, fontWeight: '600' },
+      list: { padding: 16, gap: 12, paddingBottom: 40 },
+      card: {
+        borderRadius: 16, padding: 16,
+        borderWidth: 1, gap: 10,
+      },
+      cardHeader: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      },
+      statusBadge: {
+        paddingHorizontal: 10, paddingVertical: 4,
+        borderRadius: 20, borderWidth: 1,
+      },
+      statusText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
+      dateText: { fontSize: 12 },
+      reason: { fontSize: 15, fontWeight: '600', textTransform: 'capitalize' },
+      parties: {
+        flexDirection: 'row', alignItems: 'center', gap: 8,
+      },
+      party: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+      avatar: { width: 32, height: 32, borderRadius: 16 },
+      avatarFallback: { alignItems: 'center', justifyContent: 'center' },
+      partyRole: { fontSize: 11 },
+      partyName: { fontSize: 13, fontWeight: '600' },
+      amount: { fontSize: 13 },
+      chevronRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4 },
+      viewDetail: { fontSize: 13, fontWeight: '600' },
+      accessText: { marginTop: 12, fontSize: 16, fontFamily: 'Inter-Medium' },
+      emptyText: { marginTop: 12, fontSize: 16, fontFamily: 'Inter-Medium' },
+    }));

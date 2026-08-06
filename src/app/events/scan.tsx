@@ -1,7 +1,7 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert, SafeAreaView, Platform, Dimensions,
+  View, Text, TouchableOpacity, TextInput, ActivityIndicator, Alert, SafeAreaView, Platform, Dimensions,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -14,6 +14,8 @@ import * as Haptics from 'expo-haptics';
 const { width } = Dimensions.get('window');
 
 export default function TicketScannerScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
@@ -122,78 +124,78 @@ export default function TicketScannerScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+    <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
+      <View style={[stylesheet.header, { borderBottomColor: theme.colors.GLASS_BORDER }]}>
+        <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
+          <Ionicons name="chevron-back" size={28} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: TEXT_PRIMARY }]}>Scan Attendee Tickets</Text>
+        <Text style={[stylesheet.title, { color: theme.colors.TEXT_PRIMARY }]}>Scan Attendee Tickets</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <View style={styles.content}>
+      <View style={stylesheet.content}>
         {/* Camera View */}
         {permission?.granted ? (
-          <View style={styles.cameraFrame}>
+          <View style={stylesheet.cameraFrame}>
             <CameraView
-              style={StyleSheet.absoluteFillObject}
+              style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}
               onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
               barcodeScannerSettings={{ barcodeTypes: ['qr', 'code128', 'pdf417'] }}
             />
-            <View style={styles.scanTarget} />
-            <Text style={styles.scanNotice}>Position ticket QR code inside the box</Text>
+            <View style={stylesheet.scanTarget} />
+            <Text style={stylesheet.scanNotice}>Position ticket QR code inside the box</Text>
           </View>
         ) : (
-          <View style={[styles.noPermBox, { backgroundColor: SURFACE }]}>
-            <Ionicons name="camera-outline" size={48} color={MUTED} />
-            <Text style={[styles.noPermText, { color: TEXT_PRIMARY }]}>Camera Permission Required</Text>
-            <TouchableOpacity style={[styles.permBtn, { backgroundColor: G }]} onPress={requestPermission}>
-              <Text style={styles.permBtnText}>Grant Camera Permission</Text>
+          <View style={[stylesheet.noPermBox, { backgroundColor: theme.colors.SURFACE }]}>
+            <Ionicons name="camera-outline" size={48} color={theme.colors.MUTED} />
+            <Text style={[stylesheet.noPermText, { color: theme.colors.TEXT_PRIMARY }]}>Camera Permission Required</Text>
+            <TouchableOpacity style={[stylesheet.permBtn, { backgroundColor: theme.colors.G }]} onPress={requestPermission}>
+              <Text style={stylesheet.permBtnText}>Grant Camera Permission</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Scan Result Alert Banner */}
         {lastResult && (
-          <View style={[styles.resultCard, { backgroundColor: lastResult.success ? '#166534' : '#991B1B' }]}>
+          <View style={[stylesheet.resultCard, { backgroundColor: lastResult.success ? '#166534' : '#991B1B' }]}>
             <Ionicons name={lastResult.success ? 'checkmark-circle' : 'alert-circle'} size={32} color="#FFF" />
             <View style={{ flex: 1 }}>
-              <Text style={styles.resultTitle}>{lastResult.success ? 'Entry Approved ✅' : 'Verification Alert ⚠️'}</Text>
-              <Text style={styles.resultBody}>{lastResult.message}</Text>
+              <Text style={stylesheet.resultTitle}>{lastResult.success ? 'Entry Approved ✅' : 'Verification Alert ⚠️'}</Text>
+              <Text style={stylesheet.resultBody}>{lastResult.message}</Text>
             </View>
             {scanned && (
               <TouchableOpacity
-                style={styles.rescanBtn}
+                style={stylesheet.rescanBtn}
                 onPress={() => {
                   setScanned(false);
                   setLastResult(null);
                 }}
               >
-                <Text style={styles.rescanBtnText}>Next</Text>
+                <Text style={stylesheet.rescanBtnText}>Next</Text>
               </TouchableOpacity>
             )}
           </View>
         )}
 
         {/* Manual Code Input */}
-        <View style={[styles.manualCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-          <Text style={[styles.manualTitle, { color: TEXT_PRIMARY }]}>Enter Ticket Code Manually</Text>
-          <View style={styles.inputRow}>
+        <View style={[stylesheet.manualCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
+          <Text style={[stylesheet.manualTitle, { color: theme.colors.TEXT_PRIMARY }]}>Enter Ticket Code Manually</Text>
+          <View style={stylesheet.inputRow}>
             <TextInput
-              style={[styles.input, { color: TEXT_PRIMARY, borderColor: GLASS_BORDER, backgroundColor: SURFACE }]}
+              style={[stylesheet.input, { color: theme.colors.TEXT_PRIMARY, borderColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.SURFACE }]}
               placeholder="e.g. tkt_9f2a41..."
-              placeholderTextColor={MUTED}
+              placeholderTextColor={theme.colors.MUTED}
               value={manualCode}
               onChangeText={setManualCode}
               autoCapitalize="none"
             />
             <TouchableOpacity
-              style={[styles.verifyBtn, { backgroundColor: G }]}
+              style={[stylesheet.verifyBtn, { backgroundColor: theme.colors.G }]}
               onPress={() => verifyTicketCode(manualCode)}
               disabled={verifying}
             >
-              {verifying ? <ActivityIndicator color="#000" size="small" /> : <Text style={styles.verifyBtnText}>Check</Text>}
+              {verifying ? <ActivityIndicator color="#000" size="small" /> : <Text style={stylesheet.verifyBtnText}>Check</Text>}
             </TouchableOpacity>
           </View>
         </View>
@@ -202,28 +204,28 @@ export default function TicketScannerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1 },
-  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 18, fontWeight: '800' },
-  content: { flex: 1, padding: 16, gap: 16 },
-  cameraFrame: { height: 320, borderRadius: 24, overflow: 'hidden', justifyContent: 'center', alignItems: 'center', backgroundColor: '#000', position: 'relative' },
-  scanTarget: { width: 200, height: 200, borderWidth: 3, borderColor: '#82DB7E', borderRadius: 16 },
-  scanNotice: { position: 'absolute', bottom: 16, color: '#FFF', fontSize: 12, fontWeight: '600', backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
-  noPermBox: { height: 260, borderRadius: 24, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 12 },
-  noPermText: { fontSize: 16, fontWeight: '700' },
-  permBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
-  permBtnText: { color: '#000', fontWeight: '700', fontSize: 14 },
-  resultCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 20 },
-  resultTitle: { color: '#FFF', fontWeight: '800', fontSize: 16 },
-  resultBody: { color: 'rgba(255,255,255,0.9)', fontSize: 13, marginTop: 2 },
-  rescanBtn: { backgroundColor: '#FFF', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14 },
-  rescanBtnText: { color: '#000', fontWeight: '800', fontSize: 13 },
-  manualCard: { padding: 16, borderRadius: 20, borderWidth: 1, gap: 10 },
-  manualTitle: { fontSize: 14, fontWeight: '700' },
-  inputRow: { flexDirection: 'row', gap: 10 },
-  input: { flex: 1, height: 46, borderRadius: 14, borderWidth: 1, paddingHorizontal: 14, fontSize: 14 },
-  verifyBtn: { paddingHorizontal: 20, height: 46, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  verifyBtnText: { color: '#000', fontWeight: '800', fontSize: 14 },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1 },
+      backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+      title: { fontSize: 18, fontWeight: '800' },
+      content: { flex: 1, padding: 16, gap: 16 },
+      cameraFrame: { height: 320, borderRadius: 24, overflow: 'hidden', justifyContent: 'center', alignItems: 'center', backgroundColor: '#000', position: 'relative' },
+      scanTarget: { width: 200, height: 200, borderWidth: 3, borderColor: '#82DB7E', borderRadius: 16 },
+      scanNotice: { position: 'absolute', bottom: 16, color: '#FFF', fontSize: 12, fontWeight: '600', backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
+      noPermBox: { height: 260, borderRadius: 24, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 12 },
+      noPermText: { fontSize: 16, fontWeight: '700' },
+      permBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
+      permBtnText: { color: '#000', fontWeight: '700', fontSize: 14 },
+      resultCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 20 },
+      resultTitle: { color: '#FFF', fontWeight: '800', fontSize: 16 },
+      resultBody: { color: 'rgba(255,255,255,0.9)', fontSize: 13, marginTop: 2 },
+      rescanBtn: { backgroundColor: '#FFF', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14 },
+      rescanBtnText: { color: '#000', fontWeight: '800', fontSize: 13 },
+      manualCard: { padding: 16, borderRadius: 20, borderWidth: 1, gap: 10 },
+      manualTitle: { fontSize: 14, fontWeight: '700' },
+      inputRow: { flexDirection: 'row', gap: 10 },
+      input: { flex: 1, height: 46, borderRadius: 14, borderWidth: 1, paddingHorizontal: 14, fontSize: 14 },
+      verifyBtn: { paddingHorizontal: 20, height: 46, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+      verifyBtnText: { color: '#000', fontWeight: '800', fontSize: 14 },
+    }));

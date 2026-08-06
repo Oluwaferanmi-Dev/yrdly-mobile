@@ -1,3 +1,4 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
@@ -8,7 +9,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert, ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View
@@ -20,8 +20,6 @@ import { api } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/utils';
 import { MARKETPLACE_CONSTANTS } from '../../lib/constants';
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
-
 const COMMISSION_RATE = MARKETPLACE_CONSTANTS.COMMISSION_RATE;
 
 interface ItemDetails {
@@ -39,6 +37,8 @@ interface ItemDetails {
 type Stage = 'loading' | 'summary' | 'paying' | 'error';
 
 export default function CheckoutScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id, type = 'marketplace_post' } = useLocalSearchParams<{ id: string, type?: string }>();
@@ -170,8 +170,8 @@ export default function CheckoutScreen() {
   // ── Loading ──────────────────────────────────────────────────
   if (stage === 'loading') {
     return (
-      <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}>
-        <ActivityIndicator size="large" color={G} />
+      <SafeAreaView style={[stylesheet.center, { backgroundColor: theme.colors.DARK }]}>
+        <ActivityIndicator size="large" color={theme.colors.G} />
       </SafeAreaView>
     );
   }
@@ -179,13 +179,13 @@ export default function CheckoutScreen() {
   // ── Payment In Progress ──────────────────────────────────
   if (stage === 'paying') {
     return (
-      <SafeAreaView style={[styles.center, { backgroundColor: DARK, gap: 18 }]}>
-        <View style={styles.payingIconContainer}>
-            <Feather name="credit-card" size={28} color={G} />
+      <SafeAreaView style={[stylesheet.center, { backgroundColor: theme.colors.DARK, gap: 18 }]}>
+        <View style={stylesheet.payingIconContainer}>
+            <Feather name="credit-card" size={28} color={theme.colors.G} />
         </View>
         <View style={{ alignItems: 'center' }}>
-            <Text style={styles.payingTitle}>Redirecting to Paystack</Text>
-            <Text style={styles.payingSubtitle}>Your payment is being processed securely.</Text>
+            <Text style={stylesheet.payingTitle}>Redirecting to Paystack</Text>
+            <Text style={stylesheet.payingSubtitle}>Your payment is being processed securely.</Text>
         </View>
       </SafeAreaView>
     );
@@ -194,12 +194,12 @@ export default function CheckoutScreen() {
   // ── Error ────────────────────────────────────────────────────
   if (stage === 'error') {
     return (
-      <SafeAreaView style={[styles.center, { backgroundColor: DARK }]}>
+      <SafeAreaView style={[stylesheet.center, { backgroundColor: theme.colors.DARK }]}>
         <Feather name="alert-circle" size={48} color="#E53935" />
-        <Text style={[styles.errorTitle, { color: TEXT_PRIMARY }]}>Payment failed</Text>
-        <Text style={[styles.errorMsg, { color: LABEL }]}>{errorMsg}</Text>
-        <TouchableOpacity style={[styles.retryBtn, { backgroundColor: SURFACE }]} onPress={() => setStage('summary')}>
-          <Text style={[styles.retryBtnText, { color: TEXT_PRIMARY }]}>Go Back</Text>
+        <Text style={[stylesheet.errorTitle, { color: theme.colors.TEXT_PRIMARY }]}>Payment failed</Text>
+        <Text style={[stylesheet.errorMsg, { color: theme.colors.LABEL }]}>{errorMsg}</Text>
+        <TouchableOpacity style={[stylesheet.retryBtn, { backgroundColor: theme.colors.SURFACE }]} onPress={() => setStage('summary')}>
+          <Text style={[stylesheet.retryBtnText, { color: theme.colors.TEXT_PRIMARY }]}>Go Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -207,270 +207,270 @@ export default function CheckoutScreen() {
 
   // ── Order Summary ────────────────────────────────────────────
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'bottom']}>
+    <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]} edges={['top', 'bottom']}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+      <View style={[stylesheet.header, { borderBottomColor: theme.colors.GLASS_BORDER }]}>
+        <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
           <Feather name="chevron-left" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Checkout</Text>
+        <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY }]}>Checkout</Text>
         <View style={{ width: 34 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={stylesheet.scroll} showsVerticalScrollIndicator={false}>
         {/* Item summary card */}
-        <View style={[styles.card, { flexDirection: 'row', gap: 16 }]}>
-          <View style={styles.itemThumbWrapper}>
+        <View style={[stylesheet.card, { flexDirection: 'row', gap: 16 }]}>
+          <View style={stylesheet.itemThumbWrapper}>
             {thumbnail ? (
-              <Image source={{ uri: thumbnail }} style={styles.itemThumb} contentFit="cover" />
+              <Image source={{ uri: thumbnail }} style={stylesheet.itemThumb} contentFit="cover" />
             ) : (
-              <View style={[styles.itemThumb, { backgroundColor: SURFACE, alignItems: 'center', justifyContent: 'center' }]}>
-                <Feather name="image" size={24} color={MUTED} />
+              <View style={[stylesheet.itemThumb, { backgroundColor: theme.colors.SURFACE, alignItems: 'center', justifyContent: 'center' }]}>
+                <Feather name="image" size={24} color={theme.colors.MUTED} />
               </View>
             )}
           </View>
-          <View style={styles.itemInfo}>
-            <Text style={styles.itemTitle} numberOfLines={2}>{item?.title}</Text>
-            <Text style={styles.itemMeta}>Seller: {item?.seller?.name ?? 'Seller'}</Text>
-            <Text style={styles.itemMeta}>{item?.condition ?? 'Used'} · {item?.area ?? 'Lagos'}</Text>
+          <View style={stylesheet.itemInfo}>
+            <Text style={stylesheet.itemTitle} numberOfLines={2}>{item?.title}</Text>
+            <Text style={stylesheet.itemMeta}>Seller: {item?.seller?.name ?? 'Seller'}</Text>
+            <Text style={stylesheet.itemMeta}>{item?.condition ?? 'Used'} · {item?.area ?? 'Lagos'}</Text>
           </View>
         </View>
 
         {/* Delivery */}
-        <View style={styles.card}>
-            <Text style={styles.sectionTitle}>DELIVERY / PICKUP</Text>
+        <View style={stylesheet.card}>
+            <Text style={stylesheet.sectionTitle}>DELIVERY / PICKUP</Text>
 
             {/* Meetup Option */}
             <TouchableOpacity 
                 activeOpacity={0.7} 
-                style={styles.optionRow} 
+                style={stylesheet.optionRow} 
                 onPress={() => setDeliveryMethod('meetup')}
             >
-                <View style={[styles.radioOuter, { borderColor: deliveryMethod === 'meetup' ? G : GLASS_BORDER }]}>
-                    {deliveryMethod === 'meetup' && <View style={styles.radioInner} />}
+                <View style={[stylesheet.radioOuter, { borderColor: deliveryMethod === 'meetup' ? theme.colors.G : theme.colors.GLASS_BORDER }]}>
+                    {deliveryMethod === 'meetup' && <View style={stylesheet.radioInner} />}
                 </View>
                 <View style={{ flex: 1 }}>
-                    <Text style={[styles.optionTitle, { color: deliveryMethod === 'meetup' ? '#fff' : MUTED }]}>Meet-up · {item?.area ?? 'Local Area'}</Text>
-                    <Text style={styles.optionDesc}>Agree a safe public meeting point</Text>
+                    <Text style={[stylesheet.optionTitle, { color: deliveryMethod === 'meetup' ? '#fff' : theme.colors.MUTED }]}>Meet-up · {item?.area ?? 'Local Area'}</Text>
+                    <Text style={stylesheet.optionDesc}>Agree a safe public meeting point</Text>
                 </View>
             </TouchableOpacity>
 
             {/* Delivery Option */}
             <TouchableOpacity 
                 activeOpacity={0.7} 
-                style={styles.optionRow} 
+                style={stylesheet.optionRow} 
                 onPress={() => setDeliveryMethod('delivery')}
             >
-                <View style={[styles.radioOuter, { borderColor: deliveryMethod === 'delivery' ? G : GLASS_BORDER }]}>
-                    {deliveryMethod === 'delivery' && <View style={styles.radioInner} />}
+                <View style={[stylesheet.radioOuter, { borderColor: deliveryMethod === 'delivery' ? theme.colors.G : theme.colors.GLASS_BORDER }]}>
+                    {deliveryMethod === 'delivery' && <View style={stylesheet.radioInner} />}
                 </View>
                 <View style={{ flex: 1 }}>
-                    <Text style={[styles.optionTitle, { color: deliveryMethod === 'delivery' ? '#fff' : MUTED }]}>Delivery (add address)</Text>
-                    <Text style={styles.optionDesc}>Seller ships to you</Text>
+                    <Text style={[stylesheet.optionTitle, { color: deliveryMethod === 'delivery' ? '#fff' : theme.colors.MUTED }]}>Delivery (add address)</Text>
+                    <Text style={stylesheet.optionDesc}>Seller ships to you</Text>
                 </View>
             </TouchableOpacity>
         </View>
 
         {/* Price breakdown */}
-        <View style={styles.card}>
-            <Text style={styles.sectionTitle}>ORDER SUMMARY</Text>
+        <View style={stylesheet.card}>
+            <Text style={stylesheet.sectionTitle}>ORDER SUMMARY</Text>
             
-            <View style={styles.priceRow}>
-                <Text style={styles.priceLabel}>Item price</Text>
-                <Text style={styles.priceValue}>{formatPrice(item?.price ?? 0)}</Text>
+            <View style={stylesheet.priceRow}>
+                <Text style={stylesheet.priceLabel}>Item price</Text>
+                <Text style={stylesheet.priceValue}>{formatPrice(item?.price ?? 0)}</Text>
             </View>
-            <View style={styles.priceRow}>
-                <Text style={styles.priceLabel}>Platform fee</Text>
-                <Text style={styles.priceValue}>{formatPrice(commission)}</Text>
+            <View style={stylesheet.priceRow}>
+                <Text style={stylesheet.priceLabel}>Platform fee</Text>
+                <Text style={stylesheet.priceValue}>{formatPrice(commission)}</Text>
             </View>
 
-            <View style={styles.divider} />
+            <View style={stylesheet.divider} />
             
-            <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Total</Text>
-                <Text style={styles.totalValue}>{formatPrice((item?.price ?? 0) + commission)}</Text>
+            <View style={stylesheet.totalRow}>
+                <Text style={stylesheet.totalLabel}>Total</Text>
+                <Text style={stylesheet.totalValue}>{formatPrice((item?.price ?? 0) + commission)}</Text>
             </View>
         </View>
       </ScrollView>
 
       {/* CTA */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.payBtn} onPress={handleInitializePayment} activeOpacity={0.85}>
-          <Text style={styles.payBtnText}>Pay {formatPrice((item?.price ?? 0) + commission)}</Text>
+      <View style={stylesheet.footer}>
+        <TouchableOpacity style={stylesheet.payBtn} onPress={handleInitializePayment} activeOpacity={0.85}>
+          <Text style={stylesheet.payBtnText}>Pay {formatPrice((item?.price ?? 0) + commission)}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  scroll: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 100, gap: 16 },
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+      scroll: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 100, gap: 16 },
 
-  header: {
-    flexDirection: 'row', alignItems: 'center', 
-    paddingHorizontal: 20, paddingBottom: 12, paddingTop: 10,
-    borderBottomWidth: 1, gap: 12
-  },
-  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', flex: 1 },
+      header: {
+        flexDirection: 'row', alignItems: 'center', 
+        paddingHorizontal: 20, paddingBottom: 12, paddingTop: 10,
+        borderBottomWidth: 1, gap: 12
+      },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' },
+      headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', flex: 1 },
 
-  card: {
-    backgroundColor: '#0f0f0f',
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    borderRadius: 20,
-    padding: 16,
-  },
-  itemThumbWrapper: {
-    width: 64,
-    height: 64,
-    borderRadius: 14,
-    overflow: 'hidden',
-  },
-  itemThumb: {
-    width: '100%',
-    height: '100%',
-  },
-  itemInfo: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  itemTitle: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 15,
-    color: '#fff',
-    marginBottom: 4,
-  },
-  itemMeta: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 12,
-    color: LABEL,
-    marginBottom: 2,
-  },
+      card: {
+        backgroundColor: '#0f0f0f',
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        borderRadius: 20,
+        padding: 16,
+      },
+      itemThumbWrapper: {
+        width: 64,
+        height: 64,
+        borderRadius: 14,
+        overflow: 'hidden',
+      },
+      itemThumb: {
+        width: '100%',
+        height: '100%',
+      },
+      itemInfo: {
+        flex: 1,
+        justifyContent: 'center',
+      },
+      itemTitle: {
+        fontFamily: 'Outfit-Bold',
+        fontSize: 15,
+        color: '#fff',
+        marginBottom: 4,
+      },
+      itemMeta: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 12,
+        color: theme.colors.LABEL,
+        marginBottom: 2,
+      },
 
-  sectionTitle: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 12,
-    color: LABEL,
-    marginBottom: 16,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    marginBottom: 16,
-  },
-  radioOuter: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  radioInner: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: G,
-  },
-  optionTitle: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 14,
-  },
-  optionDesc: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 12,
-    color: LABEL,
-    marginTop: 2,
-  },
+      sectionTitle: {
+        fontFamily: 'Inter-SemiBold',
+        fontSize: 12,
+        color: theme.colors.LABEL,
+        marginBottom: 16,
+        textTransform: 'uppercase',
+        letterSpacing: 0.8,
+      },
+      optionRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: 12,
+        marginBottom: 16,
+      },
+      radioOuter: {
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        borderWidth: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 2,
+      },
+      radioInner: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: theme.colors.G,
+      },
+      optionTitle: {
+        fontFamily: 'Inter-SemiBold',
+        fontSize: 14,
+      },
+      optionDesc: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 12,
+        color: theme.colors.LABEL,
+        marginTop: 2,
+      },
 
-  priceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  priceLabel: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    color: MUTED,
-  },
-  priceValue: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    color: '#fff',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: GLASS_BORDER,
-    marginVertical: 12,
-  },
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  totalLabel: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 16,
-    color: '#fff',
-  },
-  totalValue: {
-    fontFamily: 'Outfit-Black',
-    fontSize: 18,
-    color: G,
-  },
+      priceRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+      },
+      priceLabel: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 14,
+        color: theme.colors.MUTED,
+      },
+      priceValue: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 14,
+        color: '#fff',
+      },
+      divider: {
+        height: 1,
+        backgroundColor: theme.colors.GLASS_BORDER,
+        marginVertical: 12,
+      },
+      totalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      },
+      totalLabel: {
+        fontFamily: 'Outfit-Bold',
+        fontSize: 16,
+        color: '#fff',
+      },
+      totalValue: {
+        fontFamily: 'Outfit-Black',
+        fontSize: 18,
+        color: theme.colors.G,
+      },
 
-  footer: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    paddingBottom: 34,
-    borderTopWidth: 1,
-    borderTopColor: GLASS_BORDER,
-  },
-  payBtn: {
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 18,
-    backgroundColor: G,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  payBtnText: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 16,
-    color: DARK,
-  },
+      footer: {
+        paddingHorizontal: 20,
+        paddingVertical: 14,
+        paddingBottom: 34,
+        borderTopWidth: 1,
+        borderTopColor: theme.colors.GLASS_BORDER,
+      },
+      payBtn: {
+        width: '100%',
+        paddingVertical: 16,
+        borderRadius: 18,
+        backgroundColor: theme.colors.G,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      payBtnText: {
+        fontFamily: 'Outfit-Bold',
+        fontSize: 16,
+        color: theme.colors.DARK,
+      },
 
-  payingIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: 'rgba(130,219,126,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(130,219,126,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  payingTitle: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 20,
-    color: '#fff',
-    marginBottom: 6,
-  },
-  payingSubtitle: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 13,
-    color: MUTED,
-  },
+      payingIconContainer: {
+        width: 64,
+        height: 64,
+        borderRadius: 20,
+        backgroundColor: 'rgba(130,219,126,0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(130,219,126,0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      payingTitle: {
+        fontFamily: 'Outfit-Bold',
+        fontSize: 20,
+        color: '#fff',
+        marginBottom: 6,
+      },
+      payingSubtitle: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 13,
+        color: theme.colors.MUTED,
+      },
 
-  errorTitle: { fontSize: 22, fontWeight: '800', marginTop: 16, marginBottom: 8 },
-  errorMsg: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24, maxWidth: 280 },
-  retryBtn: { paddingHorizontal: 32, paddingVertical: 14, borderRadius: 24 },
-  retryBtnText: { fontWeight: '700', fontSize: 15 },
-});
+      errorTitle: { fontSize: 22, fontWeight: '800', marginTop: 16, marginBottom: 8 },
+      errorMsg: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24, maxWidth: 280 },
+      retryBtn: { paddingHorizontal: 32, paddingVertical: 14, borderRadius: 24 },
+      retryBtnText: { fontWeight: '700', fontSize: 15 },
+    }));

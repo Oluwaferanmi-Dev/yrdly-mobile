@@ -1,7 +1,7 @@
-import { DARK, SURFACE } from '../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
-  View, StyleSheet, FlatList, Text, RefreshControl, ScrollView,
+  StyleSheet, View, FlatList, Text, RefreshControl, ScrollView,
   TouchableOpacity, Dimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -36,6 +36,8 @@ const EVENT_CATEGORIES = [
 ];
 
 export function EventList({ searchQuery = '', sortOption = 'newest' }: EventListProps) {
+    const { styles: stylesheet, theme } = useStyles(sStylesheet);
+
   const { colors } = useAppTheme();
   const { activeFilter } = useLocation();
   const router = useRouter();
@@ -163,156 +165,158 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
   const rest = events.slice(9);
 
   // ── ListHeader MUST be defined before any conditional returns ──
-  const listHeaderElement = useMemo(() => (
-    <>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipsScroll} contentContainerStyle={s.chipsContent}>
-        {EVENT_CATEGORIES.map(cat => {
-          const active = category === cat.key;
-          return (
-            <TouchableOpacity
-              key={cat.key}
-              onPress={() => {
-                setCategory(active ? '' : cat.key);
-                setFeaturedIdx(0);
-                if (featuredRef.current) {
-                  featuredRef.current.scrollTo({ x: 0, animated: true });
-                }
-              }}
-              style={[s.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
-              <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : colors.textMuted} style={{ marginRight: 4 }} />
-              <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+  const listHeaderElement = useMemo(() => {
+  return (
+      <>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={stylesheet.chipsScroll} contentContainerStyle={stylesheet.chipsContent}>
+          {EVENT_CATEGORIES.map(cat => {
+            const active = category === cat.key;
+            return (
+              <TouchableOpacity
+                key={cat.key}
+                onPress={() => {
+                  setCategory(active ? '' : cat.key);
+                  setFeaturedIdx(0);
+                  if (featuredRef.current) {
+                    featuredRef.current.scrollTo({ x: 0, animated: true });
+                  }
+                }}
+                style={[stylesheet.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
+                <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : colors.textMuted} style={{ marginRight: 4 }} />
+                <Text style={[stylesheet.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
 
-      {category !== '' && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.tint + '15', borderRadius: 14, marginHorizontal: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.tint + '40' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="funnel-outline" size={14} color={colors.tint} />
-            <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>
-              Showing: {EVENT_CATEGORIES.find(c => c.key === category)?.label || category}
-            </Text>
-          </View>
-          <TouchableOpacity onPress={() => setCategory('')} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: SURFACE, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: colors.borderLight }}>
-            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', marginRight: 4 }}>Clear</Text>
-            <Ionicons name="close" size={14} color={colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {featured.length > 0 && (
-        <View style={s.section}>
-          <View style={s.sectionHeader}>
-            <Text style={[s.sectionTitle, { color: colors.text }]}>Upcoming Events</Text>
-          </View>
-          <ScrollView
-            ref={featuredRef}
-            horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-            style={{ width: width - 32 }}
-            onMomentumScrollEnd={e => setFeaturedIdx(Math.round(e.nativeEvent.contentOffset.x / (width - 32)))}
-          >
-            {featured.map(item => {
-              const imgUrl = item.image_urls?.[0] || item.image_url;
-              const d = item.event_date ? new Date(item.event_date) : null;
-              const location = typeof item.event_location === 'string'
-                ? item.event_location
-                : (item.event_location as any)?.address || '';
-              const isOwner = user?.id === item.user_id;
-              return (
-                <TouchableOpacity
-                  key={item.id} activeOpacity={0.93}
-                  onPress={() => navigateToEvent(item)}
-                  style={[s.heroCard, { width: width - 32 }]}
-                >
-                  {imgUrl
-                    ? <Image source={{ uri: imgUrl }} style={StyleSheet.absoluteFillObject} contentFit="cover" transition={300} />
-                    : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#0d1a0d' }]} />}
-                  <View style={s.heroOverlay} />
-                  <View style={s.featBadge}>
-                    <Ionicons name="star-outline" size={10} color="#82DB7E" style={{ marginRight: 4 }} />
-                    <Text style={s.featBadgeTxt}>Featured Event</Text>
-                  </View>
-                  <View style={s.heroInfo}>
-                    <Text style={s.heroTitle} numberOfLines={2}>{item.title || item.text}</Text>
-                    {d && (
-                      <View style={s.heroMetaRow}>
-                        <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.7)" />
-                        <Text style={s.heroMeta}>
-                          {d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} at {d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                        </Text>
-                      </View>
-                    )}
-                    {!!location && (
-                      <View style={s.heroMetaRow}>
-                        <Ionicons name="location-outline" size={13} color="rgba(255,255,255,0.7)" />
-                        <Text style={s.heroMeta} numberOfLines={1}>{location}</Text>
-                      </View>
-                    )}
-                    <View style={s.heroFooter}>
-                      <View style={s.attendeeAvatars}>
-                        <AttendeeAvatars attendees={item.attendees as any} size={22} maxVisible={4} />
-                      </View>
-                      <TouchableOpacity
-                        style={[s.heroCTA, isOwner && { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#82DB7E' }]}
-                        onPress={() => navigateToEvent(item)}
-                      >
-                        <Text style={[s.heroCTATxt, isOwner && { color: '#82DB7E' }]}>
-                          {isOwner ? 'Manage Event' : 'View Tickets'}
-                        </Text>
-                        <Ionicons name="chevron-forward" size={14} color={isOwner ? '#82DB7E' : '#0B0D0B'} />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-          {featured.length > 1 && (
-            <View style={s.dots}>
-              {featured.map((_, i) => (
-                <View key={i} style={[s.dot, { backgroundColor: i === featuredIdx ? colors.tint : colors.borderLight }]} />
-              ))}
+        {category !== '' && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.tint + '15', borderRadius: 14, marginHorizontal: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.tint + '40' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="funnel-outline" size={14} color={colors.tint} />
+              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>
+                Showing: {EVENT_CATEGORIES.find(c => c.key === category)?.label || category}
+              </Text>
             </View>
-          )}
-        </View>
-      )}
-
-      {horizontal.length > 0 && (
-        <View style={s.section}>
-          <View style={s.sectionHeader}>
-            <Text style={[s.sectionTitle, { color: colors.text }]}>More Events For You</Text>
+            <TouchableOpacity onPress={() => setCategory('')} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.SURFACE, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: colors.borderLight }}>
+              <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', marginRight: 4 }}>Clear</Text>
+              <Ionicons name="close" size={14} color={colors.textSecondary} />
+            </TouchableOpacity>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
-            {horizontal.map(item => (
-              <EventCardCompact key={item.id} event={item} onPress={() => navigateToEvent(item)} />
-            ))}
-          </ScrollView>
-        </View>
-      )}
+        )}
 
-      <TouchableOpacity
-        style={[s.createBanner, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}
-        onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
-        <View style={[s.createIcon, { backgroundColor: 'rgba(130,219,126,0.1)' }]}>
-          <Ionicons name="calendar-outline" size={24} color={colors.tint} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[s.createTitle, { color: colors.text }]}>Can't find your event?</Text>
-          <Text style={[s.createSub, { color: colors.textMuted }]}>Create and share events with your community.</Text>
-        </View>
-        <TouchableOpacity style={[s.createCTA, { backgroundColor: colors.tint }]} onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
-          <Text style={s.createCTATxt}>Create Event</Text>
-          <Ionicons name="add-circle-outline" size={14} color="#0B0D0B" style={{ marginLeft: 4 }} />
+        {featured.length > 0 && (
+          <View style={stylesheet.section}>
+            <View style={stylesheet.sectionHeader}>
+              <Text style={[stylesheet.sectionTitle, { color: colors.text }]}>Upcoming Events</Text>
+            </View>
+            <ScrollView
+              ref={featuredRef}
+              horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+              style={{ width: width - 32 }}
+              onMomentumScrollEnd={e => setFeaturedIdx(Math.round(e.nativeEvent.contentOffset.x / (width - 32)))}
+            >
+              {featured.map(item => {
+                const imgUrl = item.image_urls?.[0] || item.image_url;
+                const d = item.event_date ? new Date(item.event_date) : null;
+                const location = typeof item.event_location === 'string'
+                  ? item.event_location
+                  : (item.event_location as any)?.address || '';
+                const isOwner = user?.id === item.user_id;
+                return (
+                  <TouchableOpacity
+                    key={item.id} activeOpacity={0.93}
+                    onPress={() => navigateToEvent(item)}
+                    style={[stylesheet.heroCard, { width: width - 32 }]}
+                  >
+                    {imgUrl
+                      ? <Image source={{ uri: imgUrl }} style={StyleSheet.absoluteFillObject} contentFit="cover" transition={300} />
+                      : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#0d1a0d' }]} />}
+                    <View style={stylesheet.heroOverlay} />
+                    <View style={stylesheet.featBadge}>
+                      <Ionicons name="star-outline" size={10} color="#82DB7E" style={{ marginRight: 4 }} />
+                      <Text style={stylesheet.featBadgeTxt}>Featured Event</Text>
+                    </View>
+                    <View style={stylesheet.heroInfo}>
+                      <Text style={stylesheet.heroTitle} numberOfLines={2}>{item.title || item.text}</Text>
+                      {d && (
+                        <View style={stylesheet.heroMetaRow}>
+                          <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.7)" />
+                          <Text style={stylesheet.heroMeta}>
+                            {d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} at {d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                          </Text>
+                        </View>
+                      )}
+                      {!!location && (
+                        <View style={stylesheet.heroMetaRow}>
+                          <Ionicons name="location-outline" size={13} color="rgba(255,255,255,0.7)" />
+                          <Text style={stylesheet.heroMeta} numberOfLines={1}>{location}</Text>
+                        </View>
+                      )}
+                      <View style={stylesheet.heroFooter}>
+                        <View style={stylesheet.attendeeAvatars}>
+                          <AttendeeAvatars attendees={item.attendees as any} size={22} maxVisible={4} />
+                        </View>
+                        <TouchableOpacity
+                          style={[stylesheet.heroCTA, isOwner && { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#82DB7E' }]}
+                          onPress={() => navigateToEvent(item)}
+                        >
+                          <Text style={[stylesheet.heroCTATxt, isOwner && { color: '#82DB7E' }]}>
+                            {isOwner ? 'Manage Event' : 'View Tickets'}
+                          </Text>
+                          <Ionicons name="chevron-forward" size={14} color={isOwner ? '#82DB7E' : '#0B0D0B'} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+            {featured.length > 1 && (
+              <View style={stylesheet.dots}>
+                {featured.map((_, i) => (
+                  <View key={i} style={[stylesheet.dot, { backgroundColor: i === featuredIdx ? colors.tint : colors.borderLight }]} />
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {horizontal.length > 0 && (
+          <View style={stylesheet.section}>
+            <View style={stylesheet.sectionHeader}>
+              <Text style={[stylesheet.sectionTitle, { color: colors.text }]}>More Events For You</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
+              {horizontal.map(item => (
+                <EventCardCompact key={item.id} event={item} onPress={() => navigateToEvent(item)} />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        <TouchableOpacity
+          style={[stylesheet.createBanner, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}
+          onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
+          <View style={[stylesheet.createIcon, { backgroundColor: 'rgba(130,219,126,0.1)' }]}>
+            <Ionicons name="calendar-outline" size={24} color={colors.tint} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[stylesheet.createTitle, { color: colors.text }]}>Can't find your event?</Text>
+            <Text style={[stylesheet.createSub, { color: colors.textMuted }]}>Create and share events with your community.</Text>
+          </View>
+          <TouchableOpacity style={[stylesheet.createCTA, { backgroundColor: colors.tint }]} onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
+            <Text style={stylesheet.createCTATxt}>Create Event</Text>
+            <Ionicons name="add-circle-outline" size={14} color="#0B0D0B" style={{ marginLeft: 4 }} />
+          </TouchableOpacity>
         </TouchableOpacity>
-      </TouchableOpacity>
 
-      {rest.length > 0 && (
-        <Text style={[s.sectionTitle, { color: colors.text, paddingHorizontal: 16, marginBottom: 8 }]}>All Events</Text>
-      )}
-    </>
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [featured, horizontal, rest, featuredIdx, category, colors, user]);
+        {rest.length > 0 && (
+          <Text style={[stylesheet.sectionTitle, { color: colors.text, paddingHorizontal: 16, marginBottom: 8 }]}>All Events</Text>
+        )}
+      </>
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    );
+  }, [featured, horizontal, rest, featuredIdx, category, colors, user]);
 
   return (
     <FlatList
@@ -321,7 +325,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       ref={listRef}
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
-      contentContainerStyle={s.listContent}
+      contentContainerStyle={stylesheet.listContent}
       ListHeaderComponent={listHeaderElement}
       ListEmptyComponent={
         loading ? (
@@ -330,9 +334,9 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
             <PostSkeleton />
           </View>
         ) : events.length === 0 ? (
-          <View style={s.empty}>
+          <View style={stylesheet.empty}>
             <Ionicons name="calendar-outline" size={52} color={colors.textMuted} style={{ opacity: 0.35, marginBottom: 14 }} />
-            <Text style={[s.emptyTxt, { color: colors.textMuted }]}>
+            <Text style={[stylesheet.emptyTxt, { color: colors.textMuted }]}>
               {searchQuery
                 ? `No events found for "${searchQuery}"`
                 : category
@@ -340,10 +344,10 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
                 : 'No upcoming events in your area'}
             </Text>
             <TouchableOpacity
-              style={[s.createBtn, { backgroundColor: colors.tint }]}
+              style={[stylesheet.createBtn, { backgroundColor: colors.tint }]}
               onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
               <Ionicons name="add-circle-outline" size={16} color="#0B0D0B" style={{ marginRight: 6 }} />
-              <Text style={s.createBtnTxt}>Create Event</Text>
+              <Text style={stylesheet.createBtnTxt}>Create Event</Text>
             </TouchableOpacity>
           </View>
         ) : null
@@ -355,39 +359,39 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
   );
 }
 
-const s = StyleSheet.create({
-  listContent: { paddingBottom: 100 },
-  chipsScroll: { marginBottom: 16 },
-  chipsContent: { paddingHorizontal: 16, gap: 8 },
-  chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
-  chipTxt: { fontSize: 12, fontWeight: '600' },
-  section: { marginBottom: 24 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 12 },
-  sectionTitle: { fontSize: 20, fontWeight: '800' },
-  seeAll: { fontSize: 13, fontWeight: '700' },
-  heroCard: { height: 260, borderRadius: 24, overflow: 'hidden', marginHorizontal: 0, position: 'relative' },
-  heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.52)' },
-  featBadge: { position: 'absolute', top: 14, left: 14, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(130,219,126,0.2)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(130,219,126,0.3)' },
-  featBadgeTxt: { color: '#82DB7E', fontSize: 11, fontWeight: '800' },
-  heroInfo: { position: 'absolute', bottom: 16, left: 16, right: 16 },
-  heroTitle: { color: '#fff', fontSize: 22, fontWeight: '900', marginBottom: 4, lineHeight: 26 },
-  heroMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  heroMeta: { color: 'rgba(255,255,255,0.8)', fontSize: 12, flex: 1 },
-  heroFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 },
-  attendeeAvatars: { flexDirection: 'row', alignItems: 'center' },
-  aCount: { color: 'rgba(255,255,255,0.7)', fontSize: 11, marginLeft: 6 },
-  heroCTA: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#82DB7E', paddingHorizontal: 16, paddingVertical: 9, borderRadius: 20, gap: 4 },
-  heroCTATxt: { color: '#0B0D0B', fontWeight: '800', fontSize: 13 },
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 12 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  createBanner: { marginHorizontal: 16, borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, marginBottom: 24 },
-  createIcon: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
-  createTitle: { fontSize: 14, fontWeight: '800', marginBottom: 2 },
-  createSub: { fontSize: 12 },
-  createCTA: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 9, borderRadius: 16 },
-  createCTATxt: { color: '#0B0D0B', fontWeight: '800', fontSize: 12 },
-  empty: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, paddingTop: 80 },
-  emptyTxt: { fontSize: 15, textAlign: 'center', marginBottom: 24 },
-  createBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 24 },
-  createBtnTxt: { color: '#0B0D0B', fontWeight: '800', fontSize: 14 },
-});
+const sStylesheet = createStyleSheet(theme => ({
+      listContent: { paddingBottom: 100 },
+      chipsScroll: { marginBottom: 16 },
+      chipsContent: { paddingHorizontal: 16, gap: 8 },
+      chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
+      chipTxt: { fontSize: 12, fontWeight: '600' },
+      section: { marginBottom: 24 },
+      sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 12 },
+      sectionTitle: { fontSize: 20, fontWeight: '800' },
+      seeAll: { fontSize: 13, fontWeight: '700' },
+      heroCard: { height: 260, borderRadius: 24, overflow: 'hidden', marginHorizontal: 0, position: 'relative' },
+      heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.52)' },
+      featBadge: { position: 'absolute', top: 14, left: 14, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(130,219,126,0.2)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(130,219,126,0.3)' },
+      featBadgeTxt: { color: '#82DB7E', fontSize: 11, fontWeight: '800' },
+      heroInfo: { position: 'absolute', bottom: 16, left: 16, right: 16 },
+      heroTitle: { color: '#fff', fontSize: 22, fontWeight: '900', marginBottom: 4, lineHeight: 26 },
+      heroMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+      heroMeta: { color: 'rgba(255,255,255,0.8)', fontSize: 12, flex: 1 },
+      heroFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 },
+      attendeeAvatars: { flexDirection: 'row', alignItems: 'center' },
+      aCount: { color: 'rgba(255,255,255,0.7)', fontSize: 11, marginLeft: 6 },
+      heroCTA: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#82DB7E', paddingHorizontal: 16, paddingVertical: 9, borderRadius: 20, gap: 4 },
+      heroCTATxt: { color: '#0B0D0B', fontWeight: '800', fontSize: 13 },
+      dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 12 },
+      dot: { width: 8, height: 8, borderRadius: 4 },
+      createBanner: { marginHorizontal: 16, borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, marginBottom: 24 },
+      createIcon: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
+      createTitle: { fontSize: 14, fontWeight: '800', marginBottom: 2 },
+      createSub: { fontSize: 12 },
+      createCTA: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 9, borderRadius: 16 },
+      createCTATxt: { color: '#0B0D0B', fontWeight: '800', fontSize: 12 },
+      empty: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, paddingTop: 80 },
+      emptyTxt: { fontSize: 15, textAlign: 'center', marginBottom: 24 },
+      createBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 24 },
+      createBtnTxt: { color: '#0B0D0B', fontWeight: '800', fontSize: 14 },
+    }));

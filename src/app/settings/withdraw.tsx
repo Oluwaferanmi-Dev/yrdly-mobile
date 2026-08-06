@@ -1,14 +1,16 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert, TextInput, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { G, DARK, GLASS_BORDER, MUTED, LABEL, SURFACE } from '../../constants/tokens';
 
 export default function WithdrawScreen() {
+  const { styles: s, theme } = useStyles(sStylesheet);
+
   const router = useRouter();
   const { user } = useAuth();
 
@@ -76,7 +78,7 @@ export default function WithdrawScreen() {
             <Ionicons name="chevron-back" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={G} /></View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={theme.colors.G} /></View>
       </SafeAreaView>
     );
   }
@@ -93,7 +95,7 @@ export default function WithdrawScreen() {
 
         <ScrollView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 24 }}>
           <View style={{ alignItems: 'center', marginBottom: 24 }}>
-            <Text style={{ fontFamily: 'Inter', fontSize: 13, color: LABEL, marginBottom: 8 }}>You are withdrawing</Text>
+            <Text style={{ fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL, marginBottom: 8 }}>You are withdrawing</Text>
             <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 42, color: '#fff', letterSpacing: -1 }}>₦{numAmount.toLocaleString()}</Text>
           </View>
 
@@ -104,12 +106,15 @@ export default function WithdrawScreen() {
               { l: 'Account Holder', v: bankInfo?.accountName || '' },
               { l: 'Transfer Fee', v: fee === 0 ? 'Free' : `₦${fee}` },
               { l: 'Net Amount', v: `₦${net.toLocaleString()}` },
-            ].map(r => (
-              <View key={r.l} style={s.confirmRow}>
-                <Text style={s.confirmRowL}>{r.l}</Text>
-                <Text style={s.confirmRowR}>{r.v}</Text>
-              </View>
-            ))}
+            ].map(r => {
+            const { styles: s } = useStyles(sStylesheet);
+            return (
+                          <View key={r.l} style={s.confirmRow}>
+                            <Text style={s.confirmRowL}>{r.l}</Text>
+                            <Text style={s.confirmRowR}>{r.v}</Text>
+                          </View>
+                        );
+            })}
           </View>
 
           <View style={s.warningBox}>
@@ -120,7 +125,7 @@ export default function WithdrawScreen() {
 
         <View style={s.footerBtnWrap}>
           <TouchableOpacity style={s.footerBtn} onPress={handleWithdraw} disabled={confirming}>
-            {confirming ? <ActivityIndicator color={DARK} /> : <Text style={s.footerBtnTxt}>Confirm — Withdraw ₦{numAmount.toLocaleString()}</Text>}
+            {confirming ? <ActivityIndicator color={theme.colors.DARK} /> : <Text style={s.footerBtnTxt}>Confirm — Withdraw ₦{numAmount.toLocaleString()}</Text>}
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -140,7 +145,7 @@ export default function WithdrawScreen() {
         
         {/* Balance Badge */}
         <View style={s.availBadge}>
-          <Ionicons name="wallet-outline" size={16} color={G} />
+          <Ionicons name="wallet-outline" size={16} color={theme.colors.G} />
           <Text style={s.availBadgeTxt}>Available balance: <Text style={{ fontFamily: 'Inter-Bold' }}>₦{balance.toLocaleString()}</Text></Text>
         </View>
 
@@ -153,7 +158,7 @@ export default function WithdrawScreen() {
               value={amount}
               onChangeText={v => setAmount(v.replace(/\D/g, ''))}
               placeholder="0"
-              placeholderTextColor={LABEL}
+              placeholderTextColor={theme.colors.LABEL}
               keyboardType="number-pad"
               style={s.amtInput}
             />
@@ -167,7 +172,7 @@ export default function WithdrawScreen() {
                   onPress={() => setAmount(String(v))}
                   style={[s.quickAmtBtn, isSel && { backgroundColor: 'rgba(130,219,126,0.12)', borderColor: 'rgba(130,219,126,0.3)' }]}
                 >
-                  <Text style={[s.quickAmtTxt, isSel && { color: G }]}>₦{(v/1000)}k</Text>
+                  <Text style={[s.quickAmtTxt, isSel && { color: theme.colors.G }]}>₦{(v/1000)}k</Text>
                 </TouchableOpacity>
               );
             })}
@@ -177,7 +182,7 @@ export default function WithdrawScreen() {
         {/* Destination */}
         <View style={s.destCard}>
           <View style={s.destIconBox}>
-            <Ionicons name="business" size={20} color={G} />
+            <Ionicons name="business" size={20} color={theme.colors.G} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={s.destBank}>{bankInfo?.bankName || 'No bank linked'}</Text>
@@ -222,46 +227,46 @@ export default function WithdrawScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+const sStylesheet = createStyleSheet(theme => ({
+      root: { flex: 1, backgroundColor: '#050505' },
+      header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
 
-  availBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', borderRadius: 14, marginBottom: 20 },
-  availBadgeTxt: { fontFamily: 'Inter', fontSize: 13, color: G },
+      availBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', borderRadius: 14, marginBottom: 20 },
+      availBadgeTxt: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.G },
 
-  amtLabel: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: LABEL, marginBottom: 8, letterSpacing: 1 },
-  amtInputBox: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 64, paddingHorizontal: 16, borderRadius: 18, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER },
-  amtNaira: { fontFamily: 'Outfit-Bold', fontSize: 24, color: LABEL },
-  amtInput: { flex: 1, fontFamily: 'Outfit-Bold', fontSize: 28, color: '#fff', height: '100%' },
-  
-  quickAmtsRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
-  quickAmtBtn: { flex: 1, paddingVertical: 8, borderRadius: 10, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center' },
-  quickAmtTxt: { fontFamily: 'Inter', fontSize: 11, color: MUTED },
+      amtLabel: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: theme.colors.LABEL, marginBottom: 8, letterSpacing: 1 },
+      amtInputBox: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 64, paddingHorizontal: 16, borderRadius: 18, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
+      amtNaira: { fontFamily: 'Outfit-Bold', fontSize: 24, color: theme.colors.LABEL },
+      amtInput: { flex: 1, fontFamily: 'Outfit-Bold', fontSize: 28, color: '#fff', height: '100%' },
+      
+      quickAmtsRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
+      quickAmtBtn: { flex: 1, paddingVertical: 8, borderRadius: 10, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center' },
+      quickAmtTxt: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.MUTED },
 
-  destCard: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 18, marginTop: 20 },
-  destIconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.08)', alignItems: 'center', justifyContent: 'center' },
-  destBank: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
-  destUser: { fontFamily: 'Inter', fontSize: 12, color: LABEL },
-  destChange: { fontFamily: 'Inter', fontSize: 12, color: G },
+      destCard: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginTop: 20 },
+      destIconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.08)', alignItems: 'center', justifyContent: 'center' },
+      destBank: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+      destUser: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL },
+      destChange: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.G },
 
-  feeCard: { padding: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 18, marginTop: 20 },
-  feeRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  feeRowL: { fontFamily: 'Inter', fontSize: 13, color: MUTED },
-  feeRowR: { fontFamily: 'Inter', fontSize: 13, color: '#fff' },
-  feeDiv: { height: 1, backgroundColor: GLASS_BORDER, marginVertical: 8 },
-  feeRowNetL: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff' },
-  feeRowNetR: { fontFamily: 'Outfit-Bold', fontSize: 15, color: G },
+      feeCard: { padding: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginTop: 20 },
+      feeRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+      feeRowL: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.MUTED },
+      feeRowR: { fontFamily: 'Inter', fontSize: 13, color: '#fff' },
+      feeDiv: { height: 1, backgroundColor: theme.colors.GLASS_BORDER, marginVertical: 8 },
+      feeRowNetL: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff' },
+      feeRowNetR: { fontFamily: 'Outfit-Bold', fontSize: 15, color: theme.colors.G },
 
-  footerBtnWrap: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 34, borderTopWidth: 1, borderTopColor: GLASS_BORDER },
-  footerBtn: { width: '100%', paddingVertical: 16, borderRadius: 18, backgroundColor: G, alignItems: 'center' },
-  footerBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },
+      footerBtnWrap: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 34, borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER },
+      footerBtn: { width: '100%', paddingVertical: 16, borderRadius: 18, backgroundColor: theme.colors.G, alignItems: 'center' },
+      footerBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
 
-  confirmRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: '#0f0f0f', borderRadius: 16, borderWidth: 1, borderColor: GLASS_BORDER },
-  confirmRowL: { fontFamily: 'Inter', fontSize: 13, color: LABEL },
-  confirmRowR: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+      confirmRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: '#0f0f0f', borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
+      confirmRowL: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL },
+      confirmRowR: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
 
-  warningBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16, backgroundColor: 'rgba(255,183,28,0.05)', borderWidth: 1, borderColor: 'rgba(255,183,28,0.2)', borderRadius: 16 },
-  warningTxt: { flex: 1, fontFamily: 'Inter', fontSize: 13, color: MUTED, lineHeight: 20 },
-});
+      warningBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16, backgroundColor: 'rgba(255,183,28,0.05)', borderWidth: 1, borderColor: 'rgba(255,183,28,0.2)', borderRadius: 16 },
+      warningTxt: { flex: 1, fontFamily: 'Inter', fontSize: 13, color: theme.colors.MUTED, lineHeight: 20 },
+    }));

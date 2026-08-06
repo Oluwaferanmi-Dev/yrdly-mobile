@@ -1,9 +1,9 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
-import { DARK, G, GLASS_BORDER, LABEL, MUTED, SURFACE } from '../../constants/tokens';
 
 interface FAQItem {
   q: string;
@@ -30,6 +30,8 @@ const FAQS: FAQItem[] = [
 ];
 
 function FAQRow({ faq }: { faq: FAQItem }) {
+  const { styles: s, theme } = useStyles(sStylesheet);
+
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -39,7 +41,7 @@ function FAQRow({ faq }: { faq: FAQItem }) {
         <Ionicons
           name={expanded ? 'chevron-up' : 'chevron-down'}
           size={18}
-          color={LABEL}
+          color={theme.colors.LABEL}
         />
       </TouchableOpacity>
       {expanded && (
@@ -52,6 +54,8 @@ function FAQRow({ faq }: { faq: FAQItem }) {
 }
 
 export default function HelpScreen() {
+  const { styles: s, theme } = useStyles(sStylesheet);
+
   const router = useRouter();
 
   const handleContactSupport = () => {
@@ -72,16 +76,18 @@ export default function HelpScreen() {
         <Text style={s.title}>Frequently Asked Questions</Text>
         
         <View style={s.faqCard}>
-          {FAQS.map((faq, idx) => (
-            <React.Fragment key={faq.q}>
-              {idx > 0 && <View style={s.divider} />}
-              <FAQRow faq={faq} />
-            </React.Fragment>
-          ))}
+          {FAQS.map((faq, idx) => {
+            return (
+              <React.Fragment key={faq.q}>
+                {idx > 0 && <View style={s.divider} />}
+                <FAQRow faq={faq} />
+              </React.Fragment>
+            );
+          })}
         </View>
 
         <View style={s.supportCard}>
-          <Feather name="mail" size={22} color={G} style={{ marginBottom: 8 }} />
+          <Feather name="mail" size={22} color={theme.colors.G} style={{ marginBottom: 8 }} />
           <Text style={s.supportTitle}>Still need help?</Text>
           <Text style={s.supportDesc}>
             Our support team is available to assist you with any questions or account issues.
@@ -95,24 +101,24 @@ export default function HelpScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: DARK },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  content: { padding: 20 },
-  title: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff', marginBottom: 16 },
-  faqCard: { backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: GLASS_BORDER, overflow: 'hidden', marginBottom: 24 },
-  faqItem: { width: '100%' },
-  faqHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
-  faqQuestion: { flex: 1, fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff', marginRight: 16 },
-  faqBody: { paddingHorizontal: 16, paddingBottom: 16 },
-  faqAnswer: { fontFamily: 'Inter', fontSize: 13, color: LABEL, lineHeight: 20 },
-  divider: { height: 1, backgroundColor: GLASS_BORDER },
-  
-  supportCard: { backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: GLASS_BORDER, padding: 20, alignItems: 'center' },
-  supportTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff', marginBottom: 4 },
-  supportDesc: { fontFamily: 'Inter', fontSize: 13, color: MUTED, textAlign: 'center', lineHeight: 20, marginBottom: 16 },
-  supportBtn: { height: 44, paddingHorizontal: 24, borderRadius: 22, backgroundColor: G, justifyContent: 'center', alignItems: 'center' },
-  supportBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
-});
+const sStylesheet = createStyleSheet(theme => ({
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
+      header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      content: { padding: 20 },
+      title: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff', marginBottom: 16 },
+      faqCard: { backgroundColor: theme.colors.SURFACE, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, overflow: 'hidden', marginBottom: 24 },
+      faqItem: { width: '100%' },
+      faqHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
+      faqQuestion: { flex: 1, fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff', marginRight: 16 },
+      faqBody: { paddingHorizontal: 16, paddingBottom: 16 },
+      faqAnswer: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL, lineHeight: 20 },
+      divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER },
+      
+      supportCard: { backgroundColor: theme.colors.SURFACE, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, padding: 20, alignItems: 'center' },
+      supportTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff', marginBottom: 4 },
+      supportDesc: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.MUTED, textAlign: 'center', lineHeight: 20, marginBottom: 16 },
+      supportBtn: { height: 44, paddingHorizontal: 24, borderRadius: 22, backgroundColor: theme.colors.G, justifyContent: 'center', alignItems: 'center' },
+      supportBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+    }));

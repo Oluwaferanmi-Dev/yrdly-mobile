@@ -1,5 +1,6 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl, useWindowDimensions } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, RefreshControl, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -12,11 +13,11 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 import Animated, { FadeIn, FadeOut, Layout, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { G, GLASS_BORDER, LABEL, TEXT_PRIMARY, DARK, SURFACE, MUTED } from '../../constants/tokens';
-
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 function PressableCard({ style, onPress, children, activeOpacity = 0.85, ...props }: any) {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -46,6 +47,8 @@ function PressableCard({ style, onPress, children, activeOpacity = 0.85, ...prop
 }
 
 export default function ProfileTab() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const insets = useSafeAreaInsets();
   const { user, profile } = useAuth();
   const router = useRouter();
@@ -167,221 +170,225 @@ export default function ProfileTab() {
     }
   }, [user, router]);
 
-  const listHeader = useMemo(() => (
-    <View style={styles.headerContainer}>
-      
-      {/* ── Nav bar (YRDLY New Designs matching) ── */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 }}>
-        <View style={{ width: 38 }} />
-        <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: '#FFFFFF' }}>Profile</Text>
-        <TouchableOpacity 
-          style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
-          onPress={() => router.push('/settings')}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="settings-outline" size={18} color={MUTED} />
-        </TouchableOpacity>
-      </View>
+  const listHeader = useMemo(() => {
+  return (
+      <View style={stylesheet.headerContainer}>
+        
+        {/* ── Nav bar (YRDLY New Designs matching) ── */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 }}>
+          <View style={{ width: 38 }} />
+          <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: '#FFFFFF' }}>Profile</Text>
+          <TouchableOpacity 
+            style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
+            onPress={() => router.push('/settings')}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="settings-outline" size={18} color={theme.colors.MUTED} />
+          </TouchableOpacity>
+        </View>
 
-      {/* ── Identity Block (Figma New Design matching) ── */}
-      <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 20 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16, marginBottom: 16 }}>
-          {/* Avatar with ring */}
-          <View style={{ position: 'relative' }}>
-            <View style={{ width: 80, height: 80, borderRadius: 40, padding: 3, borderWidth: 2, borderColor: G, justifyContent: 'center', alignItems: 'center' }}>
-              <View style={{ width: '100%', height: '100%', borderRadius: 40, overflow: 'hidden', backgroundColor: DARK }}>
-                {avatarUri ? (
-                  <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
-                ) : (
-                  <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: SURFACE }}>
-                    <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 24, color: G }}>
-                      {profile?.name ? profile.name.charAt(0).toUpperCase() : '?'}
-                    </Text>
-                  </View>
+        {/* ── Identity Block (Figma New Design matching) ── */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 20 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16, marginBottom: 16 }}>
+            {/* Avatar with ring */}
+            <View style={{ position: 'relative' }}>
+              <View style={{ width: 80, height: 80, borderRadius: 40, padding: 3, borderWidth: 2, borderColor: theme.colors.G, justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ width: '100%', height: '100%', borderRadius: 40, overflow: 'hidden', backgroundColor: theme.colors.DARK }}>
+                  {avatarUri ? (
+                    <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+                  ) : (
+                    <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.SURFACE }}>
+                      <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 24, color: theme.colors.G }}>
+                        {profile?.name ? profile.name.charAt(0).toUpperCase() : '?'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+              <TouchableOpacity 
+                onPress={() => router.push('/profile/edit')}
+                style={{ position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: theme.colors.G, borderWidth: 2, borderColor: theme.colors.DARK, justifyContent: 'center', alignItems: 'center' }}
+              >
+                <Ionicons name="camera-outline" size={12} color={theme.colors.DARK} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Name & Handle */}
+            <View style={{ flex: 1, paddingTop: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 20, color: '#FFFFFF' }} numberOfLines={1}>
+                  {profile?.name || user?.user_metadata?.name || 'Anonymous'}
+                </Text>
+                {profile?.phone_verified && (
+                  <MaterialIcons name="verified" size={18} color={theme.colors.G} />
                 )}
               </View>
-            </View>
-            <TouchableOpacity 
-              onPress={() => router.push('/profile/edit')}
-              style={{ position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: G, borderWidth: 2, borderColor: DARK, justifyContent: 'center', alignItems: 'center' }}
-            >
-              <Ionicons name="camera-outline" size={12} color={DARK} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Name & Handle */}
-          <View style={{ flex: 1, paddingTop: 4 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-              <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 20, color: '#FFFFFF' }} numberOfLines={1}>
-                {profile?.name || user?.user_metadata?.name || 'Anonymous'}
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL, marginBottom: 6 }}>
+                @{(profile as any)?.username || (profile as any)?.handle || user?.email?.split('@')[0] || 'user'}
               </Text>
-              {profile?.phone_verified && (
-                <MaterialIcons name="verified" size={18} color={G} />
+              {formattedLocation && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Ionicons name="location-outline" size={13} color={theme.colors.MUTED} />
+                  <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.MUTED }}>{formattedLocation}</Text>
+                </View>
               )}
             </View>
-            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL, marginBottom: 6 }}>
-              @{(profile as any)?.username || (profile as any)?.handle || user?.email?.split('@')[0] || 'user'}
+          </View>
+
+          {!!profile?.bio && (
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: 'rgba(255,255,255,0.68)', lineHeight: 22, marginBottom: 16 }}>
+              {profile.bio}
             </Text>
-            {formattedLocation && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Ionicons name="location-outline" size={13} color={MUTED} />
-                <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: MUTED }}>{formattedLocation}</Text>
+          )}
+
+          <TouchableOpacity 
+            style={{ height: 36, paddingHorizontal: 20, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', alignSelf: 'flex-start' }} 
+            onPress={() => router.push('/profile/edit')}
+            activeOpacity={0.8}
+          >
+            <Text style={{ color: theme.colors.MUTED, fontSize: 13, fontFamily: 'Inter-Medium' }}>Edit Profile</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Stats Bar (New Design 3-Column with border dividers) ── */}
+        <View style={{ flexDirection: 'row', marginHorizontal: 20, marginBottom: 20, borderTopWidth: 1, borderBottomWidth: 1, borderColor: theme.colors.GLASS_BORDER, paddingVertical: 16 }}>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{posts.length}</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginTop: 2 }}>Posts</Text>
+          </View>
+          <View style={{ width: 1, height: '100%', backgroundColor: theme.colors.GLASS_BORDER }} />
+          <TouchableOpacity 
+            style={{ flex: 1, alignItems: 'center' }}
+            onPress={() => router.push(`/network/${user?.id}?mode=followers` as any)}
+          >
+            <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{followersCount}</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginTop: 2 }}>Followers</Text>
+          </TouchableOpacity>
+          <View style={{ width: 1, height: '100%', backgroundColor: theme.colors.GLASS_BORDER }} />
+          <TouchableOpacity 
+            style={{ flex: 1, alignItems: 'center' }}
+            onPress={() => router.push(`/network/${user?.id}?mode=following` as any)}
+          >
+            <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{followingCount}</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginTop: 2 }}>Following</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Quick Access 2x2 Grid (Figma 1:1) ── */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+          <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>QUICK ACCESS</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+            <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/community')}>
+              <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.G + '15', borderWidth: 1, borderColor: theme.colors.G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+                <Ionicons name="people-outline" size={18} color={theme.colors.G} />
               </View>
-            )}
+              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 }}>Community</Text>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL }}>Connections & people</Text>
+            </PressableCard>
+
+            <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/tickets')}>
+              <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.G + '15', borderWidth: 1, borderColor: theme.colors.G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+                <MaterialCommunityIcons name="ticket-outline" size={18} color={theme.colors.G} />
+              </View>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 }}>Tickets</Text>
+            </PressableCard>
+
+            <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/my-events' as any)}>
+              <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.G + '15', borderWidth: 1, borderColor: theme.colors.G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+                <Ionicons name="calendar-outline" size={18} color={theme.colors.G} />
+              </View>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 }}>My Events</Text>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL }}>Events you run</Text>
+            </PressableCard>
+
+            <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={handleManageStore}>
+              <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.G + '15', borderWidth: 1, borderColor: theme.colors.G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+                <Ionicons name="storefront-outline" size={18} color={theme.colors.G} />
+              </View>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 }}>My Business</Text>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL }}>Business presence</Text>
+            </PressableCard>
           </View>
         </View>
 
-        {!!profile?.bio && (
-          <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: 'rgba(255,255,255,0.68)', lineHeight: 22, marginBottom: 16 }}>
-            {profile.bio}
-          </Text>
-        )}
+        {/* ── Subtly underlined Posts / Saved Tabs (Figma 1:1) ── */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 24, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, paddingBottom: 10 }}>
+            <TouchableOpacity 
+              onPress={() => {
+                Haptics.selectionAsync();
+                setActiveTab('posts');
+              }}
+              style={{ position: 'relative', paddingBottom: 6 }}
+            >
+              <Text style={{ fontFamily: activeTab === 'posts' ? 'Outfit-Bold' : 'Outfit-Medium', fontSize: 14, color: activeTab === 'posts' ? '#FFFFFF' : theme.colors.LABEL }}>
+                Posts
+              </Text>
+              {activeTab === 'posts' && (
+                <View style={{ position: 'absolute', bottom: -11, left: 0, right: 0, height: 2, backgroundColor: theme.colors.G, borderRadius: 1 }} />
+              )}
+            </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={{ height: 36, paddingHorizontal: 20, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', alignSelf: 'flex-start' }} 
-          onPress={() => router.push('/profile/edit')}
-          activeOpacity={0.8}
-        >
-          <Text style={{ color: MUTED, fontSize: 13, fontFamily: 'Inter-Medium' }}>Edit Profile</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* ── Stats Bar (New Design 3-Column with border dividers) ── */}
-      <View style={{ flexDirection: 'row', marginHorizontal: 20, marginBottom: 20, borderTopWidth: 1, borderBottomWidth: 1, borderColor: GLASS_BORDER, paddingVertical: 16 }}>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{posts.length}</Text>
-          <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 }}>Posts</Text>
+            <TouchableOpacity 
+              onPress={() => {
+                Haptics.selectionAsync();
+                setActiveTab('saved');
+              }}
+              style={{ position: 'relative', paddingBottom: 6 }}
+            >
+              <Text style={{ fontFamily: activeTab === 'saved' ? 'Outfit-Bold' : 'Outfit-Medium', fontSize: 14, color: activeTab === 'saved' ? '#FFFFFF' : theme.colors.LABEL }}>
+                Saved
+              </Text>
+              {activeTab === 'saved' && (
+                <View style={{ position: 'absolute', bottom: -11, left: 0, right: 0, height: 2, backgroundColor: theme.colors.G, borderRadius: 1 }} />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={{ width: 1, height: '100%', backgroundColor: GLASS_BORDER }} />
-        <TouchableOpacity 
-          style={{ flex: 1, alignItems: 'center' }}
-          onPress={() => router.push(`/network/${user?.id}?mode=followers` as any)}
-        >
-          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{followersCount}</Text>
-          <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 }}>Followers</Text>
-        </TouchableOpacity>
-        <View style={{ width: 1, height: '100%', backgroundColor: GLASS_BORDER }} />
-        <TouchableOpacity 
-          style={{ flex: 1, alignItems: 'center' }}
-          onPress={() => router.push(`/network/${user?.id}?mode=following` as any)}
-        >
-          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{followingCount}</Text>
-          <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 }}>Following</Text>
-        </TouchableOpacity>
+
       </View>
-
-      {/* ── Quick Access 2x2 Grid (Figma 1:1) ── */}
-      <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
-        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>QUICK ACCESS</Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-          <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/community')}>
-            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
-              <Ionicons name="people-outline" size={18} color={G} />
-            </View>
-            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Community</Text>
-            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: LABEL }}>Connections & people</Text>
-          </PressableCard>
-
-          <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/tickets')}>
-            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
-              <MaterialCommunityIcons name="ticket-outline" size={18} color={G} />
-            </View>
-            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>Tickets</Text>
-          </PressableCard>
-
-          <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/my-events' as any)}>
-            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
-              <Ionicons name="calendar-outline" size={18} color={G} />
-            </View>
-            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>My Events</Text>
-            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: LABEL }}>Events you run</Text>
-          </PressableCard>
-
-          <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={handleManageStore}>
-            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: G + '15', borderWidth: 1, borderColor: G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
-              <Ionicons name="storefront-outline" size={18} color={G} />
-            </View>
-            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: TEXT_PRIMARY, marginBottom: 2 }}>My Business</Text>
-            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: LABEL }}>Business presence</Text>
-          </PressableCard>
-        </View>
-      </View>
-
-      {/* ── Subtly underlined Posts / Saved Tabs (Figma 1:1) ── */}
-      <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
-        <View style={{ flexDirection: 'row', gap: 24, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, paddingBottom: 10 }}>
-          <TouchableOpacity 
-            onPress={() => {
-              Haptics.selectionAsync();
-              setActiveTab('posts');
-            }}
-            style={{ position: 'relative', paddingBottom: 6 }}
-          >
-            <Text style={{ fontFamily: activeTab === 'posts' ? 'Outfit-Bold' : 'Outfit-Medium', fontSize: 14, color: activeTab === 'posts' ? '#FFFFFF' : LABEL }}>
-              Posts
-            </Text>
-            {activeTab === 'posts' && (
-              <View style={{ position: 'absolute', bottom: -11, left: 0, right: 0, height: 2, backgroundColor: G, borderRadius: 1 }} />
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => {
-              Haptics.selectionAsync();
-              setActiveTab('saved');
-            }}
-            style={{ position: 'relative', paddingBottom: 6 }}
-          >
-            <Text style={{ fontFamily: activeTab === 'saved' ? 'Outfit-Bold' : 'Outfit-Medium', fontSize: 14, color: activeTab === 'saved' ? '#FFFFFF' : LABEL }}>
-              Saved
-            </Text>
-            {activeTab === 'saved' && (
-              <View style={{ position: 'absolute', bottom: -11, left: 0, right: 0, height: 2, backgroundColor: G, borderRadius: 1 }} />
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-    </View>
-  ), [avatarUri, profile, user, posts.length, followersCount, followingCount, formattedLocation, handleManageStore, router, activeTab]);
+    );
+  }, [avatarUri, profile, user, posts.length, followersCount, followingCount, formattedLocation, handleManageStore, router, activeTab]);
 
   const activeData = activeTab === 'posts' ? posts : savedPosts;
   const isLoading = activeTab === 'posts' ? loadingPosts : loadingSaved;
 
   return (
-    <View style={{ flex: 1, backgroundColor: DARK, paddingTop: insets.top }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.DARK, paddingTop: insets.top }}>
       <FlatList
         key={numColumns}
         data={activeData}
         keyExtractor={(item) => item.id}
         numColumns={numColumns}
         ListHeaderComponent={listHeader}
-        renderItem={({ item }) => (
-          <Animated.View layout={Layout.springify()} entering={FadeIn} exiting={FadeOut}>
-            <ProfilePostGridItem 
-              post={item} 
-              width={GRID_ITEM_WIDTH}
-              onPress={() => {
-                if (item.category === 'For Sale') {
-                  router.push(`/marketplace/${item.id}`);
-                } else if (item.category === 'Event' && item.event_link) {
-                  const cleanLink = item.event_link.split('?')[0];
-                  const parts = cleanLink.split('/');
-                  const eventId = parts.pop() || parts.pop();
-                  if (eventId) {
-                    router.push(`/events/${eventId}`);
-                  } else {
-                    router.push(`/posts/${item.id}`);
-                  }
-                } else {
-                  router.push(`/posts/${item.id}`);
-                }
-              }}
-            />
-          </Animated.View>
-        )}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={G} />}
-        contentContainerStyle={styles.listContent}
+        renderItem={({ item }) => {
+        return (
+                  <Animated.View layout={Layout.springify()} entering={FadeIn} exiting={FadeOut}>
+                    <ProfilePostGridItem 
+                      post={item} 
+                      width={GRID_ITEM_WIDTH}
+                      onPress={() => {
+                        if (item.category === 'For Sale') {
+                          router.push(`/marketplace/${item.id}`);
+                        } else if (item.category === 'Event' && item.event_link) {
+                          const cleanLink = item.event_link.split('?')[0];
+                          const parts = cleanLink.split('/');
+                          const eventId = parts.pop() || parts.pop();
+                          if (eventId) {
+                            router.push(`/events/${eventId}`);
+                          } else {
+                            router.push(`/posts/${item.id}`);
+                          }
+                        } else {
+                          router.push(`/posts/${item.id}`);
+                        }
+                      }}
+                    />
+                  </Animated.View>
+                );
+        }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.G} />}
+        contentContainerStyle={stylesheet.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           isLoading && !refreshing ? (
@@ -389,15 +396,15 @@ export default function ProfileTab() {
               <PostSkeleton />
             </View>
           ) : (
-            <Animated.View entering={FadeIn} style={styles.emptyContainer}>
+            <Animated.View entering={FadeIn} style={stylesheet.emptyContainer}>
               <Ionicons name="images-outline" size={56} color="#333" style={{ marginBottom: 16 }} />
-              <Text style={styles.emptyHeadline}>No posts yet</Text>
-              <Text style={styles.emptySub}>Share something with your neighbourhood.</Text>
+              <Text style={stylesheet.emptyHeadline}>No posts yet</Text>
+              <Text style={stylesheet.emptySub}>Share something with your neighbourhood.</Text>
               <TouchableOpacity 
-                style={styles.createBtn}
+                style={stylesheet.createBtn}
                 onPress={() => router.push('/create-post' as any)}
               >
-                <Text style={styles.createBtnText}>Create Post</Text>
+                <Text style={stylesheet.createBtnText}>Create Post</Text>
               </TouchableOpacity>
             </Animated.View>
           )
@@ -407,40 +414,40 @@ export default function ProfileTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  headerContainer: {
-    backgroundColor: DARK,
-  },
-  listContent: {
-    paddingBottom: 90,
-  },
-  emptyContainer: {
-    padding: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyHeadline: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 18,
-    color: TEXT_PRIMARY,
-    marginBottom: 6,
-  },
-  emptySub: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    color: MUTED,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  createBtn: {
-    backgroundColor: G,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 20,
-  },
-  createBtnText: {
-    fontFamily: 'Outfit-Bold',
-    fontSize: 14,
-    color: DARK,
-  },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      headerContainer: {
+        backgroundColor: theme.colors.DARK,
+      },
+      listContent: {
+        paddingBottom: 90,
+      },
+      emptyContainer: {
+        padding: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      emptyHeadline: {
+        fontFamily: 'Outfit-Bold',
+        fontSize: 18,
+        color: theme.colors.TEXT_PRIMARY,
+        marginBottom: 6,
+      },
+      emptySub: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 14,
+        color: theme.colors.MUTED,
+        textAlign: 'center',
+        marginBottom: 20,
+      },
+      createBtn: {
+        backgroundColor: theme.colors.G,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 20,
+      },
+      createBtnText: {
+        fontFamily: 'Outfit-Bold',
+        fontSize: 14,
+        color: theme.colors.DARK,
+      },
+    }));

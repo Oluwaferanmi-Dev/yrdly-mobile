@@ -1,11 +1,11 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Dimensions, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { G, DARK, SURFACE, GLASS_BORDER, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 import * as Haptics from 'expo-haptics';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
 import { supabase } from '../lib/supabase';
@@ -19,6 +19,8 @@ const CATEGORIES = ['Fashion', 'Electronics', 'Home & Living', 'Vehicles', 'Food
 const CONDITIONS = ['New', 'Used – Like New', 'Used – Good', 'Fair'];
 
 export default function CreateForSaleScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, profile } = useAuth();
@@ -157,20 +159,20 @@ export default function CreateForSaleScreen() {
 
   if (listed) {
     return (
-      <View style={[styles.successContainer, { backgroundColor: DARK }]}>
-        <View style={styles.successIcon}>
-          <Feather name="check" size={34} color={G} />
+      <View style={[stylesheet.successContainer, { backgroundColor: theme.colors.DARK }]}>
+        <View style={stylesheet.successIcon}>
+          <Feather name="check" size={34} color={theme.colors.G} />
         </View>
-        <Text style={styles.successTitle}>Item Listed!</Text>
-        <Text style={styles.successDesc}>Your listing is now live in the neighbourhood marketplace.</Text>
+        <Text style={stylesheet.successTitle}>Item Listed!</Text>
+        <Text style={stylesheet.successDesc}>Your listing is now live in the neighbourhood marketplace.</Text>
         <TouchableOpacity 
-          style={styles.btnPrimary}
+          style={stylesheet.btnPrimary}
           onPress={() => router.replace('/(tabs)/catalog')}
         >
-          <Text style={styles.btnPrimaryText}>View Marketplace</Text>
+          <Text style={stylesheet.btnPrimaryText}>View Marketplace</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
-          <Text style={styles.btnText}>Back to Feed</Text>
+          <Text style={stylesheet.btnText}>Back to Feed</Text>
         </TouchableOpacity>
       </View>
     );
@@ -178,107 +180,107 @@ export default function CreateForSaleScreen() {
 
   return (
     <KeyboardAvoidingView 
-      style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}
+      style={[stylesheet.container, { backgroundColor: theme.colors.DARK, paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+      <View style={stylesheet.header}>
+        <TouchableOpacity onPress={handleBack} style={stylesheet.backBtn}>
           <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>Item for Sale</Text>
-          <Text style={styles.headerSubtitle}>Step {step + 1} of {STEPS.length} · {STEPS[step]}</Text>
+        <View style={stylesheet.headerTextContainer}>
+          <Text style={stylesheet.headerTitle}>Item for Sale</Text>
+          <Text style={stylesheet.headerSubtitle}>Step {step + 1} of {STEPS.length} · {STEPS[step]}</Text>
         </View>
       </View>
 
-      <View style={styles.progressBarBg}>
-        <Animated.View style={[styles.progressBarFill, animatedProgressStyle]} />
+      <View style={stylesheet.progressBarBg}>
+        <Animated.View style={[stylesheet.progressBarFill, animatedProgressStyle]} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={stylesheet.scrollContent} keyboardShouldPersistTaps="handled">
         {step === 0 && (
           <View>
-            <Text style={styles.stepTitle}>Add Photos</Text>
-            <Text style={styles.stepDesc}>First photo becomes your listing cover.</Text>
-            <View style={styles.photosGrid}>
+            <Text style={stylesheet.stepTitle}>Add Photos</Text>
+            <Text style={stylesheet.stepDesc}>First photo becomes your listing cover.</Text>
+            <View style={stylesheet.photosGrid}>
               {attachedFiles.map((file, i) => (
-                <View key={i} style={[styles.photoBox, i === 0 && { borderWidth: 2, borderColor: G }]}>
-                  <Image source={{ uri: file.uri }} style={styles.photoImg} />
+                <View key={i} style={[stylesheet.photoBox, i === 0 && { borderWidth: 2, borderColor: theme.colors.G }]}>
+                  <Image source={{ uri: file.uri }} style={stylesheet.photoImg} />
                   {i === 0 && (
-                    <View style={styles.coverBadge}>
-                      <Text style={styles.coverBadgeText}>COVER</Text>
+                    <View style={stylesheet.coverBadge}>
+                      <Text style={stylesheet.coverBadgeText}>COVER</Text>
                     </View>
                   )}
                   <TouchableOpacity 
-                    style={styles.removePhoto}
+                    style={stylesheet.removePhoto}
                     onPress={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))}
                   >
                     <Ionicons name="close-circle" size={18} color="#fff" />
                   </TouchableOpacity>
                 </View>
               ))}
-              <TouchableOpacity style={styles.addPhotoBox} onPress={pickImages}>
-                <Feather name="camera" size={24} color={LABEL} />
+              <TouchableOpacity style={stylesheet.addPhotoBox} onPress={pickImages}>
+                <Feather name="camera" size={24} color={theme.colors.LABEL} />
               </TouchableOpacity>
             </View>
           </View>
         )}
 
         {step === 1 && (
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Title</Text>
+          <View style={stylesheet.formGroup}>
+            <Text style={stylesheet.label}>Title</Text>
             <TextInput
-              style={styles.input}
+              style={stylesheet.input}
               placeholder="e.g. Nike Air Max 90, Blue"
-              placeholderTextColor={MUTED}
+              placeholderTextColor={theme.colors.MUTED}
               value={title}
               onChangeText={setTitle}
             />
 
-            <Text style={styles.label}>Price (₦)</Text>
+            <Text style={stylesheet.label}>Price (₦)</Text>
             <TextInput
-              style={[styles.input, { fontFamily: 'Outfit-Bold', fontSize: 18 }]}
+              style={[stylesheet.input, { fontFamily: 'Outfit-Bold', fontSize: 18 }]}
               placeholder="₦ 0"
-              placeholderTextColor={MUTED}
+              placeholderTextColor={theme.colors.MUTED}
               keyboardType="numeric"
               value={price}
               onChangeText={setPrice}
             />
 
-            <Text style={styles.label}>Category</Text>
-            <View style={styles.chipGrid}>
+            <Text style={stylesheet.label}>Category</Text>
+            <View style={stylesheet.chipGrid}>
               {CATEGORIES.map(cat => (
                 <TouchableOpacity
                   key={cat}
-                  style={[styles.chip, category === cat && styles.chipActive]}
+                  style={[stylesheet.chip, category === cat && stylesheet.chipActive]}
                   onPress={() => setCategory(cat)}
                 >
-                  <Text style={[styles.chipText, category === cat && styles.chipTextActive]}>{cat}</Text>
+                  <Text style={[stylesheet.chipText, category === cat && stylesheet.chipTextActive]}>{cat}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text style={styles.label}>Condition</Text>
-            <View style={styles.conditionList}>
+            <Text style={stylesheet.label}>Condition</Text>
+            <View style={stylesheet.conditionList}>
               {CONDITIONS.map(cond => (
                 <TouchableOpacity
                   key={cond}
-                  style={[styles.conditionRow, condition === cond && styles.conditionRowActive]}
+                  style={[stylesheet.conditionRow, condition === cond && stylesheet.conditionRowActive]}
                   onPress={() => setCondition(cond)}
                 >
-                  <View style={[styles.radioCircle, condition === cond && styles.radioCircleActive]}>
-                    {condition === cond && <View style={styles.radioDot} />}
+                  <View style={[stylesheet.radioCircle, condition === cond && stylesheet.radioCircleActive]}>
+                    {condition === cond && <View style={stylesheet.radioDot} />}
                   </View>
-                  <Text style={[styles.conditionText, condition === cond && styles.conditionTextActive]}>{cond}</Text>
+                  <Text style={[stylesheet.conditionText, condition === cond && stylesheet.conditionTextActive]}>{cond}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text style={styles.label}>Location</Text>
+            <Text style={stylesheet.label}>Location</Text>
             <TextInput
-              style={styles.input}
+              style={stylesheet.input}
               placeholder="e.g. Lekki Phase 1, Lagos"
-              placeholderTextColor={MUTED}
+              placeholderTextColor={theme.colors.MUTED}
               value={location}
               onChangeText={setLocation}
             />
@@ -286,14 +288,14 @@ export default function CreateForSaleScreen() {
         )}
 
         {step === 2 && (
-          <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Description</Text>
-            <Text style={styles.stepDesc}>Describe condition, size, features, and pickup info.</Text>
+          <View style={stylesheet.formGroup}>
+            <Text style={stylesheet.stepTitle}>Description</Text>
+            <Text style={stylesheet.stepDesc}>Describe condition, size, features, and pickup info.</Text>
             
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[stylesheet.input, stylesheet.textArea]}
               placeholder="Write a clear description..."
-              placeholderTextColor={MUTED}
+              placeholderTextColor={theme.colors.MUTED}
               multiline
               numberOfLines={6}
               textAlignVertical="top"
@@ -304,11 +306,11 @@ export default function CreateForSaleScreen() {
         )}
 
         {step === 3 && (
-          <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Review & Publish</Text>
-            <Text style={styles.stepDesc}>Make sure everything looks accurate before posting.</Text>
+          <View style={stylesheet.formGroup}>
+            <Text style={stylesheet.stepTitle}>Review & Publish</Text>
+            <Text style={stylesheet.stepDesc}>Make sure everything looks accurate before posting.</Text>
             
-            <View style={{ marginTop: 10, borderRadius: 20, overflow: 'hidden', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
+            <View style={{ marginTop: 10, borderRadius: 20, overflow: 'hidden', backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}>
               {attachedFiles.length > 0 ? (
                 <ImageCarousel 
                   imageUrls={attachedFiles.map(f => f.uri)} 
@@ -316,20 +318,20 @@ export default function CreateForSaleScreen() {
                   autoPlay={false} 
                 />
               ) : (
-                <View style={[styles.placeholderImage, { backgroundColor: 'rgba(0,0,0,0.2)', height: 300, justifyContent: 'center', alignItems: 'center' }]}>
-                  <Feather name="image" size={64} color={LABEL} />
+                <View style={{ backgroundColor: 'rgba(0,0,0,0.2)', height: 300, justifyContent: 'center', alignItems: 'center' }}>
+                  <Feather name="image" size={64} color={theme.colors.LABEL} />
                 </View>
               )}
               
               <View style={{ padding: 16 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                  <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 24, color: TEXT_PRIMARY, flex: 1, paddingRight: 12 }}>{title.trim() || 'Untitled Item'}</Text>
+                  <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 24, color: theme.colors.TEXT_PRIMARY, flex: 1, paddingRight: 12 }}>{title.trim() || 'Untitled Item'}</Text>
                   <View style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
                     <Text style={{ color: '#F59E0B', fontSize: 10, fontFamily: 'Inter-Bold', textTransform: 'uppercase' }}>Preview</Text>
                   </View>
                 </View>
 
-                <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 28, color: G, marginBottom: 16 }}>
+                <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 28, color: theme.colors.G, marginBottom: 16 }}>
                   ₦{price || '0'}
                 </Text>
 
@@ -343,15 +345,15 @@ export default function CreateForSaleScreen() {
                 </View>
 
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 12 }}>
-                  <Feather name="map-pin" size={16} color={LABEL} />
-                  <Text style={{ fontFamily: 'Inter-Regular', color: LABEL, fontSize: 14 }}>
+                  <Feather name="map-pin" size={16} color={theme.colors.LABEL} />
+                  <Text style={{ fontFamily: 'Inter-Regular', color: theme.colors.LABEL, fontSize: 14 }}>
                     {profile?.location?.lga || 'TBA'}, {profile?.location?.state || 'TBA'}
                   </Text>
                 </View>
 
                 {desc.trim().length > 0 && (
                   <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' }}>
-                    <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 8 }}>Description</Text>
+                    <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: theme.colors.TEXT_PRIMARY, marginBottom: 8 }}>Description</Text>
                     <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#aaa', lineHeight: 22 }}>
                       {desc.trim()}
                     </Text>
@@ -363,16 +365,16 @@ export default function CreateForSaleScreen() {
         )}
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+      <View style={[stylesheet.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <TouchableOpacity
-          style={[styles.btnPrimary, !canNext && styles.btnDisabled]}
+          style={[stylesheet.btnPrimary, !canNext && stylesheet.btnDisabled]}
           disabled={!canNext || listing}
           onPress={handleNext}
         >
           {listing ? (
-            <ActivityIndicator size="small" color={DARK} />
+            <ActivityIndicator size="small" color={theme.colors.DARK} />
           ) : (
-            <Text style={styles.btnPrimaryText}>
+            <Text style={stylesheet.btnPrimaryText}>
               {step === STEPS.length - 1 ? 'Publish Listing' : 'Continue'}
             </Text>
           )}
@@ -382,262 +384,262 @@ export default function CreateForSaleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTextContainer: { flex: 1 },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  headerSubtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL },
-  progressBarBg: {
-    height: 3,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    marginHorizontal: 20,
-    marginTop: 14,
-    borderRadius: 2,
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: G,
-    borderRadius: 2,
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 17, color: '#fff', marginBottom: 4 },
-  stepDesc: { fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL, marginBottom: 20 },
-  photosGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  photoBox: {
-    width: (Dimensions.get('window').width - 40 - 16) / 3,
-    aspectRatio: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  photoImg: { width: '100%', height: '100%' },
-  coverBadge: {
-    position: 'absolute',
-    bottom: 5,
-    alignSelf: 'center',
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    backgroundColor: G,
-  },
-  coverBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 9, color: DARK },
-  removePhoto: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-  },
-  addPhotoBox: {
-    width: (Dimensions.get('window').width - 40 - 16) / 3,
-    aspectRatio: 1,
-    borderRadius: 16,
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  formGroup: { gap: 12 },
-  label: { 
-    fontFamily: 'Inter-SemiBold', 
-    fontSize: 12, 
-    color: LABEL, 
-    marginBottom: 8, 
-    marginTop: 8,
-    textTransform: 'uppercase', 
-    letterSpacing: 0.96 
-  },
-  input: {
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontFamily: 'Inter-Regular',
-    fontSize: 15,
-    color: '#fff',
-  },
-  textArea: {
-    height: 120,
-    textAlignVertical: 'top',
-  },
-  chipGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 12,
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-  },
-  chipActive: {
-    backgroundColor: 'rgba(130,219,126,0.15)',
-    borderColor: 'rgba(130,219,126,0.35)',
-  },
-  chipText: { fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED },
-  chipTextActive: { color: G },
-  conditionList: {
-    gap: 8,
-  },
-  conditionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 14,
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-  },
-  conditionRowActive: {
-    backgroundColor: 'rgba(130,219,126,0.08)',
-    borderColor: 'rgba(130,219,126,0.25)',
-  },
-  radioCircle: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 2,
-    borderColor: GLASS_BORDER,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  radioCircleActive: {
-    borderColor: G,
-  },
-  radioDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: G,
-  },
-  conditionText: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED },
-  conditionTextActive: { color: '#fff' },
-  reviewCard: {
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    borderRadius: 20,
-    overflow: 'hidden',
-    marginBottom: 20,
-  },
-  reviewImage: {
-    width: '100%',
-    height: 200,
-  },
-  reviewContent: {
-    padding: 16,
-    gap: 8,
-  },
-  reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff' },
-  reviewPrice: { fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: G },
-  reviewMetaRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-  },
-  reviewBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  reviewBadgeText: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 12,
-    color: '#ccc',
-  },
-  reviewLocationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
-  },
-  reviewLocationText: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    color: MUTED,
-  },
-  reviewDescBox: {
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-  },
-  reviewDescText: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    color: '#aaa',
-    lineHeight: 20,
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: GLASS_BORDER,
-    backgroundColor: DARK,
-  },
-  btnPrimary: {
-    backgroundColor: G,
-    paddingVertical: 14,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnDisabled: { opacity: 0.4 },
-  btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },
-  btnText: { fontFamily: 'Inter-Medium', fontSize: 14, color: LABEL, textAlign: 'center', marginTop: 12 },
-  successContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-    gap: 16,
-  },
-  successIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 24,
-    backgroundColor: 'rgba(130,219,126,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(130,219,126,0.25)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: '#fff', textAlign: 'center' },
-  successDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED, textAlign: 'center', lineHeight: 22 },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        gap: 12,
+      },
+      backBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      headerTextContainer: { flex: 1 },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerSubtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL },
+      progressBarBg: {
+        height: 3,
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        marginHorizontal: 20,
+        marginTop: 14,
+        borderRadius: 2,
+      },
+      progressBarFill: {
+        height: '100%',
+        backgroundColor: theme.colors.G,
+        borderRadius: 2,
+      },
+      scrollContent: {
+        padding: 20,
+        paddingBottom: 40,
+      },
+      stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 17, color: '#fff', marginBottom: 4 },
+      stepDesc: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL, marginBottom: 20 },
+      photosGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+      },
+      photoBox: {
+        width: (Dimensions.get('window').width - 40 - 16) / 3,
+        aspectRatio: 1,
+        borderRadius: 16,
+        overflow: 'hidden',
+        position: 'relative',
+        borderWidth: 2,
+        borderColor: 'transparent',
+      },
+      photoImg: { width: '100%', height: '100%' },
+      coverBadge: {
+        position: 'absolute',
+        bottom: 5,
+        alignSelf: 'center',
+        paddingVertical: 2,
+        paddingHorizontal: 8,
+        borderRadius: 6,
+        backgroundColor: theme.colors.G,
+      },
+      coverBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 9, color: theme.colors.DARK },
+      removePhoto: {
+        position: 'absolute',
+        top: 6,
+        right: 6,
+      },
+      addPhotoBox: {
+        width: (Dimensions.get('window').width - 40 - 16) / 3,
+        aspectRatio: 1,
+        borderRadius: 16,
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+        borderStyle: 'dashed',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      formGroup: { gap: 12 },
+      label: { 
+        fontFamily: 'Inter-SemiBold', 
+        fontSize: 12, 
+        color: theme.colors.LABEL, 
+        marginBottom: 8, 
+        marginTop: 8,
+        textTransform: 'uppercase', 
+        letterSpacing: 0.96 
+      },
+      input: {
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        fontFamily: 'Inter-Regular',
+        fontSize: 15,
+        color: '#fff',
+      },
+      textArea: {
+        height: 120,
+        textAlignVertical: 'top',
+      },
+      chipGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+      },
+      chip: {
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 12,
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      chipActive: {
+        backgroundColor: 'rgba(130,219,126,0.15)',
+        borderColor: 'rgba(130,219,126,0.35)',
+      },
+      chipText: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.MUTED },
+      chipTextActive: { color: theme.colors.G },
+      conditionList: {
+        gap: 8,
+      },
+      conditionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderRadius: 14,
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      conditionRowActive: {
+        backgroundColor: 'rgba(130,219,126,0.08)',
+        borderColor: 'rgba(130,219,126,0.25)',
+      },
+      radioCircle: {
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        borderWidth: 2,
+        borderColor: theme.colors.GLASS_BORDER,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      radioCircleActive: {
+        borderColor: theme.colors.G,
+      },
+      radioDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: theme.colors.G,
+      },
+      conditionText: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED },
+      conditionTextActive: { color: '#fff' },
+      reviewCard: {
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginBottom: 20,
+      },
+      reviewImage: {
+        width: '100%',
+        height: 200,
+      },
+      reviewContent: {
+        padding: 16,
+        gap: 8,
+      },
+      reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff' },
+      reviewPrice: { fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: theme.colors.G },
+      reviewMetaRow: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 4,
+      },
+      reviewBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+      },
+      reviewBadgeText: {
+        fontFamily: 'Inter-Medium',
+        fontSize: 12,
+        color: '#ccc',
+      },
+      reviewLocationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 4,
+      },
+      reviewLocationText: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 14,
+        color: theme.colors.MUTED,
+      },
+      reviewDescBox: {
+        marginTop: 12,
+        padding: 12,
+        borderRadius: 12,
+        backgroundColor: 'rgba(0,0,0,0.2)',
+      },
+      reviewDescText: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 14,
+        color: '#aaa',
+        lineHeight: 20,
+      },
+      footer: {
+        paddingHorizontal: 20,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: theme.colors.GLASS_BORDER,
+        backgroundColor: theme.colors.DARK,
+      },
+      btnPrimary: {
+        backgroundColor: theme.colors.G,
+        paddingVertical: 14,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      btnDisabled: { opacity: 0.4 },
+      btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      btnText: { fontFamily: 'Inter-Medium', fontSize: 14, color: theme.colors.LABEL, textAlign: 'center', marginTop: 12 },
+      successContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 32,
+        gap: 16,
+      },
+      successIcon: {
+        width: 72,
+        height: 72,
+        borderRadius: 24,
+        backgroundColor: 'rgba(130,219,126,0.12)',
+        borderWidth: 1,
+        borderColor: 'rgba(130,219,126,0.25)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: '#fff', textAlign: 'center' },
+      successDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center', lineHeight: 22 },
+    }));

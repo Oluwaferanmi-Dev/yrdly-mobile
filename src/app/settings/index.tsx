@@ -1,13 +1,14 @@
+import { createStyleSheet, useStyles, UnistylesRuntime } from "react-native-unistyles";
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/use-supabase-auth';
 
-import { G, DARK, GLASS_BORDER, MUTED, LABEL, SURFACE } from '../../constants/tokens';
-
 function SettingSection({ title, children }: { title: string, children: React.ReactNode }) {
+  const { styles: s } = useStyles(sStylesheet);
+
   return (
     <View style={s.section}>
       <Text style={s.sectionTitle}>{title}</Text>
@@ -19,6 +20,7 @@ function SettingSection({ title, children }: { title: string, children: React.Re
 }
 
 function SettingDivider() {
+  const { styles: s } = useStyles(sStylesheet);
   return <View style={s.divider} />;
 }
 
@@ -27,6 +29,8 @@ function SettingRow({
 }: { 
   icon: React.ReactNode; label: string; sub?: string; value?: string; danger?: boolean; toggle?: boolean; toggled?: boolean; onToggle?: (v: boolean) => void; chevron?: boolean; onPress?: () => void 
 }) {
+  const { styles: s, theme } = useStyles(sStylesheet);
+
   return (
     <TouchableOpacity style={s.row} onPress={onPress} disabled={!onPress && !toggle}>
       <View style={[s.iconBox, danger && { backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.2)' }]}>
@@ -41,19 +45,26 @@ function SettingRow({
         <Switch 
           value={toggled} 
           onValueChange={onToggle} 
-          trackColor={{ false: 'rgba(255,255,255,0.1)', true: G }} 
+          trackColor={{ false: 'rgba(255,255,255,0.1)', true: theme.colors.G }} 
           thumbColor="#fff" 
         />
       )}
-      {!toggle && chevron && <Feather name="chevron-right" size={18} color={LABEL} style={{ marginLeft: 8 }} />}
+      {!toggle && chevron && <Feather name="chevron-right" size={18} color={theme.colors.LABEL} style={{ marginLeft: 8 }} />}
     </TouchableOpacity>
   );
 }
 
 export default function SettingsScreen() {
+  const { styles: s, theme } = useStyles(sStylesheet);
+
   const router = useRouter();
   const { user, profile, signOut } = useAuth();
-  const [isDarkMode, setIsDarkMode] = React.useState(true);
+  
+  const isDarkMode = UnistylesRuntime.themeName === 'dark';
+  
+  const toggleDarkMode = (value: boolean) => {
+    UnistylesRuntime.setTheme(value ? 'dark' : 'light');
+  };
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -149,7 +160,7 @@ export default function SettingsScreen() {
           <SettingRow 
             icon={<Feather name="moon" size={16} color="#fff" />} 
             label="Dark Mode" sub="Keep it easy on your eyes" 
-            toggle toggled={isDarkMode} onToggle={setIsDarkMode} chevron={false} 
+            toggle toggled={isDarkMode} onToggle={toggleDarkMode} chevron={false} 
           />
         </SettingSection>
 
@@ -184,7 +195,7 @@ export default function SettingsScreen() {
           <View style={{ marginBottom: 24 }}>
             <View style={s.adminBanner}>
               <View style={s.adminBannerIcon}>
-                <Ionicons name="shield-checkmark" size={16} color={G} />
+                <Ionicons name="shield-checkmark" size={16} color={theme.colors.G} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.adminBannerTitle}>Admin Portal</Text>
@@ -233,31 +244,31 @@ export default function SettingsScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+const sStylesheet = createStyleSheet(theme => ({
+      root: { flex: 1, backgroundColor: '#050505' },
+      header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
 
-  section: { marginBottom: 24 },
-  sectionTitle: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: LABEL, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10, marginLeft: 6 },
-  sectionCard: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 24, overflow: 'hidden' },
-  
-  divider: { height: 1, backgroundColor: GLASS_BORDER, marginLeft: 66 },
-  
-  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16 },
-  iconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  rowMid: { flex: 1, paddingLeft: 14, paddingRight: 8 },
-  rowLabel: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
-  rowSub: { fontFamily: 'Inter', fontSize: 12, color: MUTED, marginTop: 2 },
-  rowValue: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
+      section: { marginBottom: 24 },
+      sectionTitle: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: theme.colors.LABEL, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10, marginLeft: 6 },
+      sectionCard: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 24, overflow: 'hidden' },
+      
+      divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER, marginLeft: 66 },
+      
+      row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16 },
+      iconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      rowMid: { flex: 1, paddingLeft: 14, paddingRight: 8 },
+      rowLabel: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+      rowSub: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.MUTED, marginTop: 2 },
+      rowValue: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
 
-  adminBanner: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', borderRadius: 18, marginBottom: 12 },
-  adminBannerIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.12)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)', alignItems: 'center', justifyContent: 'center' },
-  adminBannerTitle: { fontFamily: 'Outfit-Bold', fontSize: 14, color: G },
-  adminBannerSub: { fontFamily: 'Inter', fontSize: 12, color: LABEL },
-  adminBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: 'rgba(130,219,126,0.15)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)' },
-  adminBadgeTxt: { fontFamily: 'Inter-Bold', fontSize: 10, color: G, textTransform: 'uppercase', letterSpacing: 1 },
+      adminBanner: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', borderRadius: 18, marginBottom: 12 },
+      adminBannerIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.12)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)', alignItems: 'center', justifyContent: 'center' },
+      adminBannerTitle: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.G },
+      adminBannerSub: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL },
+      adminBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: 'rgba(130,219,126,0.15)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)' },
+      adminBadgeTxt: { fontFamily: 'Inter-Bold', fontSize: 10, color: theme.colors.G, textTransform: 'uppercase', letterSpacing: 1 },
 
-  footerText: { fontFamily: 'Inter', fontSize: 11, color: LABEL, textAlign: 'center', marginTop: 4 },
-});
+      footerText: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL, textAlign: 'center', marginTop: 4 },
+    }));

@@ -1,12 +1,14 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Platform, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { G, DARK, SURFACE, GLASS_BORDER, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export function OpeningHoursPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const [visible, setVisible] = useState(false);
   const [startDay, setStartDay] = useState('Mon');
   const [endDay, setEndDay] = useState('Sat');
@@ -56,60 +58,64 @@ export function OpeningHoursPicker({ value, onChange }: { value: string; onChang
   return (
     <>
       <TouchableOpacity 
-        style={styles.pickerBox} 
+        style={stylesheet.pickerBox} 
         onPress={() => setVisible(true)}
       >
-        <Text style={{ color: value ? '#fff' : MUTED, fontSize: 15 }}>
+        <Text style={{ color: value ? '#fff' : theme.colors.MUTED, fontSize: 15 }}>
           {value || 'Select Opening Hours'}
         </Text>
-        <Ionicons name="time-outline" size={20} color={MUTED} />
+        <Ionicons name="time-outline" size={20} color={theme.colors.MUTED} />
       </TouchableOpacity>
 
       <Modal visible={visible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Opening Hours</Text>
+        <View style={stylesheet.modalOverlay}>
+          <View style={stylesheet.modalContent}>
+            <View style={stylesheet.modalHeader}>
+              <Text style={stylesheet.modalTitle}>Opening Hours</Text>
               <TouchableOpacity onPress={() => setVisible(false)}>
                 <Ionicons name="close" size={24} color="#fff" />
               </TouchableOpacity>
             </View>
             
-            <View style={styles.section}>
-              <Text style={styles.label}>Working Days</Text>
-              <View style={styles.row}>
-                <View style={styles.pickerCol}>
-                   <Text style={styles.sublabel}>From</Text>
-                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dayScroll}>
-                     {DAYS.map(d => (
-                       <TouchableOpacity key={d} style={[styles.dayBtn, startDay === d && styles.dayBtnActive]} onPress={() => setStartDay(d)}>
-                         <Text style={[styles.dayTxt, startDay === d && styles.dayTxtActive]}>{d}</Text>
-                       </TouchableOpacity>
-                     ))}
+            <View style={stylesheet.section}>
+              <Text style={stylesheet.label}>Working Days</Text>
+              <View style={stylesheet.row}>
+                <View style={stylesheet.pickerCol}>
+                   <Text style={stylesheet.sublabel}>From</Text>
+                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={stylesheet.dayScroll}>
+                     {DAYS.map(d => {
+                     return (
+                                            <TouchableOpacity key={d} style={[stylesheet.dayBtn, startDay === d && stylesheet.dayBtnActive]} onPress={() => setStartDay(d)}>
+                                              <Text style={[stylesheet.dayTxt, startDay === d && stylesheet.dayTxtActive]}>{d}</Text>
+                                            </TouchableOpacity>
+                                          );
+                     })}
                    </ScrollView>
                 </View>
               </View>
-              <View style={[styles.row, { marginTop: 12 }]}>
-                <View style={styles.pickerCol}>
-                   <Text style={styles.sublabel}>To</Text>
-                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dayScroll}>
-                     {DAYS.map(d => (
-                       <TouchableOpacity key={d} style={[styles.dayBtn, endDay === d && styles.dayBtnActive]} onPress={() => setEndDay(d)}>
-                         <Text style={[styles.dayTxt, endDay === d && styles.dayTxtActive]}>{d}</Text>
-                       </TouchableOpacity>
-                     ))}
+              <View style={[stylesheet.row, { marginTop: 12 }]}>
+                <View style={stylesheet.pickerCol}>
+                   <Text style={stylesheet.sublabel}>To</Text>
+                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={stylesheet.dayScroll}>
+                     {DAYS.map(d => {
+                     return (
+                                            <TouchableOpacity key={d} style={[stylesheet.dayBtn, endDay === d && stylesheet.dayBtnActive]} onPress={() => setEndDay(d)}>
+                                              <Text style={[stylesheet.dayTxt, endDay === d && stylesheet.dayTxtActive]}>{d}</Text>
+                                            </TouchableOpacity>
+                                          );
+                     })}
                    </ScrollView>
                 </View>
               </View>
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.label}>Business Hours</Text>
-              <View style={styles.timeWrap}>
-                <View style={styles.timeBox}>
-                   <Text style={styles.sublabel}>Opens</Text>
-                   <TouchableOpacity style={styles.timeBtnWrapper} onPress={() => setShowOpenPicker(true)}>
-                     <Text style={styles.timeBtnText}>{openTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+            <View style={stylesheet.section}>
+              <Text style={stylesheet.label}>Business Hours</Text>
+              <View style={stylesheet.timeWrap}>
+                <View style={stylesheet.timeBox}>
+                   <Text style={stylesheet.sublabel}>Opens</Text>
+                   <TouchableOpacity style={stylesheet.timeBtnWrapper} onPress={() => setShowOpenPicker(true)}>
+                     <Text style={stylesheet.timeBtnText}>{openTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
                    </TouchableOpacity>
                    {showOpenPicker && (
                      <DateTimePicker
@@ -123,10 +129,10 @@ export function OpeningHoursPicker({ value, onChange }: { value: string; onChang
                      />
                    )}
                 </View>
-                <View style={styles.timeBox}>
-                   <Text style={styles.sublabel}>Closes</Text>
-                   <TouchableOpacity style={styles.timeBtnWrapper} onPress={() => setShowClosePicker(true)}>
-                     <Text style={styles.timeBtnText}>{closeTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                <View style={stylesheet.timeBox}>
+                   <Text style={stylesheet.sublabel}>Closes</Text>
+                   <TouchableOpacity style={stylesheet.timeBtnWrapper} onPress={() => setShowClosePicker(true)}>
+                     <Text style={stylesheet.timeBtnText}>{closeTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
                    </TouchableOpacity>
                    {showClosePicker && (
                      <DateTimePicker
@@ -143,12 +149,12 @@ export function OpeningHoursPicker({ value, onChange }: { value: string; onChang
               </View>
             </View>
 
-            <View style={styles.btnRow}>
-              <TouchableOpacity style={styles.clearBtn} onPress={handleClear}>
-                <Text style={styles.clearBtnTxt}>Clear</Text>
+            <View style={stylesheet.btnRow}>
+              <TouchableOpacity style={stylesheet.clearBtn} onPress={handleClear}>
+                <Text style={stylesheet.clearBtnTxt}>Clear</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-                <Text style={styles.saveBtnTxt}>Save Hours</Text>
+              <TouchableOpacity style={stylesheet.saveBtn} onPress={handleSave}>
+                <Text style={stylesheet.saveBtnTxt}>Save Hours</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -158,41 +164,41 @@ export function OpeningHoursPicker({ value, onChange }: { value: string; onChang
   );
 }
 
-const styles = StyleSheet.create({
-  pickerBox: { width: '100%', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#111', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  modalTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  section: { marginBottom: 24 },
-  label: { color: LABEL, fontSize: 14, fontWeight: '600', marginBottom: 12 },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  pickerCol: { flex: 1 },
-  sublabel: { color: MUTED, fontSize: 12, marginBottom: 8, textTransform: 'uppercase' },
-  dayScroll: { flexGrow: 0 },
-  dayBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: SURFACE, marginRight: 8, borderWidth: 1, borderColor: GLASS_BORDER },
-  dayBtnActive: { backgroundColor: 'rgba(130,219,126,0.15)', borderColor: G },
-  dayTxt: { color: MUTED, fontSize: 13 },
-  dayTxtActive: { color: G, fontWeight: '600' },
-  timeWrap: { flexDirection: 'row', justifyContent: 'space-between', gap: 16 },
-  timeBox: { flex: 1 },
-  timeBtnWrapper: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    alignItems: 'center',
-  },
-  timeBtnText: {
-    color: '#fff',
-    fontSize: 15,
-    fontFamily: 'Inter-Medium',
-  },
-  btnRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  clearBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: SURFACE, alignItems: 'center' },
-  clearBtnTxt: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  saveBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: G, alignItems: 'center' },
-  saveBtnTxt: { color: '#000', fontWeight: '600', fontSize: 15 },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      pickerBox: { width: '100%', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+      modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+      modalContent: { backgroundColor: '#111', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
+      modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+      modalTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
+      section: { marginBottom: 24 },
+      label: { color: theme.colors.LABEL, fontSize: 14, fontWeight: '600', marginBottom: 12 },
+      row: { flexDirection: 'row', alignItems: 'center' },
+      pickerCol: { flex: 1 },
+      sublabel: { color: theme.colors.MUTED, fontSize: 12, marginBottom: 8, textTransform: 'uppercase' },
+      dayScroll: { flexGrow: 0 },
+      dayBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: theme.colors.SURFACE, marginRight: 8, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
+      dayBtnActive: { backgroundColor: 'rgba(130,219,126,0.15)', borderColor: theme.colors.G },
+      dayTxt: { color: theme.colors.MUTED, fontSize: 13 },
+      dayTxtActive: { color: theme.colors.G, fontWeight: '600' },
+      timeWrap: { flexDirection: 'row', justifyContent: 'space-between', gap: 16 },
+      timeBox: { flex: 1 },
+      timeBtnWrapper: {
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderRadius: 12,
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        alignItems: 'center',
+      },
+      timeBtnText: {
+        color: '#fff',
+        fontSize: 15,
+        fontFamily: 'Inter-Medium',
+      },
+      btnRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
+      clearBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: theme.colors.SURFACE, alignItems: 'center' },
+      clearBtnTxt: { color: '#fff', fontWeight: '600', fontSize: 15 },
+      saveBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: theme.colors.G, alignItems: 'center' },
+      saveBtnTxt: { color: '#000', fontWeight: '600', fontSize: 15 },
+    }));

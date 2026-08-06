@@ -1,7 +1,7 @@
-import { DARK, SURFACE, GLASS_BORDER, TEXT_PRIMARY, G, MUTED, LABEL } from '../../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TextInput,
+  View, Text, FlatList, TextInput,
   TouchableOpacity, Platform,
   ActivityIndicator, Keyboard,
 } from 'react-native';
@@ -26,6 +26,8 @@ import { CommentInput, CommentInputRef } from '../../components/CommentInput';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
 
 function PostDetailContent() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id, focusComments } = useLocalSearchParams<{ id: string; focusComments?: string }>();
@@ -264,17 +266,17 @@ function PostDetailContent() {
   }, [handleReply, handleLikeComment, handleDeleteComment, user?.id]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
-          <Ionicons name="chevron-back" size={20} color={TEXT_PRIMARY} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.DARK }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
 
         <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF' }}>Post</Text>
 
         {post?.user_id === user?.id ? (
-          <TouchableOpacity onPress={handleDeletePost} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
+          <TouchableOpacity onPress={handleDeletePost} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
             <Feather name="trash-2" size={18} color="#EF4444" />
           </TouchableOpacity>
         ) : (
@@ -287,8 +289,8 @@ function PostDetailContent() {
         behavior="padding"
       >
         {loading && !post ? (
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color={G} />
+          <View style={stylesheet.center}>
+            <ActivityIndicator size="large" color={theme.colors.G} />
           </View>
         ) : (
           <FlatList
@@ -297,21 +299,21 @@ function PostDetailContent() {
             keyExtractor={(item) => item.id}
             renderItem={renderComment}
             ListHeaderComponent={
-              <View style={styles.listHeader}>
+              <View style={stylesheet.listHeader}>
                 {post ? (
                   <PostCard post={post} isVisible={isFocused} />
                 ) : (
-                  <ActivityIndicator size="small" color={G} style={{ padding: 20 }} />
+                  <ActivityIndicator size="small" color={theme.colors.G} style={{ padding: 20 }} />
                 )}
-                <Text style={[styles.commentsTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Comments ({post?.comment_count || 0})</Text>
+                <Text style={[stylesheet.commentsTitle, { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Comments ({post?.comment_count || 0})</Text>
               </View>
             }
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={stylesheet.listContent}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Feather name="message-square" size={40} color={LABEL} />
-                <Text style={[styles.emptyText, { color: MUTED, fontFamily: 'Inter' }]}>No comments yet. Be the first!</Text>
+              <View style={stylesheet.emptyContainer}>
+                <Feather name="message-square" size={40} color={theme.colors.LABEL} />
+                <Text style={[stylesheet.emptyText, { color: theme.colors.MUTED, fontFamily: 'Inter' }]}>No comments yet. Be the first!</Text>
               </View>
             }
           />
@@ -332,25 +334,27 @@ function PostDetailContent() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  deleteBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-end' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  listContent: { paddingBottom: 20 },
-  listHeader: { paddingBottom: 10 },
-  divider: { height: 8, marginVertical: 10 },
-  commentsTitle: { fontSize: 16, fontWeight: 'bold', paddingHorizontal: 16, marginBottom: 10 },
-  emptyContainer: { alignItems: 'center', marginTop: 40 },
-  emptyText: { fontSize: 14, marginTop: 12 },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      header: {
+        flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
+        borderBottomWidth: 1,
+      },
+      backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
+      deleteBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-end' },
+      headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
+      center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+      listContent: { paddingBottom: 20 },
+      listHeader: { paddingBottom: 10 },
+      divider: { height: 8, marginVertical: 10 },
+      commentsTitle: { fontSize: 16, fontWeight: 'bold', paddingHorizontal: 16, marginBottom: 10 },
+      emptyContainer: { alignItems: 'center', marginTop: 40 },
+      emptyText: { fontSize: 14, marginTop: 12 },
+    }));
 
 export default function PostDetailScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   return (
     <ErrorBoundary screenName="PostDetail">
       <PostDetailContent />

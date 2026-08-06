@@ -1,6 +1,7 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity,
+  View, Text, FlatList, TouchableOpacity,
   ActivityIndicator, RefreshControl, Alert, Linking
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,11 +9,6 @@ import { Image } from 'expo-image';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
-import {
-  G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED,
-  TEXT_PRIMARY
-} from '../../constants/tokens';
-
 const ADMIN_EMAIL = 'support@yrdly.ng'; // Replace with actual admin email
 
 type DeletionRequest = {
@@ -35,6 +31,8 @@ function timeAgo(iso: string) {
 }
 
 function RequestCard({ item, onResolve }: { item: DeletionRequest; onResolve: (id: string) => void }) {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const initials = item.name ? item.name.charAt(0).toUpperCase() : '?';
 
   const handleContactUser = () => {
@@ -63,54 +61,54 @@ function RequestCard({ item, onResolve }: { item: DeletionRequest; onResolve: (i
   };
 
   return (
-    <View style={styles.card}>
+    <View style={stylesheet.card}>
       {/* Header */}
-      <View style={styles.cardHeader}>
-        <View style={styles.avatarWrap}>
+      <View style={stylesheet.cardHeader}>
+        <View style={stylesheet.avatarWrap}>
           {item.avatar_url ? (
-            <Image source={{ uri: item.avatar_url }} style={styles.avatar} contentFit="cover" />
+            <Image source={{ uri: item.avatar_url }} style={stylesheet.avatar} contentFit="cover" />
           ) : (
-            <View style={styles.avatarFallback}>
-              <Text style={styles.avatarInitials}>{initials}</Text>
+            <View style={stylesheet.avatarFallback}>
+              <Text style={stylesheet.avatarInitials}>{initials}</Text>
             </View>
           )}
           {/* Red dot indicator */}
-          <View style={styles.urgentDot} />
+          <View style={stylesheet.urgentDot} />
         </View>
-        <View style={styles.cardMeta}>
-          <Text style={styles.userName}>{item.name || 'Unknown User'}</Text>
-          <Text style={styles.userEmail} numberOfLines={1}>{item.email || item.phone || 'No contact'}</Text>
+        <View style={stylesheet.cardMeta}>
+          <Text style={stylesheet.userName}>{item.name || 'Unknown User'}</Text>
+          <Text style={stylesheet.userEmail} numberOfLines={1}>{item.email || item.phone || 'No contact'}</Text>
         </View>
-        <View style={styles.timeBadge}>
-          <Text style={styles.timeText}>
+        <View style={stylesheet.timeBadge}>
+          <Text style={stylesheet.timeText}>
             {item.delete_requested_at ? timeAgo(item.delete_requested_at) : timeAgo(item.created_at)}
           </Text>
         </View>
       </View>
 
       {/* Info row */}
-      <View style={styles.infoRow}>
-        <View style={styles.infoChip}>
+      <View style={stylesheet.infoRow}>
+        <View style={stylesheet.infoChip}>
           <Ionicons name="warning-outline" size={12} color="#F59E0B" />
-          <Text style={styles.infoChipTxt}>Deletion Requested</Text>
+          <Text style={stylesheet.infoChipTxt}>Deletion Requested</Text>
         </View>
         {item.phone ? (
-          <View style={styles.infoChip}>
-            <Ionicons name="call-outline" size={12} color={MUTED} />
-            <Text style={[styles.infoChipTxt, { color: MUTED }]}>{item.phone}</Text>
+          <View style={stylesheet.infoChip}>
+            <Ionicons name="call-outline" size={12} color={theme.colors.MUTED} />
+            <Text style={[stylesheet.infoChipTxt, { color: theme.colors.MUTED }]}>{item.phone}</Text>
           </View>
         ) : null}
       </View>
 
       {/* Actions */}
-      <View style={styles.cardActions}>
-        <TouchableOpacity style={styles.actionBtn} onPress={handleContactUser}>
-          <Feather name="mail" size={15} color={G} />
-          <Text style={[styles.actionTxt, { color: G }]}>Contact</Text>
+      <View style={stylesheet.cardActions}>
+        <TouchableOpacity style={stylesheet.actionBtn} onPress={handleContactUser}>
+          <Feather name="mail" size={15} color={theme.colors.G} />
+          <Text style={[stylesheet.actionTxt, { color: theme.colors.G }]}>Contact</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionBtn, styles.resolveBtn]} onPress={handleMarkResolved}>
+        <TouchableOpacity style={[stylesheet.actionBtn, stylesheet.resolveBtn]} onPress={handleMarkResolved}>
           <Ionicons name="checkmark-circle-outline" size={15} color="#fff" />
-          <Text style={[styles.actionTxt, { color: '#fff' }]}>Mark Resolved</Text>
+          <Text style={[stylesheet.actionTxt, { color: '#fff' }]}>Mark Resolved</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -118,6 +116,8 @@ function RequestCard({ item, onResolve }: { item: DeletionRequest; onResolve: (i
 }
 
 export default function DeletionRequestsScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [requests, setRequests] = useState<DeletionRequest[]>([]);
@@ -167,38 +167,38 @@ export default function DeletionRequestsScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[stylesheet.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+      <View style={stylesheet.header}>
+        <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
           <Ionicons name="chevron-back" size={22} color="#fff" />
         </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Deletion Requests</Text>
+        <View style={stylesheet.headerCenter}>
+          <Text style={stylesheet.headerTitle}>Deletion Requests</Text>
           {requests.length > 0 && (
-            <View style={styles.countBadge}>
-              <Text style={styles.countTxt}>{requests.length}</Text>
+            <View style={stylesheet.countBadge}>
+              <Text style={stylesheet.countTxt}>{requests.length}</Text>
             </View>
           )}
         </View>
         {requests.length > 0 && (
-          <TouchableOpacity onPress={handleEmailAll} style={styles.emailAllBtn}>
-            <Feather name="send" size={18} color={G} />
+          <TouchableOpacity onPress={handleEmailAll} style={stylesheet.emailAllBtn}>
+            <Feather name="send" size={18} color={theme.colors.G} />
           </TouchableOpacity>
         )}
       </View>
 
       {/* Content */}
       {loading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator color={G} size="large" />
-          <Text style={styles.loadingTxt}>Loading requests...</Text>
+        <View style={stylesheet.centered}>
+          <ActivityIndicator color={theme.colors.G} size="large" />
+          <Text style={stylesheet.loadingTxt}>Loading requests...</Text>
         </View>
       ) : requests.length === 0 ? (
-        <View style={styles.centered}>
-          <Ionicons name="checkmark-circle" size={64} color={G} style={{ opacity: 0.6 }} />
-          <Text style={styles.emptyTitle}>All Clear</Text>
-          <Text style={styles.emptySubtitle}>No pending account deletion requests.</Text>
+        <View style={stylesheet.centered}>
+          <Ionicons name="checkmark-circle" size={64} color={theme.colors.G} style={{ opacity: 0.6 }} />
+          <Text style={stylesheet.emptyTitle}>All Clear</Text>
+          <Text style={stylesheet.emptySubtitle}>No pending account deletion requests.</Text>
         </View>
       ) : (
         <FlatList
@@ -207,18 +207,18 @@ export default function DeletionRequestsScreen() {
           renderItem={({ item }) => (
             <RequestCard item={item} onResolve={handleResolve} />
           )}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={stylesheet.list}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor={G}
+              tintColor={theme.colors.G}
             />
           }
           ListHeaderComponent={
-            <View style={styles.listHeader}>
+            <View style={stylesheet.listHeader}>
               <Ionicons name="warning" size={14} color="#F59E0B" />
-              <Text style={styles.listHeaderTxt}>
+              <Text style={stylesheet.listHeaderTxt}>
                 {requests.length} user{requests.length !== 1 ? 's' : ''} waiting for data deletion. Contact each user and delete their data from Supabase, then mark as resolved.
               </Text>
             </View>
@@ -229,90 +229,90 @@ export default function DeletionRequestsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: DARK },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: GLASS_BORDER,
-  },
-  backBtn: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: GLASS_BG, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: GLASS_BORDER,
-  },
-  headerCenter: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 12,
-  },
-  headerTitle: {
-    fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff',
-  },
-  countBadge: {
-    backgroundColor: '#EF4444', borderRadius: 10,
-    paddingHorizontal: 7, paddingVertical: 2, minWidth: 22, alignItems: 'center',
-  },
-  countTxt: { color: '#fff', fontFamily: 'Outfit-Bold', fontSize: 12 },
-  emailAllBtn: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: GLASS_BG, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: GLASS_BORDER,
-  },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32, gap: 12 },
-  loadingTxt: { color: LABEL, fontFamily: 'Inter-Regular', marginTop: 8 },
-  emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff', textAlign: 'center' },
-  emptySubtitle: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED, textAlign: 'center' },
-  list: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 32, gap: 12 },
-  listHeader: {
-    flexDirection: 'row', alignItems: 'flex-start', gap: 8,
-    backgroundColor: 'rgba(245,158,11,0.08)', borderWidth: 1, borderColor: 'rgba(245,158,11,0.25)',
-    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 8,
-  },
-  listHeaderTxt: {
-    flex: 1, fontFamily: 'Inter-Regular', fontSize: 12,
-    color: '#F59E0B', lineHeight: 18,
-  },
-  card: {
-    backgroundColor: GLASS_BG, borderWidth: 1, borderColor: GLASS_BORDER,
-    borderRadius: 18, padding: 16, gap: 12,
-  },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatarWrap: { position: 'relative' },
-  avatar: { width: 48, height: 48, borderRadius: 24 },
-  avatarFallback: {
-    width: 48, height: 48, borderRadius: 24,
-    backgroundColor: SURFACE, alignItems: 'center', justifyContent: 'center',
-  },
-  avatarInitials: { fontFamily: 'Outfit-Bold', fontSize: 18, color: G },
-  urgentDot: {
-    position: 'absolute', bottom: 0, right: 0,
-    width: 12, height: 12, borderRadius: 6,
-    backgroundColor: '#EF4444', borderWidth: 2, borderColor: DARK,
-  },
-  cardMeta: { flex: 1 },
-  userName: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
-  userEmail: { fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 },
-  timeBadge: {
-    backgroundColor: SURFACE, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
-  },
-  timeText: { fontFamily: 'Inter-Regular', fontSize: 11, color: MUTED },
-  infoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  infoChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(245,158,11,0.08)', borderWidth: 1, borderColor: 'rgba(245,158,11,0.2)',
-    borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
-  },
-  infoChipTxt: { fontFamily: 'Inter-Regular', fontSize: 11, color: '#F59E0B' },
-  cardActions: { flexDirection: 'row', gap: 10 },
-  actionBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, paddingVertical: 11, borderRadius: 12,
-    backgroundColor: 'rgba(130,219,126,0.08)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)',
-  },
-  resolveBtn: {
-    backgroundColor: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.3)',
-  },
-  actionTxt: { fontFamily: 'Outfit-Bold', fontSize: 13 },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1, backgroundColor: theme.colors.DARK },
+      header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.GLASS_BORDER,
+      },
+      backBtn: {
+        width: 36, height: 36, borderRadius: 18,
+        backgroundColor: theme.colors.GLASS_BG, alignItems: 'center', justifyContent: 'center',
+        borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
+      },
+      headerCenter: {
+        flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 12,
+      },
+      headerTitle: {
+        fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff',
+      },
+      countBadge: {
+        backgroundColor: '#EF4444', borderRadius: 10,
+        paddingHorizontal: 7, paddingVertical: 2, minWidth: 22, alignItems: 'center',
+      },
+      countTxt: { color: '#fff', fontFamily: 'Outfit-Bold', fontSize: 12 },
+      emailAllBtn: {
+        width: 36, height: 36, borderRadius: 18,
+        backgroundColor: theme.colors.GLASS_BG, alignItems: 'center', justifyContent: 'center',
+        borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
+      },
+      centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32, gap: 12 },
+      loadingTxt: { color: theme.colors.LABEL, fontFamily: 'Inter-Regular', marginTop: 8 },
+      emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff', textAlign: 'center' },
+      emptySubtitle: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center' },
+      list: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 32, gap: 12 },
+      listHeader: {
+        flexDirection: 'row', alignItems: 'flex-start', gap: 8,
+        backgroundColor: 'rgba(245,158,11,0.08)', borderWidth: 1, borderColor: 'rgba(245,158,11,0.25)',
+        borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 8,
+      },
+      listHeaderTxt: {
+        flex: 1, fontFamily: 'Inter-Regular', fontSize: 12,
+        color: '#F59E0B', lineHeight: 18,
+      },
+      card: {
+        backgroundColor: theme.colors.GLASS_BG, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
+        borderRadius: 18, padding: 16, gap: 12,
+      },
+      cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+      avatarWrap: { position: 'relative' },
+      avatar: { width: 48, height: 48, borderRadius: 24 },
+      avatarFallback: {
+        width: 48, height: 48, borderRadius: 24,
+        backgroundColor: theme.colors.SURFACE, alignItems: 'center', justifyContent: 'center',
+      },
+      avatarInitials: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.G },
+      urgentDot: {
+        position: 'absolute', bottom: 0, right: 0,
+        width: 12, height: 12, borderRadius: 6,
+        backgroundColor: '#EF4444', borderWidth: 2, borderColor: theme.colors.DARK,
+      },
+      cardMeta: { flex: 1 },
+      userName: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
+      userEmail: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginTop: 2 },
+      timeBadge: {
+        backgroundColor: theme.colors.SURFACE, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
+      },
+      timeText: { fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.MUTED },
+      infoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+      infoChip: {
+        flexDirection: 'row', alignItems: 'center', gap: 4,
+        backgroundColor: 'rgba(245,158,11,0.08)', borderWidth: 1, borderColor: 'rgba(245,158,11,0.2)',
+        borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
+      },
+      infoChipTxt: { fontFamily: 'Inter-Regular', fontSize: 11, color: '#F59E0B' },
+      cardActions: { flexDirection: 'row', gap: 10 },
+      actionBtn: {
+        flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        gap: 6, paddingVertical: 11, borderRadius: 12,
+        backgroundColor: 'rgba(130,219,126,0.08)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)',
+      },
+      resolveBtn: {
+        backgroundColor: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.3)',
+      },
+      actionTxt: { fontFamily: 'Outfit-Bold', fontSize: 13 },
+    }));

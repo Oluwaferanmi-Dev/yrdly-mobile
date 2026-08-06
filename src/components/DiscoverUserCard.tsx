@@ -1,6 +1,6 @@
-import { DARK, SURFACE } from '../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { useAppTheme } from '../context/ThemeContext';
@@ -23,6 +23,8 @@ interface DiscoverUserCardProps {
 }
 
 export function DiscoverUserCard({ user, context, mutualCount, onPress }: DiscoverUserCardProps) {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const { status, isLoading, addFriend, cancelRequest, removeFriend } = useFriendshipGlobal(user.id);
 
@@ -51,30 +53,30 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
   };
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.container}>
-      <GlassCard intensity={80} style={StyleSheet.flatten([styles.card, { borderColor: colors.border }])}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={stylesheet.container}>
+      <GlassCard intensity={80} style={StyleSheet.flatten([stylesheet.card, { borderColor: colors.border }])}>
         {user.avatar_url ? (
           <Image
             source={{ uri: user.avatar_url }}
-            style={[styles.avatar, { backgroundColor: DARK }]}
+            style={[stylesheet.avatar, { backgroundColor: theme.colors.DARK }]}
             contentFit="cover"
           />
         ) : (
-          <View style={[styles.avatar, { backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }]}>
+          <View style={[stylesheet.avatar, { backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }]}>
             <Text style={{ color: colors.background, fontSize: 20, fontWeight: '800' }}>
               {(user.name || 'U').charAt(0).toUpperCase()}
             </Text>
           </View>
         )}
         
-        <View style={styles.content}>
-          <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
+        <View style={stylesheet.content}>
+          <Text style={[stylesheet.name, { color: colors.text }]} numberOfLines={1}>
             {user.name || 'Anonymous'}
           </Text>
           
-          <View style={styles.badgeRow}>
+          <View style={stylesheet.badgeRow}>
             <Feather name={badgeIcon} size={12} color={colors.textSecondary} />
-            <Text style={[styles.badgeText, { color: colors.textSecondary }]} numberOfLines={1}>
+            <Text style={[stylesheet.badgeText, { color: colors.textSecondary }]} numberOfLines={1}>
               {badgeText}
             </Text>
           </View>
@@ -82,7 +84,7 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
 
         <TouchableOpacity 
           style={[
-            styles.actionButton, 
+            stylesheet.actionButton, 
             status === 'friends' ? { backgroundColor: 'transparent' } : { backgroundColor: colors.tint + '15' },
             status === 'friends' && { borderColor: colors.border, borderWidth: 1 }
           ]} 
@@ -92,14 +94,14 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
           {isLoading ? (
             <ActivityIndicator size="small" color={colors.tint} />
           ) : status === 'friends' ? (
-            <View style={styles.friendsBadge}>
+            <View style={stylesheet.friendsBadge}>
               <Feather name="check" size={14} color={colors.textSecondary} />
-              <Text style={[styles.friendsText, { color: colors.textSecondary }]}>Friends</Text>
+              <Text style={[stylesheet.friendsText, { color: colors.textSecondary }]}>Friends</Text>
             </View>
           ) : (status === 'request_sent' || status === 'request_received') ? (
-            <Text style={[styles.actionText, { color: colors.tint }]}>Pending</Text>
+            <Text style={[stylesheet.actionText, { color: colors.tint }]}>Pending</Text>
           ) : (
-            <Text style={[styles.actionText, { color: colors.tint }]}>Add</Text>
+            <Text style={[stylesheet.actionText, { color: colors.tint }]}>Add</Text>
           )}
         </TouchableOpacity>
       </GlassCard>
@@ -107,61 +109,61 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  content: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: 'center',
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  badgeText: {
-    fontSize: 13,
-  },
-  actionButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    minWidth: 70,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 32,
-  },
-  actionText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  friendsBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  friendsText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: {
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+      },
+      card: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 12,
+        borderRadius: 16,
+        borderWidth: 1,
+      },
+      avatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+      },
+      content: {
+        flex: 1,
+        marginLeft: 12,
+        justifyContent: 'center',
+      },
+      name: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 4,
+      },
+      badgeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+      },
+      badgeText: {
+        fontSize: 13,
+      },
+      actionButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        minWidth: 70,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 32,
+      },
+      actionText: {
+        fontSize: 13,
+        fontWeight: '600',
+      },
+      friendsBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+      },
+      friendsText: {
+        fontSize: 13,
+        fontWeight: '500',
+      },
+    }));

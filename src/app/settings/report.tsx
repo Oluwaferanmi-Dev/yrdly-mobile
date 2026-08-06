@@ -1,12 +1,11 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Alert, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Alert, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
-import { DARK, G, GLASS_BORDER, LABEL, MUTED, SURFACE } from '../../constants/tokens';
-
 const CATEGORIES = [
   { label: 'Bug / Technical Issue', value: 'bug' },
   { label: 'Marketplace Dispute', value: 'marketplace' },
@@ -16,6 +15,8 @@ const CATEGORIES = [
 ];
 
 export default function ReportScreen() {
+  const { styles: s, theme } = useStyles(sStylesheet);
+
   const router = useRouter();
   const { user } = useAuth();
   const [category, setCategory] = useState('bug');
@@ -88,28 +89,30 @@ export default function ReportScreen() {
         <Text style={s.inputLabel}>ISSUE CATEGORY</Text>
         <TouchableOpacity style={s.dropdownBtn} onPress={() => setShowDropdown(!showDropdown)}>
           <Text style={s.dropdownBtnText}>{selectedCategoryLabel}</Text>
-          <Ionicons name={showDropdown ? 'chevron-up' : 'chevron-down'} size={18} color={LABEL} />
+          <Ionicons name={showDropdown ? 'chevron-up' : 'chevron-down'} size={18} color={theme.colors.LABEL} />
         </TouchableOpacity>
 
         {showDropdown && (
           <View style={s.dropdownOptions}>
-            {CATEGORIES.map((c, idx) => (
-              <React.Fragment key={c.value}>
-                {idx > 0 && <View style={s.divider} />}
-                <TouchableOpacity
-                  style={s.optionItem}
-                  onPress={() => {
-                    setCategory(c.value);
-                    setShowDropdown(false);
-                  }}
-                >
-                  <Text style={[s.optionText, c.value === category && { color: G, fontFamily: 'Inter-SemiBold' }]}>
-                    {c.label}
-                  </Text>
-                  {c.value === category && <Ionicons name="checkmark" size={16} color={G} />}
-                </TouchableOpacity>
-              </React.Fragment>
-            ))}
+            {CATEGORIES.map((c, idx) => {
+            return (
+                          <React.Fragment key={c.value}>
+                            {idx > 0 && <View style={s.divider} />}
+                            <TouchableOpacity
+                              style={s.optionItem}
+                              onPress={() => {
+                                setCategory(c.value);
+                                setShowDropdown(false);
+                              }}
+                            >
+                              <Text style={[s.optionText, c.value === category && { color: theme.colors.G, fontFamily: 'Inter-SemiBold' }]}>
+                                {c.label}
+                              </Text>
+                              {c.value === category && <Ionicons name="checkmark" size={16} color={theme.colors.G} />}
+                            </TouchableOpacity>
+                          </React.Fragment>
+                        );
+            })}
           </View>
         )}
 
@@ -118,7 +121,7 @@ export default function ReportScreen() {
         <View style={s.inputBox}>
           <TextInput
             placeholder="e.g. Can't link bank account"
-            placeholderTextColor={LABEL}
+            placeholderTextColor={theme.colors.LABEL}
             style={s.textInput}
             value={subject}
             onChangeText={setSubject}
@@ -130,7 +133,7 @@ export default function ReportScreen() {
         <View style={[s.inputBox, { height: 140, alignItems: 'flex-start', paddingTop: 12 }]}>
           <TextInput
             placeholder="Describe the issue in detail..."
-            placeholderTextColor={LABEL}
+            placeholderTextColor={theme.colors.LABEL}
             style={[s.textInput, { height: '100%', textAlignVertical: 'top' }]}
             value={description}
             onChangeText={setDescription}
@@ -151,22 +154,22 @@ export default function ReportScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: DARK },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  content: { padding: 20 },
-  desc: { fontFamily: 'Inter', fontSize: 14, color: MUTED, lineHeight: 22, marginBottom: 24 },
-  inputLabel: { fontFamily: 'Inter-Bold', fontSize: 11, color: MUTED, letterSpacing: 0.8, marginBottom: 8 },
-  dropdownBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 12, height: 48, paddingHorizontal: 16, marginBottom: 8 },
-  dropdownBtnText: { fontFamily: 'Inter', fontSize: 14, color: '#fff' },
-  dropdownOptions: { backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: GLASS_BORDER, overflow: 'hidden', marginBottom: 8 },
-  optionItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, paddingHorizontal: 16 },
-  optionText: { fontFamily: 'Inter', fontSize: 14, color: '#fff' },
-  divider: { height: 1, backgroundColor: GLASS_BORDER },
-  inputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 12, height: 48, paddingHorizontal: 16 },
-  textInput: { flex: 1, color: '#fff', fontFamily: 'Inter', fontSize: 14, height: '100%' },
-  submitBtn: { height: 50, borderRadius: 25, backgroundColor: G, justifyContent: 'center', alignItems: 'center', marginTop: 32 },
-  submitBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 15, color: '#fff' },
-});
+const sStylesheet = createStyleSheet(theme => ({
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
+      header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      content: { padding: 20 },
+      desc: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.MUTED, lineHeight: 22, marginBottom: 24 },
+      inputLabel: { fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.MUTED, letterSpacing: 0.8, marginBottom: 8 },
+      dropdownBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, height: 48, paddingHorizontal: 16, marginBottom: 8 },
+      dropdownBtnText: { fontFamily: 'Inter', fontSize: 14, color: '#fff' },
+      dropdownOptions: { backgroundColor: theme.colors.SURFACE, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, overflow: 'hidden', marginBottom: 8 },
+      optionItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, paddingHorizontal: 16 },
+      optionText: { fontFamily: 'Inter', fontSize: 14, color: '#fff' },
+      divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER },
+      inputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, height: 48, paddingHorizontal: 16 },
+      textInput: { flex: 1, color: '#fff', fontFamily: 'Inter', fontSize: 14, height: '100%' },
+      submitBtn: { height: 50, borderRadius: 25, backgroundColor: theme.colors.G, justifyContent: 'center', alignItems: 'center', marginTop: 32 },
+      submitBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 15, color: '#fff' },
+    }));

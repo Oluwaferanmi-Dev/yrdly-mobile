@@ -1,6 +1,7 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, TextInput, Animated,
+  View, Text, TouchableOpacity, TextInput, Animated,
   PanResponder, FlatList, Dimensions, ActivityIndicator, Linking, Platform, Image, Alert
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,7 +12,6 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { useAppTheme } from '../context/ThemeContext';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, GOLD, BLUE } from '../constants/tokens';
 import Supercluster from 'supercluster';
 
 const { width, height } = Dimensions.get('window');
@@ -76,6 +76,7 @@ function getDistanceStr(lat1: number, lon1: number, lat2: number, lon2: number) 
 }
 
 const FriendMarker = React.memo(function FriendMarker({ avatar_url }: { avatar_url?: string }) {
+  const { styles: ms } = useStyles(msStylesheet);
   return (
     <View style={ms.fMarker}>
       <View style={ms.fRing}>
@@ -89,6 +90,7 @@ const FriendMarker = React.memo(function FriendMarker({ avatar_url }: { avatar_u
 });
 
 const IconMarker = React.memo(function IconMarker({ icon, color, bg }: { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string }) {
+  const { styles: ms } = useStyles(msStylesheet);
   return (
     <View style={ms.iMarker}>
       <View style={[ms.iBox, { backgroundColor: bg }]}>
@@ -100,6 +102,7 @@ const IconMarker = React.memo(function IconMarker({ icon, color, bg }: { icon: k
 });
 
 const ClusterBubble = React.memo(function ClusterBubble({ count }: { count: number }) {
+  const { styles: ms } = useStyles(msStylesheet);
   return (
     <View style={ms.cluster}>
       <Text style={ms.clusterTxt}>{count}</Text>
@@ -108,6 +111,9 @@ const ClusterBubble = React.memo(function ClusterBubble({ count }: { count: numb
 });
 
 export default function MapScreen() {
+  const { styles: s, theme } = useStyles(sStylesheet);
+  const { styles: ms } = useStyles(msStylesheet);
+
   const insets = useSafeAreaInsets();
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
@@ -334,7 +340,7 @@ export default function MapScreen() {
     <View style={s.fill}>
       <MapView
         ref={mapRef}
-        style={StyleSheet.absoluteFillObject}
+        style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}
         initialRegion={region || { latitude:6.5244, longitude:3.3792, latitudeDelta:0.0922, longitudeDelta:0.0421 }}
         showsUserLocation showsMyLocationButton={false} showsBuildings={false} pitchEnabled={false}
         moveOnMarkerPress={false}
@@ -346,6 +352,9 @@ export default function MapScreen() {
         }}
       >
         {clusters.map((c, i) => {
+            const { styles: s } = useStyles(sStylesheet);
+            const { styles: ms } = useStyles(msStylesheet);
+
           const [lng, lat] = c.geometry.coordinates;
           const { cluster: isC, point_count, ...p } = c.properties as any;
           if (isC) return (
@@ -378,13 +387,13 @@ export default function MapScreen() {
               <TextInput 
                 style={s.searchInput}
                 placeholder="Search map..."
-                placeholderTextColor={MUTED}
+                placeholderTextColor={theme.colors.MUTED}
                 value={search}
                 onChangeText={setSearch}
                 autoFocus
               />
               <TouchableOpacity onPress={() => { setShowSearch(false); setSearch(''); }}>
-                <Ionicons name="close-circle" size={18} color={MUTED} />
+                <Ionicons name="close-circle" size={18} color={theme.colors.MUTED} />
               </TouchableOpacity>
             </View>
           ) : (
@@ -405,6 +414,9 @@ export default function MapScreen() {
           data={FILTERS} keyExtractor={f => f.key}
           contentContainerStyle={{ paddingHorizontal:16, gap:8, paddingTop:12 }}
           renderItem={({ item:f }) => {
+            const { styles: s } = useStyles(sStylesheet);
+            const { styles: ms } = useStyles(msStylesheet);
+
             const active = filter === f.key;
             return (
               <TouchableOpacity
@@ -467,42 +479,42 @@ export default function MapScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  fill: { flex:1, backgroundColor:'#0B0D0B' },
-  topWrap: { position:'absolute', top:0, left:0, right:0, zIndex:10 },
-  searchRow: { flexDirection:'row', paddingHorizontal:16, gap:12, alignItems: 'center' },
-  iconBtn: { width:36, height:36, borderRadius:18, backgroundColor:'rgba(0,0,0,0.5)', alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'rgba(255,255,255,0.12)' },
-  locationPill: { flex:1, flexDirection:'row', alignItems:'center', backgroundColor:'rgba(0,0,0,0.5)', borderRadius:14, paddingHorizontal:12, paddingVertical:8, borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
-  locationPillTxt: { color:'#fff', fontWeight:'600', fontSize:13, marginLeft:6, fontFamily: 'Inter-SemiBold' },
-  searchInputWrap: { flex:1, flexDirection:'row', alignItems:'center', backgroundColor:'rgba(0,0,0,0.7)', borderRadius:14, paddingHorizontal:12, paddingVertical:8, borderWidth:1, borderColor:GLASS_BORDER },
-  searchInput: { flex:1, color:'#fff', fontFamily:'Inter-Regular', fontSize:13, marginRight:8, padding:0 },
-  chip: { flexDirection:'row', alignItems:'center', paddingHorizontal:14, height: 30, borderRadius:15, backgroundColor:'rgba(0,0,0,0.55)', borderWidth:1, borderColor:'rgba(255,255,255,0.12)' },
-  chipTxt: { fontSize:12, fontFamily: 'Inter-Medium' },
-  recenterBtn: { position:'absolute', right:16, width:42, height:42, borderRadius:21, backgroundColor:'rgba(0,0,0,0.7)', borderWidth:1, borderColor:'rgba(255,255,255,0.12)', alignItems:'center', justifyContent:'center', zIndex:10 },
-  previewSheet: { position:'absolute', bottom:0, left:0, right:0, backgroundColor:'#111', borderTopLeftRadius:24, borderTopRightRadius:24, borderWidth:1, borderColor:'rgba(255,255,255,0.09)', paddingHorizontal:20, paddingTop:20, paddingBottom:40, zIndex:20 },
-  handleBar: { width:36, height:4, borderRadius:2, backgroundColor:'rgba(255,255,255,0.12)', alignSelf:'center', marginBottom:18 },
-  previewContent: { flexDirection:'row', alignItems:'flex-start', gap:12 },
-  previewImgWrap: { width:72, height:72, borderRadius:16, overflow:'hidden', backgroundColor:'rgba(255,255,255,0.05)' },
-  previewImg: { width:'100%', height:'100%' },
-  previewFallback: { flex:1, alignItems:'center', justifyContent:'center' },
-  previewInfo: { flex:1 },
-  previewHeader: { flexDirection:'row', alignItems:'center', gap:8, marginBottom:4 },
-  previewBadge: { paddingHorizontal:8, paddingVertical:2, borderRadius:6, borderWidth:1 },
-  previewBadgeTxt: { fontSize:10, fontFamily: 'Outfit-Bold', textTransform:'uppercase' },
-  previewTitle: { color:'#fff', fontSize:16, fontFamily: 'Outfit-Bold', marginBottom:3 },
-  previewSub: { color:LABEL, fontSize:12, fontFamily: 'Inter-Regular' },
-  previewActionBtn: { marginTop:16, width:'100%', paddingVertical:13, borderRadius:14, backgroundColor:G, alignItems:'center' },
-  previewActionTxt: { color:DARK, fontSize:15, fontFamily: 'Outfit-ExtraBold' }
-});
+const sStylesheet = createStyleSheet(theme => ({
+      fill: { flex:1, backgroundColor:'#0B0D0B' },
+      topWrap: { position:'absolute', top:0, left:0, right:0, zIndex:10 },
+      searchRow: { flexDirection:'row', paddingHorizontal:16, gap:12, alignItems: 'center' },
+      iconBtn: { width:36, height:36, borderRadius:18, backgroundColor:'rgba(0,0,0,0.5)', alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'rgba(255,255,255,0.12)' },
+      locationPill: { flex:1, flexDirection:'row', alignItems:'center', backgroundColor:'rgba(0,0,0,0.5)', borderRadius:14, paddingHorizontal:12, paddingVertical:8, borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
+      locationPillTxt: { color:'#fff', fontWeight:'600', fontSize:13, marginLeft:6, fontFamily: 'Inter-SemiBold' },
+      searchInputWrap: { flex:1, flexDirection:'row', alignItems:'center', backgroundColor:'rgba(0,0,0,0.7)', borderRadius:14, paddingHorizontal:12, paddingVertical:8, borderWidth:1, borderColor:theme.colors.GLASS_BORDER },
+      searchInput: { flex:1, color:'#fff', fontFamily:'Inter-Regular', fontSize:13, marginRight:8, padding:0 },
+      chip: { flexDirection:'row', alignItems:'center', paddingHorizontal:14, height: 30, borderRadius:15, backgroundColor:'rgba(0,0,0,0.55)', borderWidth:1, borderColor:'rgba(255,255,255,0.12)' },
+      chipTxt: { fontSize:12, fontFamily: 'Inter-Medium' },
+      recenterBtn: { position:'absolute', right:16, width:42, height:42, borderRadius:21, backgroundColor:'rgba(0,0,0,0.7)', borderWidth:1, borderColor:'rgba(255,255,255,0.12)', alignItems:'center', justifyContent:'center', zIndex:10 },
+      previewSheet: { position:'absolute', bottom:0, left:0, right:0, backgroundColor:'#111', borderTopLeftRadius:24, borderTopRightRadius:24, borderWidth:1, borderColor:'rgba(255,255,255,0.09)', paddingHorizontal:20, paddingTop:20, paddingBottom:40, zIndex:20 },
+      handleBar: { width:36, height:4, borderRadius:2, backgroundColor:'rgba(255,255,255,0.12)', alignSelf:'center', marginBottom:18 },
+      previewContent: { flexDirection:'row', alignItems:'flex-start', gap:12 },
+      previewImgWrap: { width:72, height:72, borderRadius:16, overflow:'hidden', backgroundColor:'rgba(255,255,255,0.05)' },
+      previewImg: { width:'100%', height:'100%' },
+      previewFallback: { flex:1, alignItems:'center', justifyContent:'center' },
+      previewInfo: { flex:1 },
+      previewHeader: { flexDirection:'row', alignItems:'center', gap:8, marginBottom:4 },
+      previewBadge: { paddingHorizontal:8, paddingVertical:2, borderRadius:6, borderWidth:1 },
+      previewBadgeTxt: { fontSize:10, fontFamily: 'Outfit-Bold', textTransform:'uppercase' },
+      previewTitle: { color:'#fff', fontSize:16, fontFamily: 'Outfit-Bold', marginBottom:3 },
+      previewSub: { color:theme.colors.LABEL, fontSize:12, fontFamily: 'Inter-Regular' },
+      previewActionBtn: { marginTop:16, width:'100%', paddingVertical:13, borderRadius:14, backgroundColor:theme.colors.G, alignItems:'center' },
+      previewActionTxt: { color:theme.colors.DARK, fontSize:15, fontFamily: 'Outfit-ExtraBold' }
+    }));
 
-const ms = StyleSheet.create({
-  fMarker: { alignItems:'center' },
-  fRing: { width:44, height:44, borderRadius:22, borderWidth:2.5, borderColor:'#8B5CF6', overflow:'hidden', backgroundColor:'#1a1a2e' },
-  fAvatar: { width:40, height:40, borderRadius:20 },
-  fFallback: { flex:1, alignItems:'center', justifyContent:'center' },
-  iMarker: { alignItems:'center' },
-  iBox: { width:40, height:40, borderRadius:12, alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
-  dot: { width:8, height:8, borderRadius:4, marginTop:2 },
-  cluster: { width:44, height:44, borderRadius:22, backgroundColor:'#82DB7E', alignItems:'center', justifyContent:'center', borderWidth:3, borderColor:'#fff' },
-  clusterTxt: { color:'#0B0D0B', fontWeight:'900', fontSize:15 },
-});
+const msStylesheet = createStyleSheet(theme => ({
+      fMarker: { alignItems:'center' },
+      fRing: { width:44, height:44, borderRadius:22, borderWidth:2.5, borderColor:'#8B5CF6', overflow:'hidden', backgroundColor:'#1a1a2e' },
+      fAvatar: { width:40, height:40, borderRadius:20 },
+      fFallback: { flex:1, alignItems:'center', justifyContent:'center' },
+      iMarker: { alignItems:'center' },
+      iBox: { width:40, height:40, borderRadius:12, alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'rgba(255,255,255,0.1)' },
+      dot: { width:8, height:8, borderRadius:4, marginTop:2 },
+      cluster: { width:44, height:44, borderRadius:22, backgroundColor:'#82DB7E', alignItems:'center', justifyContent:'center', borderWidth:3, borderColor:'#fff' },
+      clusterTxt: { color:'#0B0D0B', fontWeight:'900', fontSize:15 },
+    }));

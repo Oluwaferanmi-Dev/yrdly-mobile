@@ -1,6 +1,7 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TextInput,
+  View, Text, FlatList, TextInput,
   TouchableOpacity, Platform,
   ActivityIndicator, Alert, Keyboard
 } from 'react-native';
@@ -20,7 +21,6 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 import { formatPrice } from '../../lib/utils';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
 
 interface Message {
   id: string;
@@ -83,6 +83,8 @@ const ChatVideo = React.memo(({ url, width, height, borderRadius, marginBottom, 
 });
 
 function ChatContent() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -345,7 +347,7 @@ function ChatContent() {
       }
 
       // We append locally so it shows immediately
-      setMessages(prev => [...prev, payload as Message]);
+      setMessages(prev => [...prev, payload as unknown as Message]);
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (e) {
       console.error('Send message error:', e);
@@ -449,7 +451,7 @@ function ChatContent() {
         return;
       }
 
-      setMessages(prev => [...prev, payload as Message]);
+      setMessages(prev => [...prev, payload as unknown as Message]);
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch(e) {
       console.error('Upload media error:', e);
@@ -518,10 +520,11 @@ function ChatContent() {
   };
 
   const renderMessage = ({ item }: { item: any }) => {
+
     if (item.isDateHeader) {
       return (
         <View style={{ alignItems: 'center', marginVertical: 12 }}>
-          <Text style={{ color: MUTED, fontSize: 12, fontWeight: '500', fontFamily: 'Inter' }}>
+          <Text style={{ color: theme.colors.MUTED, fontSize: 12, fontWeight: '500', fontFamily: 'Inter' }}>
             {item.dateText}
           </Text>
         </View>
@@ -540,14 +543,14 @@ function ChatContent() {
     const hasMedia = !!imgUrl || !!vidUrl;
 
     return (
-      <View style={[styles.msgRow, isMine ? styles.msgRowRight : styles.msgRowLeft]}>
+      <View style={[stylesheet.msgRow, isMine ? stylesheet.msgRowRight : stylesheet.msgRowLeft]}>
         <TouchableOpacity 
           activeOpacity={0.9} 
           onLongPress={() => handleMessageLongPress(item)}
           style={[
-            styles.bubble, 
-            isMine ? styles.bubbleMine : styles.bubbleTheirs,
-            isMine ? { backgroundColor: G, borderWidth: 0 } : { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER },
+            stylesheet.bubble, 
+            isMine ? stylesheet.bubbleMine : stylesheet.bubbleTheirs,
+            isMine ? { backgroundColor: theme.colors.G, borderWidth: 0 } : { backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
             hasMedia && !msgText && { backgroundColor: 'transparent', paddingHorizontal: 0, paddingVertical: 0, paddingBottom: 0 },
             hasMedia && msgText && { paddingHorizontal: 4, paddingVertical: 4, paddingBottom: 6 }
           ]}
@@ -581,13 +584,13 @@ function ChatContent() {
             />
           )}
           {!!msgText && (
-            <Text style={[styles.bubbleText, { color: isMine ? '#000' : TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 14, fontWeight: isMine ? '600' : '400' }, hasMedia && { paddingHorizontal: 6 }]}>
+            <Text style={[stylesheet.bubbleText, { color: isMine ? '#000' : theme.colors.TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 14, fontWeight: isMine ? '600' : '400' }, hasMedia && { paddingHorizontal: 6 }]}>
               {msgText}
             </Text>
           )}
           {!!msgText && (
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 2, paddingHorizontal: hasMedia ? 6 : 0 }}>
-              <Text style={[styles.bubbleTime, { color: isMine ? 'rgba(0,0,0,0.6)' : MUTED, fontFamily: 'Inter', fontSize: 10 }]}>
+              <Text style={[stylesheet.bubbleTime, { color: isMine ? 'rgba(0,0,0,0.6)' : theme.colors.MUTED, fontFamily: 'Inter', fontSize: 10 }]}>
                 {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </Text>
               {isMine && (
@@ -610,10 +613,10 @@ function ChatContent() {
     : (otherUser?.name || 'Chat');
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.DARK }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
           <Feather name="chevron-left" size={20} color="#FFF" style={{ marginLeft: -2 }} />
         </TouchableOpacity>
 
@@ -632,19 +635,19 @@ function ChatContent() {
               onError={() => setAvatarError(true)}
             />
           ) : (
-            <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: G + '20', borderWidth: 1, borderColor: G + '30', justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: G }}>{title.charAt(0).toUpperCase()}</Text>
+            <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: theme.colors.G + '20', borderWidth: 1, borderColor: theme.colors.G + '30', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.G }}>{title.charAt(0).toUpperCase()}</Text>
             </View>
           )}
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>{title}</Text>
-            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL }}>@{otherUser?.username || otherUser?.name || 'user'}</Text>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL }}>@{otherUser?.username || otherUser?.name || 'user'}</Text>
           </View>
         </TouchableOpacity>
 
         {Boolean(meta?.participant_ids?.find((pid: string) => pid !== user?.id)) && (
           <TouchableOpacity 
-            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
             onPress={() => {
               Alert.alert(
                 'Options',
@@ -672,7 +675,7 @@ function ChatContent() {
               );
             }}
           >
-            <Feather name="more-horizontal" size={18} color={MUTED} />
+            <Feather name="more-horizontal" size={18} color={theme.colors.MUTED} />
           </TouchableOpacity>
         )}
       </View>
@@ -680,7 +683,7 @@ function ChatContent() {
       {/* Item context banner (for marketplace chats) */}
       {meta?.item_title && (
         <TouchableOpacity 
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: 'rgba(255,255,255,0.015)', borderBottomWidth: 1, borderBottomColor: GLASS_BORDER }}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: 'rgba(255,255,255,0.015)', borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER }}
           onPress={() => {
             if (meta?.item_id) {
               router.push(`/marketplace/${meta.item_id}`);
@@ -689,18 +692,18 @@ function ChatContent() {
           activeOpacity={0.7}
         >
           {meta.item_image && (
-            <Image source={{ uri: meta.item_image }} style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: SURFACE }} contentFit="cover" />
+            <Image source={{ uri: meta.item_image }} style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: theme.colors.SURFACE }} contentFit="cover" />
           )}
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 13, color: '#FFFFFF' }} numberOfLines={1}>{meta.item_title}</Text>
             {typeof meta.item_price === 'number' && (
-              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 13, color: G }}>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 13, color: theme.colors.G }}>
                 {meta.item_price === 0 ? 'FREE' : formatPrice(meta.item_price)}
               </Text>
             )}
           </View>
           <View style={{ height: 30, paddingHorizontal: 12, borderRadius: 15, backgroundColor: 'rgba(130,219,126,0.08)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', justifyContent: 'center' }}>
-            <Text style={{ color: G, fontFamily: 'Inter-SemiBold', fontSize: 12 }}>View Listing</Text>
+            <Text style={{ color: theme.colors.G, fontFamily: 'Inter-SemiBold', fontSize: 12 }}>View Listing</Text>
           </View>
         </TouchableOpacity>
       )}
@@ -711,12 +714,12 @@ function ChatContent() {
       >
         {/* Messages */}
         {loading ? (
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color={G} />
+          <View style={stylesheet.center}>
+            <ActivityIndicator size="large" color={theme.colors.G} />
           </View>
         ) : messagesWithDates.length === 0 ? (
-          <View style={styles.center}>
-            <Text style={[styles.emptyText, { color: MUTED, fontFamily: 'Inter' }]}>No messages yet. Say hi! 👋</Text>
+          <View style={stylesheet.center}>
+            <Text style={[stylesheet.emptyText, { color: theme.colors.MUTED, fontFamily: 'Inter' }]}>No messages yet. Say hi! 👋</Text>
           </View>
         ) : (
           <FlatList
@@ -724,7 +727,7 @@ function ChatContent() {
             data={messagesWithDates}
             keyExtractor={(item) => item.id}
             renderItem={renderMessage}
-            contentContainerStyle={styles.msgListContent}
+            contentContainerStyle={stylesheet.msgListContent}
             showsVerticalScrollIndicator={false}
             onContentSizeChange={() => {
               if (messagesWithDates.length > 0) {
@@ -740,24 +743,24 @@ function ChatContent() {
         )}
 
         {/* Input */}
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 16, paddingTop: 12, paddingBottom: keyboardVisible ? 10 : Math.max(insets.bottom, 24), backgroundColor: DARK, borderTopWidth: 1, borderTopColor: GLASS_BORDER, gap: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 16, paddingTop: 12, paddingBottom: keyboardVisible ? 10 : Math.max(insets.bottom, 24), backgroundColor: theme.colors.DARK, borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER, gap: 12 }}>
           <TouchableOpacity 
-            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }} 
+            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }} 
             onPress={pickMedia} 
             disabled={uploadingMedia}
           >
             {uploadingMedia ? (
-              <ActivityIndicator size="small" color={G} />
+              <ActivityIndicator size="small" color={theme.colors.G} />
             ) : (
-              <Feather name="plus" size={18} color={MUTED} />
+              <Feather name="plus" size={18} color={theme.colors.MUTED} />
             )}
           </TouchableOpacity>
 
-          <View style={{ flex: 1, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: inputText.trim() ? 'rgba(130,219,126,0.22)' : GLASS_BORDER, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 }}>
+          <View style={{ flex: 1, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: inputText.trim() ? 'rgba(130,219,126,0.22)' : theme.colors.GLASS_BORDER, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 }}>
             <TextInput
               style={{ color: '#FFF', fontFamily: 'Inter-Regular', fontSize: 15, maxHeight: 96, padding: 0 }}
               placeholder="Message…"
-              placeholderTextColor={LABEL}
+              placeholderTextColor={theme.colors.LABEL}
               value={inputText}
               onChangeText={setInputText}
               multiline
@@ -766,13 +769,13 @@ function ChatContent() {
           </View>
 
           <TouchableOpacity
-            style={[{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center' }, inputText.trim() ? { backgroundColor: G, borderColor: G } : { backgroundColor: '#111', borderColor: GLASS_BORDER }]}
+            style={[{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center' }, inputText.trim() ? { backgroundColor: theme.colors.G, borderColor: theme.colors.G } : { backgroundColor: '#111', borderColor: theme.colors.GLASS_BORDER }]}
             onPress={sendMessage}
             disabled={!inputText.trim() || sending}
           >
             {sending
-              ? <ActivityIndicator size="small" color={inputText.trim() ? DARK : MUTED} />
-              : <Feather name="send" size={16} color={inputText.trim() ? DARK : MUTED} style={{ marginLeft: -2, marginTop: 2 }} />
+              ? <ActivityIndicator size="small" color={inputText.trim() ? theme.colors.DARK : theme.colors.MUTED} />
+              : <Feather name="send" size={16} color={inputText.trim() ? theme.colors.DARK : theme.colors.MUTED} style={{ marginLeft: -2, marginTop: 2 }} />
             }
           </TouchableOpacity>
         </View>
@@ -788,64 +791,66 @@ function ChatContent() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 12, paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
-  headerCenter: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-  headerAvatar: { width: 36, height: 36, borderRadius: 18, marginRight: 10 },
-  headerAvatarFallback: { justifyContent: 'center', alignItems: 'center' },
-  headerAvatarText: { fontWeight: 'bold', fontSize: 16 },
-  headerTitle: { fontSize: 16, fontWeight: 'bold', flex: 1 },
-  contextBanner: {
-    flexDirection: 'row', alignItems: 'center',
-    padding: 10, marginHorizontal: 16, marginTop: 8,
-    borderRadius: 10, borderWidth: 1,
-  },
-  contextImage: { width: 44, height: 44, borderRadius: 8, marginRight: 10 },
-  contextTitle: { fontSize: 13, fontWeight: '600' },
-  contextPrice: { fontSize: 14, fontWeight: 'bold', marginTop: 2 },
-  msgListContent: { padding: 16, paddingBottom: 8, flexGrow: 1, justifyContent: 'flex-start' },
-  msgRow: { marginVertical: 4 },
-  msgRowLeft: { alignItems: 'flex-start' },
-  msgRowRight: { alignItems: 'flex-end' },
-  bubble: {
-    maxWidth: '78%', paddingHorizontal: 14, paddingVertical: 9,
-    borderRadius: 18,
-  },
-  bubbleMine: { borderBottomRightRadius: 4 },
-  bubbleTheirs: { borderBottomLeftRadius: 4 },
-  bubbleText: { fontSize: 15, lineHeight: 21 },
-  bubbleTextMine: {},
-  bubbleTime: { fontSize: 10, marginTop: 3, alignSelf: 'flex-end' },
-  inputRow: {
-    flexDirection: 'row', alignItems: 'flex-end',
-    paddingHorizontal: 8, paddingVertical: 10,
-    borderTopWidth: 1,
-  },
-  attachBtn: {
-    justifyContent: 'center', alignItems: 'center',
-    padding: 8, paddingBottom: 10,
-  },
-  input: {
-    flex: 1,
-    borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10,
-    fontSize: 15, maxHeight: 120, marginRight: 10,
-  },
-  sendBtn: {
-    width: 44, height: 44, borderRadius: 22,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  sendBtnDisabled: { },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  emptyText: { fontSize: 15, textAlign: 'center' },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      header: {
+        flexDirection: 'row', alignItems: 'center',
+        paddingHorizontal: 12, paddingVertical: 12,
+        borderBottomWidth: 1,
+      },
+      backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
+      headerCenter: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+      headerAvatar: { width: 36, height: 36, borderRadius: 18, marginRight: 10 },
+      headerAvatarFallback: { justifyContent: 'center', alignItems: 'center' },
+      headerAvatarText: { fontWeight: 'bold', fontSize: 16 },
+      headerTitle: { fontSize: 16, fontWeight: 'bold', flex: 1 },
+      contextBanner: {
+        flexDirection: 'row', alignItems: 'center',
+        padding: 10, marginHorizontal: 16, marginTop: 8,
+        borderRadius: 10, borderWidth: 1,
+      },
+      contextImage: { width: 44, height: 44, borderRadius: 8, marginRight: 10 },
+      contextTitle: { fontSize: 13, fontWeight: '600' },
+      contextPrice: { fontSize: 14, fontWeight: 'bold', marginTop: 2 },
+      msgListContent: { padding: 16, paddingBottom: 8, flexGrow: 1, justifyContent: 'flex-start' },
+      msgRow: { marginVertical: 4 },
+      msgRowLeft: { alignItems: 'flex-start' },
+      msgRowRight: { alignItems: 'flex-end' },
+      bubble: {
+        maxWidth: '78%', paddingHorizontal: 14, paddingVertical: 9,
+        borderRadius: 18,
+      },
+      bubbleMine: { borderBottomRightRadius: 4 },
+      bubbleTheirs: { borderBottomLeftRadius: 4 },
+      bubbleText: { fontSize: 15, lineHeight: 21 },
+      bubbleTextMine: {},
+      bubbleTime: { fontSize: 10, marginTop: 3, alignSelf: 'flex-end' },
+      inputRow: {
+        flexDirection: 'row', alignItems: 'flex-end',
+        paddingHorizontal: 8, paddingVertical: 10,
+        borderTopWidth: 1,
+      },
+      attachBtn: {
+        justifyContent: 'center', alignItems: 'center',
+        padding: 8, paddingBottom: 10,
+      },
+      input: {
+        flex: 1,
+        borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10,
+        fontSize: 15, maxHeight: 120, marginRight: 10,
+      },
+      sendBtn: {
+        width: 44, height: 44, borderRadius: 22,
+        justifyContent: 'center', alignItems: 'center',
+      },
+      sendBtnDisabled: { },
+      center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+      emptyText: { fontSize: 15, textAlign: 'center' },
+    }));
 
 export default function ChatScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   return (
     <ErrorBoundary screenName="Chat">
       <ChatContent />

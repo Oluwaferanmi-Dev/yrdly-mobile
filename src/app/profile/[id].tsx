@@ -1,7 +1,7 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
+  View, Text, ScrollView,
   TouchableOpacity, ActivityIndicator, Alert, Linking,
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -35,6 +35,8 @@ interface UserProfile {
 }
 
 export default function OtherUserProfileScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -201,20 +203,20 @@ export default function OtherUserProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={G} />
+      <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.colors.G} />
       </SafeAreaView>
     );
   }
 
   if (!profile) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-        <View style={[styles.header, { borderBottomColor: GLASS_BORDER }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
-            <Ionicons name="chevron-back" size={24} color={TEXT_PRIMARY} />
+      <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
+        <View style={[stylesheet.header, { borderBottomColor: theme.colors.GLASS_BORDER }]}>
+          <TouchableOpacity onPress={() => router.back()} style={stylesheet.navBtn}>
+            <Ionicons name="chevron-back" size={24} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Profile Not Found</Text>
+          <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Profile Not Found</Text>
         </View>
       </SafeAreaView>
     );
@@ -223,12 +225,12 @@ export default function OtherUserProfileScreen() {
   const isOwnProfile = currentUser?.id === profile.id;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={[styles.header, { paddingTop: 54 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
+    <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
+      <View style={[stylesheet.header, { paddingTop: 54 }]}>
+        <TouchableOpacity onPress={() => router.back()} style={stylesheet.navBtn}>
           <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: MUTED, fontFamily: 'Outfit-Bold' }]}>
+        <Text style={[stylesheet.headerTitle, { color: theme.colors.MUTED, fontFamily: 'Outfit-Bold' }]}>
           @{profile.username || 'user'}
         </Text>
         <TouchableOpacity 
@@ -249,7 +251,7 @@ export default function OtherUserProfileScreen() {
                 { text: 'Cancel', style: 'cancel' }
               ]);
             }}
-            style={styles.navBtn}
+            style={stylesheet.navBtn}
         >
           <Ionicons name="ellipsis-horizontal" size={18} color="#fff" />
         </TouchableOpacity>
@@ -257,35 +259,35 @@ export default function OtherUserProfileScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Profile hero */}
-        <View style={styles.profileHero}>
-          <View style={styles.heroTopRow}>
-            <View style={styles.avatarWrap}>
+        <View style={stylesheet.profileHero}>
+          <View style={stylesheet.heroTopRow}>
+            <View style={stylesheet.avatarWrap}>
               {(profile.avatar_url && !avatarError && !profile.avatar_url.startsWith('file://')) ? (
                 <Image 
                   source={{ uri: profile.avatar_url }} 
-                  style={styles.avatarImg} 
+                  style={stylesheet.avatarImg} 
                   contentFit="cover" 
                   onError={() => setAvatarError(true)}
                 />
               ) : (
-                <View style={[styles.avatarImg, styles.avatarFallback]}>
-                  <Text style={styles.avatarFallbackTxt}>{profile.name ? profile.name.charAt(0).toUpperCase() : '?'}</Text>
+                <View style={[stylesheet.avatarImg, stylesheet.avatarFallback]}>
+                  <Text style={stylesheet.avatarFallbackTxt}>{profile.name ? profile.name.charAt(0).toUpperCase() : '?'}</Text>
                 </View>
               )}
-              <View style={styles.onlineDot} />
+              <View style={stylesheet.onlineDot} />
             </View>
-            <View style={styles.heroInfo}>
-              <View style={styles.nameRow}>
-                <Text style={styles.heroName}>{profile.name}</Text>
+            <View style={stylesheet.heroInfo}>
+              <View style={stylesheet.nameRow}>
+                <Text style={stylesheet.heroName}>{profile.name}</Text>
                 {profile.phone_verified && (
-                  <MaterialIcons name="verified" size={18} color={G} />
+                  <MaterialIcons name="verified" size={18} color={theme.colors.G} />
                 )}
               </View>
-              <Text style={styles.heroHandle}>@{profile.username || 'user'}</Text>
+              <Text style={stylesheet.heroHandle}>@{profile.username || 'user'}</Text>
               
-              <View style={styles.locationRow}>
-                <Ionicons name="location" size={12} color={G} />
-                <Text style={styles.locationTxt}>
+              <View style={stylesheet.locationRow}>
+                <Ionicons name="location" size={12} color={theme.colors.G} />
+                <Text style={stylesheet.locationTxt}>
                   {[profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ') || 'Unknown Location'}
                 </Text>
               </View>
@@ -293,22 +295,22 @@ export default function OtherUserProfileScreen() {
           </View>
 
           {profile.bio && (
-            <Text style={styles.heroBio}>{profile.bio}</Text>
+            <Text style={stylesheet.heroBio}>{profile.bio}</Text>
           )}
 
           {/* Stats */}
-          <View style={styles.statsRow}>
-            <TouchableOpacity style={styles.statBtn} onPress={() => router.push(`/network/${profile.id}?mode=followers` as any)}>
-              <Text style={styles.statV}>{followersCount}</Text>
-              <Text style={styles.statL}>Followers</Text>
+          <View style={stylesheet.statsRow}>
+            <TouchableOpacity style={stylesheet.statBtn} onPress={() => router.push(`/network/${profile.id}?mode=followers` as any)}>
+              <Text style={stylesheet.statV}>{followersCount}</Text>
+              <Text style={stylesheet.statL}>Followers</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.statBtn} onPress={() => router.push(`/network/${profile.id}?mode=following` as any)}>
-              <Text style={styles.statV}>{followingCount}</Text>
-              <Text style={styles.statL}>Following</Text>
+            <TouchableOpacity style={stylesheet.statBtn} onPress={() => router.push(`/network/${profile.id}?mode=following` as any)}>
+              <Text style={stylesheet.statV}>{followingCount}</Text>
+              <Text style={stylesheet.statL}>Following</Text>
             </TouchableOpacity>
-            <View style={styles.statBtn}>
-              <Text style={styles.statV}>{posts.length}</Text>
-              <Text style={styles.statL}>Posts</Text>
+            <View style={stylesheet.statBtn}>
+              <Text style={stylesheet.statV}>{posts.length}</Text>
+              <Text style={stylesheet.statL}>Posts</Text>
             </View>
           </View>
 
@@ -317,18 +319,18 @@ export default function OtherUserProfileScreen() {
 
           {/* Action buttons */}
           {!isOwnProfile && (
-            <View style={styles.actionRow}>
+            <View style={stylesheet.actionRow}>
               <TouchableOpacity
-                style={[styles.btnAction, { backgroundColor: isFollowing ? SURFACE : G, borderColor: isFollowing ? GLASS_BORDER : G, borderWidth: 1 }]}
+                style={[stylesheet.btnAction, { backgroundColor: isFollowing ? theme.colors.SURFACE : theme.colors.G, borderColor: isFollowing ? theme.colors.GLASS_BORDER : theme.colors.G, borderWidth: 1 }]}
                 onPress={handleToggleFollow}
                 disabled={followLoading}
               >
                 {followLoading ? (
-                  <ActivityIndicator size="small" color={isFollowing ? '#fff' : DARK} />
+                  <ActivityIndicator size="small" color={isFollowing ? '#fff' : theme.colors.DARK} />
                 ) : (
                   <>
                     {isFollowing && <Ionicons name="checkmark" size={16} color="#fff" style={{ marginRight: 6 }} />}
-                    <Text style={[styles.btnActionTxt, { color: isFollowing ? '#fff' : DARK }]}>
+                    <Text style={[stylesheet.btnActionTxt, { color: isFollowing ? '#fff' : theme.colors.DARK }]}>
                       {isFollowing ? 'Following' : isFollower ? 'Follow Back' : 'Follow'}
                     </Text>
                   </>
@@ -336,31 +338,33 @@ export default function OtherUserProfileScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.btnAction, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1 }]}
+                style={[stylesheet.btnAction, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, borderWidth: 1 }]}
                 onPress={handleMessage}
               >
                 <Ionicons name="chatbubble-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
-                <Text style={[styles.btnActionTxt, { color: '#fff' }]}>Message</Text>
+                <Text style={[stylesheet.btnActionTxt, { color: '#fff' }]}>Message</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
 
         {/* Tabs */}
-        <View style={styles.tabsWrap}>
-          {(['posts', 'reviews'] as const).map(t => (
-            <TouchableOpacity key={t} onPress={() => setActiveTab(t)} style={styles.tabBtn}>
-              <Text style={[styles.tabTxt, { color: activeTab === t ? '#fff' : LABEL, fontFamily: activeTab === t ? 'Outfit-Bold' : 'Outfit-Medium' }]}>
-                {t}
-              </Text>
-              {activeTab === t && <View style={styles.tabIndicator} />}
-            </TouchableOpacity>
-          ))}
+        <View style={stylesheet.tabsWrap}>
+          {(['posts', 'reviews'] as const).map(t => {
+          return (
+                      <TouchableOpacity key={t} onPress={() => setActiveTab(t)} style={stylesheet.tabBtn}>
+                        <Text style={[stylesheet.tabTxt, { color: activeTab === t ? '#fff' : theme.colors.LABEL, fontFamily: activeTab === t ? 'Outfit-Bold' : 'Outfit-Medium' }]}>
+                          {t}
+                        </Text>
+                        {activeTab === t && <View style={stylesheet.tabIndicator} />}
+                      </TouchableOpacity>
+                    );
+          })}
         </View>
 
 
 
-        <View style={styles.feedSection}>
+        <View style={stylesheet.feedSection}>
           {activeTab === 'posts' ? (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: '100%' }}>
               {posts.length > 0 ? (
@@ -377,44 +381,46 @@ export default function OtherUserProfileScreen() {
                   );
                 })
               ) : (
-                <View style={[styles.emptyState, { width: '100%' }]}>
-                  <Feather name="image" size={40} color={LABEL} />
-                  <Text style={[styles.emptyTitle, { color: MUTED, fontFamily: 'Outfit' }]}>No posts yet</Text>
-                  <Text style={[styles.emptySubtitle, { color: LABEL, fontFamily: 'Inter' }]}>{profile.name} hasn't posted anything.</Text>
+                <View style={[stylesheet.emptyState, { width: '100%' }]}>
+                  <Feather name="image" size={40} color={theme.colors.LABEL} />
+                  <Text style={[stylesheet.emptyTitle, { color: theme.colors.MUTED, fontFamily: 'Outfit' }]}>No posts yet</Text>
+                  <Text style={[stylesheet.emptySubtitle, { color: theme.colors.LABEL, fontFamily: 'Inter' }]}>{profile.name} hasn't posted anything.</Text>
                 </View>
               )}
             </View>
           ) : (
-            <View style={styles.reviewsList}>
+            <View style={stylesheet.reviewsList}>
               {reviews.length > 0 ? (
-                reviews.map(review => (
-                  <View key={review.id} style={[styles.reviewCard, { backgroundColor: SURFACE, borderBottomColor: GLASS_BORDER }]}>
-                    <View style={styles.reviewHeader}>
-                      <Image source={{ uri: review.buyer?.avatar_url }} style={styles.reviewerAvatar} />
-                      <View style={styles.reviewerInfo}>
-                        <Text style={[styles.reviewerName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{review.buyer?.name}</Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <FontAwesome name="star" size={12} color="#FFD700" />
-                          <Text style={[styles.reviewRatingText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}> {review.rating}</Text>
-                        </View>
-                      </View>
-                      {review.verified_purchase && (
-                        <View style={styles.verifiedBadge}>
-                          <Feather name="check-circle" size={12} color={G} />
-                          <Text style={[styles.verifiedText, { color: G, fontFamily: 'Inter' }]}>Verified</Text>
-                        </View>
-                      )}
-                    </View>
-                    {review.comment ? (
-                      <Text style={[styles.reviewComment, { color: MUTED, fontFamily: 'Inter' }]}>{review.comment}</Text>
-                    ) : null}
-                  </View>
-                ))
+                reviews.map(review => {
+                return (
+                                  <View key={review.id} style={[stylesheet.reviewCard, { backgroundColor: theme.colors.SURFACE, borderBottomColor: theme.colors.GLASS_BORDER }]}>
+                                    <View style={stylesheet.reviewHeader}>
+                                      <Image source={{ uri: review.buyer?.avatar_url }} style={stylesheet.reviewerAvatar} />
+                                      <View style={stylesheet.reviewerInfo}>
+                                        <Text style={[stylesheet.reviewerName, { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{review.buyer?.name}</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                          <FontAwesome name="star" size={12} color="#FFD700" />
+                                          <Text style={[stylesheet.reviewRatingText, { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit' }]}> {review.rating}</Text>
+                                        </View>
+                                      </View>
+                                      {review.verified_purchase && (
+                                        <View style={stylesheet.verifiedBadge}>
+                                          <Feather name="check-circle" size={12} color={theme.colors.G} />
+                                          <Text style={[stylesheet.verifiedText, { color: theme.colors.G, fontFamily: 'Inter' }]}>Verified</Text>
+                                        </View>
+                                      )}
+                                    </View>
+                                    {review.comment ? (
+                                      <Text style={[stylesheet.reviewComment, { color: theme.colors.MUTED, fontFamily: 'Inter' }]}>{review.comment}</Text>
+                                    ) : null}
+                                  </View>
+                                );
+                })
               ) : (
-                <View style={[styles.emptyState, { width: '100%' }]}>
-                  <Feather name="star" size={40} color={LABEL} />
-                  <Text style={[styles.emptyTitle, { color: MUTED, fontFamily: 'Outfit' }]}>No reviews yet</Text>
-                  <Text style={[styles.emptySubtitle, { color: LABEL, fontFamily: 'Inter' }]}>{profile.name} doesn't have any reviews.</Text>
+                <View style={[stylesheet.emptyState, { width: '100%' }]}>
+                  <Feather name="star" size={40} color={theme.colors.LABEL} />
+                  <Text style={[stylesheet.emptyTitle, { color: theme.colors.MUTED, fontFamily: 'Outfit' }]}>No reviews yet</Text>
+                  <Text style={[stylesheet.emptySubtitle, { color: theme.colors.LABEL, fontFamily: 'Inter' }]}>{profile.name} doesn't have any reviews.</Text>
                 </View>
               )}
             </View>
@@ -425,53 +431,53 @@ export default function OtherUserProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingBottom: 12
-  },
-  navBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 15, textAlign: 'center' },
-  profileHero: { paddingHorizontal: 20, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  heroTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16, marginBottom: 16 },
-  avatarWrap: { position: 'relative' },
-  avatarImg: { width: 80, height: 80, borderRadius: 40, borderWidth: 2.5, borderColor: GLASS_BORDER },
-  avatarFallback: { backgroundColor: G, alignItems: 'center', justifyContent: 'center' },
-  avatarFallbackTxt: { fontSize: 32, fontFamily: 'Outfit-Bold', color: '#050505' },
-  onlineDot: { position: 'absolute', bottom: 3, right: 3, width: 14, height: 14, borderRadius: 7, backgroundColor: G, borderWidth: 2, borderColor: '#050505' },
-  heroInfo: { flex: 1, justifyContent: 'center' },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  heroName: { fontSize: 20, fontFamily: 'Outfit-Bold', color: '#fff' },
-  heroHandle: { fontSize: 13, fontFamily: 'Inter-Regular', color: LABEL, marginBottom: 6 },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  locationTxt: { fontSize: 12, fontFamily: 'Inter-Regular', color: LABEL },
-  heroBio: { fontSize: 14, fontFamily: 'Inter-Regular', color: MUTED, lineHeight: 22, marginBottom: 12 },
-  statsRow: { flexDirection: 'row', gap: 20, marginBottom: 16 },
-  statBtn: { alignItems: 'center' },
-  statV: { fontSize: 18, fontFamily: 'Outfit-Bold', color: '#fff' },
-  statL: { fontSize: 11, fontFamily: 'Inter-Regular', color: LABEL },
-  actionRow: { flexDirection: 'row', gap: 12 },
-  btnAction: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 14 },
-  btnActionTxt: { fontSize: 14, fontFamily: 'Outfit-Bold' },
-  tabsWrap: { flexDirection: 'row', paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  tabBtn: { flex: 1, paddingVertical: 12, position: 'relative' },
-  tabTxt: { fontSize: 14, textAlign: 'center', textTransform: 'capitalize' },
-  tabIndicator: { position: 'absolute', bottom: -1, left: 0, right: 0, height: 2, borderRadius: 99, backgroundColor: G },
-  
-  feedSection: { paddingTop: 16 },
-  emptyState: { alignItems: 'center', padding: 40 },
-  emptyTitle: { fontSize: 16, fontWeight: 'bold', marginTop: 12 },
-  emptySubtitle: { fontSize: 14, marginTop: 6 },
-  reviewsList: { paddingHorizontal: 16 },
-  reviewCard: { paddingVertical: 16, borderBottomWidth: 1 },
-  reviewHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  reviewerAvatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
-  reviewerInfo: { flex: 1 },
-  reviewerName: { fontSize: 15, fontWeight: 'bold', marginBottom: 2 },
-  reviewRatingText: { fontSize: 13, fontWeight: 'bold' },
-  verifiedBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F5E9', paddingHorizontal: 6, paddingVertical: 4, borderRadius: 4, opacity: 0.8 },
-  verifiedText: { fontSize: 11, fontWeight: 'bold', marginLeft: 4 },
-  reviewComment: { fontSize: 14, lineHeight: 20, marginTop: 4 },
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      header: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        paddingHorizontal: 20, paddingBottom: 12
+      },
+      navBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontSize: 15, textAlign: 'center' },
+      profileHero: { paddingHorizontal: 20, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      heroTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 16, marginBottom: 16 },
+      avatarWrap: { position: 'relative' },
+      avatarImg: { width: 80, height: 80, borderRadius: 40, borderWidth: 2.5, borderColor: theme.colors.GLASS_BORDER },
+      avatarFallback: { backgroundColor: theme.colors.G, alignItems: 'center', justifyContent: 'center' },
+      avatarFallbackTxt: { fontSize: 32, fontFamily: 'Outfit-Bold', color: '#050505' },
+      onlineDot: { position: 'absolute', bottom: 3, right: 3, width: 14, height: 14, borderRadius: 7, backgroundColor: theme.colors.G, borderWidth: 2, borderColor: '#050505' },
+      heroInfo: { flex: 1, justifyContent: 'center' },
+      nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+      heroName: { fontSize: 20, fontFamily: 'Outfit-Bold', color: '#fff' },
+      heroHandle: { fontSize: 13, fontFamily: 'Inter-Regular', color: theme.colors.LABEL, marginBottom: 6 },
+      locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+      locationTxt: { fontSize: 12, fontFamily: 'Inter-Regular', color: theme.colors.LABEL },
+      heroBio: { fontSize: 14, fontFamily: 'Inter-Regular', color: theme.colors.MUTED, lineHeight: 22, marginBottom: 12 },
+      statsRow: { flexDirection: 'row', gap: 20, marginBottom: 16 },
+      statBtn: { alignItems: 'center' },
+      statV: { fontSize: 18, fontFamily: 'Outfit-Bold', color: '#fff' },
+      statL: { fontSize: 11, fontFamily: 'Inter-Regular', color: theme.colors.LABEL },
+      actionRow: { flexDirection: 'row', gap: 12 },
+      btnAction: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 14 },
+      btnActionTxt: { fontSize: 14, fontFamily: 'Outfit-Bold' },
+      tabsWrap: { flexDirection: 'row', paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      tabBtn: { flex: 1, paddingVertical: 12, position: 'relative' },
+      tabTxt: { fontSize: 14, textAlign: 'center', textTransform: 'capitalize' },
+      tabIndicator: { position: 'absolute', bottom: -1, left: 0, right: 0, height: 2, borderRadius: 99, backgroundColor: theme.colors.G },
+      
+      feedSection: { paddingTop: 16 },
+      emptyState: { alignItems: 'center', padding: 40 },
+      emptyTitle: { fontSize: 16, fontWeight: 'bold', marginTop: 12 },
+      emptySubtitle: { fontSize: 14, marginTop: 6 },
+      reviewsList: { paddingHorizontal: 16 },
+      reviewCard: { paddingVertical: 16, borderBottomWidth: 1 },
+      reviewHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+      reviewerAvatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
+      reviewerInfo: { flex: 1 },
+      reviewerName: { fontSize: 15, fontWeight: 'bold', marginBottom: 2 },
+      reviewRatingText: { fontSize: 13, fontWeight: 'bold' },
+      verifiedBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F5E9', paddingHorizontal: 6, paddingVertical: 4, borderRadius: 4, opacity: 0.8 },
+      verifiedText: { fontSize: 11, fontWeight: 'bold', marginLeft: 4 },
+      reviewComment: { fontSize: 14, lineHeight: 20, marginTop: 4 },
 
-});
+    }));

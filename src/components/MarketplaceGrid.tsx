@@ -1,6 +1,6 @@
-import { DARK, SURFACE } from '../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator, Text, Alert, RefreshControl } from 'react-native';
+import { StyleSheet, View, FlatList, ActivityIndicator, Text, Alert, RefreshControl } from 'react-native';
 import { MarketplaceItemCard } from './MarketplaceItemCard';
 import { Skeleton } from './Skeleton';
 import { supabase } from '../lib/supabase';
@@ -16,6 +16,8 @@ interface MarketplaceGridProps {
 }
 
 export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: MarketplaceGridProps) {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
@@ -130,25 +132,27 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
 
   if (loading) {
     return (
-      <View style={styles.skeletonGrid}>
-        {[1, 2, 3, 4, 5, 6].map(key => (
-          <View key={key} style={[styles.skeletonCard, { backgroundColor: SURFACE, borderColor: colors.borderLight }]}>
-            <Skeleton width="100%" height={160} />
-            <View style={{ padding: 12 }}>
-              <Skeleton width="80%" height={14} style={{ marginBottom: 6 }} />
-              <Skeleton width="60%" height={14} style={{ marginBottom: 12 }} />
-              <Skeleton width="40%" height={18} />
-            </View>
-          </View>
-        ))}
+      <View style={stylesheet.skeletonGrid}>
+        {[1, 2, 3, 4, 5, 6].map(key => {
+        return (
+                  <View key={key} style={[stylesheet.skeletonCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+                    <Skeleton width="100%" height={160} />
+                    <View style={{ padding: 12 }}>
+                      <Skeleton width="80%" height={14} style={{ marginBottom: 6 }} />
+                      <Skeleton width="60%" height={14} style={{ marginBottom: 12 }} />
+                      <Skeleton width="40%" height={18} />
+                    </View>
+                  </View>
+                );
+        })}
       </View>
     );
   }
 
   if (items.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+      <View style={stylesheet.centerContainer}>
+        <Text style={[stylesheet.emptyText, { color: colors.textMuted }]}>
           {searchQuery ? `No results for "${searchQuery}"` : "Marketplace is empty"}
         </Text>
       </View>
@@ -169,42 +173,42 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
           onBuyNow={(item) => router.push({ pathname: '/checkout/[id]', params: { id: item.id, type: 'marketplace' } })}
         />
       )}
-      contentContainerStyle={styles.listContent}
-      columnWrapperStyle={styles.columnWrapper}
+      contentContainerStyle={stylesheet.listContent}
+      columnWrapperStyle={stylesheet.columnWrapper}
       showsVerticalScrollIndicator={false}
     />
   );
 }
 
-const styles = StyleSheet.create({
-  listContent: {
-    padding: 16,
-    paddingBottom: 100, // padding for the FAB later
-  },
-  columnWrapper: {
-    justifyContent: 'space-between',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  skeletonGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 16,
-    justifyContent: 'space-between',
-  },
-  skeletonCard: {
-    width: '48%',
-    marginBottom: 16,
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      listContent: {
+        padding: 16,
+        paddingBottom: 100, // padding for the FAB later
+      },
+      columnWrapper: {
+        justifyContent: 'space-between',
+      },
+      centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+      },
+      emptyText: {
+        fontSize: 16,
+        textAlign: 'center',
+      },
+      skeletonGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        padding: 16,
+        justifyContent: 'space-between',
+      },
+      skeletonCard: {
+        width: '48%',
+        marginBottom: 16,
+        borderRadius: 8,
+        borderWidth: StyleSheet.hairlineWidth,
+        overflow: 'hidden',
+      },
+    }));

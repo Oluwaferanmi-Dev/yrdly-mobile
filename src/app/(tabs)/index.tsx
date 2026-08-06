@@ -1,5 +1,6 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
-import { View, Text, StyleSheet, RefreshControl, TouchableOpacity, Platform, Modal } from 'react-native';
+import { View, Text, RefreshControl, TouchableOpacity, Platform, Modal } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
 import { PostCard } from '../../components/PostCard';
@@ -30,8 +31,6 @@ import { AlertBanner } from '../../components/AlertBanner';
 import { PendingFriendRequestsBanner } from '../../components/PendingFriendRequestsBanner';
 import { AlertService, Alert } from '../../lib/alert-service';
 import * as SecureStore from 'expo-secure-store';
-import { G, GLOW, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, RED } from '../../constants/tokens';
-
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList as any) as any;
 
 const FeedPostItem = memo(({ 
@@ -63,6 +62,8 @@ const FeedPostItem = memo(({
 });
 
 const QuickPostBox = memo(() => {
+    const { styles, theme } = useStyles(sStylesheet);
+
   const { user, profile } = useAuth();
   const router = useRouter();
 
@@ -83,15 +84,15 @@ const QuickPostBox = memo(() => {
         gap: 12,
         backgroundColor: 'rgba(255,255,255,0.04)',
         borderWidth: 1,
-        borderColor: GLASS_BORDER,
+        borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 24,
       }}
     >
-      <View style={{ width: 38, height: 38, borderRadius: 19, borderWidth: 2, borderColor: G, overflow: 'hidden', flexShrink: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)' }}>
+      <View style={{ width: 38, height: 38, borderRadius: 19, borderWidth: 2, borderColor: theme.colors.G, overflow: 'hidden', flexShrink: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)' }}>
         {avatarUri ? (
           <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
         ) : (
-          <Text style={{ color: G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
+          <Text style={{ color: theme.colors.G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
         )}
       </View>
 
@@ -99,14 +100,16 @@ const QuickPostBox = memo(() => {
         What's happening in your neighbourhood?
       </Text>
 
-      <View style={{ height: 32, paddingHorizontal: 14, borderRadius: 16, backgroundColor: G, justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
-        <Text style={{ color: DARK, fontWeight: '700', fontSize: 13, fontFamily: 'Outfit-Bold' }}>Post</Text>
+      <View style={{ height: 32, paddingHorizontal: 14, borderRadius: 16, backgroundColor: theme.colors.G, justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
+        <Text style={{ color: theme.colors.DARK, fontWeight: '700', fontSize: 13, fontFamily: 'Outfit-Bold' }}>Post</Text>
       </View>
     </TouchableOpacity>
   );
 });
 
 export default function HomeTab() {
+    const { styles: stylesheet, theme } = useStyles(sStylesheet);
+
   const { user, profile } = useAuth();
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
@@ -271,25 +274,25 @@ export default function HomeTab() {
 
   if (loading && posts.length === 0 && !refreshing) {
     return (
-      <View style={[styles.container, { backgroundColor: DARK }]}>
-        <View style={[styles.headerContent, { paddingTop: insets.top, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }]}>
-          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: G, letterSpacing: -0.5 }}>YRDLY</Text>
+      <View style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
+        <View style={[stylesheet.headerContent, { paddingTop: insets.top, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.DARK, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }]}>
+          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: theme.colors.G, letterSpacing: -0.5 }}>YRDLY</Text>
           <View style={{ flex: 1, paddingHorizontal: 10, alignItems: 'flex-start' }}>
             <LocationChip />
           </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
+          <View style={stylesheet.headerRight}>
+            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
               <MapIcon size={17} color="rgba(255,255,255,0.85)" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
+            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
               <NotificationsIcon size={17} color="rgba(255,255,255,0.85)" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/profile' as any)} style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden', borderWidth: 2, borderColor: G, padding: 0 }}>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/profile' as any)} style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden', borderWidth: 2, borderColor: theme.colors.G, padding: 0 }}>
               {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
                 <Image source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
               ) : (
                 <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{ color: G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
+                  <Text style={{ color: theme.colors.G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -305,20 +308,20 @@ export default function HomeTab() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: DARK }]}>
+    <View style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
       <Animated.View style={headerAnimatedStyle}>
-        <View style={[styles.headerContent, { paddingTop: insets.top, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER, backgroundColor: DARK }]}>
-          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: G, letterSpacing: -0.5 }}>YRDLY</Text>
+        <View style={[stylesheet.headerContent, { paddingTop: insets.top, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.DARK }]}>
+          <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: theme.colors.G, letterSpacing: -0.5 }}>YRDLY</Text>
           
           <View style={{ flex: 1, paddingHorizontal: 10, alignItems: 'flex-start' }}>
             <LocationChip />
           </View>
 
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
+          <View style={stylesheet.headerRight}>
+            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
               <MapIcon size={17} color="rgba(255,255,255,0.85)" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
+            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
               <NotificationsIcon size={17} color="rgba(255,255,255,0.85)" />
               {unreadCount > 0 && (
                 <View style={{
@@ -330,12 +333,12 @@ export default function HomeTab() {
                 </View>
               )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/profile' as any)} style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden', borderWidth: 2, borderColor: G, padding: 0 }}>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/profile' as any)} style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden', borderWidth: 2, borderColor: theme.colors.G, padding: 0 }}>
               {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
                 <Image source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
               ) : (
                 <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{ color: G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
+                  <Text style={{ color: theme.colors.G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -446,10 +449,10 @@ export default function HomeTab() {
             <QuickPostBox />
           </View>
         }
-        contentContainerStyle={[styles.listContent, { paddingTop: HEADER_HEIGHT, paddingBottom: 80 }]}
+        contentContainerStyle={[stylesheet.listContent, { paddingTop: HEADER_HEIGHT, paddingBottom: 80 }]}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: colors.textMuted }]}>No posts yet. Be the first to post!</Text>
+          <View style={stylesheet.emptyContainer}>
+            <Text style={[stylesheet.emptyText, { color: colors.textMuted }]}>No posts yet. Be the first to post!</Text>
           </View>
         }
       />
@@ -465,39 +468,39 @@ export default function HomeTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listContent: {
-    // handled dynamically
-  },
-  headerContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    borderBottomWidth: 0.5,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  emptyContainer: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-  },
-});
+const sStylesheet = createStyleSheet(theme => ({
+      container: {
+        flex: 1,
+      },
+      centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      listContent: {
+        // handled dynamically
+      },
+      headerContent: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        borderBottomWidth: 0.5,
+      },
+      headerTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+      },
+      headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      emptyContainer: {
+        padding: 40,
+        alignItems: 'center',
+      },
+      emptyText: {
+        fontSize: 16,
+      },
+    }));

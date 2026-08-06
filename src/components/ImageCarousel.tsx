@@ -1,7 +1,7 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, NativeSyntheticEvent, NativeScrollEvent, LayoutChangeEvent } from 'react-native';
+import { View, ScrollView, NativeSyntheticEvent, NativeScrollEvent, LayoutChangeEvent } from 'react-native';
 import { Image } from 'expo-image';
-import { SURFACE, LABEL } from '../constants/tokens';
 import { Feather } from '@expo/vector-icons';
 
 interface ImageCarouselProps {
@@ -11,6 +11,8 @@ interface ImageCarouselProps {
 }
 
 export function ImageCarousel({ imageUrls, height = 300, autoPlay = false }: ImageCarouselProps) {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -49,8 +51,8 @@ export function ImageCarousel({ imageUrls, height = 300, autoPlay = false }: Ima
 
   if (!imageUrls || imageUrls.length === 0) {
     return (
-      <View style={[styles.placeholder, { height }]}>
-        <Feather name="image" size={48} color={LABEL} />
+      <View style={[stylesheet.placeholder, { height }]}>
+        <Feather name="image" size={48} color={theme.colors.LABEL} />
       </View>
     );
   }
@@ -80,13 +82,13 @@ export function ImageCarousel({ imageUrls, height = 300, autoPlay = false }: Ima
       )}
       
       {imageUrls.length > 1 && (
-        <View style={styles.paginationContainer}>
+        <View style={stylesheet.paginationContainer}>
           {imageUrls.map((_, index) => (
             <View
               key={index}
               style={[
-                styles.dot,
-                currentIndex === index ? styles.activeDot : styles.inactiveDot
+                stylesheet.dot,
+                currentIndex === index ? stylesheet.activeDot : stylesheet.inactiveDot
               ]}
             />
           ))}
@@ -96,33 +98,33 @@ export function ImageCarousel({ imageUrls, height = 300, autoPlay = false }: Ima
   );
 }
 
-const styles = StyleSheet.create({
-  placeholder: {
-    width: '100%',
-    backgroundColor: SURFACE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  paginationContainer: {
-    position: 'absolute',
-    bottom: 12,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
-  },
-  dot: {
-    height: 6,
-    borderRadius: 3,
-  },
-  activeDot: {
-    width: 16,
-    backgroundColor: '#FFFFFF',
-  },
-  inactiveDot: {
-    width: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-  }
-});
+const _stylesheet = createStyleSheet(theme => ({
+      placeholder: {
+        width: '100%',
+        backgroundColor: theme.colors.SURFACE,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      paginationContainer: {
+        position: 'absolute',
+        bottom: 12,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 6,
+      },
+      dot: {
+        height: 6,
+        borderRadius: 3,
+      },
+      activeDot: {
+        width: 16,
+        backgroundColor: '#FFFFFF',
+      },
+      inactiveDot: {
+        width: 6,
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+      }
+    }));

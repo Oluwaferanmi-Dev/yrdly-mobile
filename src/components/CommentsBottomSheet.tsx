@@ -1,5 +1,6 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback, forwardRef, useImperativeHandle, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,7 +13,6 @@ import { useAppTheme } from '../context/ThemeContext';
 import { Post } from '../types';
 import { StorageService } from '../lib/storage-service';
 import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
-import { G, DARK, GLASS_BG, GLASS_BORDER, MUTED, LABEL, TEXT_PRIMARY } from '../constants/tokens';
 
 export interface CommentsBottomSheetProps {
   postId: string | null;
@@ -27,6 +27,8 @@ import { CommentItem, CommentType } from './CommentItem';
 import { CommentInput, CommentInputRef } from './CommentInput';
 
 export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBottomSheetProps>(({ postId }, ref) => {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const router = useRouter();
   const { colors } = useAppTheme();
   const { user, profile } = useAuth();
@@ -252,29 +254,32 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
   }, [handleReply, handleLikeComment, handleDeleteComment, handlePressProfile, user?.id]);
 
   const renderFooter = useCallback(
-    (props: any) => (
-      <BottomSheetFooter {...props} bottomInset={0}>
-        <View style={{ overflow: 'hidden' }}>
-          {isLiquidGlassSupported ? (
-            <LiquidGlassView
-              {...({ intensity: 80, tint: colors.background === '#000000' ? 'dark' : 'light', fallbackColor: colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
-              style={StyleSheet.absoluteFill}
-            />
-          ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' }]} />
-          )}
-          <CommentInput
-            ref={inputRef}
-            userAvatarSource={userAvatarSource}
-            userInitial={(profile?.name || user?.user_metadata?.name || user?.email || '?').charAt(0).toUpperCase()}
-            replyingTo={replyingTo}
-            onClearReply={() => setReplyingTo(null)}
-            onSubmit={handleSendComment}
-            InputComponent={BottomSheetTextInput}
-          />
-        </View>
-      </BottomSheetFooter>
-    ),
+    (props: any) => {
+      const { styles: stylesheet, theme } = useStyles(_stylesheet);
+      return (
+            <BottomSheetFooter {...props} bottomInset={0}>
+              <View style={{ overflow: 'hidden' }}>
+                {isLiquidGlassSupported ? (
+                  <LiquidGlassView
+                    {...({ intensity: 80, tint: colors.background === '#000000' ? 'dark' : 'light', fallbackColor: colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
+                    style={StyleSheet.absoluteFill}
+                  />
+                ) : (
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' }]} />
+                )}
+                <CommentInput
+                  ref={inputRef}
+                  userAvatarSource={userAvatarSource}
+                  userInitial={(profile?.name || user?.user_metadata?.name || user?.email || '?').charAt(0).toUpperCase()}
+                  replyingTo={replyingTo}
+                  onClearReply={() => setReplyingTo(null)}
+                  onSubmit={handleSendComment}
+                  InputComponent={BottomSheetTextInput}
+                />
+              </View>
+            </BottomSheetFooter>
+          );
+      },
     [userAvatarSource, user, replyingTo, handleSendComment, colors.background]
   );
 
@@ -286,7 +291,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       enableDynamicSizing={false}
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}
-      backgroundStyle={{ backgroundColor: DARK }}
+      backgroundStyle={{ backgroundColor: theme.colors.DARK }}
       handleIndicatorStyle={{ backgroundColor: colors.border }}
       keyboardBehavior="extend"
       keyboardBlurBehavior="restore"
@@ -294,14 +299,14 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       <LiquidGlassView
         {...({ intensity: 80, tint: colors.background === '#000000' ? 'dark' : 'light', fallbackColor: colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
       >
-        <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Comments</Text>
-          <View style={[styles.headerDivider, { backgroundColor: colors.borderLight }]} />
+        <View style={stylesheet.header}>
+          <Text style={[stylesheet.headerTitle, { color: colors.text }]}>Comments</Text>
+          <View style={[stylesheet.headerDivider, { backgroundColor: colors.borderLight }]} />
         </View>
       </LiquidGlassView>
 
       {loading && comments.length === 0 ? (
-        <View style={styles.center}>
+        <View style={stylesheet.center}>
           <ActivityIndicator size="small" color={colors.tint} />
         </View>
       ) : (
@@ -309,12 +314,12 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
           data={commentTree}
           keyExtractor={(item) => item.id}
           renderItem={renderComment}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={stylesheet.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { color: colors.text }]}>No comments yet.</Text>
-              <Text style={[styles.emptyText, { color: colors.textMuted }]}>Start the conversation.</Text>
+            <View style={stylesheet.emptyContainer}>
+              <Text style={[stylesheet.emptyText, { color: colors.text }]}>No comments yet.</Text>
+              <Text style={[stylesheet.emptyText, { color: colors.textMuted }]}>Start the conversation.</Text>
             </View>
           }
         />
@@ -323,39 +328,39 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
   );
 });
 
-const styles = StyleSheet.create({
-  header: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  headerDivider: {
-    width: '100%',
-    height: 1,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listContent: {
-    paddingTop: 16,
-    paddingBottom: 40,
-  },
+const _stylesheet = createStyleSheet(theme => ({
+      header: {
+        alignItems: 'center',
+        paddingVertical: 12,
+      },
+      headerTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 12,
+      },
+      headerDivider: {
+        width: '100%',
+        height: 1,
+      },
+      center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      listContent: {
+        paddingTop: 16,
+        paddingBottom: 40,
+      },
 
-  emptyContainer: {
-    alignItems: 'center',
-    marginTop: 40,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontFamily: 'Outfit',
-    fontWeight: 'bold',
-    marginBottom: 4,
-    color: TEXT_PRIMARY,
-  },
-});
+      emptyContainer: {
+        alignItems: 'center',
+        marginTop: 40,
+      },
+      emptyText: {
+        fontSize: 18,
+        fontFamily: 'Outfit',
+        fontWeight: 'bold',
+        marginBottom: 4,
+        color: theme.colors.TEXT_PRIMARY,
+      },
+    }));

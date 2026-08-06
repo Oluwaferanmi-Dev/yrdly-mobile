@@ -1,7 +1,7 @@
-import { DARK, SURFACE, GLASS_BORDER, G, MUTED, LABEL, TEXT_PRIMARY } from '../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, useWindowDimensions,
+  View, Text, FlatList, TouchableOpacity, Alert, useWindowDimensions,
   RefreshControl, ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -50,6 +50,8 @@ function timeAgo(dateString: string) {
 }
 
 export default function NotificationsScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
@@ -138,16 +140,16 @@ export default function NotificationsScreen() {
   }, [notifications, activeFilter]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: DARK }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.DARK }}>
       
       {/* ── Detail Header (Figma 1:1 Matching) ── */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={20} color={TEXT_PRIMARY} />
+      <View style={stylesheet.header}>
+        <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        <TouchableOpacity onPress={markAllRead} style={styles.markReadBtn}>
-          <Text style={styles.markReadText}>Mark Read</Text>
+        <Text style={stylesheet.headerTitle}>Notifications</Text>
+        <TouchableOpacity onPress={markAllRead} style={stylesheet.markReadBtn}>
+          <Text style={stylesheet.markReadText}>Mark Read</Text>
         </TouchableOpacity>
       </View>
 
@@ -160,16 +162,17 @@ export default function NotificationsScreen() {
           keyExtractor={item => item}
           contentContainerStyle={{ gap: 8 }}
           renderItem={({ item }) => {
+
             const active = activeFilter === item;
             return (
               <TouchableOpacity
                 style={[
-                  styles.filterPill,
-                  active && styles.filterPillActive
+                  stylesheet.filterPill,
+                  active && stylesheet.filterPillActive
                 ]}
                 onPress={() => setActiveFilter(item)}
               >
-                <Text style={[styles.filterPillText, active && styles.filterPillTextActive]}>
+                <Text style={[stylesheet.filterPillText, active && stylesheet.filterPillTextActive]}>
                   {item}
                 </Text>
               </TouchableOpacity>
@@ -185,174 +188,176 @@ export default function NotificationsScreen() {
 
       {/* ── Notifications List ── */}
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={G} />
+        <View style={stylesheet.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.G} />
         </View>
       ) : filteredNotifications.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptyIconCircle}>
-            <Ionicons name="notifications-off-outline" size={32} color={LABEL} />
+        <View style={stylesheet.emptyContainer}>
+          <View style={stylesheet.emptyIconCircle}>
+            <Ionicons name="notifications-off-outline" size={32} color={theme.colors.LABEL} />
           </View>
-          <Text style={styles.emptyTitle}>No notifications</Text>
-          <Text style={styles.emptySubtitle}>You're all caught up with your neighbourhood updates.</Text>
+          <Text style={stylesheet.emptyTitle}>No notifications</Text>
+          <Text style={stylesheet.emptySubtitle}>You're all caught up with your neighbourhood updates.</Text>
         </View>
       ) : (
         <FlashList
           data={filteredNotifications}
           keyExtractor={item => item.id}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchNotifications(true)} tintColor={G} />}
-          contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.notifRow,
-                !item.is_read && { backgroundColor: 'rgba(130,219,126,0.03)' }
-              ]}
-              onPress={() => {
-                if (!item.is_read) {
-                  supabase.from('notifications').update({ is_read: true }).eq('id', item.id);
-                  setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n));
-                }
-                if (item.type.includes('event')) router.push('/events' as any);
-                else if (item.type.includes('marketplace') || item.type.includes('escrow')) router.push('/transactions');
-                else if (item.type === 'friend_request') router.push('/community');
-                else if (item.related_id) router.push(`/posts/${item.related_id}`);
-              }}
-            >
-              <View style={styles.avatarWrapper}>
-                {item.from_user_avatar ? (
-                  <Image source={{ uri: item.from_user_avatar }} style={styles.avatarImg} />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <Ionicons name="notifications" size={18} color={G} />
-                  </View>
-                )}
-                {!item.is_read && <View style={styles.unreadDot} />}
-              </View>
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchNotifications(true)} tintColor={theme.colors.G} />}
+          contentContainerStyle={stylesheet.listContent}
+          renderItem={({ item }) => {
+          return (
+                      <TouchableOpacity
+                        style={[
+                          stylesheet.notifRow,
+                          !item.is_read && { backgroundColor: 'rgba(130,219,126,0.03)' }
+                        ]}
+                        onPress={() => {
+                          if (!item.is_read) {
+                            supabase.from('notifications').update({ is_read: true }).eq('id', item.id);
+                            setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n));
+                          }
+                          if (item.type.includes('event')) router.push('/events' as any);
+                          else if (item.type.includes('marketplace') || item.type.includes('escrow')) router.push('/transactions');
+                          else if (item.type === 'friend_request') router.push('/community');
+                          else if (item.related_id) router.push(`/posts/${item.related_id}`);
+                        }}
+                      >
+                        <View style={stylesheet.avatarWrapper}>
+                          {item.from_user_avatar ? (
+                            <Image source={{ uri: item.from_user_avatar }} style={stylesheet.avatarImg} />
+                          ) : (
+                            <View style={stylesheet.avatarPlaceholder}>
+                              <Ionicons name="notifications" size={18} color={theme.colors.G} />
+                            </View>
+                          )}
+                          {!item.is_read && <View style={stylesheet.unreadDot} />}
+                        </View>
 
-              <View style={styles.notifContent}>
-                <View style={styles.notifTopRow}>
-                  <Text style={[styles.notifTitle, !item.is_read && { fontFamily: 'Outfit-Bold' }]} numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  <Text style={styles.timeText}>{timeAgo(item.created_at)}</Text>
-                </View>
-                <Text style={[styles.notifMsg, !item.is_read && { color: TEXT_PRIMARY }]} numberOfLines={2}>
-                  {item.message}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          )}
+                        <View style={stylesheet.notifContent}>
+                          <View style={stylesheet.notifTopRow}>
+                            <Text style={[stylesheet.notifTitle, !item.is_read && { fontFamily: 'Outfit-Bold' }]} numberOfLines={1}>
+                              {item.title}
+                            </Text>
+                            <Text style={stylesheet.timeText}>{timeAgo(item.created_at)}</Text>
+                          </View>
+                          <Text style={[stylesheet.notifMsg, !item.is_read && { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={2}>
+                            {item.message}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+          }}
         />
       )}
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 14,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#111111',
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: TEXT_PRIMARY },
-  markReadBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-  },
-  markReadText: { fontFamily: 'Inter-Medium', fontSize: 12, color: G },
-  filterPill: {
-    height: 32,
-    paddingHorizontal: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  filterPillActive: {
-    backgroundColor: 'rgba(130,219,126,0.1)',
-    borderColor: 'rgba(130,219,126,0.25)',
-  },
-  filterPillText: { fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL },
-  filterPillTextActive: { fontFamily: 'Inter-SemiBold', color: G },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  listContent: { paddingBottom: 40 },
-  notifRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
-    gap: 14,
-  },
-  avatarWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    position: 'relative',
-  },
-  avatarImg: { width: '100%', height: '100%', borderRadius: 22 },
-  avatarPlaceholder: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 22,
-    backgroundColor: 'rgba(130,219,126,0.08)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  unreadDot: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: G,
-    borderWidth: 2,
-    borderColor: DARK,
-  },
-  notifContent: { flex: 1 },
-  notifTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
-  notifTitle: { fontFamily: 'Outfit-SemiBold', fontSize: 15, color: '#FFFFFF', flex: 1 },
-  timeText: { fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL },
-  notifMsg: { fontFamily: 'Inter-Regular', fontSize: 13, color: MUTED, lineHeight: 18 },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingTop: 80,
-  },
-  emptyIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#FFFFFF', marginBottom: 6 },
-  emptySubtitle: { fontFamily: 'Inter-Regular', fontSize: 14, color: LABEL, textAlign: 'center', lineHeight: 20 },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingTop: 10,
+        paddingBottom: 14,
+      },
+      backBtn: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        backgroundColor: '#111111',
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.TEXT_PRIMARY },
+      markReadBtn: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      markReadText: { fontFamily: 'Inter-Medium', fontSize: 12, color: theme.colors.G },
+      filterPill: {
+        height: 32,
+        paddingHorizontal: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      filterPillActive: {
+        backgroundColor: 'rgba(130,219,126,0.1)',
+        borderColor: 'rgba(130,219,126,0.25)',
+      },
+      filterPillText: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL },
+      filterPillTextActive: { fontFamily: 'Inter-SemiBold', color: theme.colors.G },
+      loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+      listContent: { paddingBottom: 40 },
+      notifRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        paddingHorizontal: 20,
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.04)',
+        gap: 14,
+      },
+      avatarWrapper: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        position: 'relative',
+      },
+      avatarImg: { width: '100%', height: '100%', borderRadius: 22 },
+      avatarPlaceholder: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 22,
+        backgroundColor: 'rgba(130,219,126,0.08)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      unreadDot: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: theme.colors.G,
+        borderWidth: 2,
+        borderColor: theme.colors.DARK,
+      },
+      notifContent: { flex: 1 },
+      notifTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
+      notifTitle: { fontFamily: 'Outfit-SemiBold', fontSize: 15, color: '#FFFFFF', flex: 1 },
+      timeText: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL },
+      notifMsg: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.MUTED, lineHeight: 18 },
+      emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 32,
+        paddingTop: 80,
+      },
+      emptyIconCircle: {
+        width: 60,
+        height: 60,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.04)',
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+      },
+      emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#FFFFFF', marginBottom: 6 },
+      emptySubtitle: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.LABEL, textAlign: 'center', lineHeight: 20 },
+    }));

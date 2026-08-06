@@ -1,6 +1,7 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
+  View, Text, ScrollView,
   TouchableOpacity, Dimensions, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, Share, Linking
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,7 +24,6 @@ import { Event, TicketTier } from '../../../types/events';
 import { getEventById } from '../../../lib/event-service';
 import { api } from '../../../lib/api';
 import { formatPrice } from '../../../lib/utils';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, GOLD, BLUE } from '../../../constants/tokens';
 import { AttendeeAvatars } from '../../../components/AttendeeAvatars';
 import { useAppTheme } from '../../../context/ThemeContext';
 
@@ -40,7 +40,7 @@ const { width } = Dimensions.get('window');
 
 // Custom Skeleton Component
 const SkeletonCard = ({ height = 20, width = '100%', style }: any) => {
-  const { colors, isDarkMode } = useAppTheme();
+  const { theme } = useStyles(_stylesheet);
   const opacity = useSharedValue(0.3);
 
   useEffect(() => {
@@ -57,11 +57,13 @@ const SkeletonCard = ({ height = 20, width = '100%', style }: any) => {
   const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Animated.View style={[{ height, width, backgroundColor: GLASS_BORDER, borderRadius: 8 }, style, animStyle]} />
+    <Animated.View style={[{ height, width, backgroundColor: theme.colors.GLASS_BORDER, borderRadius: 8 }, style, animStyle]} />
   );
 };
 
 export default function EventDetailScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -349,7 +351,7 @@ export default function EventDetailScreen() {
   const scrollHandler = useAnimatedScrollHandler((e) => { scrollY.value = e.contentOffset.y; });
   const headerAnimatedStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
-    return { opacity, backgroundColor: DARK };
+    return { opacity, backgroundColor: theme.colors.DARK };
   });
 
   const getEventStatus = (ev: Event) => {
@@ -361,7 +363,7 @@ export default function EventDetailScreen() {
     if (end && now > end) return { label: 'Ended', color: '#6B7280' };
     if (start && now > start && (!end || now < end)) return { label: 'Live Now', color: '#EF4444' };
     if (start && start - now < 86400000 && start > now) return { label: 'Starting Soon', color: '#F59E0B' };
-    return { label: 'Upcoming', color: G };
+    return { label: 'Upcoming', color: theme.colors.G };
   };
 
   const scrollToTickets = () => {
@@ -371,18 +373,18 @@ export default function EventDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}><Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} /></TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: TEXT_PRIMARY }]}>Event Details</Text>
-          <View style={styles.headerRightActions}>
-             <View style={styles.iconBtn} />
-             <View style={styles.iconBtn} />
+      <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
+        <View style={stylesheet.headerRow}>
+          <TouchableOpacity onPress={() => router.back()} style={stylesheet.iconBtn}><Ionicons name="chevron-back" size={28} color={theme.colors.TEXT_PRIMARY} /></TouchableOpacity>
+          <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY }]}>Event Details</Text>
+          <View style={stylesheet.headerRightActions}>
+             <View style={stylesheet.iconBtn} />
+             <View style={stylesheet.iconBtn} />
           </View>
         </View>
-        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView style={stylesheet.scrollContent} showsVerticalScrollIndicator={false}>
           <SkeletonCard height={width * 0.8} style={{ borderRadius: 0 }} />
-          <View style={styles.infoSection}>
+          <View style={stylesheet.infoSection}>
             <SkeletonCard height={32} width="80%" style={{ marginBottom: 16 }} />
             <SkeletonCard height={120} style={{ borderRadius: 20, marginBottom: 24 }} />
             <SkeletonCard height={80} style={{ borderRadius: 20, marginBottom: 24 }} />
@@ -395,10 +397,10 @@ export default function EventDetailScreen() {
 
   if (!event) {
     return (
-      <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
-        <Text style={[styles.errorText, { color: TEXT_PRIMARY }]}>Event not found</Text>
-        <TouchableOpacity style={[styles.backBtnWrapper, { backgroundColor: SURFACE }]} onPress={() => router.back()}>
-          <Text style={[styles.backBtnText, { color: TEXT_PRIMARY }]}>Go Back</Text>
+      <SafeAreaView style={[stylesheet.centerContainer, { backgroundColor: theme.colors.DARK }]}>
+        <Text style={[stylesheet.errorText, { color: theme.colors.TEXT_PRIMARY }]}>Event not found</Text>
+        <TouchableOpacity style={[stylesheet.backBtnWrapper, { backgroundColor: theme.colors.SURFACE }]} onPress={() => router.back()}>
+          <Text style={[stylesheet.backBtnText, { color: theme.colors.TEXT_PRIMARY }]}>Go Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -418,37 +420,37 @@ export default function EventDetailScreen() {
     : 'Time TBD';
 
   return (
-    <View style={[styles.container, { backgroundColor: DARK }]}>
-      <Animated.View style={[styles.stickyHeader, headerAnimatedStyle, { zIndex: 10 }]}>
+    <View style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
+      <Animated.View style={[stylesheet.stickyHeader, headerAnimatedStyle, { zIndex: 10 }]}>
         <SafeAreaView edges={['top']} />
       </Animated.View>
       
       <SafeAreaView edges={['top']} style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20 }} pointerEvents="box-none">
-        <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.back()} style={[styles.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
+        <View style={stylesheet.headerRow}>
+          <TouchableOpacity onPress={() => router.back()} style={[stylesheet.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
             <Ionicons name="chevron-back" size={28} color="#FFF" />
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
-          <View style={styles.headerRightActions}>
-            <TouchableOpacity onPress={handleShare} style={[styles.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)', marginRight: 8 }]}>
+          <View style={stylesheet.headerRightActions}>
+            <TouchableOpacity onPress={handleShare} style={[stylesheet.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)', marginRight: 8 }]}>
               <Feather name="share" size={20} color="#FFF" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleBookmark} style={[styles.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-              <Feather name={isBookmarked ? "bookmark" : "bookmark"} size={20} color={isBookmarked ? G : "#FFF"} />
+            <TouchableOpacity onPress={handleBookmark} style={[stylesheet.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
+              <Feather name={isBookmarked ? "bookmark" : "bookmark"} size={20} color={isBookmarked ? theme.colors.G : "#FFF"} />
             </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
 
       <Animated.ScrollView 
-        style={styles.scrollContent} 
+        style={stylesheet.scrollContent} 
         showsVerticalScrollIndicator={false}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         {/* HERO GALLERY */}
-        <View style={styles.heroContainer}>
+        <View style={stylesheet.heroContainer}>
           {imageUrls.length > 0 ? (
             <ScrollView 
               horizontal 
@@ -459,90 +461,92 @@ export default function EventDetailScreen() {
                 setCurrentImageIndex(index);
               }}
             >
-              {imageUrls.map((uri, idx) => (
-                <TouchableOpacity key={idx} activeOpacity={0.9} onPress={() => { setCurrentImageIndex(idx); setIsGalleryVisible(true); }}>
-                  <Image source={{ uri }} style={styles.mainImage} contentFit="cover" />
-                </TouchableOpacity>
-              ))}
+              {imageUrls.map((uri, idx) => {
+              return (
+                              <TouchableOpacity key={idx} activeOpacity={0.9} onPress={() => { setCurrentImageIndex(idx); setIsGalleryVisible(true); }}>
+                                <Image source={{ uri }} style={stylesheet.mainImage} contentFit="cover" />
+                              </TouchableOpacity>
+                            );
+              })}
             </ScrollView>
           ) : (
-            <View style={[styles.placeholderImage, { backgroundColor: SURFACE }]}>
-              <Ionicons name="calendar-outline" size={64} color={LABEL} />
+            <View style={[stylesheet.placeholderImage, { backgroundColor: theme.colors.SURFACE }]}>
+              <Ionicons name="calendar-outline" size={64} color={theme.colors.LABEL} />
             </View>
           )}
           {imageUrls.length > 1 && (
-            <View style={styles.galleryBadge}>
-              <Text style={styles.galleryBadgeText}>{currentImageIndex + 1}/{imageUrls.length}</Text>
+            <View style={stylesheet.galleryBadge}>
+              <Text style={stylesheet.galleryBadgeText}>{currentImageIndex + 1}/{imageUrls.length}</Text>
             </View>
           )}
           {imageUrls.length > 1 && (
-            <View style={styles.dotsContainer}>
+            <View style={stylesheet.dotsContainer}>
               {imageUrls.map((_, idx) => (
-                <View key={idx} style={[styles.dot, { backgroundColor: idx === currentImageIndex ? '#FFF' : 'rgba(255,255,255,0.5)' }]} />
+                <View key={idx} style={[stylesheet.dot, { backgroundColor: idx === currentImageIndex ? '#FFF' : 'rgba(255,255,255,0.5)' }]} />
               ))}
             </View>
           )}
         </View>
 
-        <View style={styles.infoSection}>
+        <View style={stylesheet.infoSection}>
           {/* TITLE & STATUS */}
-          <View style={styles.titleRow}>
-            <Text style={[styles.title, { color: TEXT_PRIMARY }]}>{event.title}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: statusObj.color + '20' }]}>
-              <Text style={[styles.statusBadgeText, { color: statusObj.color }]}>{statusObj.label}</Text>
+          <View style={stylesheet.titleRow}>
+            <Text style={[stylesheet.title, { color: theme.colors.TEXT_PRIMARY }]}>{event.title}</Text>
+            <View style={[stylesheet.statusBadge, { backgroundColor: statusObj.color + '20' }]}>
+              <Text style={[stylesheet.statusBadgeText, { color: statusObj.color }]}>{statusObj.label}</Text>
             </View>
           </View>
           
           {/* PREMIUM INFO CARD */}
-          <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-            <View style={styles.infoRow}>
-              <View style={[styles.iconBox, { backgroundColor: G + '15' }]}>
-                <Feather name="calendar" size={20} color={G} />
+          <View style={[stylesheet.premiumCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
+            <View style={stylesheet.infoRow}>
+              <View style={[stylesheet.iconBox, { backgroundColor: theme.colors.G + '15' }]}>
+                <Feather name="calendar" size={20} color={theme.colors.G} />
               </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={[styles.infoLabel, { color: LABEL }]}>Date</Text>
-                <Text style={[styles.infoValue, { color: TEXT_PRIMARY }]}>{formattedDate}</Text>
+              <View style={stylesheet.infoTextContainer}>
+                <Text style={[stylesheet.infoLabel, { color: theme.colors.LABEL }]}>Date</Text>
+                <Text style={[stylesheet.infoValue, { color: theme.colors.TEXT_PRIMARY }]}>{formattedDate}</Text>
               </View>
             </View>
             
-            <View style={styles.infoRow}>
-              <View style={[styles.iconBox, { backgroundColor: G + '15' }]}>
-                <Feather name="clock" size={20} color={G} />
+            <View style={stylesheet.infoRow}>
+              <View style={[stylesheet.iconBox, { backgroundColor: theme.colors.G + '15' }]}>
+                <Feather name="clock" size={20} color={theme.colors.G} />
               </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={[styles.infoLabel, { color: LABEL }]}>Time</Text>
-                <Text style={[styles.infoValue, { color: TEXT_PRIMARY }]}>{formattedTime}</Text>
+              <View style={stylesheet.infoTextContainer}>
+                <Text style={[stylesheet.infoLabel, { color: theme.colors.LABEL }]}>Time</Text>
+                <Text style={[stylesheet.infoValue, { color: theme.colors.TEXT_PRIMARY }]}>{formattedTime}</Text>
               </View>
             </View>
 
-            <View style={styles.infoRow}>
-              <View style={[styles.iconBox, { backgroundColor: G + '15' }]}>
-                <Feather name={event.location_online ? "video" : "map-pin"} size={20} color={G} />
+            <View style={stylesheet.infoRow}>
+              <View style={[stylesheet.iconBox, { backgroundColor: theme.colors.G + '15' }]}>
+                <Feather name={event.location_online ? "video" : "map-pin"} size={20} color={theme.colors.G} />
               </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={[styles.infoLabel, { color: LABEL }]}>{event.location_online ? 'Platform' : 'Location'}</Text>
-                <Text style={[styles.infoValue, { color: TEXT_PRIMARY }]} numberOfLines={2}>
+              <View style={stylesheet.infoTextContainer}>
+                <Text style={[stylesheet.infoLabel, { color: theme.colors.LABEL }]}>{event.location_online ? 'Platform' : 'Location'}</Text>
+                <Text style={[stylesheet.infoValue, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={2}>
                   {event.location_online ? 'Online Event' : (event.location_address || [event.ward, event.lga, event.state].filter(Boolean).join(', ') || 'TBA')}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.infoRow}>
-              <View style={[styles.iconBox, { backgroundColor: G + '15' }]}>
-                <Feather name="users" size={20} color={G} />
+            <View style={stylesheet.infoRow}>
+              <View style={[stylesheet.iconBox, { backgroundColor: theme.colors.G + '15' }]}>
+                <Feather name="users" size={20} color={theme.colors.G} />
               </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={[styles.infoLabel, { color: LABEL }]}>Attendees</Text>
+              <View style={stylesheet.infoTextContainer}>
+                <Text style={[stylesheet.infoLabel, { color: theme.colors.LABEL }]}>Attendees</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
                   <AttendeeAvatars attendees={event.attendees as any} totalCount={event.attendee_count} size={22} showIcon={false} showCountBadge={false} />
-                  <Text style={[styles.infoValue, { color: TEXT_PRIMARY }]}>{event.attendee_count || 0} attending</Text>
+                  <Text style={[stylesheet.infoValue, { color: theme.colors.TEXT_PRIMARY }]}>{event.attendee_count || 0} attending</Text>
                 </View>
               </View>
             </View>
 
             {!event.location_online && (
               <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 16, backgroundColor: G, marginTop: 16 }}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 16, backgroundColor: theme.colors.G, marginTop: 16 }}
                 onPress={getDirections}
                 activeOpacity={0.8}
               >
@@ -553,66 +557,66 @@ export default function EventDetailScreen() {
           </View>
 
           {/* ABOUT SECTION */}
-          <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}>
-            <View style={styles.aboutHeader}>
-              <Text style={[styles.sectionTitle, { color: TEXT_PRIMARY }]}>About this event</Text>
+          <View style={[stylesheet.premiumCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
+            <View style={stylesheet.aboutHeader}>
+              <Text style={[stylesheet.sectionTitle, { color: theme.colors.TEXT_PRIMARY }]}>About this event</Text>
             </View>
             <Text 
-              style={[styles.description, { color: LABEL }]} 
+              style={[stylesheet.description, { color: theme.colors.LABEL }]} 
               numberOfLines={aboutExpanded ? undefined : 4}
             >
               {event.description || 'No description has been added.'}
             </Text>
             {event.description && event.description.length > 150 && (
               <TouchableOpacity onPress={() => setAboutExpanded(!aboutExpanded)} style={{ marginTop: 8 }}>
-                <Text style={[styles.readMoreText, { color: G }]}>{aboutExpanded ? 'Read Less' : 'Read More'}</Text>
+                <Text style={[stylesheet.readMoreText, { color: theme.colors.G }]}>{aboutExpanded ? 'Read Less' : 'Read More'}</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {/* ORGANIZER CARD */}
           <TouchableOpacity 
-            style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }, styles.organizerCard]}
+            style={[stylesheet.premiumCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, stylesheet.organizerCard]}
             onPress={() => { if (event.organizer_id) router.push(`/profile/${event.organizer_id}` as any); }}
             activeOpacity={0.8}
           >
-            <View style={styles.organizerRow}>
-              <View style={[styles.avatar, { backgroundColor: G }]}>
+            <View style={stylesheet.organizerRow}>
+              <View style={[stylesheet.avatar, { backgroundColor: theme.colors.G }]}>
                 {event.organizer?.avatar_url ? (
-                  <Image source={{ uri: event.organizer.avatar_url }} style={styles.avatarImage} />
+                  <Image source={{ uri: event.organizer.avatar_url }} style={stylesheet.avatarImage} />
                 ) : (
-                  <Text style={styles.avatarText}>
+                  <Text style={stylesheet.avatarText}>
                     {event.organizer?.name ? event.organizer.name.charAt(0).toUpperCase() : 'O'}
                   </Text>
                 )}
               </View>
-              <View style={[styles.organizerInfo, { marginRight: 8 }]}>
-                <Text style={[styles.organizerLabel, { color: LABEL }]}>Organizer</Text>
+              <View style={[stylesheet.organizerInfo, { marginRight: 8 }]}>
+                <Text style={[stylesheet.organizerLabel, { color: theme.colors.LABEL }]}>Organizer</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={[styles.sellerName, { color: TEXT_PRIMARY, flexShrink: 1 }]} numberOfLines={1}>
+                  <Text style={[stylesheet.sellerName, { color: theme.colors.TEXT_PRIMARY, flexShrink: 1 }]} numberOfLines={1}>
                     {event.organizer?.name || 'Unknown Organizer'}
                   </Text>
-                  <Ionicons name="checkmark-circle" size={16} color={G} style={{ marginLeft: 4, flexShrink: 0 }} />
+                  <Ionicons name="checkmark-circle" size={16} color={theme.colors.G} style={{ marginLeft: 4, flexShrink: 0 }} />
                 </View>
               </View>
               {!isOwner && (
                 <TouchableOpacity 
-                  style={[styles.followBtn, { backgroundColor: isFollowingOrganizer ? SURFACE : G }]}
+                  style={[stylesheet.followBtn, { backgroundColor: isFollowingOrganizer ? theme.colors.SURFACE : theme.colors.G }]}
                   onPress={(e) => { e.stopPropagation(); handleFollow(); }}
                 >
-                  <Text style={[styles.followBtnText, { color: isFollowingOrganizer ? TEXT_PRIMARY : '#FFF' }]}>
+                  <Text style={[stylesheet.followBtnText, { color: isFollowingOrganizer ? theme.colors.TEXT_PRIMARY : '#FFF' }]}>
                     {isFollowingOrganizer ? 'Following' : 'Follow'}
                   </Text>
                 </TouchableOpacity>
               )}
-              {isOwner && <Feather name="chevron-right" size={20} color={LABEL} />}
+              {isOwner && <Feather name="chevron-right" size={20} color={theme.colors.LABEL} />}
             </View>
           </TouchableOpacity>
 
           {/* MAP PREVIEW */}
           {!event.location_online && event.lat && event.lng && (
             <TouchableOpacity 
-              style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, padding: 0, overflow: 'hidden' }]}
+              style={[stylesheet.premiumCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, padding: 0, overflow: 'hidden' }]}
               onPress={getDirections}
               activeOpacity={0.9}
             >
@@ -633,7 +637,7 @@ export default function EventDetailScreen() {
                 customMapStyle={Platform.OS === 'android' ? (false ? DARK_STYLE : []) : undefined}
               >
                 <Marker coordinate={{ latitude: event.lat, longitude: event.lng }}>
-                  <View style={[styles.mapMarker, { backgroundColor: G }]}>
+                  <View style={[stylesheet.mapMarker, { backgroundColor: theme.colors.G }]}>
                     <Feather name="map-pin" size={16} color="#FFF" />
                   </View>
                 </Marker>
@@ -642,7 +646,7 @@ export default function EventDetailScreen() {
           )}
 
           {/* TICKETS SECTION */}
-          <Text style={[styles.sectionTitle, { color: TEXT_PRIMARY, marginTop: 12, marginBottom: 12 }]}>Tickets</Text>
+          <Text style={[stylesheet.sectionTitle, { color: theme.colors.TEXT_PRIMARY, marginTop: 12, marginBottom: 12 }]}>Tickets</Text>
           {event.ticket_tiers?.filter(t => t.is_visible).length ? (
             event.ticket_tiers.filter(t => t.is_visible).map((tier) => {
               const remaining = tier.capacity !== null ? Math.max(0, tier.capacity - tier.sold) : null;
@@ -650,71 +654,73 @@ export default function EventDetailScreen() {
               return (
               <TouchableOpacity 
                 key={tier.id} 
-                style={[styles.tierCard, { backgroundColor: SURFACE, borderColor: tier.price === 0 ? G : GLASS_BORDER }]}
+                style={[stylesheet.tierCard, { backgroundColor: theme.colors.SURFACE, borderColor: tier.price === 0 ? theme.colors.G : theme.colors.GLASS_BORDER }]}
                 disabled={tier.is_sold_out || isExpired || isOwner}
                 onPress={() => setSelectedTier(tier)}
                 activeOpacity={0.8}
               >
-                <View style={[styles.tierIconBox, { backgroundColor: SURFACE }]}>
-                  <Feather name="tag" size={24} color={LABEL} />
+                <View style={[stylesheet.tierIconBox, { backgroundColor: theme.colors.SURFACE }]}>
+                  <Feather name="tag" size={24} color={theme.colors.LABEL} />
                 </View>
-                <View style={styles.tierInfo}>
-                  <Text style={[styles.tierName, { color: TEXT_PRIMARY }]}>{tier.name}</Text>
-                  {tier.description && <Text style={[styles.tierDesc, { color: LABEL }]} numberOfLines={2}>{tier.description}</Text>}
+                <View style={stylesheet.tierInfo}>
+                  <Text style={[stylesheet.tierName, { color: theme.colors.TEXT_PRIMARY }]}>{tier.name}</Text>
+                  {tier.description && <Text style={[stylesheet.tierDesc, { color: theme.colors.LABEL }]} numberOfLines={2}>{tier.description}</Text>}
                   {isLimited && (
                     <Text style={{ color: '#F59E0B', fontSize: 11, fontWeight: '700', marginTop: 3 }}>
                       ⚡ Limited tickets available
                     </Text>
                   )}
-                  <Text style={[styles.tierPrice, { color: tier.price === 0 ? G : TEXT_PRIMARY }]}>
+                  <Text style={[stylesheet.tierPrice, { color: tier.price === 0 ? theme.colors.G : theme.colors.TEXT_PRIMARY }]}>
                     {tier.price === 0 ? 'FREE' : formatPrice(tier.price)}
                   </Text>
                 </View>
-                <View style={styles.tierStatus}>
+                <View style={stylesheet.tierStatus}>
                   {isExpired ? (
-                    <View style={[styles.tierBadge, { backgroundColor: '#6B728020' }]}><Text style={{ color: '#6B7280', fontSize: 12, fontWeight: 'bold' }}>Ended</Text></View>
+                    <View style={[stylesheet.tierBadge, { backgroundColor: '#6B728020' }]}><Text style={{ color: '#6B7280', fontSize: 12, fontWeight: 'bold' }}>Ended</Text></View>
                   ) : tier.is_sold_out ? (
-                    <View style={[styles.tierBadge, { backgroundColor: '#EF444420' }]}><Text style={{ color: '#EF4444', fontSize: 12, fontWeight: 'bold' }}>Sold Out</Text></View>
+                    <View style={[stylesheet.tierBadge, { backgroundColor: '#EF444420' }]}><Text style={{ color: '#EF4444', fontSize: 12, fontWeight: 'bold' }}>Sold Out</Text></View>
                   ) : (
-                    <Feather name="chevron-right" size={20} color={LABEL} />
+                    <Feather name="chevron-right" size={20} color={theme.colors.LABEL} />
                   )}
                 </View>
               </TouchableOpacity>
             );})
           ) : (
-            <View style={[styles.premiumCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, alignItems: 'center', paddingVertical: 32 }]}>
-              <Feather name="tag" size={48} color={MUTED} style={{ marginBottom: 12 }} />
-              <Text style={{ color: LABEL, fontSize: 16 }}>No tickets available.</Text>
+            <View style={[stylesheet.premiumCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', paddingVertical: 32 }]}>
+              <Feather name="tag" size={48} color={theme.colors.MUTED} style={{ marginBottom: 12 }} />
+              <Text style={{ color: theme.colors.LABEL, fontSize: 16 }}>No tickets available.</Text>
             </View>
           )}
 
           {/* RELATED EVENTS */}
           {relatedEvents.length > 0 && (
-            <View style={styles.relatedSection}>
-              <Text style={[styles.sectionTitle, { color: TEXT_PRIMARY, marginBottom: 16 }]}>More Events Near You</Text>
+            <View style={stylesheet.relatedSection}>
+              <Text style={[stylesheet.sectionTitle, { color: theme.colors.TEXT_PRIMARY, marginBottom: 16 }]}>More Events Near You</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
-                {relatedEvents.map(rel => (
-                  <TouchableOpacity 
-                    key={rel.id} 
-                    style={[styles.relatedCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
-                    onPress={() => { router.push(`/events/${rel.id}`); }}
-                  >
-                    <Image source={{ uri: rel.cover_image_url }} style={styles.relatedImg} contentFit="cover" />
-                    <View style={styles.relatedInfo}>
-                      <Text style={[styles.relatedTitle, { color: TEXT_PRIMARY }]} numberOfLines={1}>{rel.title}</Text>
-                      <Text style={[styles.relatedLoc, { color: LABEL }]} numberOfLines={1}>
-                        {rel.location_online ? 'Online' : rel.location_address || 'TBA'}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
+                {relatedEvents.map(rel => {
+                return (
+                                  <TouchableOpacity 
+                                    key={rel.id} 
+                                    style={[stylesheet.relatedCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
+                                    onPress={() => { router.push(`/events/${rel.id}`); }}
+                                  >
+                                    <Image source={{ uri: rel.cover_image_url }} style={stylesheet.relatedImg} contentFit="cover" />
+                                    <View style={stylesheet.relatedInfo}>
+                                      <Text style={[stylesheet.relatedTitle, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>{rel.title}</Text>
+                                      <Text style={[stylesheet.relatedLoc, { color: theme.colors.LABEL }]} numberOfLines={1}>
+                                        {rel.location_online ? 'Online' : rel.location_address || 'TBA'}
+                                      </Text>
+                                    </View>
+                                  </TouchableOpacity>
+                                );
+                })}
               </ScrollView>
             </View>
           )}
 
           {isOwner && (
             <TouchableOpacity 
-              style={[styles.deleteEventBtn, { backgroundColor: '#EF444420' }]}
+              style={[stylesheet.deleteEventBtn, { backgroundColor: '#EF444420' }]}
               onPress={() => {
                 Alert.alert('Delete Event', 'Are you sure you want to delete this event? This action cannot be undone.', [
                     { text: 'Cancel', style: 'cancel' },
@@ -740,14 +746,14 @@ export default function EventDetailScreen() {
       </Animated.ScrollView>
 
       {/* FLOATING ACTION BAR */}
-      <View style={[styles.bottomActionBar, { backgroundColor: SURFACE, borderTopColor: GLASS_BORDER }]}>
+      <View style={[stylesheet.bottomActionBar, { backgroundColor: theme.colors.SURFACE, borderTopColor: theme.colors.GLASS_BORDER }]}>
         
         
         <TouchableOpacity 
-          style={[styles.bottomPrimaryBtn, { 
-            backgroundColor: isOwner ? DARK : (isExpired || allTicketsSoldOut ? GLASS_BORDER : G),
+          style={[stylesheet.bottomPrimaryBtn, { 
+            backgroundColor: isOwner ? theme.colors.DARK : (isExpired || allTicketsSoldOut ? theme.colors.GLASS_BORDER : theme.colors.G),
             borderWidth: isOwner ? 1 : 0,
-            borderColor: isOwner ? GLASS_BORDER : 'transparent'
+            borderColor: isOwner ? theme.colors.GLASS_BORDER : 'transparent'
           }]}
           disabled={!isOwner && (isExpired || allTicketsSoldOut)}
           onPress={() => {
@@ -756,7 +762,7 @@ export default function EventDetailScreen() {
             else if (event?.ticket_tiers && event.ticket_tiers.length > 0) setSelectedTier(event.ticket_tiers[0]);
           }}
         >
-          <Text style={[styles.bottomPrimaryText, { color: isOwner ? TEXT_PRIMARY : (isExpired || allTicketsSoldOut ? MUTED : '#FFF') }]}>
+          <Text style={[stylesheet.bottomPrimaryText, { color: isOwner ? theme.colors.TEXT_PRIMARY : (isExpired || allTicketsSoldOut ? theme.colors.MUTED : '#FFF') }]}>
             {isOwner ? 'Manage Event' : isExpired ? 'Event Ended' : allTicketsSoldOut ? 'Sold Out' : userHasTickets ? 'View My Tickets' : 'View Tickets'}
           </Text>
         </TouchableOpacity>
@@ -765,74 +771,74 @@ export default function EventDetailScreen() {
       {/* Ticket Purchase Modal */}
       <Modal visible={!!selectedTier} transparent animationType="slide">
         <KeyboardAvoidingView 
-          style={styles.modalOverlay}
+          style={stylesheet.modalOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <View style={[styles.modalContent, { backgroundColor: DARK }]}>
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: TEXT_PRIMARY }]}>Get Tickets</Text>
+          <View style={[stylesheet.modalContent, { backgroundColor: theme.colors.DARK }]}>
+            <View style={stylesheet.modalHeader}>
+              <Text style={[stylesheet.modalTitle, { color: theme.colors.TEXT_PRIMARY }]}>Get Tickets</Text>
               <TouchableOpacity onPress={() => { setSelectedTier(null); setQuantity(1); }}>
-                <Ionicons name="close" size={24} color={LABEL} />
+                <Ionicons name="close" size={24} color={theme.colors.LABEL} />
               </TouchableOpacity>
             </View>
             
             {selectedTier && (
-              <View style={[styles.modalTierSummary, { backgroundColor: SURFACE }]}>
+              <View style={[stylesheet.modalTierSummary, { backgroundColor: theme.colors.SURFACE }]}>
                 <View>
-                  <Text style={[styles.modalTierName, { color: TEXT_PRIMARY }]}>{selectedTier.name}</Text>
-                  <Text style={[styles.modalTierPrice, { color: G }]}>{selectedTier.price === 0 ? 'FREE' : formatPrice(selectedTier.price * quantity)}</Text>
+                  <Text style={[stylesheet.modalTierName, { color: theme.colors.TEXT_PRIMARY }]}>{selectedTier.name}</Text>
+                  <Text style={[stylesheet.modalTierPrice, { color: theme.colors.G }]}>{selectedTier.price === 0 ? 'FREE' : formatPrice(selectedTier.price * quantity)}</Text>
                 </View>
-                <View style={styles.quantityContainer}>
-                  <TouchableOpacity onPress={() => setQuantity(q => Math.max(1, q - 1))} style={[styles.quantityBtn, { backgroundColor: GLASS_BORDER }]}>
-                    <Ionicons name="remove" size={20} color={TEXT_PRIMARY} />
+                <View style={stylesheet.quantityContainer}>
+                  <TouchableOpacity onPress={() => setQuantity(q => Math.max(1, q - 1))} style={[stylesheet.quantityBtn, { backgroundColor: theme.colors.GLASS_BORDER }]}>
+                    <Ionicons name="remove" size={20} color={theme.colors.TEXT_PRIMARY} />
                   </TouchableOpacity>
-                  <Text style={[styles.quantityText, { color: TEXT_PRIMARY }]}>{quantity}</Text>
-                  <TouchableOpacity onPress={() => setQuantity(q => Math.min(10, q + 1))} style={[styles.quantityBtn, { backgroundColor: GLASS_BORDER }]}>
-                    <Ionicons name="add" size={20} color={TEXT_PRIMARY} />
+                  <Text style={[stylesheet.quantityText, { color: theme.colors.TEXT_PRIMARY }]}>{quantity}</Text>
+                  <TouchableOpacity onPress={() => setQuantity(q => Math.min(10, q + 1))} style={[stylesheet.quantityBtn, { backgroundColor: theme.colors.GLASS_BORDER }]}>
+                    <Ionicons name="add" size={20} color={theme.colors.TEXT_PRIMARY} />
                   </TouchableOpacity>
                 </View>
               </View>
             )}
 
-            <ScrollView style={styles.modalForm}>
-              <Text style={[styles.inputLabel, { color: TEXT_PRIMARY }]}>Name *</Text>
+            <ScrollView style={stylesheet.modalForm}>
+              <Text style={[stylesheet.inputLabel, { color: theme.colors.TEXT_PRIMARY }]}>Name *</Text>
               <TextInput
-                style={[styles.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
+                style={[stylesheet.input, { backgroundColor: theme.colors.SURFACE, color: theme.colors.TEXT_PRIMARY }]}
                 value={attendeeName}
                 onChangeText={setAttendeeName}
                 placeholder="Enter your name"
-                placeholderTextColor={LABEL}
+                placeholderTextColor={theme.colors.LABEL}
               />
-              <Text style={[styles.inputLabel, { color: TEXT_PRIMARY }]}>Email *</Text>
+              <Text style={[stylesheet.inputLabel, { color: theme.colors.TEXT_PRIMARY }]}>Email *</Text>
               <TextInput
-                style={[styles.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
+                style={[stylesheet.input, { backgroundColor: theme.colors.SURFACE, color: theme.colors.TEXT_PRIMARY }]}
                 value={attendeeEmail}
                 onChangeText={setAttendeeEmail}
                 placeholder="Enter your email"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                placeholderTextColor={LABEL}
+                placeholderTextColor={theme.colors.LABEL}
               />
-              <Text style={[styles.inputLabel, { color: TEXT_PRIMARY }]}>Phone (Optional)</Text>
+              <Text style={[stylesheet.inputLabel, { color: theme.colors.TEXT_PRIMARY }]}>Phone (Optional)</Text>
               <TextInput
-                style={[styles.input, { backgroundColor: SURFACE, color: TEXT_PRIMARY }]}
+                style={[stylesheet.input, { backgroundColor: theme.colors.SURFACE, color: theme.colors.TEXT_PRIMARY }]}
                 value={attendeePhone}
                 onChangeText={setAttendeePhone}
                 placeholder="Enter your phone number"
                 keyboardType="phone-pad"
-                placeholderTextColor={LABEL}
+                placeholderTextColor={theme.colors.LABEL}
               />
             </ScrollView>
 
             <TouchableOpacity 
-              style={[styles.purchaseBtn, { backgroundColor: purchasing ? GLASS_BORDER : G }]}
+              style={[stylesheet.purchaseBtn, { backgroundColor: purchasing ? theme.colors.GLASS_BORDER : theme.colors.G }]}
               disabled={purchasing}
               onPress={handlePurchase}
             >
               {purchasing ? (
-                <Text style={styles.purchaseBtnText}>Processing...</Text>
+                <Text style={stylesheet.purchaseBtnText}>Processing...</Text>
               ) : (
-                <Text style={styles.purchaseBtnText}>
+                <Text style={stylesheet.purchaseBtnText}>
                   {selectedTier?.price === 0 ? 'Register Now' : `Pay ${formatPrice((selectedTier?.price || 0) * quantity)}`}
                 </Text>
               )}
@@ -854,28 +860,28 @@ export default function EventDetailScreen() {
 
       {/* ── Ticket Success Overlay ─────────────────── */}
       {ticketSuccess && (
-        <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 100, justifyContent: 'flex-end' }, successOverlayStyle]}>
-          <View style={styles.successBackdrop} />
-          <Animated.View style={[styles.successSheet, { backgroundColor: SURFACE }, successSheetStyle]}>
-            <View style={styles.successHandleBar} />
+        <Animated.View style={[{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, zIndex: 100, justifyContent: 'flex-end' }, successOverlayStyle]}>
+          <View style={stylesheet.successBackdrop} />
+          <Animated.View style={[stylesheet.successSheet, { backgroundColor: theme.colors.SURFACE }, successSheetStyle]}>
+            <View style={stylesheet.successHandleBar} />
             <View style={{ alignItems: 'center', marginVertical: 20 }}>
               <Ionicons name="checkmark-circle" size={100} color="#82DB7E" />
             </View>
             <Animated.View style={[{ alignItems: 'center', paddingHorizontal: 32, width: '100%' }, successContentStyle]}>
-              <Text style={[styles.successTitle, { color: TEXT_PRIMARY }]}>You're In! 🎟️</Text>
-              <Text style={[styles.successTier, { color: G }]}>{successTierName}</Text>
-              <Text style={[styles.successBody, { color: LABEL }]}>
+              <Text style={[stylesheet.successTitle, { color: theme.colors.TEXT_PRIMARY }]}>You're In! 🎟️</Text>
+              <Text style={[stylesheet.successTier, { color: theme.colors.G }]}>{successTierName}</Text>
+              <Text style={[stylesheet.successBody, { color: theme.colors.LABEL }]}>
                 Your ticket has been confirmed. Check the Tickets tab to view it.
               </Text>
               <TouchableOpacity
-                style={[styles.successBtn, { backgroundColor: G }]}
+                style={[stylesheet.successBtn, { backgroundColor: theme.colors.G }]}
                 onPress={() => { dismissTicketSuccess(); router.push('/tickets' as any); }}
                 activeOpacity={0.85}
               >
-                <Text style={styles.successBtnText}>View My Ticket</Text>
+                <Text style={stylesheet.successBtnText}>View My Ticket</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.successSecondary} onPress={dismissTicketSuccess}>
-                <Text style={[styles.successSecondaryText, { color: LABEL }]}>Back to Event</Text>
+              <TouchableOpacity style={stylesheet.successSecondary} onPress={dismissTicketSuccess}>
+                <Text style={[stylesheet.successSecondaryText, { color: theme.colors.LABEL }]}>Back to Event</Text>
               </TouchableOpacity>
             </Animated.View>
             <View style={{ height: 24 }} />
@@ -886,136 +892,136 @@ export default function EventDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  errorText: { fontSize: 18, marginBottom: 20 },
-  backBtnWrapper: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
-  backBtnText: { fontWeight: 'bold' },
-  stickyHeader: { position: 'absolute', top: 0, left: 0, right: 0, height: 100 },
-  headerRow: { 
-    flexDirection: 'row', alignItems: 'center', 
-    justifyContent: 'space-between', 
-    paddingHorizontal: 16, paddingVertical: 12,
-  },
-  iconBtn: { 
-    width: 40, height: 40, borderRadius: 20, 
-    justifyContent: 'center', alignItems: 'center',
-  },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
-  headerRightActions: { flexDirection: 'row' },
-  scrollContent: { flex: 1 },
-  
-  heroContainer: { position: 'relative', width: width, height: width * 0.8 },
-  mainImage: { width: width, height: width * 0.8, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
-  placeholderImage: { width: width, height: width * 0.8, justifyContent: 'center', alignItems: 'center', borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
-  galleryBadge: { 
-    position: 'absolute', bottom: 16, right: 16, 
-    backgroundColor: 'rgba(0,0,0,0.6)', 
-    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 
-  },
-  galleryBadgeText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
-  dotsContainer: { 
-    position: 'absolute', bottom: 16, left: 0, right: 0, 
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center' 
-  },
-  dot: { width: 6, height: 6, borderRadius: 3, marginHorizontal: 3 },
-  
-  infoSection: { padding: 16 },
-  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
-  title: { fontSize: 26, fontWeight: '800', flex: 1, marginRight: 16, lineHeight: 32 },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  statusBadgeText: { fontSize: 12, fontWeight: 'bold' },
-  
-  premiumCard: { padding: 20, borderRadius: 24, borderWidth: 1, marginBottom: 16 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  iconBox: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-  infoTextContainer: { flex: 1 },
-  infoLabel: { fontSize: 13, marginBottom: 2 },
-  infoValue: { fontSize: 16, fontWeight: '600' },
-  directionsBtn: { 
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', 
-    paddingVertical: 14, borderRadius: 16, marginTop: 8 
-  },
-  directionsTxt: { fontSize: 16, fontWeight: 'bold', marginLeft: 8, color: '#FFF' },
-  
-  aboutHeader: { marginBottom: 12 },
-  sectionTitle: { fontSize: 20, fontWeight: 'bold' },
-  description: { fontSize: 16, lineHeight: 26 },
-  readMoreText: { fontSize: 15, fontWeight: 'bold' },
-  
-  organizerCard: { padding: 16 },
-  organizerRow: { flexDirection: 'row', alignItems: 'center' },
-  avatar: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginRight: 16, overflow: 'hidden' },
-  avatarImage: { width: '100%', height: '100%' },
-  avatarText: { color: '#FFFFFF', fontSize: 22, fontWeight: 'bold' },
-  organizerInfo: { flex: 1 },
-  organizerLabel: { fontSize: 13, marginBottom: 2 },
-  sellerName: { fontSize: 17, fontWeight: 'bold' },
-  followBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginLeft: 12 },
-  followBtnText: { fontWeight: 'bold', fontSize: 14 },
-  
-  mapMarker: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3, elevation: 5 },
-  
-  tierCard: { 
-    flexDirection: 'row', alignItems: 'center', 
-    padding: 16, borderRadius: 20, marginBottom: 12, borderWidth: 1 
-  },
-  tierIconBox: { width: 48, height: 48, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-  tierInfo: { flex: 1, marginRight: 16 },
-  tierName: { fontSize: 17, fontWeight: 'bold', marginBottom: 4 },
-  tierDesc: { fontSize: 14, marginBottom: 8 },
-  tierPrice: { fontSize: 16, fontWeight: 'bold' },
-  tierStatus: { alignItems: 'center', justifyContent: 'center' },
-  tierBadge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12 },
-  
-  relatedSection: { marginTop: 16, marginBottom: 24 },
-  relatedCard: { width: 220, borderRadius: 20, borderWidth: 1, marginRight: 16, overflow: 'hidden' },
-  relatedImg: { width: '100%', height: 120 },
-  relatedInfo: { padding: 12 },
-  relatedTitle: { fontSize: 15, fontWeight: 'bold', marginBottom: 4 },
-  relatedLoc: { fontSize: 13 },
-  
-  deleteEventBtn: {
-    marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 16, borderRadius: 20,
-  },
-  
-  bottomActionBar: { 
-    position: 'absolute', bottom: 0, left: 0, right: 0, 
-    flexDirection: 'row', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32,
-    borderTopWidth: 1 
-  },
-  bottomShareBtn: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-  bottomPrimaryBtn: { flex: 1, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center' },
-  bottomPrimaryText: { fontSize: 16, fontWeight: 'bold' },
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+      errorText: { fontSize: 18, marginBottom: 20 },
+      backBtnWrapper: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+      backBtnText: { fontWeight: 'bold' },
+      stickyHeader: { position: 'absolute', top: 0, left: 0, right: 0, height: 100 },
+      headerRow: { 
+        flexDirection: 'row', alignItems: 'center', 
+        justifyContent: 'space-between', 
+        paddingHorizontal: 16, paddingVertical: 12,
+      },
+      iconBtn: { 
+        width: 40, height: 40, borderRadius: 20, 
+        justifyContent: 'center', alignItems: 'center',
+      },
+      headerTitle: { fontSize: 18, fontWeight: 'bold', flex: 1, textAlign: 'center' },
+      headerRightActions: { flexDirection: 'row' },
+      scrollContent: { flex: 1 },
+      
+      heroContainer: { position: 'relative', width: width, height: width * 0.8 },
+      mainImage: { width: width, height: width * 0.8, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
+      placeholderImage: { width: width, height: width * 0.8, justifyContent: 'center', alignItems: 'center', borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
+      galleryBadge: { 
+        position: 'absolute', bottom: 16, right: 16, 
+        backgroundColor: 'rgba(0,0,0,0.6)', 
+        paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 
+      },
+      galleryBadgeText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
+      dotsContainer: { 
+        position: 'absolute', bottom: 16, left: 0, right: 0, 
+        flexDirection: 'row', justifyContent: 'center', alignItems: 'center' 
+      },
+      dot: { width: 6, height: 6, borderRadius: 3, marginHorizontal: 3 },
+      
+      infoSection: { padding: 16 },
+      titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
+      title: { fontSize: 26, fontWeight: '800', flex: 1, marginRight: 16, lineHeight: 32 },
+      statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+      statusBadgeText: { fontSize: 12, fontWeight: 'bold' },
+      
+      premiumCard: { padding: 20, borderRadius: 24, borderWidth: 1, marginBottom: 16 },
+      infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+      iconBox: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+      infoTextContainer: { flex: 1 },
+      infoLabel: { fontSize: 13, marginBottom: 2 },
+      infoValue: { fontSize: 16, fontWeight: '600' },
+      directionsBtn: { 
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', 
+        paddingVertical: 14, borderRadius: 16, marginTop: 8 
+      },
+      directionsTxt: { fontSize: 16, fontWeight: 'bold', marginLeft: 8, color: '#FFF' },
+      
+      aboutHeader: { marginBottom: 12 },
+      sectionTitle: { fontSize: 20, fontWeight: 'bold' },
+      description: { fontSize: 16, lineHeight: 26 },
+      readMoreText: { fontSize: 15, fontWeight: 'bold' },
+      
+      organizerCard: { padding: 16 },
+      organizerRow: { flexDirection: 'row', alignItems: 'center' },
+      avatar: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginRight: 16, overflow: 'hidden' },
+      avatarImage: { width: '100%', height: '100%' },
+      avatarText: { color: '#FFFFFF', fontSize: 22, fontWeight: 'bold' },
+      organizerInfo: { flex: 1 },
+      organizerLabel: { fontSize: 13, marginBottom: 2 },
+      sellerName: { fontSize: 17, fontWeight: 'bold' },
+      followBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginLeft: 12 },
+      followBtnText: { fontWeight: 'bold', fontSize: 14 },
+      
+      mapMarker: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3, elevation: 5 },
+      
+      tierCard: { 
+        flexDirection: 'row', alignItems: 'center', 
+        padding: 16, borderRadius: 20, marginBottom: 12, borderWidth: 1 
+      },
+      tierIconBox: { width: 48, height: 48, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+      tierInfo: { flex: 1, marginRight: 16 },
+      tierName: { fontSize: 17, fontWeight: 'bold', marginBottom: 4 },
+      tierDesc: { fontSize: 14, marginBottom: 8 },
+      tierPrice: { fontSize: 16, fontWeight: 'bold' },
+      tierStatus: { alignItems: 'center', justifyContent: 'center' },
+      tierBadge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12 },
+      
+      relatedSection: { marginTop: 16, marginBottom: 24 },
+      relatedCard: { width: 220, borderRadius: 20, borderWidth: 1, marginRight: 16, overflow: 'hidden' },
+      relatedImg: { width: '100%', height: 120 },
+      relatedInfo: { padding: 12 },
+      relatedTitle: { fontSize: 15, fontWeight: 'bold', marginBottom: 4 },
+      relatedLoc: { fontSize: 13 },
+      
+      deleteEventBtn: {
+        marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        paddingVertical: 16, borderRadius: 20,
+      },
+      
+      bottomActionBar: { 
+        position: 'absolute', bottom: 0, left: 0, right: 0, 
+        flexDirection: 'row', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32,
+        borderTopWidth: 1 
+      },
+      bottomShareBtn: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+      bottomPrimaryBtn: { flex: 1, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center' },
+      bottomPrimaryText: { fontSize: 16, fontWeight: 'bold' },
 
-  // Modal styles preserved
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, maxHeight: '85%' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  modalTitle: { fontSize: 22, fontWeight: 'bold' },
-  modalTierSummary: { padding: 16, borderRadius: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  modalTierName: { fontSize: 16, fontWeight: '600' },
-  modalTierPrice: { fontSize: 18, fontWeight: 'bold' },
-  quantityContainer: { flexDirection: 'row', alignItems: 'center' },
-  quantityBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
-  quantityText: { fontSize: 18, fontWeight: 'bold', marginHorizontal: 16 },
-  modalForm: { marginBottom: 24 },
-  inputLabel: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
-  input: { padding: 16, borderRadius: 16, marginBottom: 16, fontSize: 16 },
-  purchaseBtn: { padding: 18, borderRadius: 16, alignItems: 'center' },
-  purchaseBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+      // Modal styles preserved
+      modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+      modalContent: { borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, maxHeight: '85%' },
+      modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+      modalTitle: { fontSize: 22, fontWeight: 'bold' },
+      modalTierSummary: { padding: 16, borderRadius: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+      modalTierName: { fontSize: 16, fontWeight: '600' },
+      modalTierPrice: { fontSize: 18, fontWeight: 'bold' },
+      quantityContainer: { flexDirection: 'row', alignItems: 'center' },
+      quantityBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+      quantityText: { fontSize: 18, fontWeight: 'bold', marginHorizontal: 16 },
+      modalForm: { marginBottom: 24 },
+      inputLabel: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
+      input: { padding: 16, borderRadius: 16, marginBottom: 16, fontSize: 16 },
+      purchaseBtn: { padding: 18, borderRadius: 16, alignItems: 'center' },
+      purchaseBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
 
-  // Success overlay
-  successBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.55)' },
-  successSheet: { borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingTop: 12, alignItems: 'center' },
-  successHandleBar: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(128,128,128,0.3)', marginBottom: 8 },
-  successTitle: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, marginBottom: 6, textAlign: 'center' },
-  successTier:  { fontSize: 15, fontWeight: '700', marginBottom: 12 },
-  successBody:  { fontSize: 13, textAlign: 'center', lineHeight: 19, marginBottom: 24, maxWidth: 270 },
-  successBtn: { width: '100%', height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-  successBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  successSecondary: { height: 40, justifyContent: 'center', alignItems: 'center' },
-  successSecondaryText: { fontSize: 14, fontWeight: '600' },
-});
+      // Success overlay
+      successBackdrop: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.55)' },
+      successSheet: { borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingTop: 12, alignItems: 'center' },
+      successHandleBar: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(128,128,128,0.3)', marginBottom: 8 },
+      successTitle: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, marginBottom: 6, textAlign: 'center' },
+      successTier:  { fontSize: 15, fontWeight: '700', marginBottom: 12 },
+      successBody:  { fontSize: 13, textAlign: 'center', lineHeight: 19, marginBottom: 24, maxWidth: 270 },
+      successBtn: { width: '100%', height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+      successBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+      successSecondary: { height: 40, justifyContent: 'center', alignItems: 'center' },
+      successSecondaryText: { fontSize: 14, fontWeight: '600' },
+    }));

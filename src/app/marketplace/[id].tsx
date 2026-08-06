@@ -1,7 +1,8 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
+  View, Text, ScrollView,
   TouchableOpacity, ActivityIndicator, Dimensions,
   Platform, Share, ActionSheetIOS, Alert, AppState
 } from 'react-native';
@@ -22,11 +23,11 @@ import { Post, User } from '../../types';
 import { formatPrice, timeAgo } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, GOLD, AMBER } from '../../constants/tokens';
-
 const { width } = Dimensions.get('window');
 
 const MarketVideo = React.memo(({ url, shouldPlay }: { url: string, shouldPlay: boolean }) => {
+  const { styles: s } = useStyles(_stylesheet);
+
   const player = useVideoPlayer(url, player => {
     player.loop = true;
   });
@@ -52,7 +53,7 @@ const MarketVideo = React.memo(({ url, shouldPlay }: { url: string, shouldPlay: 
 
   return (
     <VideoView
-      style={styles.mainImage}
+      style={s.mainImage}
       player={player}
       allowsFullscreen
       allowsPictureInPicture
@@ -61,6 +62,8 @@ const MarketVideo = React.memo(({ url, shouldPlay }: { url: string, shouldPlay: 
 });
 
 function MarketplaceDetailContent() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -345,18 +348,18 @@ function MarketplaceDetailContent() {
 
   if (loading) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: DARK }]}>
-        <ActivityIndicator size="large" color={G} />
+      <View style={[stylesheet.centerContainer, { backgroundColor: theme.colors.DARK }]}>
+        <ActivityIndicator size="large" color={theme.colors.G} />
       </View>
     );
   }
 
   if (!post) {
     return (
-      <SafeAreaView style={[styles.centerContainer, { backgroundColor: DARK }]}>
-        <Text style={[styles.errorText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Item not found</Text>
-        <TouchableOpacity style={[styles.backBtnWrapper, { backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }]} onPress={() => router.back()}>
-          <Text style={[styles.backBtnText, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Go Back</Text>
+      <SafeAreaView style={[stylesheet.centerContainer, { backgroundColor: theme.colors.DARK }]}>
+        <Text style={[stylesheet.errorText, { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Item not found</Text>
+        <TouchableOpacity style={[stylesheet.backBtnWrapper, { backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }]} onPress={() => router.back()}>
+          <Text style={[stylesheet.backBtnText, { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Go Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -371,9 +374,9 @@ function MarketplaceDetailContent() {
 
 
   return (
-    <View style={[styles.container, { backgroundColor: '#050505' }]}>
+    <View style={[stylesheet.container, { backgroundColor: '#050505' }]}>
       <Animated.ScrollView 
-        style={styles.scrollContent} 
+        style={stylesheet.scrollContent} 
         showsVerticalScrollIndicator={false}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
@@ -382,56 +385,58 @@ function MarketplaceDetailContent() {
         <View style={{ position: 'relative', height: 320 }}>
           {/* Image Gallery */}
           {mediaItems.length > 0 ? (
-            <Animated.View style={[headerAnimatedStyle, styles.galleryContainer]}>
+            <Animated.View style={[headerAnimatedStyle, stylesheet.galleryContainer]}>
               <ScrollView 
                 horizontal 
                 pagingEnabled 
                 showsHorizontalScrollIndicator={false} 
-                style={styles.imageScroll}
+                style={stylesheet.imageScroll}
                 onScroll={(e) => {
                   const index = Math.round(e.nativeEvent.contentOffset.x / Dimensions.get('window').width);
                   setActiveScrollIndex(index);
                 }}
                 scrollEventThrottle={16}
               >
-                {mediaItems.map((media, i) => (
-                  <View key={i} style={styles.mainImageContainer}>
-                    {media.type === 'video' ? (
-                      <MarketVideo url={media.url} shouldPlay={activeScrollIndex === i && isFocused} />
-                    ) : (
-                      <TouchableOpacity 
-                        activeOpacity={0.9} 
-                        style={{ flex: 1 }}
-                        onPress={() => {
-                          const imageIndex = post.video_url ? i - 1 : i;
-                          setCurrentImageIndex(Math.max(0, imageIndex));
-                          setIsGalleryVisible(true);
-                        }}
-                      >
-                        <Image source={{ uri: media.url }} style={styles.mainImage} contentFit="cover" />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                ))}
+                {mediaItems.map((media, i) => {
+                return (
+                                  <View key={i} style={stylesheet.mainImageContainer}>
+                                    {media.type === 'video' ? (
+                                      <MarketVideo url={media.url} shouldPlay={activeScrollIndex === i && isFocused} />
+                                    ) : (
+                                      <TouchableOpacity 
+                                        activeOpacity={0.9} 
+                                        style={{ flex: 1 }}
+                                        onPress={() => {
+                                          const imageIndex = post.video_url ? i - 1 : i;
+                                          setCurrentImageIndex(Math.max(0, imageIndex));
+                                          setIsGalleryVisible(true);
+                                        }}
+                                      >
+                                        <Image source={{ uri: media.url }} style={stylesheet.mainImage} contentFit="cover" />
+                                      </TouchableOpacity>
+                                    )}
+                                  </View>
+                                );
+                })}
               </ScrollView>
               
               {/* Gallery Indicator Row */}
-              <View style={styles.galleryControls}>
-                <View style={styles.paginationDots}>
+              <View style={stylesheet.galleryControls}>
+                <View style={stylesheet.paginationDots}>
                   {mediaItems.map((_, i) => (
-                    <View key={i} style={[styles.carouselDot, activeScrollIndex === i ? [styles.activeDot, { backgroundColor: G }] : styles.inactiveDot]} />
+                    <View key={i} style={[stylesheet.carouselDot, activeScrollIndex === i ? [stylesheet.activeDot, { backgroundColor: theme.colors.G }] : stylesheet.inactiveDot]} />
                   ))}
                 </View>
                 {mediaItems.length > 1 && (
-                  <View style={styles.counterBadge}>
-                    <Text style={styles.counterText}>{activeScrollIndex + 1}/{mediaItems.length}</Text>
+                  <View style={stylesheet.counterBadge}>
+                    <Text style={stylesheet.counterText}>{activeScrollIndex + 1}/{mediaItems.length}</Text>
                   </View>
                 )}
               </View>
             </Animated.View>
           ) : (
-             <View style={[styles.placeholderImage, { backgroundColor: SURFACE }]}>
-               <Ionicons name="image-outline" size={64} color={LABEL} />
+             <View style={[stylesheet.placeholderImage, { backgroundColor: theme.colors.SURFACE }]}>
+               <Ionicons name="image-outline" size={64} color={theme.colors.LABEL} />
              </View>
           )}
 
@@ -446,22 +451,22 @@ function MarketplaceDetailContent() {
           {/* SOLD Badge */}
           {post.is_sold && (
             <View style={{ position: 'absolute', top: 20, left: 20, paddingHorizontal: 14, paddingVertical: 5, borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.65)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }}>
-               <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 13, color: MUTED }}>SOLD</Text>
+               <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 13, color: theme.colors.MUTED }}>SOLD</Text>
             </View>
           )}
 
           {/* Header Buttons over image */}
           <View style={{ position: 'absolute', top: 52, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20 }}>
-             <TouchableOpacity onPress={() => router.back()} style={styles.iconCircle}>
+             <TouchableOpacity onPress={() => router.back()} style={stylesheet.iconCircle}>
                 <Ionicons name="chevron-back" size={24} color="#FFF" />
              </TouchableOpacity>
              <View style={{ flexDirection: 'row', gap: 8 }}>
                {!isOwner && (
-                 <TouchableOpacity onPress={handleToggleLike} style={styles.iconCircle}>
-                   <Ionicons name={isLiked ? "bookmark" : "bookmark-outline"} size={16} color={isLiked ? G : '#FFF'} />
+                 <TouchableOpacity onPress={handleToggleLike} style={stylesheet.iconCircle}>
+                   <Ionicons name={isLiked ? "bookmark" : "bookmark-outline"} size={16} color={isLiked ? theme.colors.G : '#FFF'} />
                  </TouchableOpacity>
                )}
-               <TouchableOpacity onPress={handleMore} style={styles.iconCircle}>
+               <TouchableOpacity onPress={handleMore} style={stylesheet.iconCircle}>
                  <Ionicons name="ellipsis-horizontal" size={16} color="#FFF" />
                </TouchableOpacity>
              </View>
@@ -476,17 +481,17 @@ function MarketplaceDetailContent() {
                  {post.title || post.text || 'Untitled'}
                </Text>
                {post.condition && (
-                 <View style={{ marginLeft: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: GLASS_BORDER, flexShrink: 0 }}>
-                   <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 12, fontWeight: '600', color: MUTED }}>{post.condition}</Text>
+                 <View style={{ marginLeft: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, flexShrink: 0 }}>
+                   <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 12, fontWeight: '600', color: theme.colors.MUTED }}>{post.condition}</Text>
                  </View>
                )}
              </View>
-             <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 28, color: post.is_sold ? LABEL : G }}>
+             <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 28, color: post.is_sold ? theme.colors.LABEL : theme.colors.G }}>
                {post.is_sold ? 'SOLD' : (post.price === 0 ? 'FREE' : formatPrice(post.price || 0))}
              </Text>
              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
-               <Ionicons name="location-outline" size={14} color={LABEL} />
-               <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: LABEL }}>
+               <Ionicons name="location-outline" size={14} color={theme.colors.LABEL} />
+               <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL }}>
                  {post.lga ? `${post.lga}, ` : ''}{post.state || 'Location'}
                </Text>
              </View>
@@ -496,21 +501,21 @@ function MarketplaceDetailContent() {
            {isOwner ? (
              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.2)', borderRadius: 20 }}>
                <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.1)', alignItems: 'center', justifyContent: 'center' }}>
-                 <Ionicons name="bag-check-outline" size={20} color={G} />
+                 <Ionicons name="bag-check-outline" size={20} color={theme.colors.G} />
                </View>
                <View style={{ flex: 1 }}>
-                 <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 13, color: G }}>You are the seller of this listing</Text>
-                 <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: LABEL, marginTop: 2 }}>Use the buttons below to manage your listing</Text>
+                 <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 13, color: theme.colors.G }}>You are the seller of this listing</Text>
+                 <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginTop: 2 }}>Use the buttons below to manage your listing</Text>
                </View>
              </View>
            ) : (
-             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20 }}>
+             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 20 }}>
                <TouchableOpacity onPress={() => router.push(`/profile/${post.user_id}` as any)}>
-                 <View style={{ width: 48, height: 48, borderRadius: 24, overflow: 'hidden', backgroundColor: SURFACE }}>
+                 <View style={{ width: 48, height: 48, borderRadius: 24, overflow: 'hidden', backgroundColor: theme.colors.SURFACE }}>
                    {postUser?.avatar_url || post.author_image ? (
                      <Image source={{ uri: postUser?.avatar_url || post.author_image }} style={{ width: '100%', height: '100%' }} />
                    ) : (
-                     <View style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: SURFACE }}>
+                     <View style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.SURFACE }}>
                         <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'Outfit-Bold' }}>
                           {postUser?.name ? postUser.name.charAt(0).toUpperCase() : 'U'}
                         </Text>
@@ -523,31 +528,31 @@ function MarketplaceDetailContent() {
                    <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 14, color: '#fff' }}>{postUser?.name || post.author_name || 'Unknown Seller'}</Text>
                  </TouchableOpacity>
                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 2 }}>
-                   <Ionicons name="star" size={11} color={GOLD || '#FFD700'} />
-                   <Ionicons name="star" size={11} color={GOLD || '#FFD700'} />
-                   <Ionicons name="star" size={11} color={GOLD || '#FFD700'} />
-                   <Ionicons name="star" size={11} color={GOLD || '#FFD700'} />
-                   <Ionicons name="star" size={11} color={GOLD || '#FFD700'} />
-                   <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: LABEL, marginLeft: 2 }}>Trusted seller</Text>
+                   <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
+                   <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
+                   <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
+                   <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
+                   <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
+                   <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL, marginLeft: 2 }}>Trusted seller</Text>
                  </View>
                </View>
                <TouchableOpacity 
                  onPress={() => router.push(`/profile/${post.user_id}` as any)}
-                 style={{ height: 32, paddingHorizontal: 14, borderRadius: 16, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' }}>
-                 <Text style={{ color: MUTED, fontFamily: 'Inter-Medium', fontSize: 12, fontWeight: '500' }}>View Profile</Text>
+                 style={{ height: 32, paddingHorizontal: 14, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' }}>
+                 <Text style={{ color: theme.colors.MUTED, fontFamily: 'Inter-Medium', fontSize: 12, fontWeight: '500' }}>View Profile</Text>
                </TouchableOpacity>
              </View>
            )}
 
            <View>
-             <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, fontWeight: '700', color: LABEL, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 10 }}>About this item</Text>
+             <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, fontWeight: '700', color: theme.colors.LABEL, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 10 }}>About this item</Text>
              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 15, color: 'rgba(255,255,255,0.72)', lineHeight: 25.5 }}>{post.text}</Text>
            </View>
            
            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
              {post.category && (
-               <View style={{ paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
-                 <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: MUTED }}>{post.category}</Text>
+               <View style={{ paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}>
+                 <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.MUTED }}>{post.category}</Text>
                </View>
              )}
            </View>
@@ -555,12 +560,12 @@ function MarketplaceDetailContent() {
       </Animated.ScrollView>
 
       {/* Bottom Action Bar */}
-      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 20, paddingBottom: 32, paddingTop: 16, backgroundColor: 'rgba(5,5,5,0.95)', borderTopWidth: 1, borderTopColor: GLASS_BORDER, flexDirection: 'row', gap: 12 }}>
+      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 20, paddingBottom: 32, paddingTop: 16, backgroundColor: 'rgba(5,5,5,0.95)', borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER, flexDirection: 'row', gap: 12 }}>
         {isOwner ? (
           <>
             <TouchableOpacity 
               onPress={() => router.push(`/marketplace/edit/${post.id}`)}
-              style={{ flex: 1, height: 52, borderRadius: 16, backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              style={{ flex: 1, height: 52, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <Ionicons name="pencil" size={15} color="#fff" />
               <Text style={{ color: '#fff', fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15 }}>Edit Listing</Text>
             </TouchableOpacity>
@@ -573,7 +578,7 @@ function MarketplaceDetailContent() {
                 }
               }}
               style={{ flex: 1, height: 52, borderRadius: 16, backgroundColor: post.is_sold ? 'rgba(255,92,92,0.1)' : 'rgba(130,219,126,0.1)', borderWidth: 1, borderColor: post.is_sold ? 'rgba(255,92,92,0.3)' : 'rgba(130,219,126,0.3)', alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: post.is_sold ? '#FF5C5C' : G, fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15 }}>
+              <Text style={{ color: post.is_sold ? '#FF5C5C' : theme.colors.G, fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15 }}>
                 {post.is_sold ? 'Mark Active' : 'Mark as Sold'}
               </Text>
             </TouchableOpacity>
@@ -583,13 +588,13 @@ function MarketplaceDetailContent() {
             <TouchableOpacity 
               disabled={post.is_sold}
               onPress={() => router.push({ pathname: '/checkout/[id]', params: { id: post.id, type: 'marketplace' } })}
-              style={{ flex: 1, height: 52, borderRadius: 16, backgroundColor: post.is_sold ? '#111' : G, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: post.is_sold ? LABEL : DARK, fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16 }}>{post.is_sold ? 'Item Sold' : 'Buy Now'}</Text>
+              style={{ flex: 1, height: 52, borderRadius: 16, backgroundColor: post.is_sold ? '#111' : theme.colors.G, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: post.is_sold ? theme.colors.LABEL : theme.colors.DARK, fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16 }}>{post.is_sold ? 'Item Sold' : 'Buy Now'}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={handleMessageSeller}
-              style={{ height: 52, paddingHorizontal: 18, borderRadius: 16, backgroundColor: '#111', borderWidth: 1, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: MUTED, fontFamily: 'Inter-Medium', fontSize: 14 }}>Message Seller</Text>
+              style={{ height: 52, paddingHorizontal: 18, borderRadius: 16, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: theme.colors.MUTED, fontFamily: 'Inter-Medium', fontSize: 14 }}>Message Seller</Text>
             </TouchableOpacity>
           </>
         )}
@@ -607,45 +612,47 @@ function MarketplaceDetailContent() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  errorText: { fontSize: 18, marginBottom: 20 },
-  backBtnWrapper: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
-  backBtnText: { fontWeight: 'bold' },
-  iconCircle: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: 'rgba(0,0,0,0.48)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
-    justifyContent: 'center', alignItems: 'center',
-  },
-  scrollContent: { flex: 1 },
-  galleryContainer: {
-    width: '100%', height: '100%',
-  },
-  imageScroll: { flex: 1 },
-  mainImageContainer: { width: width, height: 320 },
-  mainImage: { width: width, height: '100%' },
-  galleryControls: {
-    position: 'absolute', bottom: 20, left: 20, right: 20,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
-  },
-  paginationDots: { flexDirection: 'row', alignItems: 'center' },
-  carouselDot: { width: 6, height: 6, borderRadius: 3, marginHorizontal: 3 },
-  activeDot: { width: 8, height: 8, borderRadius: 4 },
-  inactiveDot: { backgroundColor: 'rgba(255, 255, 255, 0.4)' },
-  counterBadge: {
-    backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 12, paddingVertical: 6,
-    borderRadius: 16,
-  },
-  counterText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
-  placeholderImage: { 
-    width: width, height: 320, 
-    justifyContent: 'center', alignItems: 'center',
-  },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+      errorText: { fontSize: 18, marginBottom: 20 },
+      backBtnWrapper: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+      backBtnText: { fontWeight: 'bold' },
+      iconCircle: {
+        width: 38, height: 38, borderRadius: 19,
+        backgroundColor: 'rgba(0,0,0,0.48)',
+        borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+        justifyContent: 'center', alignItems: 'center',
+      },
+      scrollContent: { flex: 1 },
+      galleryContainer: {
+        width: '100%', height: '100%',
+      },
+      imageScroll: { flex: 1 },
+      mainImageContainer: { width: width, height: 320 },
+      mainImage: { width: width, height: '100%' },
+      galleryControls: {
+        position: 'absolute', bottom: 20, left: 20, right: 20,
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
+      },
+      paginationDots: { flexDirection: 'row', alignItems: 'center' },
+      carouselDot: { width: 6, height: 6, borderRadius: 3, marginHorizontal: 3 },
+      activeDot: { width: 8, height: 8, borderRadius: 4 },
+      inactiveDot: { backgroundColor: 'rgba(255, 255, 255, 0.4)' },
+      counterBadge: {
+        backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 12, paddingVertical: 6,
+        borderRadius: 16,
+      },
+      counterText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
+      placeholderImage: { 
+        width: width, height: 320, 
+        justifyContent: 'center', alignItems: 'center',
+      },
+    }));
 
 export default function MarketplaceDetailScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   return (
     <ErrorBoundary screenName="MarketplaceDetail">
       <MarketplaceDetailContent />

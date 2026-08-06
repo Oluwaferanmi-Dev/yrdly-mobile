@@ -1,6 +1,6 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY, } from '../../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, FlatList, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, FlatList, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
@@ -10,6 +10,8 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../hooks/use-supabase-auth';
 
 export default function NetworkScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const router = useRouter();
   const { colors } = useAppTheme();
   const { id, mode = 'followers' } = useLocalSearchParams<{ id: string; mode: 'followers' | 'following' }>();
@@ -123,21 +125,22 @@ export default function NetworkScreen() {
   };
 
   const renderUser = ({ item }: { item: any }) => {
+
     const isCurrentUser = currentUser?.id === item.id;
     const isFollowing = currentUserFollowing.has(item.id);
     const isFollower = currentUserFollowers.has(item.id);
     
     return (
       <TouchableOpacity
-        style={[styles.userRow, { borderBottomColor: GLASS_BORDER }]}
+        style={[stylesheet.userRow, { borderBottomColor: theme.colors.GLASS_BORDER }]}
         onPress={() => router.push(`/profile/${item.id}` as any)}
       >
         <TouchableOpacity onPress={() => router.push(`/profile/${item.id}` as any)} style={{ flexShrink: 0, marginRight: 12 }}>
           {item.avatar_url ? (
-            <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
+            <Image source={{ uri: item.avatar_url }} style={stylesheet.avatar} />
           ) : (
-            <View style={[styles.avatar, styles.avatarFallback]}>
-              <Text style={styles.avatarFallbackText}>
+            <View style={[stylesheet.avatar, stylesheet.avatarFallback]}>
+              <Text style={stylesheet.avatarFallbackText}>
                 {item.name ? item.name.charAt(0).toUpperCase() : '?'}
               </Text>
             </View>
@@ -146,35 +149,35 @@ export default function NetworkScreen() {
         
         <View style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={styles.userName} numberOfLines={1}>{item.name}</Text>
+            <Text style={stylesheet.userName} numberOfLines={1}>{item.name}</Text>
             {item.phone_verified && (
-              <MaterialIcons name="verified" size={14} color={G} style={{ marginLeft: 4 }} />
+              <MaterialIcons name="verified" size={14} color={theme.colors.G} style={{ marginLeft: 4 }} />
             )}
           </View>
-          <Text style={styles.userHandle} numberOfLines={1}>@{item.username || 'user'}</Text>
+          <Text style={stylesheet.userHandle} numberOfLines={1}>@{item.username || 'user'}</Text>
           {isFollower && isFollowing && !isCurrentUser && (
-            <Text style={styles.mutualText}>Mutual</Text>
+            <Text style={stylesheet.mutualText}>Mutual</Text>
           )}
           {isFollower && !isFollowing && !isCurrentUser && (
-            <Text style={styles.mutualText}>Follows you</Text>
+            <Text style={stylesheet.mutualText}>Follows you</Text>
           )}
         </View>
 
         {!isCurrentUser && (
           <TouchableOpacity 
             style={[
-              styles.followBtn, 
+              stylesheet.followBtn, 
               activeTab === 'followers' 
-                ? { backgroundColor: SURFACE, borderColor: GLASS_BORDER } 
+                ? { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER } 
                 : { backgroundColor: 'rgba(130,219,126,0.1)', borderColor: 'rgba(130,219,126,0.25)' }
             ]}
             onPress={() => handleToggleFollow(item.id)}
             disabled={actionLoading[item.id]}
           >
             {actionLoading[item.id] ? (
-              <ActivityIndicator size="small" color={activeTab === 'followers' ? MUTED : G} />
+              <ActivityIndicator size="small" color={activeTab === 'followers' ? theme.colors.MUTED : theme.colors.G} />
             ) : (
-              <Text style={[styles.followBtnText, activeTab === 'followers' ? { color: MUTED } : { color: G }]}>
+              <Text style={[stylesheet.followBtnText, activeTab === 'followers' ? { color: theme.colors.MUTED } : { color: theme.colors.G }]}>
                 {activeTab === 'followers' ? 'Remove' : 'Following'}
               </Text>
             )}
@@ -191,66 +194,66 @@ export default function NetworkScreen() {
   });
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
+    <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
+      <View style={stylesheet.header}>
+        <TouchableOpacity onPress={() => router.back()} style={stylesheet.navBtn}>
           <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Connections</Text>
+        <Text style={stylesheet.headerTitle}>Connections</Text>
       </View>
 
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={14} color={LABEL} style={{ marginRight: 8 }} />
+      <View style={stylesheet.searchContainer}>
+        <Ionicons name="search" size={14} color={theme.colors.LABEL} style={{ marginRight: 8 }} />
         <TextInput
-          style={styles.searchInput}
+          style={stylesheet.searchInput}
           placeholder="Search by name or @username…"
-          placeholderTextColor={LABEL}
+          placeholderTextColor={theme.colors.LABEL}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
       </View>
 
-      <View style={styles.tabsWrap}>
+      <View style={stylesheet.tabsWrap}>
         <TouchableOpacity
-          style={[styles.tabBtn]}
+          style={[stylesheet.tabBtn]}
           onPress={() => setActiveTab('followers')}
         >
-          <Text style={[styles.tabTxt, { 
-            color: activeTab === 'followers' ? '#fff' : LABEL, 
+          <Text style={[stylesheet.tabTxt, { 
+            color: activeTab === 'followers' ? '#fff' : theme.colors.LABEL, 
             fontFamily: activeTab === 'followers' ? 'Outfit-Bold' : 'Outfit-Medium' 
           }]}>
-            Followers <Text style={{ color: activeTab === 'followers' ? G : LABEL }}>({activeTab === 'followers' ? filteredUsers.length : 0})</Text>
+            Followers <Text style={{ color: activeTab === 'followers' ? theme.colors.G : theme.colors.LABEL }}>({activeTab === 'followers' ? filteredUsers.length : 0})</Text>
           </Text>
-          {activeTab === 'followers' && <View style={styles.tabIndicator} />}
+          {activeTab === 'followers' && <View style={stylesheet.tabIndicator} />}
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tabBtn]}
+          style={[stylesheet.tabBtn]}
           onPress={() => setActiveTab('following')}
         >
-          <Text style={[styles.tabTxt, { 
-            color: activeTab === 'following' ? '#fff' : LABEL, 
+          <Text style={[stylesheet.tabTxt, { 
+            color: activeTab === 'following' ? '#fff' : theme.colors.LABEL, 
             fontFamily: activeTab === 'following' ? 'Outfit-Bold' : 'Outfit-Medium' 
           }]}>
-            Following <Text style={{ color: activeTab === 'following' ? G : LABEL }}>({activeTab === 'following' ? filteredUsers.length : 0})</Text>
+            Following <Text style={{ color: activeTab === 'following' ? theme.colors.G : theme.colors.LABEL }}>({activeTab === 'following' ? filteredUsers.length : 0})</Text>
           </Text>
-          {activeTab === 'following' && <View style={styles.tabIndicator} />}
+          {activeTab === 'following' && <View style={stylesheet.tabIndicator} />}
         </TouchableOpacity>
       </View>
 
       {loading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={G} />
+        <View style={stylesheet.centerContainer}>
+          <ActivityIndicator size="large" color={theme.colors.G} />
         </View>
       ) : (
         <FlatList
           data={filteredUsers}
           keyExtractor={item => item.id}
           renderItem={renderUser}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={stylesheet.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { color: MUTED, fontFamily: 'Inter' }]}>
+            <View style={stylesheet.emptyContainer}>
+              <Text style={[stylesheet.emptyText, { color: theme.colors.MUTED, fontFamily: 'Inter' }]}>
                 {activeTab === 'followers' ? 'No followers yet.' : 'Not following anyone yet.'}
               </Text>
             </View>
@@ -261,87 +264,87 @@ export default function NetworkScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12, paddingTop: 10,
-    borderBottomWidth: 1, borderBottomColor: GLASS_BORDER,
-  },
-  navBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', color: '#fff' },
-  searchContainer: {
-    flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, marginVertical: 12, paddingHorizontal: 12,
-    backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1, borderRadius: 14, height: 40
-  },
-  searchInput: { flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: '#fff' },
-  tabsWrap: { flexDirection: 'row', paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  tabBtn: { flex: 1, paddingVertical: 12, position: 'relative' },
-  tabTxt: { fontSize: 14, textAlign: 'center', textTransform: 'capitalize' },
-  tabIndicator: { position: 'absolute', bottom: -1, left: 0, right: 0, height: 2, borderRadius: 99, backgroundColor: G },
-  
-  listContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    paddingBottom: 40,
-  },
-  userRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-  },
-  avatarFallback: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: G,
-  },
-  avatarFallbackText: {
-    color: '#050505',
-    fontFamily: 'Outfit-Bold',
-    fontSize: 18,
-  },
-  userName: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: '#fff',
-  },
-  userHandle: {
-    fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    color: LABEL,
-  },
-  mutualText: {
-    fontSize: 11,
-    fontFamily: 'Inter-Regular',
-    color: MUTED,
-    marginTop: 2,
-  },
-  followBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  followBtnText: {
-    fontSize: 12,
-    fontFamily: 'Inter-SemiBold',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyContainer: {
-    paddingVertical: 48,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 14,
-  },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      header: {
+        flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12, paddingTop: 10,
+        borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER,
+      },
+      navBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+      headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', color: '#fff' },
+      searchContainer: {
+        flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, marginVertical: 12, paddingHorizontal: 12,
+        backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, borderWidth: 1, borderRadius: 14, height: 40
+      },
+      searchInput: { flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: '#fff' },
+      tabsWrap: { flexDirection: 'row', paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      tabBtn: { flex: 1, paddingVertical: 12, position: 'relative' },
+      tabTxt: { fontSize: 14, textAlign: 'center', textTransform: 'capitalize' },
+      tabIndicator: { position: 'absolute', bottom: -1, left: 0, right: 0, height: 2, borderRadius: 99, backgroundColor: theme.colors.G },
+      
+      listContent: {
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        paddingBottom: 40,
+      },
+      userRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+      },
+      avatar: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+      },
+      avatarFallback: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: theme.colors.G,
+      },
+      avatarFallbackText: {
+        color: '#050505',
+        fontFamily: 'Outfit-Bold',
+        fontSize: 18,
+      },
+      userName: {
+        fontSize: 14,
+        fontFamily: 'Inter-SemiBold',
+        color: '#fff',
+      },
+      userHandle: {
+        fontSize: 12,
+        fontFamily: 'Inter-Regular',
+        color: theme.colors.LABEL,
+      },
+      mutualText: {
+        fontSize: 11,
+        fontFamily: 'Inter-Regular',
+        color: theme.colors.MUTED,
+        marginTop: 2,
+      },
+      followBtn: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 10,
+        borderWidth: 1,
+        alignItems: 'center',
+      },
+      followBtnText: {
+        fontSize: 12,
+        fontFamily: 'Inter-SemiBold',
+      },
+      centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      emptyContainer: {
+        paddingVertical: 48,
+        alignItems: 'center',
+      },
+      emptyText: {
+        fontSize: 14,
+      },
+    }));

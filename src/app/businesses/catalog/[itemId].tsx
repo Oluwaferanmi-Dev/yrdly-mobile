@@ -1,6 +1,6 @@
-import { G, DARK, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../../../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Dimensions, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Dimensions, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,6 +12,8 @@ import ImageViewing from 'react-native-image-viewing';
 import type { Business, CatalogItem } from '../../../types';
 
 export default function CatalogItemScreen() {
+    const { styles: sStylesheet, theme } = useStyles(stylesheet);
+
   const { itemId } = useLocalSearchParams<{ itemId: string }>();
   const { colors, isDarkMode } = useAppTheme();
   const insets = useSafeAreaInsets();
@@ -261,19 +263,19 @@ export default function CatalogItemScreen() {
 
   if (loading) {
     return (
-      <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={G} />
+      <View style={[sStylesheet.root, { backgroundColor: theme.colors.DARK, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.colors.G} />
       </View>
     );
   }
 
   if (!item) {
     return (
-      <View style={[s.root, { backgroundColor: DARK, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
-        <Ionicons name="cube-outline" size={48} color={MUTED} style={{ opacity: 0.5, marginBottom: 16 }} />
-        <Text style={{ color: TEXT_PRIMARY, fontSize: 18, fontWeight: '600', fontFamily: 'Outfit', marginBottom: 8 }}>Item not found</Text>
-        <Text style={{ color: MUTED, fontSize: 14, fontFamily: 'Inter', textAlign: 'center', marginBottom: 24 }}>The item you&apos;re looking for doesn&apos;t exist or has been removed.</Text>
-        <TouchableOpacity style={{ backgroundColor: G, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 25 }} onPress={() => router.back()}>
+      <View style={[sStylesheet.root, { backgroundColor: theme.colors.DARK, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
+        <Ionicons name="cube-outline" size={48} color={theme.colors.MUTED} style={{ opacity: 0.5, marginBottom: 16 }} />
+        <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 18, fontWeight: '600', fontFamily: 'Outfit', marginBottom: 8 }}>Item not found</Text>
+        <Text style={{ color: theme.colors.MUTED, fontSize: 14, fontFamily: 'Inter', textAlign: 'center', marginBottom: 24 }}>The item you&apos;re looking for doesn&apos;t exist or has been removed.</Text>
+        <TouchableOpacity style={{ backgroundColor: theme.colors.G, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 25 }} onPress={() => router.back()}>
           <Text style={{ color: '#000', fontWeight: '700' }}>Go Back</Text>
         </TouchableOpacity>
       </View>
@@ -297,7 +299,7 @@ export default function CatalogItemScreen() {
   const screenWidth = Dimensions.get('window').width;
 
   return (
-    <View style={[s.root, { backgroundColor: DARK }]}>
+    <View style={[sStylesheet.root, { backgroundColor: theme.colors.DARK }]}>
       <ImageViewing
         images={imageViewerImages}
         imageIndex={viewerIndex}
@@ -306,7 +308,7 @@ export default function CatalogItemScreen() {
       />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Header Images Swipeable */}
-        <View style={s.imageContainer}>
+        <View style={sStylesheet.imageContainer}>
           <ScrollView
             horizontal
             pagingEnabled
@@ -315,32 +317,34 @@ export default function CatalogItemScreen() {
               const slide = Math.round(e.nativeEvent.contentOffset.x / (screenWidth || 1));
               if (slide !== currentImageIndex) setCurrentImageIndex(slide);
             }}
-            scrollEventThrottle={16}
-            style={StyleSheet.absoluteFillObject}
+            style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}
           >
-            {images.map((img, idx) => (
-              <TouchableOpacity
-                key={idx}
-                activeOpacity={0.9}
-                style={{ width: screenWidth, height: '100%' }}
-                onPress={() => {
-                  setViewerIndex(idx);
-                  setIsViewerVisible(true);
-                }}
-              >
-                <Image
-                  source={{ uri: img }}
-                  style={{ width: '100%', height: '100%' }}
-                  contentFit="cover"
-                />
-              </TouchableOpacity>
-            ))}
+            {images.map((img, idx) => {
+            const { styles: s } = useStyles(sStylesheet);
+            return (
+                          <TouchableOpacity
+                            key={idx}
+                            activeOpacity={0.9}
+                            style={{ width: screenWidth, height: '100%' }}
+                            onPress={() => {
+                              setViewerIndex(idx);
+                              setIsViewerVisible(true);
+                            }}
+                          >
+                            <Image
+                              source={{ uri: img }}
+                              style={{ width: '100%', height: '100%' }}
+                              contentFit="cover"
+                            />
+                          </TouchableOpacity>
+                        );
+            })}
           </ScrollView>
-          <View style={s.imageOverlay} pointerEvents="none" />
+          <View style={sStylesheet.imageOverlay} pointerEvents="none" />
 
           {/* Back btn */}
           <TouchableOpacity 
-            style={[s.backBtn, { top: insets.top + 10, backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]} 
+            style={[sStylesheet.backBtn, { top: insets.top + 10, backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]} 
             onPress={() => router.back()}
           >
             <Ionicons name="chevron-back" size={26} color={isDarkMode ? '#fff' : '#000'} />
@@ -348,37 +352,37 @@ export default function CatalogItemScreen() {
 
           {/* Indicators */}
           {images.length > 1 && (
-            <View style={s.indicators} pointerEvents="none">
+            <View style={sStylesheet.indicators} pointerEvents="none">
               {images.map((_, idx) => (
                 <View 
                   key={idx} 
-                  style={[s.dot, { backgroundColor: idx === currentImageIndex ? G : 'rgba(255,255,255,0.5)' }]} 
+                  style={[sStylesheet.dot, { backgroundColor: idx === currentImageIndex ? theme.colors.G : 'rgba(255,255,255,0.5)' }]} 
                 />
               ))}
             </View>
           )}
         </View>
 
-        <View style={s.contentPad}>
+        <View style={sStylesheet.contentPad}>
           {/* Item Title & Price */}
-          <View style={s.headerRow}>
+          <View style={sStylesheet.headerRow}>
             <View style={{ flex: 1 }}>
-              <Text style={[s.titleTxt, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{item.title}</Text>
+              <Text style={[sStylesheet.titleTxt, { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{item.title}</Text>
               {!!item.category && (
-                <View style={[s.catBadge, { borderColor: GLASS_BORDER }]}>
-                  <Text style={[s.catBadgeTxt, { color: MUTED, fontFamily: 'Inter' }]}>{item.category}</Text>
+                <View style={[sStylesheet.catBadge, { borderColor: theme.colors.GLASS_BORDER }]}>
+                  <Text style={[sStylesheet.catBadgeTxt, { color: theme.colors.MUTED, fontFamily: 'Inter' }]}>{item.category}</Text>
                 </View>
               )}
             </View>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text style={[s.priceTxt, { color: G, fontFamily: 'Outfit' }]}>₦{item.price.toLocaleString()}</Text>
+              <Text style={[sStylesheet.priceTxt, { color: theme.colors.G, fontFamily: 'Outfit' }]}>₦{item.price.toLocaleString()}</Text>
               {!item.in_stock || (item.quantity !== undefined && item.quantity <= 0) ? (
-                <View style={[s.outOfStockBadge, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
+                <View style={[sStylesheet.outOfStockBadge, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
                   <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: '700', fontFamily: 'Inter' }}>Out of Stock</Text>
                 </View>
               ) : item.quantity !== undefined ? (
-                <View style={[s.outOfStockBadge, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
-                  <Text style={{ color: G, fontSize: 12, fontWeight: '700', fontFamily: 'Inter' }}>
+                <View style={[sStylesheet.outOfStockBadge, { backgroundColor: 'rgba(130, 219, 126, 0.15)' }]}>
+                  <Text style={{ color: theme.colors.G, fontSize: 12, fontWeight: '700', fontFamily: 'Inter' }}>
                     {item.quantity <= 3 ? `Only ${item.quantity} left!` : `${item.quantity} in stock`}
                   </Text>
                 </View>
@@ -392,18 +396,18 @@ export default function CatalogItemScreen() {
                 onPress={handleRestock}
                 style={{ backgroundColor: 'rgba(130, 219, 126, 0.15)', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start', marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
               >
-                <Ionicons name="refresh-outline" size={16} color={G} />
-                <Text style={{ color: G, fontSize: 12, fontWeight: '700', fontFamily: 'Outfit' }}>Restock / Update Quantity</Text>
+                <Ionicons name="refresh-outline" size={16} color={theme.colors.G} />
+                <Text style={{ color: theme.colors.G, fontSize: 12, fontWeight: '700', fontFamily: 'Outfit' }}>Restock / Update Quantity</Text>
               </TouchableOpacity>
 
               {/* Edit & Delete row */}
               <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
                 <TouchableOpacity
                   onPress={handleEditItem}
-                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: SURFACE, borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: GLASS_BORDER }}
+                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: theme.colors.SURFACE, borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}
                 >
-                  <Ionicons name="create-outline" size={16} color={TEXT_PRIMARY} />
-                  <Text style={{ color: TEXT_PRIMARY, fontSize: 12, fontWeight: '700', fontFamily: 'Outfit' }}>Edit Item</Text>
+                  <Ionicons name="create-outline" size={16} color={theme.colors.TEXT_PRIMARY} />
+                  <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 12, fontWeight: '700', fontFamily: 'Outfit' }}>Edit Item</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleDeleteItem}
@@ -417,63 +421,63 @@ export default function CatalogItemScreen() {
           )}
 
           {!!item.description && (
-            <Text style={[s.descTxt, { color: MUTED, fontFamily: 'Inter' }]}>{item.description}</Text>
+            <Text style={[sStylesheet.descTxt, { color: theme.colors.MUTED, fontFamily: 'Inter' }]}>{item.description}</Text>
           )}
 
           {/* Business Info Card */}
           {business && (
             <TouchableOpacity 
-              style={[s.bizCard, { backgroundColor: SURFACE, borderColor: GLASS_BORDER }]}
+              style={[sStylesheet.bizCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
               onPress={() => router.push(`/businesses/${business.id}` as any)}
             >
               {business.logo ? (
-                <Image source={{ uri: business.logo }} style={s.bizLogo} contentFit="cover" />
+                <Image source={{ uri: business.logo }} style={sStylesheet.bizLogo} contentFit="cover" />
               ) : (
-                <View style={[s.bizLogo, { backgroundColor: SURFACE, borderColor: GLASS_BORDER, borderWidth: 1, justifyContent: 'center', alignItems: 'center' }]}>
-                  <Ionicons name="storefront" size={24} color={LABEL} />
+                <View style={[sStylesheet.bizLogo, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, borderWidth: 1, justifyContent: 'center', alignItems: 'center' }]}>
+                  <Ionicons name="storefront" size={24} color={theme.colors.LABEL} />
                 </View>
               )}
               <View style={{ flex: 1 }}>
-                <Text style={[s.bizName, { color: TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{business.name}</Text>
-                <View style={s.bizMetaRow}>
+                <Text style={[sStylesheet.bizName, { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{business.name}</Text>
+                <View style={sStylesheet.bizMetaRow}>
                   <Ionicons name="star" size={14} color="#FBBF24" />
-                  <Text style={{ color: TEXT_PRIMARY, fontWeight: '700', fontSize: 13, marginLeft: 4, fontFamily: 'Inter' }}>{business.rating?.toFixed(1) || "0.0"}</Text>
-                  <Text style={{ color: LABEL, fontSize: 13, marginLeft: 6, fontFamily: 'Inter' }}>• {business.category}</Text>
+                  <Text style={{ color: theme.colors.TEXT_PRIMARY, fontWeight: '700', fontSize: 13, marginLeft: 4, fontFamily: 'Inter' }}>{business.rating?.toFixed(1) || "0.0"}</Text>
+                  <Text style={{ color: theme.colors.LABEL, fontSize: 13, marginLeft: 6, fontFamily: 'Inter' }}>• {business.category}</Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={LABEL} />
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.LABEL} />
             </TouchableOpacity>
           )}
 
           {/* Action Buttons */}
           {(!isOwner || business?.phone) && (
-            <View style={s.actionRow}>
+            <View style={sStylesheet.actionRow}>
               {!isOwner && (
                 <TouchableOpacity
-                  style={[s.primaryBtn, { backgroundColor: G, flex: 1 }]}
+                  style={[sStylesheet.primaryBtn, { backgroundColor: theme.colors.G, flex: 1 }]}
                   onPress={handleBuy}
                   disabled={!item.in_stock}
                 >
                   <Ionicons name="bag-handle-outline" size={20} color="#000000" style={{ marginRight: 8 }} />
-                  <Text style={[s.primaryBtnTxt, { color: '#000000', fontFamily: 'Outfit' }]}>{item.in_stock ? 'Buy Now' : 'Out of Stock'}</Text>
+                  <Text style={[sStylesheet.primaryBtnTxt, { color: '#000000', fontFamily: 'Outfit' }]}>{item.in_stock ? 'Buy Now' : 'Out of Stock'}</Text>
                 </TouchableOpacity>
               )}
 
               {business?.phone && (
                 <TouchableOpacity
-                  style={[s.outlineBtn, { borderColor: GLASS_BORDER, width: 50, backgroundColor: SURFACE }]}
+                  style={[sStylesheet.outlineBtn, { borderColor: theme.colors.GLASS_BORDER, width: 50, backgroundColor: theme.colors.SURFACE }]}
                   onPress={handleCall}
                 >
-                  <Ionicons name="call-outline" size={20} color={G} />
+                  <Ionicons name="call-outline" size={20} color={theme.colors.G} />
                 </TouchableOpacity>
               )}
             </View>
           )}
 
           {!isOwner && business && (
-            <TouchableOpacity style={[s.outlineBtn, { borderColor: GLASS_BORDER, backgroundColor: SURFACE, marginTop: 12 }]} onPress={handleMessage}>
-              <Ionicons name="chatbubble-ellipses-outline" size={18} color={TEXT_PRIMARY} />
-              <Text style={[s.outlineBtnTxt, { color: TEXT_PRIMARY, marginLeft: 8, fontFamily: 'Outfit' }]}>Message about Item</Text>
+            <TouchableOpacity style={[sStylesheet.outlineBtn, { borderColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.SURFACE, marginTop: 12 }]} onPress={handleMessage}>
+              <Ionicons name="chatbubble-ellipses-outline" size={18} color={theme.colors.TEXT_PRIMARY} />
+              <Text style={[sStylesheet.outlineBtnTxt, { color: theme.colors.TEXT_PRIMARY, marginLeft: 8, fontFamily: 'Outfit' }]}>Message about Item</Text>
             </TouchableOpacity>
           )}
 
@@ -483,30 +487,30 @@ export default function CatalogItemScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1 },
-  imageContainer: { height: 300, width: '100%', position: 'relative' },
-  imageOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)' },
-  backBtn: { position: 'absolute', left: 16, width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', zIndex: 10 },
-  navArrowContainer: { position: 'absolute', inset: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
-  navBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
-  indicators: { position: 'absolute', bottom: 16, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 6 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  contentPad: { padding: 16 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
-  titleTxt: { fontSize: 22, fontWeight: '800', marginBottom: 6 },
-  catBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, borderWidth: 1 },
-  catBadgeTxt: { fontSize: 12, fontWeight: '600' },
-  priceTxt: { fontSize: 24, fontWeight: '800' },
-  outOfStockBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginTop: 4 },
-  descTxt: { fontSize: 15, lineHeight: 22, marginBottom: 24 },
-  bizCard: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 16, borderWidth: 1, marginBottom: 24 },
-  bizLogo: { width: 48, height: 48, borderRadius: 24, marginRight: 12 },
-  bizName: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  bizMetaRow: { flexDirection: 'row', alignItems: 'center' },
-  actionRow: { flexDirection: 'row', gap: 12 },
-  primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 50, borderRadius: 25 },
-  primaryBtnTxt: { fontSize: 16, fontWeight: '700' },
-  outlineBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 50, borderRadius: 25, borderWidth: 1 },
-  outlineBtnTxt: { fontSize: 15, fontWeight: '600' },
-});
+const stylesheet = createStyleSheet(theme => ({
+      root: { flex: 1 },
+      imageContainer: { height: 300, width: '100%', position: 'relative' },
+      imageOverlay: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.15)' },
+      backBtn: { position: 'absolute', left: 16, width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', zIndex: 10 },
+      navArrowContainer: { position: 'absolute', inset: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
+      navBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+      indicators: { position: 'absolute', bottom: 16, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: 6 },
+      dot: { width: 8, height: 8, borderRadius: 4 },
+      contentPad: { padding: 16 },
+      headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
+      titleTxt: { fontSize: 22, fontWeight: '800', marginBottom: 6 },
+      catBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, borderWidth: 1 },
+      catBadgeTxt: { fontSize: 12, fontWeight: '600' },
+      priceTxt: { fontSize: 24, fontWeight: '800' },
+      outOfStockBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginTop: 4 },
+      descTxt: { fontSize: 15, lineHeight: 22, marginBottom: 24 },
+      bizCard: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 16, borderWidth: 1, marginBottom: 24 },
+      bizLogo: { width: 48, height: 48, borderRadius: 24, marginRight: 12 },
+      bizName: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+      bizMetaRow: { flexDirection: 'row', alignItems: 'center' },
+      actionRow: { flexDirection: 'row', gap: 12 },
+      primaryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 50, borderRadius: 25 },
+      primaryBtnTxt: { fontSize: 16, fontWeight: '700' },
+      outlineBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 50, borderRadius: 25, borderWidth: 1 },
+      outlineBtnTxt: { fontSize: 15, fontWeight: '600' },
+    }));

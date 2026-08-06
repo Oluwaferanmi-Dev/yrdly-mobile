@@ -1,11 +1,11 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Switch, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Switch, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { G, DARK, SURFACE, GLASS_BORDER, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
 import * as Haptics from 'expo-haptics';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
 import { supabase } from '../lib/supabase';
@@ -20,6 +20,8 @@ const STEPS = ['Basic Info', 'Date & Time', 'Location', 'Tickets', 'Photos', 'Re
 const CATEGORIES = ['Party / Social', 'Sports & Fitness', 'Workshop', 'Concert / Music', 'Community / Meetup', 'Religious', 'Business', 'Other'];
 
 export default function CreateEventScreen() {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, profile } = useAuth();
@@ -227,17 +229,17 @@ export default function CreateEventScreen() {
 
   if (published) {
     return (
-      <View style={[styles.successContainer, { backgroundColor: DARK }]}>
-        <View style={styles.successIcon}>
-          <Feather name="calendar" size={34} color={G} />
+      <View style={[stylesheet.successContainer, { backgroundColor: theme.colors.DARK }]}>
+        <View style={stylesheet.successIcon}>
+          <Feather name="calendar" size={34} color={theme.colors.G} />
         </View>
-        <Text style={styles.successTitle}>Event Published!</Text>
-        <Text style={styles.successDesc}>Your event is live and neighbours can now get tickets.</Text>
+        <Text style={stylesheet.successTitle}>Event Published!</Text>
+        <Text style={stylesheet.successDesc}>Your event is live and neighbours can now get tickets.</Text>
         <TouchableOpacity 
-          style={styles.btnPrimary}
+          style={stylesheet.btnPrimary}
           onPress={() => router.replace('/(tabs)/catalog')}
         >
-          <Text style={styles.btnPrimaryText}>Explore Events</Text>
+          <Text style={stylesheet.btnPrimaryText}>Explore Events</Text>
         </TouchableOpacity>
       </View>
     );
@@ -245,56 +247,56 @@ export default function CreateEventScreen() {
 
   return (
     <KeyboardAvoidingView 
-      style={[styles.container, { backgroundColor: DARK, paddingTop: insets.top }]}
+      style={[stylesheet.container, { backgroundColor: theme.colors.DARK, paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+      <View style={stylesheet.header}>
+        <TouchableOpacity onPress={handleBack} style={stylesheet.backBtn}>
           <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>Create Event</Text>
-          <Text style={styles.headerSubtitle}>Step {step + 1} of {STEPS.length} · {STEPS[step]}</Text>
+        <View style={stylesheet.headerTextContainer}>
+          <Text style={stylesheet.headerTitle}>Create Event</Text>
+          <Text style={stylesheet.headerSubtitle}>Step {step + 1} of {STEPS.length} · {STEPS[step]}</Text>
         </View>
       </View>
 
-      <View style={styles.progressBarBg}>
-        <Animated.View style={[styles.progressBarFill, animatedProgressStyle]} />
+      <View style={stylesheet.progressBarBg}>
+        <Animated.View style={[stylesheet.progressBarFill, animatedProgressStyle]} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={stylesheet.scrollContent} keyboardShouldPersistTaps="handled">
         {step === 0 && (
-          <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Basic Info</Text>
-            <Text style={styles.stepDesc}>Give your event a clear name and category.</Text>
+          <View style={stylesheet.formGroup}>
+            <Text style={stylesheet.stepTitle}>Basic Info</Text>
+            <Text style={stylesheet.stepDesc}>Give your event a clear name and category.</Text>
 
-            <Text style={styles.label}>Event Title</Text>
+            <Text style={stylesheet.label}>Event Title</Text>
             <TextInput
-              style={styles.input}
+              style={stylesheet.input}
               placeholder="e.g. Block Party & BBQ"
-              placeholderTextColor={MUTED}
+              placeholderTextColor={theme.colors.MUTED}
               value={eventName}
               onChangeText={setEventName}
             />
 
-            <Text style={styles.label}>Category</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+            <Text style={stylesheet.label}>Category</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={stylesheet.chipRow}>
               {CATEGORIES.map(cat => (
                 <TouchableOpacity
                   key={cat}
-                  style={[styles.chip, eventCategory === cat && styles.chipActive]}
+                  style={[stylesheet.chip, eventCategory === cat && stylesheet.chipActive]}
                   onPress={() => setEventCategory(cat)}
                 >
-                  <Text style={[styles.chipText, eventCategory === cat && styles.chipTextActive]}>{cat}</Text>
+                  <Text style={[stylesheet.chipText, eventCategory === cat && stylesheet.chipTextActive]}>{cat}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
 
-            <Text style={styles.label}>Description</Text>
+            <Text style={stylesheet.label}>Description</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[stylesheet.input, stylesheet.textArea]}
               placeholder="Tell guests what to expect..."
-              placeholderTextColor={MUTED}
+              placeholderTextColor={theme.colors.MUTED}
               multiline
               numberOfLines={4}
               value={desc}
@@ -304,12 +306,12 @@ export default function CreateEventScreen() {
         )}
 
         {step === 1 && (
-          <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Date & Time</Text>
-            <Text style={styles.stepDesc}>When is your event taking place?</Text>
+          <View style={stylesheet.formGroup}>
+            <Text style={stylesheet.stepTitle}>Date & Time</Text>
+            <Text style={stylesheet.stepDesc}>When is your event taking place?</Text>
 
-            <Text style={styles.label}>Event Date</Text>
-            <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+            <Text style={stylesheet.label}>Event Date</Text>
+            <TouchableOpacity style={stylesheet.input} onPress={() => setShowDatePicker(true)}>
               <Text style={{ color: '#fff' }}>{eventDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</Text>
             </TouchableOpacity>
             <DateTimePickerModal
@@ -320,8 +322,8 @@ export default function CreateEventScreen() {
               onCancel={() => setShowDatePicker(false)}
             />
 
-            <Text style={styles.label}>Start Time</Text>
-            <TouchableOpacity style={styles.input} onPress={() => setShowStartTimePicker(true)}>
+            <Text style={stylesheet.label}>Start Time</Text>
+            <TouchableOpacity style={stylesheet.input} onPress={() => setShowStartTimePicker(true)}>
               <Text style={{ color: '#fff' }}>{startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
             </TouchableOpacity>
             <DateTimePickerModal
@@ -332,8 +334,8 @@ export default function CreateEventScreen() {
               onCancel={() => setShowStartTimePicker(false)}
             />
 
-            <Text style={styles.label}>End Time</Text>
-            <TouchableOpacity style={styles.input} onPress={() => setShowEndTimePicker(true)}>
+            <Text style={stylesheet.label}>End Time</Text>
+            <TouchableOpacity style={stylesheet.input} onPress={() => setShowEndTimePicker(true)}>
               <Text style={{ color: '#fff' }}>{endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
             </TouchableOpacity>
             <DateTimePickerModal
@@ -347,36 +349,37 @@ export default function CreateEventScreen() {
         )}
 
         {step === 2 && (
-          <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Location</Text>
-            <Text style={styles.stepDesc}>Where can attendees find your event?</Text>
+          <View style={stylesheet.formGroup}>
+            <Text style={stylesheet.stepTitle}>Location</Text>
+            <Text style={stylesheet.stepDesc}>Where can attendees find your event?</Text>
 
-            <View style={styles.switchRow}>
+            <View style={stylesheet.switchRow}>
               <Text style={{ fontFamily: 'Inter-Medium', color: '#fff', fontSize: 15 }}>Online Event</Text>
-              <Switch value={isOnline} onValueChange={setIsOnline} trackColor={{ false: SURFACE, true: G }} />
+              <Switch value={isOnline} onValueChange={setIsOnline} trackColor={{ false: theme.colors.SURFACE, true: theme.colors.G }} />
             </View>
 
             {isOnline ? (
               <>
-                <Text style={styles.label}>Stream / Meeting Link</Text>
+                <Text style={stylesheet.label}>Stream / Meeting Link</Text>
                 <TextInput
-                  style={styles.input}
+                  style={stylesheet.input}
                   placeholder="https://zoom.us/j/..."
-                  placeholderTextColor={MUTED}
+                  placeholderTextColor={theme.colors.MUTED}
                   value={onlineLink}
                   onChangeText={setOnlineLink}
                 />
               </>
             ) : (
               <>
-                <Text style={styles.label}>Venue Address</Text>
+                <Text style={stylesheet.label}>Venue Address</Text>
                 <View style={{ zIndex: 10 }}>
                   <GooglePlacesAutocomplete
                     placeholder="Search for a venue or location"
                     onPress={(data, details = null) => {
                       setVenue(data.description);
-                      if (data.terms && data.terms.length > 1) {
-                        setArea(data.terms[data.terms.length - 2].value);
+                      const d = data as any;
+                      if (d.terms && d.terms.length > 1) {
+                        setArea(d.terms[d.terms.length - 2].value);
                       }
                     }}
                     query={{
@@ -385,16 +388,16 @@ export default function CreateEventScreen() {
                       components: 'country:ng', // Limit to Nigeria
                     }}
                     styles={{
-                      textInput: styles.input,
+                      textInput: stylesheet.input,
                       listView: {
-                        backgroundColor: SURFACE,
+                        backgroundColor: theme.colors.SURFACE,
                         borderRadius: 12,
                         marginTop: 8,
                         borderWidth: 1,
-                        borderColor: GLASS_BORDER,
+                        borderColor: theme.colors.GLASS_BORDER,
                       },
                       row: {
-                        backgroundColor: SURFACE,
+                        backgroundColor: theme.colors.SURFACE,
                         padding: 13,
                         height: 44,
                         flexDirection: 'row',
@@ -404,17 +407,17 @@ export default function CreateEventScreen() {
                       },
                     }}
                     textInputProps={{
-                      placeholderTextColor: MUTED,
+                      placeholderTextColor: theme.colors.MUTED,
                       onChangeText: (text) => setVenue(text),
                     }}
                   />
                 </View>
 
-                <Text style={styles.label}>Neighbourhood / Area</Text>
+                <Text style={stylesheet.label}>Neighbourhood / Area</Text>
                 <TextInput
-                  style={styles.input}
+                  style={stylesheet.input}
                   placeholder="e.g. Ikeja, Lagos"
-                  placeholderTextColor={MUTED}
+                  placeholderTextColor={theme.colors.MUTED}
                   value={area}
                   onChangeText={setArea}
                 />
@@ -424,12 +427,12 @@ export default function CreateEventScreen() {
         )}
 
         {step === 3 && (
-          <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Tickets</Text>
-            <Text style={styles.stepDesc}>Add the ticket tiers available for your event.</Text>
+          <View style={stylesheet.formGroup}>
+            <Text style={stylesheet.stepTitle}>Tickets</Text>
+            <Text style={stylesheet.stepDesc}>Add the ticket tiers available for your event.</Text>
 
             {tiers.map((t, idx) => (
-              <View key={idx} style={styles.tierCard}>
+              <View key={idx} style={stylesheet.tierCard}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={{ fontFamily: 'Outfit-Bold', color: '#fff', fontSize: 16 }}>Ticket Tier {idx + 1}</Text>
                   {tiers.length > 1 && (
@@ -439,25 +442,25 @@ export default function CreateEventScreen() {
                   )}
                 </View>
 
-                <Text style={styles.tierLabel}>Ticket Name (e.g. Early Bird, VIP)</Text>
+                <Text style={stylesheet.tierLabel}>Ticket Name (e.g. Early Bird, VIP)</Text>
                 <TextInput
-                  style={styles.input}
+                  style={stylesheet.input}
                   placeholder="e.g. VIP Access"
                   placeholderTextColor="rgba(255,255,255,0.3)"
                   value={t.name}
                   onChangeText={(val) => updateTier(idx, 'name', val)}
                 />
 
-                <View style={styles.switchRow}>
+                <View style={stylesheet.switchRow}>
                   <Text style={{ fontFamily: 'Inter-Medium', color: '#ccc', fontSize: 14 }}>Is this a Free Ticket?</Text>
-                  <Switch value={t.isFree} onValueChange={(val) => updateTier(idx, 'isFree', val)} trackColor={{ false: SURFACE, true: G }} />
+                  <Switch value={t.isFree} onValueChange={(val) => updateTier(idx, 'isFree', val)} trackColor={{ false: theme.colors.SURFACE, true: theme.colors.G }} />
                 </View>
 
                 {!t.isFree && (
                   <>
-                    <Text style={styles.tierLabel}>Ticket Price (₦)</Text>
+                    <Text style={stylesheet.tierLabel}>Ticket Price (₦)</Text>
                     <TextInput
-                      style={styles.input}
+                      style={stylesheet.input}
                       placeholder="e.g. 5000"
                       placeholderTextColor="rgba(255,255,255,0.3)"
                       keyboardType="numeric"
@@ -467,9 +470,9 @@ export default function CreateEventScreen() {
                   </>
                 )}
 
-                <Text style={styles.tierLabel}>Total Number of Tickets Available</Text>
+                <Text style={stylesheet.tierLabel}>Total Number of Tickets Available</Text>
                 <TextInput
-                  style={styles.input}
+                  style={stylesheet.input}
                   placeholder="e.g. 100"
                   placeholderTextColor="rgba(255,255,255,0.3)"
                   keyboardType="numeric"
@@ -479,28 +482,28 @@ export default function CreateEventScreen() {
               </View>
             ))}
 
-            <TouchableOpacity style={styles.addTierBtn} onPress={addTier}>
-              <Ionicons name="add" size={20} color={G} />
-              <Text style={{ fontFamily: 'Outfit-Bold', color: G, fontSize: 14 }}>Add Ticket Tier</Text>
+            <TouchableOpacity style={stylesheet.addTierBtn} onPress={addTier}>
+              <Ionicons name="add" size={20} color={theme.colors.G} />
+              <Text style={{ fontFamily: 'Outfit-Bold', color: theme.colors.G, fontSize: 14 }}>Add Ticket Tier</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {step === 4 && (
-          <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Photos</Text>
-            <Text style={styles.stepDesc}>Add eye-catching photos for your event. The first photo will be the cover.</Text>
+          <View style={stylesheet.formGroup}>
+            <Text style={stylesheet.stepTitle}>Photos</Text>
+            <Text style={stylesheet.stepDesc}>Add eye-catching photos for your event. The first photo will be the cover.</Text>
 
-            <View style={styles.photosGrid}>
+            <View style={stylesheet.photosGrid}>
               {attachedFiles.map((f, i) => (
-                <View key={i} style={styles.photoBox}>
-                  <Image source={{ uri: f.uri }} style={styles.photoImg} />
+                <View key={i} style={stylesheet.photoBox}>
+                  <Image source={{ uri: f.uri }} style={stylesheet.photoImg} />
                   {i === 0 && (
-                    <View style={styles.coverBadge}>
-                      <Text style={styles.coverBadgeText}>COVER</Text>
+                    <View style={stylesheet.coverBadge}>
+                      <Text style={stylesheet.coverBadgeText}>COVER</Text>
                     </View>
                   )}
-                  <TouchableOpacity style={styles.removePhoto} onPress={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))}>
+                  <TouchableOpacity style={stylesheet.removePhoto} onPress={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))}>
                     <View style={{ backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: 4 }}>
                       <Feather name="x" size={14} color="#fff" />
                     </View>
@@ -508,9 +511,9 @@ export default function CreateEventScreen() {
                 </View>
               ))}
               {attachedFiles.length < 5 && (
-                <TouchableOpacity style={styles.addPhotoBox} onPress={pickImages}>
-                  <Feather name="image" size={24} color={LABEL} />
-                  <Text style={{ color: LABEL, fontSize: 12, marginTop: 4, fontFamily: 'Inter-Regular' }}>Add Photo</Text>
+                <TouchableOpacity style={stylesheet.addPhotoBox} onPress={pickImages}>
+                  <Feather name="image" size={24} color={theme.colors.LABEL} />
+                  <Text style={{ color: theme.colors.LABEL, fontSize: 12, marginTop: 4, fontFamily: 'Inter-Regular' }}>Add Photo</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -518,11 +521,11 @@ export default function CreateEventScreen() {
         )}
 
         {step === 5 && (
-          <View style={styles.formGroup}>
-            <Text style={styles.stepTitle}>Review & Publish</Text>
-            <Text style={styles.stepDesc}>Verify details before publishing live. Here's a preview of how it will look:</Text>
+          <View style={stylesheet.formGroup}>
+            <Text style={stylesheet.stepTitle}>Review & Publish</Text>
+            <Text style={stylesheet.stepDesc}>Verify details before publishing live. Here's a preview of how it will look:</Text>
 
-            <View style={{ marginTop: 10, borderRadius: 20, overflow: 'hidden', backgroundColor: SURFACE, borderWidth: 1, borderColor: GLASS_BORDER }}>
+            <View style={{ marginTop: 10, borderRadius: 20, overflow: 'hidden', backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}>
               {attachedFiles.length > 0 ? (
                 <ImageCarousel 
                   imageUrls={attachedFiles.map(f => f.uri)} 
@@ -530,14 +533,14 @@ export default function CreateEventScreen() {
                   autoPlay={false} 
                 />
               ) : (
-                <View style={[styles.placeholderImage, { backgroundColor: 'rgba(0,0,0,0.2)', height: 250, justifyContent: 'center', alignItems: 'center' }]}>
-                  <Ionicons name="calendar-outline" size={64} color={LABEL} />
+                <View style={{ backgroundColor: 'rgba(0,0,0,0.2)', height: 250, justifyContent: 'center', alignItems: 'center' }}>
+                  <Ionicons name="calendar-outline" size={64} color={theme.colors.LABEL} />
                 </View>
               )}
               
               <View style={{ padding: 16 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 22, color: TEXT_PRIMARY, flex: 1 }}>{eventName.trim() || 'Untitled Event'}</Text>
+                  <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 22, color: theme.colors.TEXT_PRIMARY, flex: 1 }}>{eventName.trim() || 'Untitled Event'}</Text>
                   <View style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
                     <Text style={{ color: '#F59E0B', fontSize: 10, fontFamily: 'Inter-Bold', textTransform: 'uppercase' }}>Preview</Text>
                   </View>
@@ -546,11 +549,11 @@ export default function CreateEventScreen() {
                 <View style={{ gap: 12 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.15)', justifyContent: 'center', alignItems: 'center' }}>
-                      <Feather name="calendar" size={18} color={G} />
+                      <Feather name="calendar" size={18} color={theme.colors.G} />
                     </View>
                     <View>
-                      <Text style={{ fontFamily: 'Inter-Medium', color: LABEL, fontSize: 12 }}>Date</Text>
-                      <Text style={{ fontFamily: 'Inter-Medium', color: TEXT_PRIMARY, fontSize: 14 }}>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: theme.colors.LABEL, fontSize: 12 }}>Date</Text>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: theme.colors.TEXT_PRIMARY, fontSize: 14 }}>
                         {eventDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                       </Text>
                     </View>
@@ -558,11 +561,11 @@ export default function CreateEventScreen() {
 
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.15)', justifyContent: 'center', alignItems: 'center' }}>
-                      <Feather name="clock" size={18} color={G} />
+                      <Feather name="clock" size={18} color={theme.colors.G} />
                     </View>
                     <View>
-                      <Text style={{ fontFamily: 'Inter-Medium', color: LABEL, fontSize: 12 }}>Time</Text>
-                      <Text style={{ fontFamily: 'Inter-Medium', color: TEXT_PRIMARY, fontSize: 14 }}>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: theme.colors.LABEL, fontSize: 12 }}>Time</Text>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: theme.colors.TEXT_PRIMARY, fontSize: 14 }}>
                         {startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                       </Text>
                     </View>
@@ -570,11 +573,11 @@ export default function CreateEventScreen() {
 
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.15)', justifyContent: 'center', alignItems: 'center' }}>
-                      <Feather name={isOnline ? "video" : "map-pin"} size={18} color={G} />
+                      <Feather name={isOnline ? "video" : "map-pin"} size={18} color={theme.colors.G} />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontFamily: 'Inter-Medium', color: LABEL, fontSize: 12 }}>{isOnline ? 'Platform' : 'Location'}</Text>
-                      <Text style={{ fontFamily: 'Inter-Medium', color: TEXT_PRIMARY, fontSize: 14 }} numberOfLines={2}>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: theme.colors.LABEL, fontSize: 12 }}>{isOnline ? 'Platform' : 'Location'}</Text>
+                      <Text style={{ fontFamily: 'Inter-Medium', color: theme.colors.TEXT_PRIMARY, fontSize: 14 }} numberOfLines={2}>
                         {isOnline ? 'Online Event' : (venue.trim() || 'Location TBA')}
                       </Text>
                     </View>
@@ -583,8 +586,8 @@ export default function CreateEventScreen() {
 
                 {desc.trim().length > 0 && (
                   <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' }}>
-                    <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 8 }}>About this event</Text>
-                    <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: LABEL, lineHeight: 22 }}>
+                    <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: theme.colors.TEXT_PRIMARY, marginBottom: 8 }}>About this event</Text>
+                    <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.LABEL, lineHeight: 22 }}>
                       {desc.trim()}
                     </Text>
                   </View>
@@ -592,14 +595,14 @@ export default function CreateEventScreen() {
 
                 {tiers.length > 0 && (
                   <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' }}>
-                    <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: TEXT_PRIMARY, marginBottom: 8 }}>Tickets</Text>
+                    <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: theme.colors.TEXT_PRIMARY, marginBottom: 8 }}>Tickets</Text>
                     {tiers.map((t, idx) => (
-                      <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: t.isFree ? G : 'rgba(255,255,255,0.05)' }}>
+                      <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: t.isFree ? theme.colors.G : 'rgba(255,255,255,0.05)' }}>
                         <View>
-                          <Text style={{ fontFamily: 'Inter-SemiBold', color: TEXT_PRIMARY, fontSize: 14 }}>{t.name || `Tier ${idx + 1}`}</Text>
-                          <Text style={{ fontFamily: 'Inter-Regular', color: LABEL, fontSize: 12, marginTop: 2 }}>{t.capacity || 0} Available</Text>
+                          <Text style={{ fontFamily: 'Inter-SemiBold', color: theme.colors.TEXT_PRIMARY, fontSize: 14 }}>{t.name || `Tier ${idx + 1}`}</Text>
+                          <Text style={{ fontFamily: 'Inter-Regular', color: theme.colors.LABEL, fontSize: 12, marginTop: 2 }}>{t.capacity || 0} Available</Text>
                         </View>
-                        <Text style={{ fontFamily: 'Outfit-Bold', color: t.isFree ? G : TEXT_PRIMARY, fontSize: 16 }}>
+                        <Text style={{ fontFamily: 'Outfit-Bold', color: t.isFree ? theme.colors.G : theme.colors.TEXT_PRIMARY, fontSize: 16 }}>
                           {t.isFree ? 'FREE' : `₦${t.price || 0}`}
                         </Text>
                       </View>
@@ -612,16 +615,16 @@ export default function CreateEventScreen() {
         )}
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+      <View style={[stylesheet.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <TouchableOpacity
-          style={[styles.btnPrimary, !canNext && styles.btnDisabled]}
+          style={[stylesheet.btnPrimary, !canNext && stylesheet.btnDisabled]}
           disabled={!canNext || publishing}
           onPress={handleNext}
         >
           {publishing ? (
-            <ActivityIndicator size="small" color={DARK} />
+            <ActivityIndicator size="small" color={theme.colors.DARK} />
           ) : (
-            <Text style={styles.btnPrimaryText}>
+            <Text style={stylesheet.btnPrimaryText}>
               {step === STEPS.length - 1 ? 'Publish Event' : 'Continue'}
             </Text>
           )}
@@ -631,228 +634,228 @@ export default function CreateEventScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: SURFACE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTextContainer: { flex: 1 },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
-  headerSubtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: MUTED },
-  progressBarBg: {
-    height: 3,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    width: '100%',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: G,
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff', marginBottom: 4 },
-  stepDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED, marginBottom: 20 },
-  formGroup: { gap: 12 },
-  label: { fontFamily: 'Inter-Medium', fontSize: 13, color: '#ccc', marginTop: 8 },
-  input: {
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontFamily: 'Inter-Regular',
-    fontSize: 15,
-    color: '#fff',
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  chipRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    marginRight: 8,
-  },
-  chipActive: {
-    backgroundColor: G + '20',
-    borderColor: G,
-  },
-  chipText: { fontFamily: 'Inter-Medium', fontSize: 13, color: MUTED },
-  chipTextActive: { color: G },
-  switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  tierCard: {
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    borderRadius: 16,
-    padding: 16,
-    gap: 10,
-    marginBottom: 8,
-  },
-  tierLabel: { fontFamily: 'Inter-Medium', fontSize: 13, color: '#ccc', marginTop: 12, marginBottom: 8 },
-  addTierBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 14,
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    gap: 8,
-  },
-  photosGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  photoBox: {
-    width: (Dimensions.get('window').width - 40 - 16) / 3,
-    aspectRatio: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  photoImg: { width: '100%', height: '100%' },
-  coverBadge: {
-    position: 'absolute',
-    bottom: 5,
-    alignSelf: 'center',
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    backgroundColor: G,
-  },
-  coverBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 9, color: DARK },
-  removePhoto: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-  },
-  addPhotoBox: {
-    width: (Dimensions.get('window').width - 40 - 16) / 3,
-    aspectRatio: 1,
-    borderRadius: 16,
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  reviewCard: {
-    backgroundColor: SURFACE,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    borderRadius: 20,
-    overflow: 'hidden',
-    marginBottom: 20,
-  },
-  reviewImageScroll: {
-    width: '100%',
-    height: 200,
-  },
-  reviewImage: {
-    width: Dimensions.get('window').width - 40,
-    height: 200,
-  },
-  reviewContent: {
-    padding: 16,
-    gap: 8,
-  },
-  reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff' },
-  reviewMetaRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-  },
-  reviewBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  reviewBadgeText: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 12,
-    color: '#ccc',
-  },
-  reviewLocationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
-  },
-  reviewLocationText: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    color: MUTED,
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: GLASS_BORDER,
-    backgroundColor: DARK,
-  },
-  btnPrimary: {
-    backgroundColor: G,
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnDisabled: { opacity: 0.4 },
-  btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: DARK },
-  successContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-    gap: 16,
-  },
-  successIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 24,
-    backgroundColor: 'rgba(130,219,126,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(130,219,126,0.25)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: '#fff', textAlign: 'center' },
-  successDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: MUTED, textAlign: 'center', lineHeight: 22 },
-});
+const _stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        gap: 12,
+      },
+      backBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: theme.colors.SURFACE,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      headerTextContainer: { flex: 1 },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerSubtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.MUTED },
+      progressBarBg: {
+        height: 3,
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        width: '100%',
+      },
+      progressBarFill: {
+        height: '100%',
+        backgroundColor: theme.colors.G,
+      },
+      scrollContent: {
+        padding: 20,
+        paddingBottom: 40,
+      },
+      stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff', marginBottom: 4 },
+      stepDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED, marginBottom: 20 },
+      formGroup: { gap: 12 },
+      label: { fontFamily: 'Inter-Medium', fontSize: 13, color: '#ccc', marginTop: 8 },
+      input: {
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        fontFamily: 'Inter-Regular',
+        fontSize: 15,
+        color: '#fff',
+      },
+      textArea: {
+        height: 100,
+        textAlignVertical: 'top',
+      },
+      chipRow: {
+        flexDirection: 'row',
+        marginBottom: 8,
+      },
+      chip: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        marginRight: 8,
+      },
+      chipActive: {
+        backgroundColor: theme.colors.G + '20',
+        borderColor: theme.colors.G,
+      },
+      chipText: { fontFamily: 'Inter-Medium', fontSize: 13, color: theme.colors.MUTED },
+      chipTextActive: { color: theme.colors.G },
+      switchRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 8,
+      },
+      tierCard: {
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        borderRadius: 16,
+        padding: 16,
+        gap: 10,
+        marginBottom: 8,
+      },
+      tierLabel: { fontFamily: 'Inter-Medium', fontSize: 13, color: '#ccc', marginTop: 12, marginBottom: 8 },
+      addTierBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14,
+        borderRadius: 14,
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        gap: 8,
+      },
+      photosGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+      },
+      photoBox: {
+        width: (Dimensions.get('window').width - 40 - 16) / 3,
+        aspectRatio: 1,
+        borderRadius: 16,
+        overflow: 'hidden',
+        position: 'relative',
+        borderWidth: 2,
+        borderColor: 'transparent',
+      },
+      photoImg: { width: '100%', height: '100%' },
+      coverBadge: {
+        position: 'absolute',
+        bottom: 5,
+        alignSelf: 'center',
+        paddingVertical: 2,
+        paddingHorizontal: 8,
+        borderRadius: 6,
+        backgroundColor: theme.colors.G,
+      },
+      coverBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 9, color: theme.colors.DARK },
+      removePhoto: {
+        position: 'absolute',
+        top: 6,
+        right: 6,
+      },
+      addPhotoBox: {
+        width: (Dimensions.get('window').width - 40 - 16) / 3,
+        aspectRatio: 1,
+        borderRadius: 16,
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+        borderStyle: 'dashed',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      reviewCard: {
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginBottom: 20,
+      },
+      reviewImageScroll: {
+        width: '100%',
+        height: 200,
+      },
+      reviewImage: {
+        width: Dimensions.get('window').width - 40,
+        height: 200,
+      },
+      reviewContent: {
+        padding: 16,
+        gap: 8,
+      },
+      reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff' },
+      reviewMetaRow: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 4,
+      },
+      reviewBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+      },
+      reviewBadgeText: {
+        fontFamily: 'Inter-Medium',
+        fontSize: 12,
+        color: '#ccc',
+      },
+      reviewLocationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 4,
+      },
+      reviewLocationText: {
+        fontFamily: 'Inter-Regular',
+        fontSize: 14,
+        color: theme.colors.MUTED,
+      },
+      footer: {
+        paddingHorizontal: 20,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: theme.colors.GLASS_BORDER,
+        backgroundColor: theme.colors.DARK,
+      },
+      btnPrimary: {
+        backgroundColor: theme.colors.G,
+        paddingVertical: 14,
+        borderRadius: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      btnDisabled: { opacity: 0.4 },
+      btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      successContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 32,
+        gap: 16,
+      },
+      successIcon: {
+        width: 72,
+        height: 72,
+        borderRadius: 24,
+        backgroundColor: 'rgba(130,219,126,0.12)',
+        borderWidth: 1,
+        borderColor: 'rgba(130,219,126,0.25)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: '#fff', textAlign: 'center' },
+      successDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center', lineHeight: 22 },
+    }));

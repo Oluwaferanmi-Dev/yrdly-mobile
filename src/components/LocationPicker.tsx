@@ -1,7 +1,7 @@
-import { DARK, SURFACE } from '../constants/tokens';
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity,
+  View, Text, TouchableOpacity,
   ActivityIndicator, ScrollView, Modal, FlatList,
   TextInput, SafeAreaView,
 } from 'react-native';
@@ -32,6 +32,8 @@ interface LocationPickerProps {
 type PickerMode = 'state' | 'lga';
 
 export function LocationPicker({ value, onChange }: LocationPickerProps) {
+    const { styles: stylesheet, theme } = useStyles(_stylesheet);
+
   const { colors } = useAppTheme();
   const [detecting, setDetecting] = useState(false);
   const [detectionResult, setDetectionResult] = useState<
@@ -96,7 +98,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
     <View>
       {/* GPS Auto-detect button */}
       <TouchableOpacity
-        style={[styles.gpsBtn, { borderColor: colors.tint }, detecting && styles.gpsBtnLoading]}
+        style={[stylesheet.gpsBtn, { borderColor: colors.tint }, detecting && stylesheet.gpsBtnLoading]}
         onPress={handleAutoDetect}
         disabled={detecting}
         activeOpacity={0.8}
@@ -104,56 +106,56 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
         {detecting ? (
           <>
             <ActivityIndicator size="small" color={colors.tint} style={{ marginRight: 8 }} />
-            <Text style={[styles.gpsBtnText, { color: colors.tint }]}>Detecting your location…</Text>
+            <Text style={[stylesheet.gpsBtnText, { color: colors.tint }]}>Detecting your location…</Text>
           </>
         ) : (
           <>
             <Ionicons name="location-outline" size={18} color={colors.tint} style={{ marginRight: 8 }} />
-            <Text style={[styles.gpsBtnText, { color: colors.tint }]}>Auto-detect my location</Text>
+            <Text style={[stylesheet.gpsBtnText, { color: colors.tint }]}>Auto-detect my location</Text>
           </>
         )}
       </TouchableOpacity>
 
       {/* Detection result feedback */}
       {detectionResult === 'success' && (
-        <View style={[styles.feedback, styles.feedbackSuccess]}>
+        <View style={[stylesheet.feedback, stylesheet.feedbackSuccess]}>
           <Feather name="check-circle" size={16} color="#2E7D32" />
-          <Text style={styles.feedbackTextSuccess}>Location detected successfully!</Text>
+          <Text style={stylesheet.feedbackTextSuccess}>Location detected successfully!</Text>
         </View>
       )}
       {detectionResult === 'outside' && (
-        <View style={[styles.feedback, styles.feedbackWarn]}>
+        <View style={[stylesheet.feedback, stylesheet.feedbackWarn]}>
           <Feather name="alert-circle" size={16} color="#E65100" />
-          <Text style={styles.feedbackTextWarn}>
+          <Text style={stylesheet.feedbackTextWarn}>
             Couldn't detect a Nigerian location. Please select manually below.
           </Text>
         </View>
       )}
       {detectionResult === 'denied' && (
-        <View style={[styles.feedback, styles.feedbackWarn]}>
+        <View style={[stylesheet.feedback, stylesheet.feedbackWarn]}>
           <Feather name="lock" size={16} color="#E65100" />
-          <Text style={styles.feedbackTextWarn}>
+          <Text style={stylesheet.feedbackTextWarn}>
             Location permission denied. Please select manually below.
           </Text>
         </View>
       )}
 
       {/* Divider */}
-      <View style={styles.divider}>
-        <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-        <Text style={[styles.dividerText, { color: colors.textMuted }]}>or select manually</Text>
-        <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+      <View style={stylesheet.divider}>
+        <View style={[stylesheet.dividerLine, { backgroundColor: colors.border }]} />
+        <Text style={[stylesheet.dividerText, { color: colors.textMuted }]}>or select manually</Text>
+        <View style={[stylesheet.dividerLine, { backgroundColor: colors.border }]} />
       </View>
 
       {/* State selector */}
-      <View style={styles.fieldGroup}>
-        <Text style={[styles.label, { color: colors.text }]}>State *</Text>
+      <View style={stylesheet.fieldGroup}>
+        <Text style={[stylesheet.label, { color: colors.text }]}>State *</Text>
         <TouchableOpacity
-          style={[styles.selector, { backgroundColor: SURFACE, borderColor: colors.border }, value.state ? { borderColor: colors.tint } : null]}
+          style={[stylesheet.selector, { backgroundColor: theme.colors.SURFACE, borderColor: colors.border }, value.state ? { borderColor: colors.tint } : null]}
           onPress={() => openPicker('state')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.selectorText, { color: colors.text }, !value.state && { color: colors.textMuted }]}>
+          <Text style={[stylesheet.selectorText, { color: colors.text }, !value.state && { color: colors.textMuted }]}>
             {value.state || 'Select your state'}
           </Text>
           <Feather name="chevron-down" size={18} color={value.state ? colors.tint : colors.textMuted} />
@@ -161,19 +163,19 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
       </View>
 
       {/* LGA selector */}
-      <View style={styles.fieldGroup}>
-        <Text style={[styles.label, { color: colors.text }]}>Local Government Area *</Text>
+      <View style={stylesheet.fieldGroup}>
+        <Text style={[stylesheet.label, { color: colors.text }]}>Local Government Area *</Text>
         <TouchableOpacity
           style={[
-            styles.selector,
-            { backgroundColor: SURFACE, borderColor: colors.border },
+            stylesheet.selector,
+            { backgroundColor: theme.colors.SURFACE, borderColor: colors.border },
             value.lga ? { borderColor: colors.tint } : null,
-            !value.state && styles.selectorDisabled,
+            !value.state && stylesheet.selectorDisabled,
           ]}
           onPress={() => value.state && openPicker('lga')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.selectorText, { color: colors.text }, !value.lga && { color: colors.textMuted }]}>
+          <Text style={[stylesheet.selectorText, { color: colors.text }, !value.lga && { color: colors.textMuted }]}>
             {value.lga || (!value.state ? 'Select state first' : 'Select your LGA')}
           </Text>
           <Feather name="chevron-down" size={18} color={value.lga ? colors.tint : colors.textMuted} />
@@ -182,21 +184,21 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
 
       {/* Picker Modal */}
       <Modal visible={pickerVisible} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={[styles.modal, { backgroundColor: DARK }]}>
-          <View style={[styles.modalHeader, { borderBottomColor: colors.borderLight }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
+        <SafeAreaView style={[stylesheet.modal, { backgroundColor: theme.colors.DARK }]}>
+          <View style={[stylesheet.modalHeader, { borderBottomColor: colors.borderLight }]}>
+            <Text style={[stylesheet.modalTitle, { color: colors.text }]}>
               {pickerMode === 'state' ? 'Select State' : 'Select LGA'}
             </Text>
-            <TouchableOpacity onPress={() => setPickerVisible(false)} style={styles.modalClose}>
+            <TouchableOpacity onPress={() => setPickerVisible(false)} style={stylesheet.modalClose}>
               <Feather name="x" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
           {/* Search */}
-          <View style={[styles.searchBox, { backgroundColor: SURFACE, borderColor: colors.border }]}>
+          <View style={[stylesheet.searchBox, { backgroundColor: theme.colors.SURFACE, borderColor: colors.border }]}>
             <Feather name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
             <TextInput
-              style={[styles.searchInput, { color: colors.text }]}
+              style={[stylesheet.searchInput, { color: colors.text }]}
               value={search}
               onChangeText={setSearch}
               placeholder={pickerMode === 'state' ? 'Search states…' : 'Search LGAs…'}
@@ -209,23 +211,24 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
             data={filteredItems}
             keyExtractor={(item) => item}
             renderItem={({ item }) => {
+
               const isSelected =
                 pickerMode === 'state' ? item === value.state : item === value.lga;
               return (
                 <TouchableOpacity
-                  style={[styles.listItem, isSelected && styles.listItemSelected]}
+                  style={[stylesheet.listItem, isSelected && stylesheet.listItemSelected]}
                   onPress={() =>
                     pickerMode === 'state' ? handleSelectState(item) : handleSelectLga(item)
                   }
                 >
-                  <Text style={[styles.listItemText, { color: colors.text }, isSelected && { color: colors.tint, fontWeight: '700' }]}>
+                  <Text style={[stylesheet.listItemText, { color: colors.text }, isSelected && { color: colors.tint, fontWeight: '700' }]}>
                     {item}
                   </Text>
                   {isSelected && <Feather name="check" size={18} color={colors.tint} />}
                 </TouchableOpacity>
               );
             }}
-            ItemSeparatorComponent={() => <View style={[styles.itemSep, { backgroundColor: colors.borderLight }]} />}
+            ItemSeparatorComponent={() => <View style={[stylesheet.itemSep, { backgroundColor: colors.borderLight }]} />}
             keyboardShouldPersistTaps="handled"
           />
         </SafeAreaView>
@@ -234,89 +237,89 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  gpsBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingVertical: 14,
-    marginBottom: 12,
-    backgroundColor: 'rgba(130, 225, 87, 0.1)',
-  },
-  gpsBtnLoading: { opacity: 0.7 },
-  gpsBtnText: { fontSize: 15, fontWeight: '700' },
+const _stylesheet = createStyleSheet(theme => ({
+      gpsBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 16,
+        borderWidth: 1,
+        paddingVertical: 14,
+        marginBottom: 12,
+        backgroundColor: 'rgba(130, 225, 87, 0.1)',
+      },
+      gpsBtnLoading: { opacity: 0.7 },
+      gpsBtnText: { fontSize: 15, fontWeight: '700' },
 
-  feedback: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 12,
-  },
-  feedbackSuccess: { backgroundColor: 'rgba(130, 225, 87, 0.1)' },
-  feedbackWarn: { backgroundColor: 'rgba(230, 81, 0, 0.1)' },
-  feedbackTextSuccess: { fontSize: 13, color: '#82E157', flex: 1, lineHeight: 18 },
-  feedbackTextWarn: { fontSize: 13, color: '#E65100', flex: 1, lineHeight: 18 },
+      feedback: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: 8,
+        padding: 12,
+        borderRadius: 10,
+        marginBottom: 12,
+      },
+      feedbackSuccess: { backgroundColor: 'rgba(130, 225, 87, 0.1)' },
+      feedbackWarn: { backgroundColor: 'rgba(230, 81, 0, 0.1)' },
+      feedbackTextSuccess: { fontSize: 13, color: '#82E157', flex: 1, lineHeight: 18 },
+      feedbackTextWarn: { fontSize: 13, color: '#E65100', flex: 1, lineHeight: 18 },
 
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 16 },
-  dividerLine: { flex: 1, height: 1 },
-  dividerText: { fontSize: 12, marginHorizontal: 12, fontWeight: '600' },
+      divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 16 },
+      dividerLine: { flex: 1, height: 1 },
+      dividerText: { fontSize: 12, marginHorizontal: 12, fontWeight: '600' },
 
-  fieldGroup: { marginBottom: 16 },
-  label: {
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  selector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  selectorDisabled: { opacity: 0.5 },
-  selectorText: { fontSize: 16, flex: 1 },
+      fieldGroup: { marginBottom: 16 },
+      label: {
+        fontSize: 12,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 8,
+      },
+      selector: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderRadius: 16,
+        borderWidth: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+      },
+      selectorDisabled: { opacity: 0.5 },
+      selectorText: { fontSize: 16, flex: 1 },
 
-  modal: { flex: 1 },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  modalTitle: { fontSize: 18, fontWeight: '800' },
-  modalClose: { padding: 4 },
+      modal: { flex: 1 },
+      modalHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+      },
+      modalTitle: { fontSize: 18, fontWeight: '800' },
+      modalClose: { padding: 4 },
 
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    margin: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  searchInput: { flex: 1, fontSize: 16 },
+      searchBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        margin: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderRadius: 16,
+        borderWidth: 1,
+      },
+      searchInput: { flex: 1, fontSize: 16 },
 
-  listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  listItemSelected: { backgroundColor: 'rgba(130, 225, 87, 0.1)' },
-  listItemText: { fontSize: 15 },
-  itemSep: { height: 1, marginLeft: 20 },
-});
+      listItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+      },
+      listItemSelected: { backgroundColor: 'rgba(130, 225, 87, 0.1)' },
+      listItemText: { fontSize: 15 },
+      itemSep: { height: 1, marginLeft: 20 },
+    }));
 

@@ -1,6 +1,7 @@
+import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { BottomSheetModal, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert, ScrollView, Platform, Share, Dimensions, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ActivityIndicator, Alert, ScrollView, Platform, Share, Dimensions, FlatList } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -11,15 +12,14 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
 import Animated, { FadeInUp, FadeInDown, Layout } from 'react-native-reanimated';
-import { G, DARK, GLASS_BG, GLASS_BORDER, SURFACE, LABEL, MUTED, TEXT_PRIMARY } from '../constants/tokens';
-
 type Tab = 'friends' | 'discover';
 
 const { width } = Dimensions.get('window');
 
 export default function CommunityScreen() {
+  const { styles, theme } = useStyles(stylesheet);
+
   const { colors } = useAppTheme();
-  const styles = React.useMemo(() => dynamicStyles(colors), [colors]);
   const router = useRouter();
   const { user: currentUser, profile } = useAuth();
   const { activeFilter } = useLocation();
@@ -269,26 +269,28 @@ export default function CommunityScreen() {
 
   // ── Renderers ────────────────────────────────────────────────
   const renderRequest = ({ item, index }: { item: any; index: number }) => {
+
+
     const sender = item.from_user;
     if (!sender) return null;
     return (
       <Animated.View entering={FadeInUp.delay(index * 100).springify()} style={[styles.premiumCard, styles.requestCard]}>
         <TouchableOpacity style={styles.userInfo} onPress={() => router.push(`/profile/${sender.id}` as any)}>
-          <View style={[styles.avatar, { backgroundColor: G + '20' }]}>
+          <View style={[styles.avatar, { backgroundColor: theme.colors.G + '20' }]}>
             {sender.avatar_url ? (
               <Image source={{ uri: sender.avatar_url }} style={styles.avatarImage} />
             ) : (
-              <Text style={[styles.avatarText, { color: G }]}>{sender.name ? sender.name.charAt(0).toUpperCase() : '?'}</Text>
+              <Text style={[styles.avatarText, { color: theme.colors.G }]}>{sender.name ? sender.name.charAt(0).toUpperCase() : '?'}</Text>
             )}
           </View>
           <View>
-            <Text style={[styles.userName, { color: TEXT_PRIMARY }]}>{sender.name || 'Anonymous'}</Text>
-            <Text style={[styles.userSubtitle, { color: MUTED }]}>Wants to be friends</Text>
+            <Text style={[styles.userName, { color: theme.colors.TEXT_PRIMARY }]}>{sender.name || 'Anonymous'}</Text>
+            <Text style={[styles.userSubtitle, { color: theme.colors.MUTED }]}>Wants to be friends</Text>
           </View>
         </TouchableOpacity>
         <View style={styles.actionButtonsRow}>
           <TouchableOpacity
-            style={[styles.premiumBtn, { backgroundColor: G }]}
+            style={[styles.premiumBtn, { backgroundColor: theme.colors.G }]}
             onPress={() => handleRequestAction(item.id, 'accepted')}
           >
             <Text style={styles.premiumBtnText}>Accept</Text>
@@ -306,6 +308,8 @@ export default function CommunityScreen() {
   };
 
   const renderFriend = ({ item, index }: { item: any, index: number }) => {
+
+
     const { reqId, user } = item;
     return (
       <Animated.View entering={FadeInUp.delay(index * 50).springify()} layout={Layout.springify()}>
@@ -316,18 +320,18 @@ export default function CommunityScreen() {
         >
           <View style={styles.friendRow}>
             <View style={styles.avatarContainer}>
-              <View style={[styles.avatarMedium, { backgroundColor: G + '30' }]}>
+              <View style={[styles.avatarMedium, { backgroundColor: theme.colors.G + '30' }]}>
                 {user.avatar_url ? (
                   <Image source={{ uri: user.avatar_url }} style={styles.avatarImage} />
                 ) : (
-                  <Text style={[styles.avatarTextMedium, { color: G }]}>{user.name ? user.name.charAt(0).toUpperCase() : '?'}</Text>
+                  <Text style={[styles.avatarTextMedium, { color: theme.colors.G }]}>{user.name ? user.name.charAt(0).toUpperCase() : '?'}</Text>
                 )}
               </View>
               <View style={styles.onlineBadge} />
             </View>
             <View style={styles.friendInfo}>
-              <Text style={[styles.userNameSmall, { color: TEXT_PRIMARY }]}>{user.name || 'Anonymous'}</Text>
-              <Text style={[styles.userSubtitle, { color: LABEL }]}>YRDLY User</Text>
+              <Text style={[styles.userNameSmall, { color: theme.colors.TEXT_PRIMARY }]}>{user.name || 'Anonymous'}</Text>
+              <Text style={[styles.userSubtitle, { color: theme.colors.LABEL }]}>YRDLY User</Text>
             </View>
             {removingId === reqId ? (
               <ActivityIndicator size="small" color="#E53935" />
@@ -337,7 +341,7 @@ export default function CommunityScreen() {
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 onPress={() => handleFriendOptions(item)}
               >
-                <Feather name="more-horizontal" size={20} color={LABEL} />
+                <Feather name="more-horizontal" size={20} color={theme.colors.LABEL} />
               </TouchableOpacity>
             )}
           </View>
@@ -347,34 +351,36 @@ export default function CommunityScreen() {
   };
 
   const renderDiscoverUser = ({ item, index }: { item: any, index: number }) => {
+
+
     return (
       <Animated.View entering={FadeInUp.delay(index * 50).springify()} layout={Layout.springify()}>
         <View style={styles.premiumFriendCard}>
           <View style={styles.friendRow}>
             <TouchableOpacity style={styles.friendInfoRow} onPress={() => router.push(`/profile/${item.id}` as any)}>
-              <View style={[styles.avatarMedium, { backgroundColor: G + '30' }]}>
+              <View style={[styles.avatarMedium, { backgroundColor: theme.colors.G + '30' }]}>
                 {item.avatar_url ? (
                   <Image source={{ uri: item.avatar_url }} style={styles.avatarImage} />
                 ) : (
-                  <Text style={[styles.avatarTextMedium, { color: G }]}>{item.name ? item.name.charAt(0).toUpperCase() : '?'}</Text>
+                  <Text style={[styles.avatarTextMedium, { color: theme.colors.G }]}>{item.name ? item.name.charAt(0).toUpperCase() : '?'}</Text>
                 )}
               </View>
               <View style={styles.friendInfo}>
-                <Text style={[styles.userNameSmall, { color: TEXT_PRIMARY }]}>{item.name || 'Anonymous'}</Text>
-                <Text style={[styles.userSubtitle, { color: LABEL }]}>
+                <Text style={[styles.userNameSmall, { color: theme.colors.TEXT_PRIMARY }]}>{item.name || 'Anonymous'}</Text>
+                <Text style={[styles.userSubtitle, { color: theme.colors.LABEL }]}>
                   {item.location?.lga ? `${item.location.lga} • ` : ''}Discover
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.smallActionBtn, { backgroundColor: G + '15' }]}
+              style={[styles.smallActionBtn, { backgroundColor: theme.colors.G + '15' }]}
               onPress={() => handleAddFriend(item.id)}
               disabled={actionInProgress[item.id]}
             >
               {actionInProgress[item.id] ? (
-                <ActivityIndicator size="small" color={G} />
+                <ActivityIndicator size="small" color={theme.colors.G} />
               ) : (
-                <Feather name="user-plus" size={16} color={G} />
+                <Feather name="user-plus" size={16} color={theme.colors.G} />
               )}
             </TouchableOpacity>
           </View>
@@ -387,7 +393,7 @@ export default function CommunityScreen() {
     <View style={styles.listHeaderContainer}>
       {requests.length > 0 && (
         <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitlePremium, { color: TEXT_PRIMARY }]}>Requests ({requests.length})</Text>
+          <Text style={[styles.sectionTitlePremium, { color: theme.colors.TEXT_PRIMARY }]}>Requests ({requests.length})</Text>
           <FlatList
             data={requests}
             keyExtractor={(item: any) => item.id}
@@ -402,19 +408,19 @@ export default function CommunityScreen() {
       <Animated.View entering={FadeInDown.duration(400)} style={styles.heroCard}>
         <View style={styles.heroContent}>
           <View style={styles.heroTextContent}>
-            <Text style={[styles.heroTitle, { color: TEXT_PRIMARY }]}>My Friends</Text>
-            <Text style={[styles.heroSubtitle, { color: G }]}>{friends.length} connections</Text>
+            <Text style={[styles.heroTitle, { color: theme.colors.TEXT_PRIMARY }]}>My Friends</Text>
+            <Text style={[styles.heroSubtitle, { color: theme.colors.G }]}>{friends.length} connections</Text>
           </View>
-          <View style={[styles.heroIconContainer, { backgroundColor: G + '20' }]}>
-            <Feather name="users" size={32} color={G} />
+          <View style={[styles.heroIconContainer, { backgroundColor: theme.colors.G + '20' }]}>
+            <Feather name="users" size={32} color={theme.colors.G} />
           </View>
         </View>
-        <View style={[styles.searchContainerPremium, { backgroundColor: G + '1A' }]}>
-          <Feather name="search" size={18} color={LABEL} />
+        <View style={[styles.searchContainerPremium, { backgroundColor: theme.colors.G + '1A' }]}>
+          <Feather name="search" size={18} color={theme.colors.LABEL} />
           <TextInput
-            style={[styles.searchInputPremium, { color: TEXT_PRIMARY }]}
+            style={[styles.searchInputPremium, { color: theme.colors.TEXT_PRIMARY }]}
             placeholder="Search friends..."
-            placeholderTextColor={MUTED}
+            placeholderTextColor={theme.colors.MUTED}
             value={searchQuery}
             onChangeText={setSearchQuery}
             returnKeyType="search"
@@ -423,18 +429,18 @@ export default function CommunityScreen() {
       </Animated.View>
 
       <View style={styles.inviteCard}>
-        <View style={[styles.inviteGlow, { borderColor: G }]} />
+        <View style={[styles.inviteGlow, { borderColor: theme.colors.G }]} />
         <View style={styles.inviteContent}>
           <View style={styles.inviteTextRow}>
-            <View style={[styles.inviteIconBg, { backgroundColor: G + '20' }]}>
-              <Ionicons name="gift-outline" size={24} color={G} />
+            <View style={[styles.inviteIconBg, { backgroundColor: theme.colors.G + '20' }]}>
+              <Ionicons name="gift-outline" size={24} color={theme.colors.G} />
             </View>
             <View style={styles.inviteTexts}>
-              <Text style={[styles.inviteTitle, { color: TEXT_PRIMARY }]}>Invite Friends</Text>
-              <Text style={[styles.inviteSubtitle, { color: LABEL }]}>Build your community on YRDLY.</Text>
+              <Text style={[styles.inviteTitle, { color: theme.colors.TEXT_PRIMARY }]}>Invite Friends</Text>
+              <Text style={[styles.inviteSubtitle, { color: theme.colors.LABEL }]}>Build your community on YRDLY.</Text>
             </View>
           </View>
-          <TouchableOpacity style={[styles.inviteBtn, { backgroundColor: G }]} onPress={handleInvite}>
+          <TouchableOpacity style={[styles.inviteBtn, { backgroundColor: theme.colors.G }]} onPress={handleInvite}>
             <Text style={styles.inviteBtnText}>Share Link</Text>
           </TouchableOpacity>
         </View>
@@ -445,32 +451,37 @@ export default function CommunityScreen() {
   const discoverHeader = (
     <View style={styles.discoverHeaderContainer}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Text style={[styles.sectionTitlePremium, { color: TEXT_PRIMARY, marginBottom: 0 }]}>Find People</Text>
+        <Text style={[styles.sectionTitlePremium, { color: theme.colors.TEXT_PRIMARY, marginBottom: 0 }]}>Find People</Text>
         
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsRowPremium}>
-        {(['all', 'neighbors', 'mutuals', 'sellers'] as const).map(tab => (
-          <TouchableOpacity
-            key={tab}
-            style={[
-              styles.premiumChip,
-              activeFilterTab === tab ? { backgroundColor: G, borderColor: G } : { backgroundColor: 'transparent', borderColor: GLASS_BORDER }
-            ]}
-            onPress={() => setActiveFilterTab(tab)}
-          >
-            <Text style={[
-              styles.premiumChipText,
-              activeFilterTab === tab ? { color: TEXT_PRIMARY } : { color: LABEL }
-            ]}>
-              {tab === 'all' ? 'All' : tab === 'neighbors' ? 'Neighbors' : tab === 'mutuals' ? 'Mutuals' : 'Sellers'}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {(['all', 'neighbors', 'mutuals', 'sellers'] as const).map(tab => {
+
+        return (
+                  <TouchableOpacity
+                    key={tab}
+                    style={[
+                      styles.premiumChip,
+                      activeFilterTab === tab ? { backgroundColor: theme.colors.G, borderColor: theme.colors.G } : { backgroundColor: 'transparent', borderColor: theme.colors.GLASS_BORDER }
+                    ]}
+                    onPress={() => setActiveFilterTab(tab)}
+                  >
+                    <Text style={[
+                      styles.premiumChipText,
+                      activeFilterTab === tab ? { color: theme.colors.TEXT_PRIMARY } : { color: theme.colors.LABEL }
+                    ]}>
+                      {tab === 'all' ? 'All' : tab === 'neighbors' ? 'Neighbors' : tab === 'mutuals' ? 'Mutuals' : 'Sellers'}
+                    </Text>
+                  </TouchableOpacity>
+                );
+        })}
       </ScrollView>
     </View>
   );
 
   const renderDiscoverSections = () => {
+
+
     let combined: any[] = [];
     if (activeFilterTab === 'all') {
       const allDiscovered = [...mutuals, ...neighbors, ...sellers];
@@ -490,11 +501,11 @@ export default function CommunityScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainerPremium}>
-            <View style={[styles.emptyIconBg, { backgroundColor: SURFACE }]}>
-              <Feather name="compass" size={40} color={LABEL} />
+            <View style={[styles.emptyIconBg, { backgroundColor: theme.colors.SURFACE }]}>
+              <Feather name="compass" size={40} color={theme.colors.LABEL} />
             </View>
-            <Text style={[styles.emptyTitlePremium, { color: TEXT_PRIMARY }]}>No one found</Text>
-            <Text style={[styles.emptySubtitlePremium, { color: MUTED }]}>Try changing your filter or location.</Text>
+            <Text style={[styles.emptyTitlePremium, { color: theme.colors.TEXT_PRIMARY }]}>No one found</Text>
+            <Text style={[styles.emptySubtitlePremium, { color: theme.colors.MUTED }]}>Try changing your filter or location.</Text>
           </View>
         }
       />
@@ -502,14 +513,14 @@ export default function CommunityScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: DARK }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.DARK }]}>
       {/* Premium Header */}
       <View style={styles.premiumHeader}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.glassBtn, { backgroundColor: G + '1A' }]}>
-          <Ionicons name="chevron-back" size={28} color={TEXT_PRIMARY} />
+        <TouchableOpacity onPress={() => router.back()} style={[styles.glassBtn, { backgroundColor: theme.colors.G + '1A' }]}>
+          <Ionicons name="chevron-back" size={28} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <View style={styles.headerTitleCenter}>
-          <Text style={[styles.premiumHeaderTitle, { color: TEXT_PRIMARY }]}>Community</Text>
+          <Text style={[styles.premiumHeaderTitle, { color: theme.colors.TEXT_PRIMARY }]}>Community</Text>
           
         </View>
         <View style={{ width: 40 }} />
@@ -517,27 +528,27 @@ export default function CommunityScreen() {
 
       {/* Segmented Control */}
       <View style={styles.segmentedControlContainer}>
-        <View style={[styles.segmentedControl, { backgroundColor: SURFACE }]}>
+        <View style={[styles.segmentedControl, { backgroundColor: theme.colors.SURFACE }]}>
           <TouchableOpacity 
-            style={[styles.segmentBtn, activeTab === 'friends' && { backgroundColor: G + '1A' }]} 
+            style={[styles.segmentBtn, activeTab === 'friends' && { backgroundColor: theme.colors.G + '1A' }]} 
             onPress={() => setActiveTab('friends')}
           >
-            <Text style={[styles.segmentText, activeTab === 'friends' ? { color: TEXT_PRIMARY } : { color: MUTED }]}>Friends</Text>
-            {activeTab === 'friends' && <Animated.View layout={Layout.springify()} style={[styles.activeIndicator, { backgroundColor: G }]} />}
+            <Text style={[styles.segmentText, activeTab === 'friends' ? { color: theme.colors.TEXT_PRIMARY } : { color: theme.colors.MUTED }]}>Friends</Text>
+            {activeTab === 'friends' && <Animated.View layout={Layout.springify()} style={[styles.activeIndicator, { backgroundColor: theme.colors.G }]} />}
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.segmentBtn, activeTab === 'discover' && { backgroundColor: G + '1A' }]} 
+            style={[styles.segmentBtn, activeTab === 'discover' && { backgroundColor: theme.colors.G + '1A' }]} 
             onPress={() => setActiveTab('discover')}
           >
-            <Text style={[styles.segmentText, activeTab === 'discover' ? { color: TEXT_PRIMARY } : { color: MUTED }]}>Discover</Text>
-            {activeTab === 'discover' && <Animated.View layout={Layout.springify()} style={[styles.activeIndicator, { backgroundColor: G }]} />}
+            <Text style={[styles.segmentText, activeTab === 'discover' ? { color: theme.colors.TEXT_PRIMARY } : { color: theme.colors.MUTED }]}>Discover</Text>
+            {activeTab === 'discover' && <Animated.View layout={Layout.springify()} style={[styles.activeIndicator, { backgroundColor: theme.colors.G }]} />}
           </TouchableOpacity>
         </View>
       </View>
 
       {loading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={G} />
+          <ActivityIndicator size="large" color={theme.colors.G} />
         </View>
       ) : activeTab === 'friends' ? (
         <FlashList
@@ -550,16 +561,16 @@ export default function CommunityScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <Animated.View entering={FadeInUp} style={styles.emptyContainerPremium}>
-              <View style={[styles.emptyIconBg, { backgroundColor: SURFACE }]}>
-                <Feather name="users" size={40} color={LABEL} />
+              <View style={[styles.emptyIconBg, { backgroundColor: theme.colors.SURFACE }]}>
+                <Feather name="users" size={40} color={theme.colors.LABEL} />
               </View>
-              <Text style={[styles.emptyTitlePremium, { color: TEXT_PRIMARY }]}>No Friends Yet</Text>
-              <Text style={[styles.emptySubtitlePremium, { color: MUTED }]}>
+              <Text style={[styles.emptyTitlePremium, { color: theme.colors.TEXT_PRIMARY }]}>No Friends Yet</Text>
+              <Text style={[styles.emptySubtitlePremium, { color: theme.colors.MUTED }]}>
                 {searchQuery ? "No friends match your search." : "Discover neighbors and send friend requests to build your community."}
               </Text>
               {!searchQuery && (
                 <TouchableOpacity
-                  style={[styles.premiumDiscoverBtn, { backgroundColor: G }]}
+                  style={[styles.premiumDiscoverBtn, { backgroundColor: theme.colors.G }]}
                   onPress={() => setActiveTab('discover')}
                 >
                   <Text style={styles.premiumDiscoverBtnText}>Discover People</Text>
@@ -577,35 +588,39 @@ export default function CommunityScreen() {
         ref={bottomSheetModalRef}
         index={0}
         snapPoints={snapPoints}
-        backgroundStyle={{ backgroundColor: SURFACE }}
-        handleIndicatorStyle={{ backgroundColor: GLASS_BORDER }}
+        backgroundStyle={{ backgroundColor: theme.colors.SURFACE }}
+        handleIndicatorStyle={{ backgroundColor: theme.colors.GLASS_BORDER }}
         backdropComponent={(props) => (
           <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.7} />
         )}
       >
         <View style={styles.bottomSheetContent}>
-          <Text style={[styles.bottomSheetTitle, { color: TEXT_PRIMARY }]}>Filters</Text>
-          <Text style={[styles.bottomSheetSubtitle, { color: LABEL }]}>Discover settings</Text>
+          <Text style={[styles.bottomSheetTitle, { color: theme.colors.TEXT_PRIMARY }]}>Filters</Text>
+          <Text style={[styles.bottomSheetSubtitle, { color: theme.colors.LABEL }]}>Discover settings</Text>
           
-          <Text style={[styles.filterSectionTitle, { color: TEXT_PRIMARY }]}>Distance</Text>
+          <Text style={[styles.filterSectionTitle, { color: theme.colors.TEXT_PRIMARY }]}>Distance</Text>
           <View style={styles.filterChipsRow}>
-            {['500m', '1km', '5km', '10km'].map(d => (
-              <TouchableOpacity key={d} style={styles.filterChip}>
-                <Text style={{ color: TEXT_PRIMARY }}>{d}</Text>
-              </TouchableOpacity>
-            ))}
+            {['500m', '1km', '5km', '10km'].map(d => {
+            return (
+                          <TouchableOpacity key={d} style={styles.filterChip}>
+                            <Text style={{ color: theme.colors.TEXT_PRIMARY }}>{d}</Text>
+                          </TouchableOpacity>
+                        );
+            })}
           </View>
 
-          <Text style={[styles.filterSectionTitle, { color: TEXT_PRIMARY }]}>Interests</Text>
+          <Text style={[styles.filterSectionTitle, { color: theme.colors.TEXT_PRIMARY }]}>Interests</Text>
           <View style={styles.filterChipsRow}>
-            {['Anime', 'Gaming', 'Food', 'Business', 'Technology'].map(i => (
-              <TouchableOpacity key={i} style={styles.filterChip}>
-                <Text style={{ color: TEXT_PRIMARY }}>{i}</Text>
-              </TouchableOpacity>
-            ))}
+            {['Anime', 'Gaming', 'Food', 'Business', 'Technology'].map(i => {
+            return (
+                          <TouchableOpacity key={i} style={styles.filterChip}>
+                            <Text style={{ color: theme.colors.TEXT_PRIMARY }}>{i}</Text>
+                          </TouchableOpacity>
+                        );
+            })}
           </View>
 
-          <TouchableOpacity style={[styles.applyFilterBtn, { backgroundColor: G }]} onPress={() => bottomSheetModalRef.current?.dismiss()}>
+          <TouchableOpacity style={[styles.applyFilterBtn, { backgroundColor: theme.colors.G }]} onPress={() => bottomSheetModalRef.current?.dismiss()}>
             <Text style={styles.applyFilterBtnText}>Apply</Text>
           </TouchableOpacity>
         </View>
@@ -615,681 +630,681 @@ export default function CommunityScreen() {
   );
 }
 
-const dynamicStyles = (colors: any) => StyleSheet.create({
-  container: { flex: 1 },
-  premiumHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  glassBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitleCenter: {
-    alignItems: 'center',
-  },
-  premiumHeaderTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  premiumHeaderSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  addFriendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(130, 219, 126, 0.1)',
-  },
-  segmentedControlContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  segmentedControl: {
-    flexDirection: 'row',
-    borderRadius: 16,
-    overflow: 'hidden',
-    padding: 4,
-  },
-  segmentBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 12,
-    position: 'relative',
-  },
-  segmentText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  activeIndicator: {
-    position: 'absolute',
-    bottom: -4,
-    width: 20,
-    height: 3,
-    borderRadius: 2,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listContentPremium: {
-    paddingHorizontal: 16,
-    paddingBottom: 40,
-  },
-  listHeaderContainer: {
-    marginBottom: 24,
-  },
-  sectionContainer: {
-    marginBottom: 24,
-  },
-  sectionTitlePremium: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  requestsContent: {
-    paddingRight: 16,
-  },
-  premiumCard: {
-    backgroundColor: SURFACE,
-    borderRadius: 20,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-  },
-  requestCard: {
-    width: width * 0.75,
-    marginRight: 12,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-  },
-  avatarText: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  userSubtitle: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  actionButtonsRow: {
-    flexDirection: 'row',
-  },
-  premiumBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  premiumBtnText: {
-    color: TEXT_PRIMARY,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  premiumBtnOutline: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  premiumBtnTextOutline: {
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  heroCard: {
-    backgroundColor: SURFACE,
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-  },
-  heroContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  heroTextContent: {
-    flex: 1,
-  },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  heroIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  searchContainerPremium: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    height: 44,
-  },
-  searchInputPremium: {
-    flex: 1,
-    marginLeft: 8,
-    fontSize: 15,
-  },
-  inviteCard: {
-    position: 'relative',
-    marginBottom: 24,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  inviteGlow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderWidth: 1.5,
-    borderRadius: 20,
-    borderStyle: 'dashed',
-    opacity: 0.5,
-  },
-  inviteContent: {
-    padding: 20,
-    backgroundColor: G + '1A',
-  },
-  inviteTextRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  inviteIconBg: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  inviteTexts: {
-    flex: 1,
-  },
-  inviteTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  inviteSubtitle: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  inviteBtn: {
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  inviteBtnText: {
-    color: TEXT_PRIMARY,
-    fontWeight: '600',
-    fontSize: 15,
-  },
-  premiumFriendCard: {
-    backgroundColor: SURFACE,
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#1a1a1a',
-  },
-  friendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  friendInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginRight: 12,
-  },
-  avatarMedium: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  avatarTextMedium: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  onlineBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 12,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#82DB7E',
-    borderWidth: 2,
-    borderColor: DARK,
-  },
-  friendInfo: {
-    flex: 1,
-  },
-  userNameSmall: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  iconBtn: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 18,
-    backgroundColor: GLASS_BORDER,
-  },
-  smallActionBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  discoverHeaderContainer: {
-    marginBottom: 16,
-  },
-  chipsRowPremium: {
-    flexDirection: 'row',
-  },
-  premiumChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginRight: 8,
-  },
-  premiumChipText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  emptyContainerPremium: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
-  emptyIconBg: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  emptyTitlePremium: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  emptySubtitlePremium: {
-    fontSize: 14,
-    textAlign: 'center',
-    paddingHorizontal: 32,
-    marginBottom: 24,
-    lineHeight: 20,
-  },
-  premiumDiscoverBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 20,
-  },
-  premiumDiscoverBtnText: {
-    color: TEXT_PRIMARY,
-    fontWeight: '700',
-    fontSize: 15,
-  },
+const stylesheet = createStyleSheet(theme => ({
+      container: { flex: 1 },
+      premiumHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+      },
+      glassBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      headerTitleCenter: {
+        alignItems: 'center',
+      },
+      premiumHeaderTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+      },
+      premiumHeaderSubtitle: {
+        fontSize: 12,
+        marginTop: 2,
+      },
+      addFriendBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        borderWidth: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(130, 219, 126, 0.1)',
+      },
+      segmentedControlContainer: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+      },
+      segmentedControl: {
+        flexDirection: 'row',
+        borderRadius: 16,
+        overflow: 'hidden',
+        padding: 4,
+      },
+      segmentBtn: {
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderRadius: 12,
+        position: 'relative',
+      },
+      segmentText: {
+        fontSize: 14,
+        fontWeight: '600',
+      },
+      activeIndicator: {
+        position: 'absolute',
+        bottom: -4,
+        width: 20,
+        height: 3,
+        borderRadius: 2,
+      },
+      centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      listContentPremium: {
+        paddingHorizontal: 16,
+        paddingBottom: 40,
+      },
+      listHeaderContainer: {
+        marginBottom: 24,
+      },
+      sectionContainer: {
+        marginBottom: 24,
+      },
+      sectionTitlePremium: {
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 12,
+      },
+      requestsContent: {
+        paddingRight: 16,
+      },
+      premiumCard: {
+        backgroundColor: theme.colors.SURFACE,
+        borderRadius: 20,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      requestCard: {
+        width: width * 0.75,
+        marginRight: 12,
+      },
+      userInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+      },
+      avatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+      },
+      avatarImage: {
+        width: '100%',
+        height: '100%',
+      },
+      avatarText: {
+        fontSize: 20,
+        fontWeight: '700',
+      },
+      userName: {
+        fontSize: 16,
+        fontWeight: '600',
+      },
+      userSubtitle: {
+        fontSize: 13,
+        marginTop: 2,
+      },
+      actionButtonsRow: {
+        flexDirection: 'row',
+      },
+      premiumBtn: {
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 12,
+        alignItems: 'center',
+      },
+      premiumBtnText: {
+        color: theme.colors.TEXT_PRIMARY,
+        fontWeight: '600',
+        fontSize: 14,
+      },
+      premiumBtnOutline: {
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 12,
+        borderWidth: 1,
+        alignItems: 'center',
+      },
+      premiumBtnTextOutline: {
+        fontWeight: '600',
+        fontSize: 14,
+      },
+      heroCard: {
+        backgroundColor: theme.colors.SURFACE,
+        borderRadius: 24,
+        padding: 20,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      heroContent: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+      },
+      heroTextContent: {
+        flex: 1,
+      },
+      heroTitle: {
+        fontSize: 24,
+        fontWeight: '800',
+      },
+      heroSubtitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        marginTop: 4,
+      },
+      heroIconContainer: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      searchContainerPremium: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 14,
+        paddingHorizontal: 12,
+        height: 44,
+      },
+      searchInputPremium: {
+        flex: 1,
+        marginLeft: 8,
+        fontSize: 15,
+      },
+      inviteCard: {
+        position: 'relative',
+        marginBottom: 24,
+        borderRadius: 20,
+        overflow: 'hidden',
+      },
+      inviteGlow: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderWidth: 1.5,
+        borderRadius: 20,
+        borderStyle: 'dashed',
+        opacity: 0.5,
+      },
+      inviteContent: {
+        padding: 20,
+        backgroundColor: theme.colors.G + '1A',
+      },
+      inviteTextRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+      },
+      inviteIconBg: {
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+      },
+      inviteTexts: {
+        flex: 1,
+      },
+      inviteTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+      },
+      inviteSubtitle: {
+        fontSize: 13,
+        marginTop: 2,
+      },
+      inviteBtn: {
+        paddingVertical: 12,
+        borderRadius: 12,
+        alignItems: 'center',
+      },
+      inviteBtnText: {
+        color: theme.colors.TEXT_PRIMARY,
+        fontWeight: '600',
+        fontSize: 15,
+      },
+      premiumFriendCard: {
+        backgroundColor: theme.colors.SURFACE,
+        borderRadius: 16,
+        padding: 12,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#1a1a1a',
+      },
+      friendRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      friendInfoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+      },
+      avatarContainer: {
+        position: 'relative',
+        marginRight: 12,
+      },
+      avatarMedium: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+      },
+      avatarTextMedium: {
+        fontSize: 18,
+        fontWeight: '700',
+      },
+      onlineBadge: {
+        position: 'absolute',
+        bottom: 0,
+        right: 12,
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: '#82DB7E',
+        borderWidth: 2,
+        borderColor: theme.colors.DARK,
+      },
+      friendInfo: {
+        flex: 1,
+      },
+      userNameSmall: {
+        fontSize: 15,
+        fontWeight: '600',
+      },
+      iconBtn: {
+        width: 36,
+        height: 36,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 18,
+        backgroundColor: theme.colors.GLASS_BORDER,
+      },
+      smallActionBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      discoverHeaderContainer: {
+        marginBottom: 16,
+      },
+      chipsRowPremium: {
+        flexDirection: 'row',
+      },
+      premiumChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        borderWidth: 1,
+        marginRight: 8,
+      },
+      premiumChipText: {
+        fontSize: 14,
+        fontWeight: '600',
+      },
+      emptyContainerPremium: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+      },
+      emptyIconBg: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+      },
+      emptyTitlePremium: {
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 8,
+      },
+      emptySubtitlePremium: {
+        fontSize: 14,
+        textAlign: 'center',
+        paddingHorizontal: 32,
+        marginBottom: 24,
+        lineHeight: 20,
+      },
+      premiumDiscoverBtn: {
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 20,
+      },
+      premiumDiscoverBtnText: {
+        color: theme.colors.TEXT_PRIMARY,
+        fontWeight: '700',
+        fontSize: 15,
+      },
 
-  discoverHeroCard: {
-    backgroundColor: SURFACE,
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-  },
-  discoverHeroContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  discoverHeroTextContent: {
-    flex: 1,
-    paddingRight: 16,
-  },
-  discoverHeroTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  discoverHeroSubtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  discoverHeroIconBg: {
-    width: 80,
-    height: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  discoverHeroIconGlow: {
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    opacity: 0.2,
-    zIndex: -1,
-  },
-  discoverSearchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  discoverSearchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 48,
-    marginRight: 12,
-  },
-  filterBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  smartChipsRow: {
-    flexDirection: 'row',
-    marginBottom: 24,
-  },
-  smartChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginRight: 12,
-  },
-  smartChipTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  smartChipSubtitle: {
-    fontSize: 11,
-    marginTop: 2,
-  },
-  discoverScrollContent: {
-    paddingLeft: 16,
-  },
-  discoverSection: {
-    marginBottom: 32,
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    paddingRight: 16,
-  },
-  sectionHeaderTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  viewAllText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  nearbyCard: {
-    width: 140,
-    backgroundColor: SURFACE,
-    borderRadius: 24,
-    padding: 16,
-    alignItems: 'center',
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-  },
-  nearbyAvatarContainer: {
-    position: 'relative',
-    marginBottom: 12,
-  },
-  nearbyAvatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nearbyOnlineBadge: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#82DB7E',
-    borderWidth: 3,
-    borderColor: DARK,
-  },
-  nearbyName: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  nearbyDistanceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  nearbyDistanceText: {
-    fontSize: 12,
-    marginLeft: 4,
-  },
-  nearbyFollowBtn: {
-    width: '100%',
-    paddingVertical: 10,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  nearbyFollowBtnText: {
-    color: TEXT_PRIMARY,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  mutualCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: SURFACE,
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-  },
-  mutualInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  mutualInfo: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  mutualName: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  mutualSubtitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  smallFollowBtn: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 12,
-    marginRight: 8,
-  },
-  smallFollowBtnText: {
-    color: TEXT_PRIMARY,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  threeDotBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: G + '1A',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sellerCard: {
-    width: 240,
-    backgroundColor: SURFACE,
-    borderRadius: 24,
-    padding: 16,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-  },
-  sellerTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sellerAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  sellerInfo: {
-    flex: 1,
-  },
-  sellerName: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  sellerStatsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sellerStatsText: {
-    fontSize: 12,
-  },
-  sellerShopBtn: {
-    width: '100%',
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  sellerShopBtnText: {
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  bottomSheetContent: {
-    flex: 1,
-    padding: 24,
-  },
-  bottomSheetTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  bottomSheetSubtitle: {
-    fontSize: 14,
-    marginBottom: 24,
-  },
-  filterSectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  filterChipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 24,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: G + '1A',
-    marginRight: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-  },
-  applyFilterBtn: {
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  applyFilterBtnText: {
-    color: TEXT_PRIMARY,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});
+      discoverHeroCard: {
+        backgroundColor: theme.colors.SURFACE,
+        borderRadius: 24,
+        padding: 20,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      discoverHeroContent: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+      },
+      discoverHeroTextContent: {
+        flex: 1,
+        paddingRight: 16,
+      },
+      discoverHeroTitle: {
+        fontSize: 24,
+        fontWeight: '800',
+        marginBottom: 8,
+      },
+      discoverHeroSubtitle: {
+        fontSize: 14,
+        lineHeight: 20,
+      },
+      discoverHeroIconBg: {
+        width: 80,
+        height: 80,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+      },
+      discoverHeroIconGlow: {
+        position: 'absolute',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        opacity: 0.2,
+        zIndex: -1,
+      },
+      discoverSearchRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      discoverSearchBar: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        height: 48,
+        marginRight: 12,
+      },
+      filterBtn: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      smartChipsRow: {
+        flexDirection: 'row',
+        marginBottom: 24,
+      },
+      smartChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderRadius: 20,
+        borderWidth: 1,
+        marginRight: 12,
+      },
+      smartChipTitle: {
+        fontSize: 14,
+        fontWeight: '700',
+      },
+      smartChipSubtitle: {
+        fontSize: 11,
+        marginTop: 2,
+      },
+      discoverScrollContent: {
+        paddingLeft: 16,
+      },
+      discoverSection: {
+        marginBottom: 32,
+      },
+      sectionHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 16,
+        paddingRight: 16,
+      },
+      sectionHeaderTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      viewAllText: {
+        fontSize: 14,
+        fontWeight: '600',
+      },
+      nearbyCard: {
+        width: 140,
+        backgroundColor: theme.colors.SURFACE,
+        borderRadius: 24,
+        padding: 16,
+        alignItems: 'center',
+        marginRight: 12,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      nearbyAvatarContainer: {
+        position: 'relative',
+        marginBottom: 12,
+      },
+      nearbyAvatar: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      nearbyOnlineBadge: {
+        position: 'absolute',
+        bottom: 2,
+        right: 2,
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        backgroundColor: '#82DB7E',
+        borderWidth: 3,
+        borderColor: theme.colors.DARK,
+      },
+      nearbyName: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 4,
+        textAlign: 'center',
+      },
+      nearbyDistanceRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+      },
+      nearbyDistanceText: {
+        fontSize: 12,
+        marginLeft: 4,
+      },
+      nearbyFollowBtn: {
+        width: '100%',
+        paddingVertical: 10,
+        borderRadius: 12,
+        alignItems: 'center',
+      },
+      nearbyFollowBtnText: {
+        color: theme.colors.TEXT_PRIMARY,
+        fontWeight: '700',
+        fontSize: 14,
+      },
+      mutualCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.SURFACE,
+        borderRadius: 20,
+        padding: 16,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      mutualInfoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+      },
+      mutualInfo: {
+        flex: 1,
+        justifyContent: 'center',
+      },
+      mutualName: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 2,
+      },
+      mutualSubtitle: {
+        fontSize: 12,
+        fontWeight: '600',
+        marginBottom: 4,
+      },
+      smallFollowBtn: {
+        paddingHorizontal: 20,
+        paddingVertical: 8,
+        borderRadius: 12,
+        marginRight: 8,
+      },
+      smallFollowBtnText: {
+        color: theme.colors.TEXT_PRIMARY,
+        fontWeight: '700',
+        fontSize: 14,
+      },
+      threeDotBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: theme.colors.G + '1A',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      sellerCard: {
+        width: 240,
+        backgroundColor: theme.colors.SURFACE,
+        borderRadius: 24,
+        padding: 16,
+        marginRight: 12,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      sellerTopRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+      },
+      sellerAvatar: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        overflow: 'hidden',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+      },
+      sellerInfo: {
+        flex: 1,
+      },
+      sellerName: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 4,
+      },
+      sellerStatsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      sellerStatsText: {
+        fontSize: 12,
+      },
+      sellerShopBtn: {
+        width: '100%',
+        paddingVertical: 12,
+        borderRadius: 12,
+        alignItems: 'center',
+      },
+      sellerShopBtnText: {
+        fontWeight: '700',
+        fontSize: 14,
+      },
+      bottomSheetContent: {
+        flex: 1,
+        padding: 24,
+      },
+      bottomSheetTitle: {
+        fontSize: 24,
+        fontWeight: '800',
+        marginBottom: 4,
+      },
+      bottomSheetSubtitle: {
+        fontSize: 14,
+        marginBottom: 24,
+      },
+      filterSectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 12,
+      },
+      filterChipsRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginBottom: 24,
+      },
+      filterChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: theme.colors.G + '1A',
+        marginRight: 8,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      applyFilterBtn: {
+        paddingVertical: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+        marginTop: 12,
+      },
+      applyFilterBtnText: {
+        color: theme.colors.TEXT_PRIMARY,
+        fontSize: 16,
+        fontWeight: '700',
+      },
+    }));
