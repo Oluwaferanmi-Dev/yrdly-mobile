@@ -31,6 +31,7 @@ export default function Profile1Screen() {
   const [handle, setHandle] = useState('');
   const [bio, setBio] = useState('');
   const [usernameError, setUsernameError] = useState('');
+  const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   // Auto-populate username from signup / profile if available
@@ -93,6 +94,12 @@ export default function Profile1Screen() {
   };
 
   const handleNextStep1 = async () => {
+    setFormError('');
+    if (!name.trim() || !handle.trim()) {
+      setFormError('Name and username are required.');
+      return;
+    }
+
     const clean = handle.replace(/^@/, '').trim();
     const existing = (profile?.username || user?.user_metadata?.username || '').replace(/^@/, '').trim();
 
@@ -194,6 +201,7 @@ export default function Profile1Screen() {
               </View>
 
               {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
+              {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
 
               <View style={styles.inputStack}>
                 <GlassInput

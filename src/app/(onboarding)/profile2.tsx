@@ -57,6 +57,7 @@ export default function Profile2Screen() {
   const [location, setLocation] = useState('');
   const [selectedLoc, setSelectedLoc] = useState(false);
   const [locLoading, setLocLoading] = useState(false);
+  const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   const handleUseGPS = async () => {
@@ -95,6 +96,12 @@ export default function Profile2Screen() {
   };
 
   const handleCompleteSetup = async () => {
+    setFormError('');
+    if (!location.trim()) {
+      setFormError('Please enter your neighbourhood to continue.');
+      return;
+    }
+
     if (user?.id) {
       setIsSaving(true);
       try {
@@ -143,6 +150,8 @@ export default function Profile2Screen() {
                   Enter your address or estate to join your local neighbourhood group.
                 </Text>
               </View>
+
+              {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
 
               {/* Location Input with Functional GPS */}
               <View style={{ zIndex: 50, marginBottom: 12 }}>
@@ -239,6 +248,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.LABEL,
     lineHeight: 22,
+  },
+  errorText: {
+    color: '#FF4C4C',
+    fontFamily: 'Inter-Medium',
+    fontSize: 13,
+    marginBottom: 12,
   },
   gpsPill: {
     flexDirection: 'row',

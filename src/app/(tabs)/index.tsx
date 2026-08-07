@@ -286,16 +286,6 @@ export default function HomeTab() {
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
               <NotificationsIcon size={17} color="rgba(255,255,255,0.85)" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/profile' as any)} style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden', borderWidth: 2, borderColor: theme.colors.G, padding: 0 }}>
-              {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
-                <Image source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
-              ) : (
-                <View style={{ flex: 1, backgroundColor: theme.colors.SURFACE, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{ color: theme.colors.G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
           </View>
         </View>
         <View style={{ paddingTop: HEADER_HEIGHT }}>
@@ -330,15 +320,6 @@ export default function HomeTab() {
                   <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 10, fontFamily: 'Inter-ExtraBold', lineHeight: 10 }}>
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/profile' as any)} style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden', borderWidth: 2, borderColor: theme.colors.G, padding: 0 }}>
-              {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
-                <Image source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
-              ) : (
-                <View style={{ flex: 1, backgroundColor: theme.colors.SURFACE, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{ color: theme.colors.G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
                 </View>
               )}
             </TouchableOpacity>
