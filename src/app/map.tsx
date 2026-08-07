@@ -191,7 +191,7 @@ export default function MapScreen() {
           .from('users')
           .select('id, name, avatar_url, current_location')
           .in('id', me.friends)
-          .neq('share_location', false)
+          .or('share_location.is.null,share_location.eq.true')
           .not('current_location', 'is', null);
         (frds || []).forEach((f: any) => {
           const lat = parseFloat(f.current_location?.lat ?? f.current_location?.geopoint?.latitude);
@@ -352,9 +352,6 @@ export default function MapScreen() {
         }}
       >
         {clusters.map((c, i) => {
-            const { styles: s } = useStyles(sStylesheet);
-            const { styles: ms } = useStyles(msStylesheet);
-
           const [lng, lat] = c.geometry.coordinates;
           const { cluster: isC, point_count, ...p } = c.properties as any;
           if (isC) return (
@@ -414,9 +411,6 @@ export default function MapScreen() {
           data={FILTERS} keyExtractor={f => f.key}
           contentContainerStyle={{ paddingHorizontal:16, gap:8, paddingTop:12 }}
           renderItem={({ item:f }) => {
-            const { styles: s } = useStyles(sStylesheet);
-            const { styles: ms } = useStyles(msStylesheet);
-
             const active = filter === f.key;
             return (
               <TouchableOpacity

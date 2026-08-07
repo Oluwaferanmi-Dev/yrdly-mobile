@@ -61,7 +61,10 @@ export default function NotificationsScreen() {
   const [activeFilter, setActiveFilter] = useState('All');
 
   const fetchNotifications = async (isRefresh = false) => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     if (isRefresh) setRefreshing(true);
     try {
       const { data, error } = await supabase
@@ -130,11 +133,12 @@ export default function NotificationsScreen() {
 
   const filteredNotifications = useMemo(() => {
     return notifications.filter(n => {
+      const t = n.type || '';
       if (activeFilter === 'Unread') return !n.is_read;
-      if (activeFilter === 'Alerts') return n.type.includes('alert') || n.type.includes('safety');
-      if (activeFilter === 'Community') return ['friend_request', 'friend_accept', 'new_follower', 'post_like', 'post_comment'].includes(n.type);
-      if (activeFilter === 'Marketplace') return n.type.includes('marketplace') || n.type.includes('escrow') || n.type.includes('transaction');
-      if (activeFilter === 'Events') return n.type.includes('event') || n.type.includes('ticket');
+      if (activeFilter === 'Alerts') return t.includes('alert') || t.includes('safety');
+      if (activeFilter === 'Community') return ['friend_request', 'friend_accept', 'new_follower', 'post_like', 'post_comment'].includes(t);
+      if (activeFilter === 'Marketplace') return t.includes('marketplace') || t.includes('escrow') || t.includes('transaction');
+      if (activeFilter === 'Events') return t.includes('event') || t.includes('ticket');
       return true;
     });
   }, [notifications, activeFilter]);
@@ -217,10 +221,20 @@ export default function NotificationsScreen() {
                             supabase.from('notifications').update({ is_read: true }).eq('id', item.id);
                             setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n));
                           }
-                          if (item.type.includes('event')) router.push('/events' as any);
-                          else if (item.type.includes('marketplace') || item.type.includes('escrow')) router.push('/transactions');
-                          else if (item.type === 'friend_request') router.push('/community');
-                          else if (item.related_id) router.push(`/posts/${item.related_id}`);
+                          const t = item.type || '';
+                          if (t.includes('event')) {
+                            if (item.related_id) router.push(`/events/${item.related_id}` as any);
+                            else router.push('/events' as any);
+                          }
+                          else if (t.includes('marketplace') || t.includes('escrow')) {
+                            if (item.related_id) router.push(`/marketplace/${item.related_id}` as any);
+                            else router.push('/marketplace' as any);
+                          }
+                          else if (['friend_request', 'friend_accept', 'new_follower'].includes(t)) {
+                            if (item.from_user_id) router.push(`/profile/${item.from_user_id}` as any);
+                            else router.push('/community' as any);
+                          }
+                          else if (item.related_id) router.push(`/posts/${item.related_id}` as any);
                         }}
                       >
                         <View style={stylesheet.avatarWrapper}>

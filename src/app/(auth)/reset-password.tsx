@@ -12,6 +12,8 @@ import {
 } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/hooks/use-supabase-auth';
+import { Alert } from 'react-native';
 
 const { colors, radii } = ONBOARDING_THEME;
 
@@ -22,6 +24,35 @@ export default function ResetPasswordScreen() {
   const [show1, setShow1] = useState(false);
   const [show2, setShow2] = useState(false);
   const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { updatePassword, signOut } = useAuth();
+
+  const handleUpdate = async () => {
+    if (pw !== confirm) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+    if (pw.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters');
+      return;
+    }
+    
+    setLoading(true);
+    const { error } = await updatePassword(pw);
+    setLoading(false);
+
+    if (error) {
+      Alert.alert('Error', error.message || 'Failed to update password');
+    } else {
+      setDone(true);
+      // Supabase Auth handles the security email automatically if configured.
+      // Sign out to force the user to log in with the new password.
+      setTimeout(async () => {
+        await signOut();
+        router.replace('/(auth)/login');
+      }, 2000);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -74,7 +105,7 @@ export default function ResetPasswordScreen() {
                 />
               </View>
 
-              <PrimaryBtn label="Reset Password" onClick={() => setDone(true)} />
+              <PrimaryBtn label={loading ? "Updating..." : "Reset Password"} onClick={handleUpdate} />
 
               {done && (
                 <View style={styles.successToast}>

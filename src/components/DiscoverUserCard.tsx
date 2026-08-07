@@ -26,7 +26,7 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
   const { colors } = useAppTheme();
-  const { status, isLoading, addFriend, cancelRequest, removeFriend } = useFriendshipGlobal(user.id);
+  const { status, isLoading, addFriend, cancelRequest, removeFriend, acceptRequest } = useFriendshipGlobal(user.id);
 
   // Derive badge text/icon based on context
   let badgeIcon: keyof typeof Feather.glyphMap = 'map-pin';
@@ -47,8 +47,10 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
   const handleAction = () => {
     if (status === 'none') {
       addFriend();
-    } else if (status === 'request_sent' || status === 'request_received') {
+    } else if (status === 'request_sent') {
       cancelRequest();
+    } else if (status === 'request_received') {
+      acceptRequest();
     }
   };
 
@@ -98,10 +100,12 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
               <Feather name="check" size={14} color={colors.textSecondary} />
               <Text style={[stylesheet.friendsText, { color: colors.textSecondary }]}>Friends</Text>
             </View>
-          ) : (status === 'request_sent' || status === 'request_received') ? (
-            <Text style={[stylesheet.actionText, { color: colors.tint }]}>Pending</Text>
+          ) : status === 'request_sent' ? (
+            <Text style={[stylesheet.actionText, { color: colors.tint }]}>Requested</Text>
+          ) : status === 'request_received' ? (
+            <Text style={[stylesheet.actionText, { color: colors.tint }]}>Accept</Text>
           ) : (
-            <Text style={[stylesheet.actionText, { color: colors.tint }]}>Add</Text>
+            <Text style={[stylesheet.actionText, { color: colors.tint }]}>Connect</Text>
           )}
         </TouchableOpacity>
       </GlassCard>

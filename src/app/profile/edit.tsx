@@ -259,7 +259,7 @@ const sStylesheet = createStyleSheet(theme => ({
 
       avatarSection: { alignItems: 'center', paddingTop: 12, paddingBottom: 28, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       avatarWrap: { position: 'relative', marginBottom: 12 },
-      avatarRing: { width: 96, height: 96, borderRadius: 48, padding: 3, backgroundColor: 'rgba(130,219,126,0.5)' },
+      avatarRing: { width: 96, height: 96, borderRadius: 48 },
       avatarInner: { flex: 1, borderRadius: 45, backgroundColor: '#050505', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
       cameraOverlay: { position: 'absolute', inset: 0, borderRadius: 48, backgroundColor: 'rgba(0,0,0,0.42)', alignItems: 'center', justifyContent: 'center' },
       changePhotoTxt: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: theme.colors.G },

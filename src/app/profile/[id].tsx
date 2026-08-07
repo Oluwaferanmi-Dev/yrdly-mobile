@@ -40,7 +40,7 @@ export default function OtherUserProfileScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, profile: currentProfile } = useAuth();
   const { width: windowWidth } = useWindowDimensions();
   const friendship = useFriendshipGlobal(id);
 
@@ -147,19 +147,19 @@ export default function OtherUserProfileScreen() {
   }, [id]);
 
   const handleToggleFollow = async () => {
-    if (!currentUser || !profile) return;
+    if (!currentUser || !currentProfile || !profile) return;
     setFollowLoading(true);
 
     try {
       if (isFollowing) {
         const { error } = await supabase.from('followers').delete()
-          .eq('follower_id', currentUser.id)
+          .eq('follower_id', currentProfile.id)
           .eq('following_id', profile.id);
         if (error) throw error;
         setFollowersCount(prev => Math.max(0, prev - 1));
       } else {
         const { error } = await supabase.from('followers').insert({
-          follower_id: currentUser.id,
+          follower_id: currentProfile.id,
           following_id: profile.id,
         });
         if (error) throw error;
@@ -167,7 +167,7 @@ export default function OtherUserProfileScreen() {
         
         // Trigger notification
         const { NotificationTriggers } = await import('../../lib/notification-triggers');
-        await NotificationTriggers.onNewFollower(currentUser.id, profile.id);
+        await NotificationTriggers.onNewFollower(currentProfile.id, profile.id);
       }
       setIsFollowing(!isFollowing);
     } catch (e: any) {
@@ -178,26 +178,31 @@ export default function OtherUserProfileScreen() {
   };
 
   const handleMessage = async () => {
-    if (!currentUser || !profile) return;
-    // Find existing friend chat or create one
-    const { data: existing } = await supabase.from('conversations')
-      .select('id')
-      .eq('type', 'friend')
-      .contains('participant_ids', [currentUser.id, profile.id])
-      .limit(1)
-      .maybeSingle();
-      
-    if (existing) {
-      router.push(`/chat/${existing.id}`);
-    } else {
-      const { data: newConv, error } = await supabase.from('conversations').insert({
-        type: 'friend',
-        participant_ids: [currentUser.id, profile.id],
-      }).select().single();
-      
-      if (newConv && !error) {
-        router.push(`/chat/${newConv.id}`);
+    if (!currentUser || !currentProfile || !profile) return;
+    try {
+      const { data: existingChat } = await supabase
+        .from('chats')
+        .select('id, participant_ids')
+        .contains('participant_ids', [currentProfile.id, profile.id])
+        .limit(1)
+        .maybeSingle();
+      if (existingChat) {
+        router.push(`/messages/${existingChat.id}`);
+      } else {
+        const { data: newChat, error: newChatError } = await supabase
+          .from('chats')
+          .insert({
+            participant_ids: [currentProfile.id, profile.id],
+            last_message: null,
+          })
+          .select('id')
+          .single();
+        if (newChat && !newChatError) {
+          router.push(`/chat/${newChat.id}`);
+        }
       }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -222,7 +227,7 @@ export default function OtherUserProfileScreen() {
     );
   }
 
-  const isOwnProfile = currentUser?.id === profile.id;
+  const isOwnProfile = currentProfile?.id === profile.id;
 
   return (
     <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
@@ -238,15 +243,19 @@ export default function OtherUserProfileScreen() {
               if (isOwnProfile) return;
               Alert.alert('Options', '', [
                 { text: 'Block User', style: 'destructive', onPress: async () => {
-                  if (!currentUser) return;
-                  await supabase.from('user_blocks').insert({ blocker_id: currentUser.id, blocked_id: profile.id });
-                  Alert.alert('Success', 'User blocked.');
+                try {
+                  if (!currentProfile) return;
+                  await supabase.from('user_blocks').insert({ blocker_id: currentProfile.id, blocked_id: profile.id });
+                  Alert.alert('User blocked');
                   router.back();
+                } catch (e) {}
                 }},
                 { text: 'Report User', style: 'destructive', onPress: async () => {
-                  if (!currentUser) return;
-                  await supabase.from('reports').insert({ reporter_id: currentUser.id, reported_user_id: profile.id, reason: 'Inappropriate profile' });
-                  Alert.alert('Success', 'User reported.');
+                try {
+                  if (!currentProfile) return;
+                  await supabase.from('reports').insert({ reporter_id: currentProfile.id, reported_user_id: profile.id, reason: 'Inappropriate profile' });
+                  Alert.alert('User reported');
+                } catch (e) {}
                 }},
                 { text: 'Cancel', style: 'cancel' }
               ]);

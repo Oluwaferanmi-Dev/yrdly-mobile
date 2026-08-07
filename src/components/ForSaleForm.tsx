@@ -130,10 +130,6 @@ function Dropdown({
         <Animated.View style={[dd.menu, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight, maxHeight: heightAnim }]}>
           <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
             {options.map(opt => {
-            const { styles: s } = useStyles(sStylesheet);
-            const { styles: pt } = useStyles(ptStylesheet);
-            const { styles: pg } = useStyles(pgStylesheet);
-            const { styles: dd } = useStyles(ddStylesheet);
             return (
                           <TouchableOpacity key={opt} style={[dd.item, { borderBottomColor: colors.borderLight }]}
                             onPress={() => { onSelect(opt); toggle(); }}>
@@ -185,10 +181,6 @@ function PhotoGallery({ images, onAdd, onRemove, colors }: {
 
         {/* Uploaded images */}
         {images.map((img, i) => {
-        const { styles: s } = useStyles(sStylesheet);
-        const { styles: pt } = useStyles(ptStylesheet);
-        const { styles: pg } = useStyles(pgStylesheet);
-        const { styles: dd } = useStyles(ddStylesheet);
         return (
                   <View key={i} style={pg.imgWrap}>
                     <Image source={{ uri: img.thumbnailUri || img.uri }} style={pg.img} contentFit="cover" transition={200} />
@@ -265,10 +257,6 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
               {showCategoryMenu && categories && onSelectCategory && (
                 <View style={[stylesheet.menu, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
                   {categories.map(cat => {
-                  const { styles: s } = useStyles(sStylesheet);
-                  const { styles: pt } = useStyles(ptStylesheet);
-                  const { styles: pg } = useStyles(pgStylesheet);
-                  const { styles: dd } = useStyles(ddStylesheet);
                   return (
                                       <TouchableOpacity key={cat} style={stylesheet.menuItem} onPress={() => onSelectCategory(cat)}>
                                         <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>

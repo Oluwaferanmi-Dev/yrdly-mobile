@@ -125,7 +125,6 @@ export function BusinessHub({ searchQuery }: BusinessHubProps) {
     return (
       <View style={s.skeletonGrid}>
         {[1, 2, 3, 4].map(k => {
-        const { styles: s } = useStyles(sStylesheet);
         return (
                   <View key={k} style={[s.skeletonCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
                     <Skeleton width="100%" height={150} />
@@ -194,7 +193,6 @@ return (
             </View>
           }
           renderItem={({ item }) => {
-          const { styles: s } = useStyles(sStylesheet);
           return (
                       <TouchableOpacity
                         activeOpacity={0.7}

@@ -19,6 +19,7 @@ import { Post, User, Business } from '../../types';
 import { formatPrice, getDistanceStr } from '../../lib/utils';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 import * as Location from 'expo-location';
+import { LocationPicker, LocationValue } from '../../components/LocationPicker';
 
 const { width } = Dimensions.get('window');
 type TabType = 'Discover' | 'Marketplace' | 'Events' | 'Businesses';
@@ -32,34 +33,155 @@ const TABS: { key: TabType; label: string }[] = [
 const CATS = ['All', 'Fashion', 'Electronics', 'Home & Living', 'Vehicles', 'Food', 'Beauty', 'Services'];
 
 // ─── DISCOVER SECTION ────────────────────────────────────────────────────────
-function DiscoverSection({ currentLoc }: { currentLoc: Location.LocationObject | null }) {
-    const { styles: sStylesheet, theme } = useStyles(stylesheet);
+function NearbyUserCard({ user, currentLoc, sStylesheet, theme }: any) {
+  const { status, isLoading, addFriend, cancelRequest, acceptRequest } = useFriendshipGlobal(user.id);
+  const avatar = user.avatar_url && !user.avatar_url.startsWith('file://') ? { uri: user.avatar_url } : null;
+  
+  const handleAction = () => {
+    if (status === 'none') addFriend();
+    else if (status === 'request_sent') cancelRequest();
+    else if (status === 'request_received') acceptRequest();
+  };
+  
+  return (
+    <View style={sStylesheet.nearbyCard}>
+      <View style={sStylesheet.nearbyAvatarWrap}>
+        {avatar ? (
+          <Image source={avatar} style={sStylesheet.nearbyAvatar} contentFit="cover" />
+        ) : (
+          <View style={[sStylesheet.nearbyAvatar, { backgroundColor: theme.colors.SURFACE, alignItems: 'center', justifyContent: 'center' }]}>
+            <Text style={{ color: '#fff', fontSize: 24, fontFamily: 'Outfit-Bold' }}>{(user.name || '?')[0].toUpperCase()}</Text>
+          </View>
+        )}
+      </View>
+      <View style={sStylesheet.nearbyInfo}>
+        <Text style={sStylesheet.nearbyName} numberOfLines={1}>{user.name.split(' ')[0]}</Text>
+        <Text style={sStylesheet.nearbyHandle} numberOfLines={1}>@{user.name.replace(/\s+/g, '').toLowerCase()}</Text>
+        <View style={sStylesheet.nearbyDistRow}>
+          <Ionicons name="location" size={11} color={theme.colors.LABEL} />
+          <Text style={sStylesheet.nearbyDistText}>
+            {getDistanceStr(
+              currentLoc?.coords.latitude, 
+              currentLoc?.coords.longitude, 
+              user.currentLocation?.lat, 
+              user.currentLocation?.lng
+            )}
+          </Text>
+        </View>
+      </View>
+      <TouchableOpacity 
+        style={[sStylesheet.connectBtn, status !== 'none' && sStylesheet.connectBtnActive]}
+        onPress={handleAction}
+        disabled={isLoading || status === 'friends'}
+      >
+        {isLoading ? (
+          <ActivityIndicator size="small" color={theme.colors.tint} />
+        ) : (
+          <Text style={[sStylesheet.connectBtnText, status !== 'none' && sStylesheet.connectBtnTextActive]}>
+            {status === 'friends' ? 'Friends' : status === 'request_sent' ? 'Requested' : status === 'request_received' ? 'Accept' : 'Connect'}
+          </Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+}
 
-  const { user } = useAuth();
+function DiscoverSection({ currentLoc, search }: { currentLoc: Location.LocationObject | null, search: string }) {
+    const { styles: sStylesheet, theme } = useStyles(stylesheet);
+    const { activeFilter } = useLocation();
+
+  const { profile } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
+  const [sellers, setSellers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [connected, setConnected] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchUsers() {
-      if (!user) return;
-      const { data } = await supabase.from('users').select('*').neq('id', user.id).limit(20);
+      if (!profile) return;
+      setLoading(true);
+
+      let q = supabase
+        .from('users')
+        .select('*')
+        .neq('id', profile.id)
+        .or('discoverable.is.null,discoverable.eq.true')
+        .limit(20);
+        
+      if (search.trim()) {
+        q = q.ilike('name', `%${search.trim()}%`);
+      }
+
+      if (activeFilter) {
+        if (activeFilter.lga) {
+          q = q.eq('lga', activeFilter.lga);
+        } else if (activeFilter.state) {
+          q = q.eq('state', activeFilter.state);
+        }
+      }
+      
+      const { data } = await q;
       if (data) setUsers(data as User[]);
+
+      // Fetch actual active sellers based on posts
+      const { data: postsData } = await supabase
+        .from('posts')
+        .select('user_id')
+        .eq('category', 'For Sale')
+        .limit(100);
+      
+      if (postsData && postsData.length > 0) {
+        const sellerIds = Array.from(new Set(postsData.map(p => p.user_id)));
+        const { data: sellersData } = await supabase
+          .from('users')
+          .select('*')
+          .in('id', sellerIds)
+          .neq('id', profile.id)
+          .limit(10);
+        if (sellersData) {
+          setSellers(sellersData as User[]);
+        }
+      }
+
       setLoading(false);
     }
-    fetchUsers();
-  }, [user]);
+    const timeoutId = setTimeout(() => {
+      fetchUsers();
+    }, 300); // debounce search
+    return () => clearTimeout(timeoutId);
+  }, [profile, search, activeFilter]);
 
-  const toggleConnect = (id: string) => {
-    setConnected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
-
-  const nearby = users.slice(0, Math.floor(users.length / 3));
-  const mutuals = users.slice(Math.floor(users.length / 3), Math.floor(users.length / 3) * 2);
-  const sellers = users.slice(Math.floor(users.length / 3) * 2);
+  const nearby = users; // TODO: properly identify nearby vs mutuals. For now just show all in nearby
+  const mutuals: User[] = []; // Leaving empty since mutuals aren't properly fetched either in this slice logic
 
   if (loading) return <ActivityIndicator color={theme.colors.G} style={{ marginTop: 40 }} />;
+  
+  if (search.trim() && users.length === 0) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 100 }}>
+        <Ionicons name="search" size={48} color={theme.colors.MUTED} style={{ marginBottom: 16 }} />
+        <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY }}>No results found</Text>
+        <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.LABEL, marginTop: 8 }}>
+          Try a different search term
+        </Text>
+      </View>
+    );
+  }
+  
+  if (search.trim() && users.length > 0) {
+    return (
+      <ScrollView style={sStylesheet.sectionContainer} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        {users.map(u => (
+          <DiscoverUserCard 
+            key={u.id} 
+            user={u} 
+            context="neighbor" 
+            onPress={() => router.push(`/profile/${u.id}` as any)} 
+          />
+        ))}
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView style={sStylesheet.sectionContainer} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
@@ -68,47 +190,9 @@ function DiscoverSection({ currentLoc }: { currentLoc: Location.LocationObject |
         <View style={sStylesheet.discoverGroup}>
           <Text style={sStylesheet.discoverGroupTitle}>NEARBY PEOPLE</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
-            {nearby.map(p => {
-                const { styles: s } = useStyles(sStylesheet);
-
-              const avatar = p.avatar_url && !p.avatar_url.startsWith('file://') ? { uri: p.avatar_url } : null;
-              return (
-                <View key={p.id} style={sStylesheet.nearbyCard}>
-                  <View style={sStylesheet.nearbyAvatarWrap}>
-                    {avatar ? (
-                      <Image source={avatar} style={sStylesheet.nearbyAvatar} contentFit="cover" />
-                    ) : (
-                      <View style={[sStylesheet.nearbyAvatar, { backgroundColor: theme.colors.SURFACE, alignItems: 'center', justifyContent: 'center' }]}>
-                        <Text style={{ color: '#fff', fontSize: 24, fontFamily: 'Outfit-Bold' }}>{(p.name || '?')[0].toUpperCase()}</Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={sStylesheet.nearbyInfo}>
-                    <Text style={sStylesheet.nearbyName} numberOfLines={1}>{p.name.split(' ')[0]}</Text>
-                    <Text style={sStylesheet.nearbyHandle} numberOfLines={1}>@{p.name.replace(/\s+/g, '').toLowerCase()}</Text>
-                    <View style={sStylesheet.nearbyDistRow}>
-                      <Ionicons name="location" size={11} color={theme.colors.LABEL} />
-                      <Text style={sStylesheet.nearbyDistText}>
-                        {getDistanceStr(
-                          currentLoc?.coords.latitude, 
-                          currentLoc?.coords.longitude, 
-                          p.currentLocation?.lat, 
-                          p.currentLocation?.lng
-                        )}
-                      </Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity 
-                    style={[sStylesheet.connectBtn, connected.includes(p.id) && sStylesheet.connectBtnActive]}
-                    onPress={() => toggleConnect(p.id)}
-                  >
-                    <Text style={[sStylesheet.connectBtnText, connected.includes(p.id) && sStylesheet.connectBtnTextActive]}>
-                      {connected.includes(p.id) ? '✓ Sent' : 'Connect'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
+            {nearby.map(p => (
+              <NearbyUserCard key={p.id} user={p} currentLoc={currentLoc} sStylesheet={sStylesheet} theme={theme} />
+            ))}
           </ScrollView>
         </View>
       )}
@@ -117,38 +201,15 @@ function DiscoverSection({ currentLoc }: { currentLoc: Location.LocationObject |
       {mutuals.length > 0 && (
         <View style={sStylesheet.discoverGroup}>
           <Text style={sStylesheet.discoverGroupTitle}>PEOPLE YOU MAY KNOW</Text>
-          <View style={{ paddingHorizontal: 20, gap: 12 }}>
-            {mutuals.map(p => {
-                const { styles: s } = useStyles(sStylesheet);
-
-              const avatar = p.avatar_url && !p.avatar_url.startsWith('file://') ? { uri: p.avatar_url } : null;
-              return (
-                <View key={p.id} style={sStylesheet.mutualRow}>
-                  <View style={sStylesheet.mutualAvatarWrap}>
-                    {avatar ? (
-                      <Image source={avatar} style={sStylesheet.mutualAvatar} contentFit="cover" />
-                    ) : (
-                      <View style={[sStylesheet.mutualAvatar, { backgroundColor: theme.colors.SURFACE, alignItems: 'center', justifyContent: 'center' }]}>
-                        <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'Outfit-Bold' }}>{(p.name || '?')[0].toUpperCase()}</Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={sStylesheet.mutualInfo}>
-                    <Text style={sStylesheet.mutualName}>{p.name}</Text>
-                    <Text style={sStylesheet.mutualSub}>@{p.name.replace(/\s+/g, '').toLowerCase()} · {p.location?.state || 'Lagos'}</Text>
-                    <Text style={sStylesheet.mutualMeta}>Followed by 1 mutual</Text>
-                  </View>
-                  <TouchableOpacity 
-                    style={[sStylesheet.connectBtnSmall, connected.includes(p.id) && sStylesheet.connectBtnActive]}
-                    onPress={() => toggleConnect(p.id)}
-                  >
-                    <Text style={[sStylesheet.connectBtnText, connected.includes(p.id) && sStylesheet.connectBtnTextActive]}>
-                      {connected.includes(p.id) ? '✓' : 'Connect'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
+          <View style={{ gap: 0 }}>
+            {mutuals.map(p => (
+              <DiscoverUserCard 
+                key={p.id} 
+                user={p} 
+                context="mutual" 
+                onPress={() => router.push(`/profile/${p.id}` as any)} 
+              />
+            ))}
           </View>
         </View>
       )}
@@ -157,35 +218,15 @@ function DiscoverSection({ currentLoc }: { currentLoc: Location.LocationObject |
       {sellers.length > 0 && (
         <View style={sStylesheet.discoverGroup}>
           <Text style={sStylesheet.discoverGroupTitle}>ACTIVE SELLERS</Text>
-          <View style={{ paddingHorizontal: 20, gap: 12 }}>
-            {sellers.map(p => {
-                const { styles: s } = useStyles(sStylesheet);
-
-              const avatar = p.avatar_url && !p.avatar_url.startsWith('file://') ? { uri: p.avatar_url } : null;
-              return (
-                <View key={p.id} style={sStylesheet.mutualRow}>
-                  <View style={sStylesheet.mutualAvatarWrap}>
-                    {avatar ? (
-                      <Image source={avatar} style={sStylesheet.mutualAvatar} contentFit="cover" />
-                    ) : (
-                      <View style={[sStylesheet.mutualAvatar, { backgroundColor: theme.colors.SURFACE, alignItems: 'center', justifyContent: 'center' }]}>
-                        <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'Outfit-Bold' }}>{(p.name || '?')[0].toUpperCase()}</Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={sStylesheet.mutualInfo}>
-                    <Text style={sStylesheet.mutualName}>{p.name}</Text>
-                    <Text style={sStylesheet.mutualSub}>Active seller · 3 listings</Text>
-                  </View>
-                  <TouchableOpacity 
-                    style={sStylesheet.viewBtnSmall}
-                    onPress={() => router.push(`/profile/${p.id}` as any)}
-                  >
-                    <Text style={sStylesheet.viewBtnText}>View</Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
+          <View style={{ gap: 0 }}>
+            {sellers.map(p => (
+              <DiscoverUserCard 
+                key={p.id} 
+                user={p} 
+                context="seller" 
+                onPress={() => router.push(`/profile/${p.id}` as any)} 
+              />
+            ))}
           </View>
         </View>
       )}
@@ -196,6 +237,7 @@ function DiscoverSection({ currentLoc }: { currentLoc: Location.LocationObject |
 // ─── MARKETPLACE SECTION ─────────────────────────────────────────────────────
 function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObject | null }) {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);
+    const { activeFilter } = useLocation();
 
   const router = useRouter();
   const [category, setCategory] = useState('All');
@@ -203,25 +245,86 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
   const [loading, setLoading] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
 
-  useEffect(() => {
-    async function fetchItems() {
-      let q = supabase.from('posts').select('*, user:users!posts_user_id_fkey(id,name,avatar_url)').eq('category', 'For Sale').or('is_sold.eq.false,is_sold.is.null');
-      if (category !== 'All') {
-        q = q.ilike('sub_category', `%${category}%`);
+  // Filter States
+  const [filterPriceMin, setFilterPriceMin] = useState('');
+  const [filterPriceMax, setFilterPriceMax] = useState('');
+  const [filterCondition, setFilterCondition] = useState('Any');
+  const [filterSort, setFilterSort] = useState('Newest');
+  const [filterDistance, setFilterDistance] = useState('Any'); // UI only for now
+
+  useFocusEffect(
+    useCallback(() => {
+      async function fetchItems() {
+        let q;
+        if (filterDistance !== 'Any' && currentLoc?.coords) {
+          let radius = 10000;
+          if (filterDistance === '5 km') radius = 5000;
+          else if (filterDistance === '10 km') radius = 10000;
+          else if (filterDistance === '25 km') radius = 25000;
+          else if (filterDistance === '50+ km') radius = 100000;
+
+          q = supabase.rpc('search_posts_by_distance', {
+            lat: currentLoc.coords.latitude,
+            lng: currentLoc.coords.longitude,
+            radius_meters: radius,
+            filter_category: category !== 'All' ? category : null,
+            filter_min_price: filterPriceMin ? parseInt(filterPriceMin) : null,
+            filter_max_price: filterPriceMax ? parseInt(filterPriceMax) : null,
+            filter_condition: filterCondition !== 'Any' ? filterCondition : null,
+            sort_order: filterSort
+          }).select('*, user:users!posts_user_id_fkey(id,name,avatar_url)');
+          
+          if (activeFilter) {
+            if (activeFilter.lga) {
+              q = q.eq('lga', activeFilter.lga);
+            } else if (activeFilter.state) {
+              q = q.eq('state', activeFilter.state);
+            }
+          }
+        } else {
+          q = supabase.from('posts').select('*, user:users!posts_user_id_fkey(id,name,avatar_url)').eq('category', 'For Sale').or('is_sold.eq.false,is_sold.is.null');
+          if (category !== 'All') {
+            q = q.ilike('sub_category', `%${category}%`);
+          }
+          if (activeFilter) {
+            if (activeFilter.lga) {
+              q = q.eq('lga', activeFilter.lga);
+            } else if (activeFilter.state) {
+              q = q.eq('state', activeFilter.state);
+            }
+          }
+          if (filterCondition !== 'Any') {
+            q = q.eq('condition', filterCondition);
+          }
+          if (filterPriceMin) {
+            q = q.gte('price', parseInt(filterPriceMin) || 0);
+          }
+          if (filterPriceMax) {
+            q = q.lte('price', parseInt(filterPriceMax) || 0);
+          }
+          
+          if (filterSort === 'Price: Low to High') {
+            q = q.order('price', { ascending: true, nullsFirst: false });
+          } else if (filterSort === 'Price: High to Low') {
+            q = q.order('price', { ascending: false, nullsFirst: false });
+          } else {
+            q = q.order('timestamp', { ascending: false });
+          }
+        }
+        
+        const { data } = await q.limit(40);
+        if (data) setItems(data as Post[]);
+        setLoading(false);
       }
-      const { data } = await q.limit(40).order('timestamp', { ascending: false });
-      if (data) setItems(data as Post[]);
-      setLoading(false);
-    }
-    fetchItems();
-  }, [category]);
+      fetchItems();
+    }, [category, activeFilter, filterCondition, filterPriceMin, filterPriceMax, filterSort, filterDistance, currentLoc])
+  );
 
   return (
     <View style={sStylesheet.sectionContainer}>
       <View style={sStylesheet.marketplaceToolbar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 20 }}>
           {CATS.map(cat => {
-          const { styles: s } = useStyles(sStylesheet);
           return (
                       <TouchableOpacity 
                         key={cat} 
@@ -249,7 +352,6 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
           columnWrapperStyle={{ justifyContent: 'space-between' }}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100, gap: 16 }}
           renderItem={({ item }) => {
-          const { styles: s } = useStyles(sStylesheet);
           return (
                       <TouchableOpacity style={sStylesheet.marketplaceCard} onPress={() => router.push(`/marketplace/${item.id}` as any)} activeOpacity={0.9}>
                         <View style={sStylesheet.marketplaceCardImgWrap}>
@@ -281,21 +383,86 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
         />
       )}
 
-      {/* Basic Filter Sheet placeholder - fully functional implementation will require Animated / Modal */}
+      {/* Basic Filter Sheet */}
       <Modal visible={showFilter} transparent animationType="slide">
         <View style={sStylesheet.sheetOverlay}>
           <TouchableWithoutFeedback onPress={() => setShowFilter(false)}><View style={{flex: 1}}/></TouchableWithoutFeedback>
-          <View style={sStylesheet.sheetContent}>
+          <View style={[sStylesheet.sheetContent, { maxHeight: '80%' }]}>
             <View style={sStylesheet.sheetHandle} />
             <View style={sStylesheet.sheetHeader}>
               <Text style={sStylesheet.sheetTitle}>Filters</Text>
-              <TouchableOpacity onPress={() => setShowFilter(false)}><Text style={sStylesheet.sheetReset}>Reset</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => {
+                setFilterPriceMin(''); setFilterPriceMax(''); setFilterCondition('Any'); setFilterSort('Newest'); setFilterDistance('Any');
+              }}>
+                <Text style={sStylesheet.sheetReset}>Reset</Text>
+              </TouchableOpacity>
             </View>
-            <View style={{ padding: 20 }}>
+            <ScrollView style={{ padding: 20 }}>
+              
+              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: '#fff', marginBottom: 12 }}>PRICE RANGE (₦)</Text>
+              <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
+                <TextInput
+                  style={{ flex: 1, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, paddingHorizontal: 12, height: 44, color: '#fff', fontFamily: 'Inter' }}
+                  placeholder="Min"
+                  placeholderTextColor={theme.colors.LABEL}
+                  keyboardType="numeric"
+                  value={filterPriceMin}
+                  onChangeText={setFilterPriceMin}
+                />
+                <TextInput
+                  style={{ flex: 1, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, paddingHorizontal: 12, height: 44, color: '#fff', fontFamily: 'Inter' }}
+                  placeholder="Max"
+                  placeholderTextColor={theme.colors.LABEL}
+                  keyboardType="numeric"
+                  value={filterPriceMax}
+                  onChangeText={setFilterPriceMax}
+                />
+              </View>
+
+              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: '#fff', marginBottom: 12 }}>CONDITION</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 24 }}>
+                {['Any', 'New', 'Used - Like New', 'Used - Good', 'Used - Fair'].map(c => (
+                  <TouchableOpacity 
+                    key={c} 
+                    onPress={() => setFilterCondition(c)}
+                    style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: filterCondition === c ? theme.colors.G : '#111', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: filterCondition === c ? theme.colors.G : theme.colors.GLASS_BORDER }}
+                  >
+                    <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: filterCondition === c ? '#050505' : '#fff' }}>{c}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: '#fff', marginBottom: 12 }}>SORT BY</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 24 }}>
+                {['Newest', 'Price: Low to High', 'Price: High to Low'].map(s => (
+                  <TouchableOpacity 
+                    key={s} 
+                    onPress={() => setFilterSort(s)}
+                    style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: filterSort === s ? theme.colors.G : '#111', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: filterSort === s ? theme.colors.G : theme.colors.GLASS_BORDER }}
+                  >
+                    <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: filterSort === s ? '#050505' : '#fff' }}>{s}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: '#fff', marginBottom: 12 }}>DISTANCE</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 40 }}>
+                {['Any', '5 km', '10 km', '25 km', '50+ km'].map(d => (
+                  <TouchableOpacity 
+                    key={d} 
+                    onPress={() => setFilterDistance(d)}
+                    style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: filterDistance === d ? 'rgba(130,219,126,0.1)' : '#111', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: filterDistance === d ? 'rgba(130,219,126,0.3)' : theme.colors.GLASS_BORDER }}
+                  >
+                    <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: filterDistance === d ? theme.colors.G : theme.colors.LABEL }}>{d}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
               <TouchableOpacity style={sStylesheet.applyBtn} onPress={() => setShowFilter(false)}>
                 <Text style={sStylesheet.applyBtnText}>Apply Filters</Text>
               </TouchableOpacity>
-            </View>
+              <View style={{ height: 40 }} />
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -303,9 +470,75 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
   );
 }
 
+function CatalogEventCard({ item, router, theme, sStylesheet }: any) {
+  const { user } = useAuth();
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (user && item.id) {
+      supabase.from('event_bookmarks')
+        .select('id')
+        .eq('event_id', item.id)
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => setSaved(!!data));
+    }
+  }, [user, item.id]);
+
+  const toggleSave = async () => {
+    if (!user) return;
+    const newSaved = !saved;
+    setSaved(newSaved);
+
+    if (newSaved) {
+      const { error } = await supabase.from('event_bookmarks').insert({ event_id: item.id, user_id: user.id });
+      if (error) setSaved(false);
+    } else {
+      const { error } = await supabase.from('event_bookmarks').delete().match({ event_id: item.id, user_id: user.id });
+      if (error) setSaved(true);
+    }
+  };
+
+  return (
+    <TouchableOpacity style={sStylesheet.eventCard} onPress={() => router.push(`/events/${item.id}` as any)} activeOpacity={0.9}>
+      <View style={sStylesheet.eventCardImgWrap}>
+        <Image source={{ uri: item.cover_image_url || item.image_url }} style={sStylesheet.eventCardImg} contentFit="cover" />
+        <View style={sStylesheet.eventCardGradient} />
+        <View style={sStylesheet.eventCardDate}>
+          <Text style={sStylesheet.eventCardDateText}>{new Date(item.start_time || item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</Text>
+        </View>
+        <TouchableOpacity style={sStylesheet.eventCardSave} onPress={toggleSave}>
+          <Ionicons name={saved ? "bookmark" : "bookmark-outline"} size={16} color={saved ? theme.colors.G : "#fff"} />
+        </TouchableOpacity>
+        <View style={sStylesheet.eventCardPrice}>
+          <Text style={sStylesheet.eventCardPriceText}>{item.is_free ? 'FREE' : item.price ? formatPrice(item.price) : 'TICKETS'}</Text>
+        </View>
+      </View>
+      <View style={sStylesheet.eventCardInfo}>
+        <Text style={sStylesheet.eventCardTitle} numberOfLines={1}>{item.title}</Text>
+        <View style={sStylesheet.eventCardMetaRow}>
+          <View style={sStylesheet.eventCardMetaItem}>
+            <Ionicons name="time-outline" size={12} color={theme.colors.LABEL} />
+            <Text style={sStylesheet.eventCardMetaText}>{item.start_time ? new Date(item.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (item.time || '10:00 AM')}</Text>
+          </View>
+          <View style={sStylesheet.eventCardMetaItem}>
+            <Ionicons name="location-outline" size={12} color={theme.colors.LABEL} />
+            <Text style={sStylesheet.eventCardMetaText}>{item.location_address || item.location || 'Location TBA'}</Text>
+          </View>
+          <View style={sStylesheet.eventCardMetaItem}>
+            <Ionicons name="people-outline" size={12} color={theme.colors.LABEL} />
+            <Text style={sStylesheet.eventCardMetaText}>{item.attendees?.length || 0} going</Text>
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 // ─── EVENTS SECTION ──────────────────────────────────────────────────────────
 function EventsSection({ currentLoc }: { currentLoc: Location.LocationObject | null }) {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);
+    const { activeFilter } = useLocation();
 
   const router = useRouter();
   const [events, setEvents] = useState<any[]>([]);
@@ -313,21 +546,44 @@ function EventsSection({ currentLoc }: { currentLoc: Location.LocationObject | n
   const EVENT_FILTERS = ['All', 'Today', 'This Week', 'Weekend', 'Community', 'Music', 'Food', 'Sports'];
   const [filter, setFilter] = useState('All');
 
-  useEffect(() => {
-    async function fetchEvents() {
-      const { data } = await supabase.from('events').select('*').limit(20).order('date', { ascending: true });
-      if (data) setEvents(data);
-      setLoading(false);
-    }
-    fetchEvents();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      async function fetchEvents() {
+        // Only fetch events from today onwards
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let q = supabase.from('events')
+          .select('*')
+          .gte('start_time', today.toISOString())
+          .limit(20)
+          .order('start_time', { ascending: true });
+        
+        if (activeFilter) {
+          if (activeFilter.lga) {
+            q = q.eq('lga', activeFilter.lga);
+          } else if (activeFilter.state) {
+            q = q.eq('state', activeFilter.state);
+          }
+        }
+        // TODO: implement specific date filters based on selected filter state if needed
+
+        const { data, error } = await q;
+        if (data) {
+          setEvents(data);
+        } else {
+          console.log('Error fetching events:', error);
+        }
+        setLoading(false);
+      }
+      fetchEvents();
+    }, [filter, activeFilter])
+  );
 
   return (
     <View style={sStylesheet.sectionContainer}>
       <View style={sStylesheet.eventsToolbar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}>
           {EVENT_FILTERS.map(f => {
-          const { styles: s } = useStyles(sStylesheet);
           return (
                       <TouchableOpacity 
                         key={f} 
@@ -350,41 +606,7 @@ function EventsSection({ currentLoc }: { currentLoc: Location.LocationObject | n
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100, gap: 16 }}
           renderItem={({ item }) => {
-          const { styles: s } = useStyles(sStylesheet);
-          return (
-                      <TouchableOpacity style={sStylesheet.eventCard} onPress={() => router.push(`/events/${item.id}` as any)} activeOpacity={0.9}>
-                        <View style={sStylesheet.eventCardImgWrap}>
-                          <Image source={{ uri: item.image_url }} style={sStylesheet.eventCardImg} contentFit="cover" />
-                          <View style={sStylesheet.eventCardGradient} />
-                          <View style={sStylesheet.eventCardDate}>
-                            <Text style={sStylesheet.eventCardDateText}>{new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</Text>
-                          </View>
-                          <View style={sStylesheet.eventCardSave}>
-                            <Ionicons name="bookmark-outline" size={16} color="#fff" />
-                          </View>
-                          <View style={sStylesheet.eventCardPrice}>
-                            <Text style={sStylesheet.eventCardPriceText}>{item.is_free ? 'FREE' : formatPrice(item.price || 0)}</Text>
-                          </View>
-                        </View>
-                        <View style={sStylesheet.eventCardInfo}>
-                          <Text style={sStylesheet.eventCardTitle} numberOfLines={1}>{item.title}</Text>
-                          <View style={sStylesheet.eventCardMetaRow}>
-                            <View style={sStylesheet.eventCardMetaItem}>
-                              <Ionicons name="time-outline" size={12} color={theme.colors.LABEL} />
-                              <Text style={sStylesheet.eventCardMetaText}>{item.time || '10:00 AM'}</Text>
-                            </View>
-                            <View style={sStylesheet.eventCardMetaItem}>
-                              <Ionicons name="location-outline" size={12} color={theme.colors.LABEL} />
-                              <Text style={sStylesheet.eventCardMetaText}>{item.location || 'Lagos'}</Text>
-                            </View>
-                            <View style={sStylesheet.eventCardMetaItem}>
-                              <Ionicons name="people-outline" size={12} color={theme.colors.LABEL} />
-                              <Text style={sStylesheet.eventCardMetaText}>{item.attendees?.length || 0} going</Text>
-                            </View>
-                          </View>
-                        </View>
-                      </TouchableOpacity>
-                    );
+          return <CatalogEventCard item={item} router={router} theme={theme} sStylesheet={sStylesheet} />;
           }}
         />
       )}
@@ -395,6 +617,7 @@ function EventsSection({ currentLoc }: { currentLoc: Location.LocationObject | n
 // ─── PLACES SECTION ──────────────────────────────────────────────────────────
 function PlacesSection({ currentLoc }: { currentLoc: Location.LocationObject | null }) {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);
+    const { activeFilter } = useLocation();
 
   const router = useRouter();
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -402,25 +625,34 @@ function PlacesSection({ currentLoc }: { currentLoc: Location.LocationObject | n
   const PLACE_CATS = ['All', 'Restaurants', 'Cafés', 'Shopping', 'Beauty', 'Health', 'Services', 'Gyms'];
   const [category, setCategory] = useState('All');
 
-  useEffect(() => {
-    async function fetchPlaces() {
-      let q = supabase.from('businesses').select('*');
-      if (category !== 'All') {
-        q = q.ilike('category', `%${category}%`);
+  useFocusEffect(
+    useCallback(() => {
+      async function fetchPlaces() {
+        let q = supabase.from('businesses').select('*');
+        if (category !== 'All') {
+          const searchCategory = category === 'Cafés' ? 'Cafe' : category;
+          q = q.ilike('category', `%${searchCategory}%`);
+        }
+        if (activeFilter) {
+          if (activeFilter.lga) {
+            q = q.eq('lga', activeFilter.lga);
+          } else if (activeFilter.state) {
+            q = q.eq('state', activeFilter.state);
+          }
+        }
+        const { data } = await q.limit(20);
+        if (data) setBusinesses(data as Business[]);
+        setLoading(false);
       }
-      const { data } = await q.limit(20);
-      if (data) setBusinesses(data as Business[]);
-      setLoading(false);
-    }
-    fetchPlaces();
-  }, [category]);
+      fetchPlaces();
+    }, [category, activeFilter])
+  );
 
   return (
     <View style={sStylesheet.sectionContainer}>
       <View style={sStylesheet.eventsToolbar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}>
           {PLACE_CATS.map(c => {
-          const { styles: s } = useStyles(sStylesheet);
           return (
                       <TouchableOpacity 
                         key={c} 
@@ -443,7 +675,6 @@ function PlacesSection({ currentLoc }: { currentLoc: Location.LocationObject | n
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100, gap: 12 }}
           renderItem={({ item }) => {
-          const { styles: s } = useStyles(sStylesheet);
           return (
                       <TouchableOpacity style={sStylesheet.placeRow} onPress={() => router.push(`/businesses/${item.id}` as any)} activeOpacity={0.9}>
                         <View style={sStylesheet.placePhotoWrap}>
@@ -453,8 +684,10 @@ function PlacesSection({ currentLoc }: { currentLoc: Location.LocationObject | n
                           <View style={sStylesheet.placeTitleRow}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1 }}>
                               <Text style={sStylesheet.placeName} numberOfLines={1}>{item.name}</Text>
-                              {/* Placeholder for verified badge */}
-                              <Ionicons name="checkmark-circle" size={14} color={theme.colors.G} />
+                              {/* Verification badge strictly bound to phone_verified */}
+                              {(item as any).phone_verified && (
+                                <Ionicons name="checkmark-circle" size={14} color={theme.colors.G} />
+                              )}
                             </View>
                             <Ionicons name="heart-outline" size={16} color={theme.colors.LABEL} style={{ marginLeft: 8 }} />
                           </View>
@@ -462,7 +695,7 @@ function PlacesSection({ currentLoc }: { currentLoc: Location.LocationObject | n
                           <View style={sStylesheet.placeMetaRow}>
                             <View style={sStylesheet.placeMetaItem}>
                               <Ionicons name="star" size={12} color={theme.colors.GOLD} />
-                              <Text style={sStylesheet.placeRating}>{item.rating?.toFixed(1) || '4.0'}</Text>
+                              <Text style={sStylesheet.placeRating}>{item.rating?.toFixed(1) || '0.0'}</Text>
                             </View>
                             <Text style={sStylesheet.placeDistText}>
                               {getDistanceStr(
@@ -508,12 +741,26 @@ export default function CatalogTab() {
     })();
   }, []);
 
-  const formattedLocation = useMemo(() => {
-    if (!profile?.location) return 'Victoria Island, Lagos';
-    const loc = profile.location;
-    const parts = [loc.ward || loc.city, loc.lga, loc.state].filter(Boolean);
-    return parts.length > 0 ? parts.join(', ') : 'Neighbourhood';
-  }, [profile?.location]);
+  const { displayLabel, activeFilter, setGlobalFilter } = useLocation();
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [tempLoc, setTempLoc] = useState<LocationValue>({
+    state: activeFilter.state || '',
+    lga: activeFilter.lga || '',
+  });
+
+  const handleApplyLocation = () => {
+    setGlobalFilter({
+      state: tempLoc.state || undefined,
+      lga: tempLoc.lga || undefined,
+      ward: undefined,
+    });
+    setShowLocationPicker(false);
+  };
+
+  const handleClearLocation = () => {
+    setGlobalFilter({ state: undefined, lga: undefined, ward: undefined });
+    setShowLocationPicker(false);
+  };
 
   return (
     <View style={[sStylesheet.root, { backgroundColor: theme.colors.DARK, paddingTop: insets.top }]}>
@@ -546,10 +793,11 @@ export default function CatalogTab() {
           <>
             <View>
               <Text style={sStylesheet.title}>Explore</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              <TouchableOpacity onPress={() => setShowLocationPicker(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                 <Ionicons name="location-outline" size={13} color={theme.colors.LABEL} />
-                <Text style={sStylesheet.subtitle}>{formattedLocation}</Text>
-              </View>
+                <Text style={sStylesheet.subtitle}>{displayLabel}</Text>
+                <Ionicons name="chevron-down" size={13} color={theme.colors.LABEL} />
+              </TouchableOpacity>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <TouchableOpacity style={sStylesheet.headerIconBtn} onPress={() => setShowSearch(true)}>
@@ -572,8 +820,6 @@ export default function CatalogTab() {
           contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingBottom: 16 }}
         >
           {TABS.map((tab) => {
-              const { styles: s } = useStyles(sStylesheet);
-
             const isSelected = activeTab === tab.key;
             return (
               <TouchableOpacity
@@ -591,11 +837,47 @@ export default function CatalogTab() {
       </View>
 
       {/* ── Tab Content ── */}
-      {activeTab === 'Discover' && <DiscoverSection currentLoc={currentLoc} />}
+      {activeTab === 'Discover' && <DiscoverSection currentLoc={currentLoc} search={search} />}
       {activeTab === 'Marketplace' && <MarketplaceSection currentLoc={currentLoc} />}
       {activeTab === 'Events' && <EventsSection currentLoc={currentLoc} />}
       {activeTab === 'Businesses' && <PlacesSection currentLoc={currentLoc} />}
 
+      <Modal visible={showLocationPicker} animationType="slide" transparent>
+        <View style={sStylesheet.modalContainer}>
+          <View style={sStylesheet.modalContent}>
+            <View style={sStylesheet.modalHeader}>
+              <Text style={sStylesheet.modalTitle}>Set Your Location</Text>
+              <TouchableOpacity onPress={() => setShowLocationPicker(false)}>
+                <Ionicons name="close" size={24} color={theme.colors.TEXT_PRIMARY} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={{ flex: 1 }}>
+              <LocationPicker 
+                value={tempLoc}
+                onChange={(loc) => setTempLoc(loc)}
+              />
+            </View>
+
+            <View style={sStylesheet.modalFooter}>
+              <TouchableOpacity 
+                style={[sStylesheet.modalBtn, { backgroundColor: theme.colors.SURFACE }]} 
+                onPress={handleClearLocation}
+              >
+                <Text style={[sStylesheet.modalBtnText, { color: theme.colors.TEXT_PRIMARY }]}>All Nigeria</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[sStylesheet.modalBtn, { backgroundColor: theme.colors.G }]} 
+                onPress={handleApplyLocation}
+                disabled={!tempLoc.state}
+              >
+                <Text style={[sStylesheet.modalBtnText, { color: theme.colors.DARK, opacity: tempLoc.state ? 1 : 0.5 }]}>Apply Filter</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -611,6 +893,13 @@ const stylesheet = createStyleSheet(theme => ({
         paddingTop: 12,
         paddingBottom: 16,
       },
+      modalContainer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+      modalContent: { backgroundColor: theme.colors.DARK, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, height: '80%' },
+      modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+      modalTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      modalFooter: { flexDirection: 'row', gap: 12, marginTop: 20, paddingBottom: 20 },
+      modalBtn: { flex: 1, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
+      modalBtnText: { fontFamily: 'Outfit-Bold', fontSize: 15 },
       title: { fontFamily: 'Outfit-ExtraBold', fontSize: 24, color: '#FFFFFF' },
       subtitle: { fontFamily: 'Inter-Medium', fontSize: 13, color: theme.colors.LABEL },
       headerIconBtn: {
@@ -656,7 +945,7 @@ const stylesheet = createStyleSheet(theme => ({
       },
       nearbyAvatarWrap: {
         width: 68, height: 68, borderRadius: 34,
-        borderWidth: 2, borderColor: 'rgba(130,219,126,0.25)', overflow: 'hidden',
+        overflow: 'hidden',
         marginBottom: 12,
       },
       nearbyAvatar: { width: '100%', height: '100%' },

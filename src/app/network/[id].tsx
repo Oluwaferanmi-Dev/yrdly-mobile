@@ -15,7 +15,7 @@ export default function NetworkScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
   const { id, mode = 'followers' } = useLocalSearchParams<{ id: string; mode: 'followers' | 'following' }>();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, profile: currentProfile } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'followers' | 'following'>(mode as 'followers' | 'following');
   const [users, setUsers] = useState<any[]>([]);
@@ -61,11 +61,11 @@ export default function NetworkScreen() {
           
           setUsers(usersData || []);
 
-          if (currentUser) {
+          if (currentProfile) {
             // Fetch current user's follow status with these users
             const [{ data: followingData }, { data: followersData }] = await Promise.all([
-              supabase.from('followers').select('following_id').eq('follower_id', currentUser.id).in('following_id', userIds),
-              supabase.from('followers').select('follower_id').eq('following_id', currentUser.id).in('follower_id', userIds)
+              supabase.from('followers').select('following_id').eq('follower_id', currentProfile.id).in('following_id', userIds),
+              supabase.from('followers').select('follower_id').eq('following_id', currentProfile.id).in('follower_id', userIds)
             ]);
             
             if (followingData) {
@@ -90,7 +90,7 @@ export default function NetworkScreen() {
   }, [id, activeTab, currentUser]);
 
   const handleToggleFollow = async (targetId: string) => {
-    if (!currentUser) return;
+    if (!currentUser || !currentProfile) return;
     setActionLoading(prev => ({ ...prev, [targetId]: true }));
     
     try {
@@ -99,7 +99,7 @@ export default function NetworkScreen() {
       if (isFollowing) {
         await supabase.from('followers')
           .delete()
-          .eq('follower_id', currentUser.id)
+          .eq('follower_id', currentProfile.id)
           .eq('following_id', targetId);
           
         setCurrentUserFollowing(prev => {
@@ -109,7 +109,7 @@ export default function NetworkScreen() {
         });
       } else {
         await supabase.from('followers')
-          .insert({ follower_id: currentUser.id, following_id: targetId });
+          .insert({ follower_id: currentProfile.id, following_id: targetId });
           
         setCurrentUserFollowing(prev => {
           const next = new Set(prev);
@@ -126,7 +126,7 @@ export default function NetworkScreen() {
 
   const renderUser = ({ item }: { item: any }) => {
 
-    const isCurrentUser = currentUser?.id === item.id;
+    const isCurrentUser = currentProfile?.id === item.id;
     const isFollowing = currentUserFollowing.has(item.id);
     const isFollower = currentUserFollowers.has(item.id);
     

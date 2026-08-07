@@ -96,11 +96,14 @@ function RootNavigationGuard() {
       const needsProfile = !profile.profile_completed;
 
       if (needsProfile) {
-        if (!inOnboarding && !inAuth) router.replace('/(onboarding)/profile1' as any);
+        if (!inOnboarding) {
+          router.replace('/(onboarding)/profile1' as any);
+        }
       } else {
         // Onboarding complete — redirect out of auth/onboarding/root to tabs
         const isRoot = (segments as any).length === 0 || (segments[0] as string) === 'index' || (segments[0] as string) === '';
-        if (inAuth || inOnboarding || isRoot) {
+        const isResetPassword = (segments[0] === '(auth)' || segments[0] === 'auth') && segments[1] === 'reset-password';
+        if (!isResetPassword && (inAuth || inOnboarding || isRoot)) {
           router.replace('/(tabs)');
         }
       }

@@ -192,7 +192,7 @@ export default function ProfileTab() {
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16, marginBottom: 16 }}>
             {/* Avatar with ring */}
             <View style={{ position: 'relative' }}>
-              <View style={{ width: 80, height: 80, borderRadius: 40, padding: 3, borderWidth: 2, borderColor: theme.colors.G, justifyContent: 'center', alignItems: 'center' }}>
+              <View style={{ width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center' }}>
                 <View style={{ width: '100%', height: '100%', borderRadius: 40, overflow: 'hidden', backgroundColor: theme.colors.DARK }}>
                   {avatarUri ? (
                     <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" />

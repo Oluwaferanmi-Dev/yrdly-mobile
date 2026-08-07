@@ -243,14 +243,13 @@ function MarketplaceDetailContent() {
       if (!user || !post) return;
       const newBookmarked = !isBookmarked;
       setIsBookmarked(newBookmarked);
-      try {
-        if (newBookmarked) {
-          await supabase.from('post_bookmarks').insert({ post_id: post.id, user_id: user.id });
-        } else {
-          await supabase.from('post_bookmarks').delete().match({ post_id: post.id, user_id: user.id });
-        }
-      } catch (e) {
-        setIsBookmarked(!newBookmarked);
+      
+      if (newBookmarked) {
+        const { error } = await supabase.from('post_bookmarks').insert({ post_id: post.id, user_id: user.id });
+        if (error) setIsBookmarked(false);
+      } else {
+        const { error } = await supabase.from('post_bookmarks').delete().match({ post_id: post.id, user_id: user.id });
+        if (error) setIsBookmarked(true);
       }
     };
 
@@ -527,13 +526,22 @@ function MarketplaceDetailContent() {
                  <TouchableOpacity onPress={() => router.push(`/profile/${post.user_id}` as any)}>
                    <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 14, color: '#fff' }}>{postUser?.name || post.author_name || 'Unknown Seller'}</Text>
                  </TouchableOpacity>
-                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 2 }}>
-                   <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
-                   <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
-                   <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
-                   <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
-                   <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
-                   <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL, marginLeft: 2 }}>Trusted seller</Text>
+                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                   {(postUser as any)?.review_count > 0 ? (
+                     <>
+                       <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
+                       <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: '#fff' }}>
+                         {Number((postUser as any)?.rating || 0).toFixed(1)}
+                       </Text>
+                       <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL }}>
+                         ({(postUser as any)?.review_count} reviews)
+                       </Text>
+                     </>
+                   ) : (
+                     <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL }}>
+                       No ratings yet
+                     </Text>
+                   )}
                  </View>
                </View>
                <TouchableOpacity 

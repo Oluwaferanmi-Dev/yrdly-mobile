@@ -174,17 +174,18 @@ export default function EventDetailScreen() {
         
         if (user) {
           // Check bookmark
-          const { data: bData } = await supabase.from('event_bookmarks').select('id').eq('user_id', user.id).eq('event_id', data.id).maybeSingle();
+          if (!user || !profile) return;
+          const { data: bData } = await supabase.from('event_bookmarks').select('id').eq('user_id', profile.id).eq('event_id', data.id).maybeSingle();
           setIsBookmarked(!!bData);
 
           // Check follow
           if (data.organizer_id) {
-            const { data: fData } = await supabase.from('followers').select('id').eq('follower_id', user.id).eq('following_id', data.organizer_id).maybeSingle();
+            const { data: fData } = await supabase.from('followers').select('id').eq('follower_id', profile.id).eq('following_id', data.organizer_id).maybeSingle();
             setIsFollowingOrganizer(!!fData);
           }
 
           // Check if user has tickets
-          const { data: tData } = await supabase.from('tickets').select('id').eq('buyer_id', user.id).eq('event_id', data.id).limit(1);
+          const { data: tData } = await supabase.from('tickets').select('id').eq('buyer_id', profile.id).eq('event_id', data.id).limit(1);
           if (tData && tData.length > 0) {
             setUserHasTickets(true);
           }
@@ -239,32 +240,30 @@ export default function EventDetailScreen() {
   };
 
   const handleBookmark = async () => {
-    if (!user || !event) return;
+    if (!user || !profile || !event) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    try {
-      if (isBookmarked) {
-        setIsBookmarked(false);
-        await supabase.from('event_bookmarks').delete().match({ user_id: user.id, event_id: event.id });
-      } else {
-        setIsBookmarked(true);
-        await supabase.from('event_bookmarks').insert({ user_id: user.id, event_id: event.id });
-      }
-    } catch (e) {
-      console.error(e);
-      setIsBookmarked(!isBookmarked); // Revert on failure
+    const newBookmarked = !isBookmarked;
+    setIsBookmarked(newBookmarked);
+    
+    if (newBookmarked) {
+      const { error } = await supabase.from('event_bookmarks').insert({ user_id: profile.id, event_id: event.id });
+      if (error) setIsBookmarked(false);
+    } else {
+      const { error } = await supabase.from('event_bookmarks').delete().match({ user_id: profile.id, event_id: event.id });
+      if (error) setIsBookmarked(true);
     }
   };
 
   const handleFollow = async () => {
-    if (!user || !event?.organizer_id) return;
+    if (!user || !profile || !event?.organizer_id) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       if (isFollowingOrganizer) {
         setIsFollowingOrganizer(false);
-        await supabase.from('followers').delete().match({ follower_id: user.id, following_id: event.organizer_id });
+        await supabase.from('followers').delete().match({ follower_id: profile.id, following_id: event.organizer_id });
       } else {
         setIsFollowingOrganizer(true);
-        await supabase.from('followers').insert({ follower_id: user.id, following_id: event.organizer_id });
+        await supabase.from('followers').insert({ follower_id: profile.id, following_id: event.organizer_id });
       }
     } catch (e) {
       console.error(e);
@@ -398,7 +397,7 @@ export default function EventDetailScreen() {
   if (!event) {
     return (
       <SafeAreaView style={[stylesheet.centerContainer, { backgroundColor: theme.colors.DARK }]}>
-        <Text style={[stylesheet.errorText, { color: theme.colors.TEXT_PRIMARY }]}>Event not found</Text>
+        <Text style={[stylesheet.errorText, { color: theme.colors.TEXT_PRIMARY }]}>Event unavailable or deleted</Text>
         <TouchableOpacity style={[stylesheet.backBtnWrapper, { backgroundColor: theme.colors.SURFACE }]} onPress={() => router.back()}>
           <Text style={[stylesheet.backBtnText, { color: theme.colors.TEXT_PRIMARY }]}>Go Back</Text>
         </TouchableOpacity>
@@ -596,18 +595,56 @@ export default function EventDetailScreen() {
                   <Text style={[stylesheet.sellerName, { color: theme.colors.TEXT_PRIMARY, flexShrink: 1 }]} numberOfLines={1}>
                     {event.organizer?.name || 'Unknown Organizer'}
                   </Text>
-                  <Ionicons name="checkmark-circle" size={16} color={theme.colors.G} style={{ marginLeft: 4, flexShrink: 0 }} />
+                  {(event.organizer as any)?.phone_verified && (
+                    <Ionicons name="checkmark-circle" size={16} color={theme.colors.G} style={{ marginLeft: 4, flexShrink: 0 }} />
+                  )}
                 </View>
               </View>
               {!isOwner && (
-                <TouchableOpacity 
-                  style={[stylesheet.followBtn, { backgroundColor: isFollowingOrganizer ? theme.colors.SURFACE : theme.colors.G }]}
-                  onPress={(e) => { e.stopPropagation(); handleFollow(); }}
-                >
-                  <Text style={[stylesheet.followBtnText, { color: isFollowingOrganizer ? theme.colors.TEXT_PRIMARY : '#FFF' }]}>
-                    {isFollowingOrganizer ? 'Following' : 'Follow'}
-                  </Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <TouchableOpacity 
+                    style={[stylesheet.followBtn, { backgroundColor: theme.colors.SURFACE, width: 36, paddingHorizontal: 0, justifyContent: 'center' }]}
+                    onPress={async (e) => {
+                      e.stopPropagation();
+                      if (!user || !event.organizer_id) return;
+                      try {
+                        const { data: convs } = await supabase
+                          .from('conversations')
+                          .select('id, type, participant_ids, item_id')
+                          .eq('item_id', event.id)
+                          .order('created_at', { ascending: true });
+                        const existing = convs?.find(c => c.type === 'event' && c.item_id === event.id && c.participant_ids?.includes(user.id) && c.participant_ids?.includes(event.organizer_id));
+                        if (existing?.id) {
+                          router.push({ pathname: '/chat/[id]', params: { id: existing.id } });
+                        } else {
+                          router.push({ 
+                            pathname: '/chat/[id]', 
+                            params: { 
+                              id: 'new',
+                              type: 'event',
+                              participant_id: event.organizer_id,
+                              item_id: event.id,
+                              item_title: event.title || 'Event',
+                              item_image: event.image_url || '',
+                            } 
+                          });
+                        }
+                      } catch (err) {
+                        console.error('Error starting chat', err);
+                      }
+                    }}
+                  >
+                    <Ionicons name="chatbubble-outline" size={16} color={theme.colors.LABEL} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[stylesheet.followBtn, { backgroundColor: isFollowingOrganizer ? theme.colors.SURFACE : theme.colors.G }]}
+                    onPress={(e) => { e.stopPropagation(); handleFollow(); }}
+                  >
+                    <Text style={[stylesheet.followBtnText, { color: isFollowingOrganizer ? theme.colors.TEXT_PRIMARY : '#FFF' }]}>
+                      {isFollowingOrganizer ? 'Following' : 'Follow'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               )}
               {isOwner && <Feather name="chevron-right" size={20} color={theme.colors.LABEL} />}
             </View>

@@ -1,5 +1,5 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   StyleSheet, View, Text, TouchableOpacity, Animated, Share, Dimensions,
 } from 'react-native';
@@ -84,12 +84,33 @@ export function EventCardCompact({ event, onPress }: EventCardProps) {
   const onPressIn = () => Animated.spring(pressScale, { toValue: 0.96, useNativeDriver: true, speed: 50 }).start();
   const onPressOut = () => Animated.spring(pressScale, { toValue: 1, useNativeDriver: true, speed: 50 }).start();
 
-  const toggleSave = () => {
-    setSaved(s => !s);
+  useEffect(() => {
+    if (user && event.id) {
+      supabase.from('event_bookmarks')
+        .select('id')
+        .eq('event_id', event.id)
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => setSaved(!!data));
+    }
+  }, [user, event.id]);
+
+  const toggleSave = async () => {
+    if (!user) return;
+    const newSaved = !saved;
+    setSaved(newSaved);
     Animated.sequence([
       Animated.spring(heartScale, { toValue: 1.4, useNativeDriver: true, speed: 40 }),
       Animated.spring(heartScale, { toValue: 1.0, useNativeDriver: true, speed: 40 }),
     ]).start();
+
+    if (newSaved) {
+      const { error } = await supabase.from('event_bookmarks').insert({ event_id: event.id, user_id: user.id });
+      if (error) setSaved(false);
+    } else {
+      const { error } = await supabase.from('event_bookmarks').delete().match({ event_id: event.id, user_id: user.id });
+      if (error) setSaved(true);
+    }
   };
 
   return (
@@ -185,12 +206,33 @@ export function EventCard({ event, onPress }: EventCardProps) {
   const dateInfo = event.event_date ? fmtDate(event.event_date) : null;
   const location = getLocation(event.event_location);
 
-  const toggleSave = () => {
-    setSaved(s => !s);
+  useEffect(() => {
+    if (user && event.id) {
+      supabase.from('event_bookmarks')
+        .select('id')
+        .eq('event_id', event.id)
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => setSaved(!!data));
+    }
+  }, [user, event.id]);
+
+  const toggleSave = async () => {
+    if (!user) return;
+    const newSaved = !saved;
+    setSaved(newSaved);
     Animated.sequence([
       Animated.spring(heartScale, { toValue: 1.4, useNativeDriver: true, speed: 40 }),
       Animated.spring(heartScale, { toValue: 1.0, useNativeDriver: true, speed: 40 }),
     ]).start();
+
+    if (newSaved) {
+      const { error } = await supabase.from('event_bookmarks').insert({ event_id: event.id, user_id: user.id });
+      if (error) setSaved(false);
+    } else {
+      const { error } = await supabase.from('event_bookmarks').delete().match({ event_id: event.id, user_id: user.id });
+      if (error) setSaved(true);
+    }
   };
 
   const handleShare = async () => {

@@ -13,6 +13,8 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { StorageService, MobileFile } from '../lib/storage-service';
 import { MarketplaceItemCard } from '../components/MarketplaceItemCard';
 import { ImageCarousel } from '../components/ImageCarousel';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { formatPrice } from '../lib/utils';
 
 const STEPS = ['Photos', 'Details', 'Description', 'Review'];
 const CATEGORIES = ['Fashion', 'Electronics', 'Home & Living', 'Vehicles', 'Food', 'Gaming', 'Books', 'Beauty', 'Services', 'Other'];
@@ -26,6 +28,7 @@ export default function CreateForSaleScreen() {
   const { user, profile } = useAuth();
   const [step, setStep] = useState(0);
 
+  const [listingType, setListingType] = useState('For Sale');
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
@@ -34,8 +37,14 @@ export default function CreateForSaleScreen() {
   const [desc, setDesc] = useState('');
   
   const [attachedFiles, setAttachedFiles] = useState<MobileFile[]>([]);
+  const [coverIndex, setCoverIndex] = useState(0);
   const [listing, setListing] = useState(false);
   const [listed, setListed] = useState(false);
+
+  const [postState, setPostState] = useState('');
+  const [postLga, setPostLga] = useState('');
+  const [postLat, setPostLat] = useState<number | null>(null);
+  const [postLng, setPostLng] = useState<number | null>(null);
 
   const progress = useSharedValue(0.25);
 
@@ -47,7 +56,11 @@ export default function CreateForSaleScreen() {
   React.useEffect(() => {
     if (profile?.location) {
       const locStr = [profile.location.ward, profile.location.lga, profile.location.state].filter(Boolean).join(', ');
-      if (locStr) setLocation(locStr);
+      if (locStr) {
+        setLocation(locStr);
+        setPostState(profile.location.state || '');
+        setPostLga(profile.location.lga || '');
+      }
     }
   }, [profile]);
 
@@ -86,7 +99,7 @@ export default function CreateForSaleScreen() {
 
   const canNext = [
     true,
-    title.trim() && price.trim() && category && condition,
+    title.trim() && (listingType === 'Giveaway' || price.trim()) && category && condition,
     desc.trim(),
     true,
   ][step];
@@ -105,13 +118,16 @@ export default function CreateForSaleScreen() {
       try {
         let imageUrls: string[] = [];
         if (attachedFiles.length > 0) {
+          const filesToUpload = [...attachedFiles];
+          if (coverIndex > 0 && coverIndex < filesToUpload.length) {
+            const cover = filesToUpload.splice(coverIndex, 1)[0];
+            filesToUpload.unshift(cover);
+          }
           const uploadedImages = await Promise.all(
-            attachedFiles.map((file) => StorageService.uploadPostImage(user.id, file))
+            filesToUpload.map((file) => StorageService.uploadPostImage(user.id, file))
           );
           imageUrls = uploadedImages.map(res => res.url).filter(Boolean) as string[];
         }
-
-        const userLoc = profile.location as { state?: string; lga?: string; ward?: string } | undefined;
 
         const { error } = await supabase
           .from('posts')
@@ -119,17 +135,18 @@ export default function CreateForSaleScreen() {
             user_id: user.id,
             author_name: profile.name || 'Seller',
             author_image: profile.avatar_url || '',
-            category: 'For Sale',
+            category: listingType === 'Giveaway' ? 'Giveaway' : 'For Sale',
             sub_category: category,
             title: title.trim(),
             text: desc.trim(),
-            price: parseFloat(price) || 0,
+            price: listingType === 'Giveaway' ? 0 : parseFloat(price) || 0,
             condition: condition,
             image_urls: imageUrls,
             is_sold: false,
-            state: userLoc?.state || null,
-            lga: userLoc?.lga || null,
-            ward: userLoc?.ward || null,
+            state: postState || null,
+            lga: postLga || null,
+            ward: null,
+            location_geom: postLat !== null && postLng !== null ? `POINT(${postLng} ${postLat})` : null,
             timestamp: new Date().toISOString(),
             liked_by: [],
             comment_count: 0,
@@ -204,20 +221,28 @@ export default function CreateForSaleScreen() {
             <Text style={stylesheet.stepDesc}>First photo becomes your listing cover.</Text>
             <View style={stylesheet.photosGrid}>
               {attachedFiles.map((file, i) => (
-                <View key={i} style={[stylesheet.photoBox, i === 0 && { borderWidth: 2, borderColor: theme.colors.G }]}>
+                <TouchableOpacity 
+                  key={i} 
+                  onPress={() => setCoverIndex(i)}
+                  style={[stylesheet.photoBox, i === coverIndex && { borderWidth: 2, borderColor: theme.colors.G }]}
+                >
                   <Image source={{ uri: file.uri }} style={stylesheet.photoImg} />
-                  {i === 0 && (
+                  {i === coverIndex && (
                     <View style={stylesheet.coverBadge}>
                       <Text style={stylesheet.coverBadgeText}>COVER</Text>
                     </View>
                   )}
                   <TouchableOpacity 
                     style={stylesheet.removePhoto}
-                    onPress={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))}
+                    onPress={() => {
+                      setAttachedFiles(f => f.filter((_, idx) => idx !== i));
+                      if (coverIndex === i) setCoverIndex(0);
+                      else if (coverIndex > i) setCoverIndex(c => c - 1);
+                    }}
                   >
                     <Ionicons name="close-circle" size={18} color="#fff" />
                   </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
               ))}
               <TouchableOpacity style={stylesheet.addPhotoBox} onPress={pickImages}>
                 <Feather name="camera" size={24} color={theme.colors.LABEL} />
@@ -228,6 +253,22 @@ export default function CreateForSaleScreen() {
 
         {step === 1 && (
           <View style={stylesheet.formGroup}>
+            <Text style={stylesheet.label}>Listing Type</Text>
+            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+              <TouchableOpacity
+                style={[stylesheet.chip, listingType === 'For Sale' && stylesheet.chipActive, { flex: 1, alignItems: 'center' }]}
+                onPress={() => setListingType('For Sale')}
+              >
+                <Text style={[stylesheet.chipText, listingType === 'For Sale' && stylesheet.chipTextActive]}>Selling</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[stylesheet.chip, listingType === 'Giveaway' && stylesheet.chipActive, { flex: 1, alignItems: 'center' }]}
+                onPress={() => { setListingType('Giveaway'); setPrice(''); }}
+              >
+                <Text style={[stylesheet.chipText, listingType === 'Giveaway' && stylesheet.chipTextActive]}>Giveaway</Text>
+              </TouchableOpacity>
+            </View>
+
             <Text style={stylesheet.label}>Title</Text>
             <TextInput
               style={stylesheet.input}
@@ -237,15 +278,19 @@ export default function CreateForSaleScreen() {
               onChangeText={setTitle}
             />
 
-            <Text style={stylesheet.label}>Price (₦)</Text>
-            <TextInput
-              style={[stylesheet.input, { fontFamily: 'Outfit-Bold', fontSize: 18 }]}
-              placeholder="₦ 0"
-              placeholderTextColor={theme.colors.MUTED}
-              keyboardType="numeric"
-              value={price}
-              onChangeText={setPrice}
-            />
+            {listingType === 'For Sale' && (
+              <>
+                <Text style={stylesheet.label}>Price (₦)</Text>
+                <TextInput
+                  style={[stylesheet.input, { fontFamily: 'Outfit-Bold', fontSize: 18 }]}
+                  placeholder="₦ 0"
+                  placeholderTextColor={theme.colors.MUTED}
+                  keyboardType="numeric"
+                  value={price ? Number(price).toLocaleString('en-US') : ''}
+                  onChangeText={(t) => setPrice(t.replace(/[^0-9]/g, ''))}
+                />
+              </>
+            )}
 
             <Text style={stylesheet.label}>Category</Text>
             <View style={stylesheet.chipGrid}>
@@ -277,13 +322,62 @@ export default function CreateForSaleScreen() {
             </View>
 
             <Text style={stylesheet.label}>Location</Text>
-            <TextInput
-              style={stylesheet.input}
-              placeholder="e.g. Lekki Phase 1, Lagos"
-              placeholderTextColor={theme.colors.MUTED}
-              value={location}
-              onChangeText={setLocation}
-            />
+            <View style={{ zIndex: 10 }}>
+              <GooglePlacesAutocomplete
+                placeholder="Search for a location"
+                fetchDetails={true}
+                onPress={(data, details = null) => {
+                  setLocation(data.description);
+                  if (details?.geometry?.location) {
+                    setPostLat(details.geometry.location.lat);
+                    setPostLng(details.geometry.location.lng);
+                  }
+                  const d = data as any;
+                  if (d.terms && d.terms.length > 0) {
+                    const terms = d.terms;
+                    const countryIdx = terms.findIndex((t: any) => t.value === 'Nigeria');
+                    if (countryIdx > 0) {
+                      setPostState(terms[countryIdx - 1]?.value || '');
+                      if (countryIdx > 1) {
+                        setPostLga(terms[countryIdx - 2]?.value || '');
+                      }
+                    } else {
+                      setPostState(terms[terms.length - 1]?.value || '');
+                      if (terms.length > 1) setPostLga(terms[terms.length - 2]?.value || '');
+                    }
+                  }
+                }}
+                query={{
+                  key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+                  language: 'en',
+                  components: 'country:ng',
+                }}
+                styles={{
+                  textInput: stylesheet.input,
+                  listView: {
+                    backgroundColor: theme.colors.SURFACE,
+                    borderRadius: 12,
+                    marginTop: 8,
+                    borderWidth: 1,
+                    borderColor: theme.colors.GLASS_BORDER,
+                  },
+                  row: {
+                    backgroundColor: theme.colors.SURFACE,
+                    padding: 13,
+                    height: 44,
+                    flexDirection: 'row',
+                  },
+                  description: {
+                    color: '#fff',
+                  },
+                }}
+                textInputProps={{
+                  placeholderTextColor: theme.colors.MUTED,
+                  value: location,
+                  onChangeText: (text) => setLocation(text),
+                }}
+              />
+            </View>
           </View>
         )}
 
@@ -332,7 +426,7 @@ export default function CreateForSaleScreen() {
                 </View>
 
                 <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 28, color: theme.colors.G, marginBottom: 16 }}>
-                  ₦{price || '0'}
+                  {price ? formatPrice(Number(price)) : '₦0'}
                 </Text>
 
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
@@ -347,7 +441,7 @@ export default function CreateForSaleScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 12 }}>
                   <Feather name="map-pin" size={16} color={theme.colors.LABEL} />
                   <Text style={{ fontFamily: 'Inter-Regular', color: theme.colors.LABEL, fontSize: 14 }}>
-                    {profile?.location?.lga || 'TBA'}, {profile?.location?.state || 'TBA'}
+                    {postLga || 'TBA'}, {postState || 'TBA'}
                   </Text>
                 </View>
 

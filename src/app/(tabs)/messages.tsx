@@ -25,6 +25,7 @@ interface Conversation {
   timestamp: string;
   unreadCount: number;
   context?: {
+    itemId?: string;
     itemTitle?: string;
     itemImage?: string;
     itemPrice?: number;
@@ -122,12 +123,17 @@ export default function MessagesTab() {
             id: c.id,
             type: convType,
             participantId: otherId || '',
-            participantName: otherUser?.name || c.context?.itemTitle || 'Neighbour',
+            participantName: otherUser?.name || c.item_title || 'Neighbour',
             participantAvatar: (otherUser?.avatar_url && !otherUser.avatar_url.startsWith('file://')) ? otherUser.avatar_url : null,
-            lastMessage: c.last_message || 'Tap to chat',
+            lastMessage: c.last_message_text || c.last_message || 'Tap to chat',
             timestamp: c.updated_at || c.created_at,
             unreadCount: unreadCounts[c.id] || 0,
-            context: c.context,
+            context: (c.item_title || c.item_id) ? {
+              itemId: c.item_id,
+              itemTitle: c.item_title,
+              itemImage: c.item_image,
+              itemPrice: c.item_price
+            } : undefined,
           };
         });
 

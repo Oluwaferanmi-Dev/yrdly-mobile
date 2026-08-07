@@ -22,7 +22,7 @@ export async function getPublishedEvents(opts?: {
     .from('events')
     .select(`
       *,
-      organizer:users!events_organizer_id_fkey(id, name, avatar_url),
+      organizer:users!events_organizer_id_fkey(id, name, avatar_url, phone_verified),
       ticket_tiers(*)
     `)
     .eq('status', 'PUBLISHED')
@@ -120,13 +120,13 @@ export async function getEventById(id: string): Promise<Event | null> {
     .from('events')
     .select(`
       *,
-      organizer:users!events_organizer_id_fkey(id, name, avatar_url),
+      organizer:users!events_organizer_id_fkey(id, name, avatar_url, phone_verified),
       ticket_tiers(*)
     `)
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
-  if (error) return null;
+  if (error || !data) return null;
   const event = enrichEventTiers(data);
   if (event) {
     event.attendees = await getEventAttendees(id, 5);

@@ -36,7 +36,7 @@ interface Message {
 
 interface ConversationMeta {
   id: string;
-  type: 'friend' | 'marketplace' | 'briefcase';
+  type: 'friend' | 'marketplace' | 'briefcase' | 'event';
   participant_ids: string[];
   item_id?: string;
   item_title?: string;
@@ -110,6 +110,7 @@ function ChatContent() {
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [viewerImages, setViewerImages] = useState<{uri: string}[]>([]);
   const [viewerVisible, setViewerVisible] = useState(false);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -135,23 +136,22 @@ function ChatContent() {
 
   const messagesWithDates = React.useMemo(() => {
     const result = [];
+    let prevDateStr = null;
     for (let i = 0; i < messages.length; i++) {
       const m = messages[i];
       const d = new Date(m.created_at);
       const dateStr = d.toDateString();
       
-      result.push(m);
-      
-      const nextMsg = messages[i + 1];
-      const nextDateStr = nextMsg ? new Date(nextMsg.created_at).toDateString() : null;
-      
-      if (dateStr !== nextDateStr) {
+      if (dateStr !== prevDateStr) {
         result.push({
           isDateHeader: true,
           id: `date-${dateStr}`,
           dateText: formatChatDate(d)
         } as any);
+        prevDateStr = dateStr;
       }
+      
+      result.push(m);
     }
     return result;
   }, [messages]);
@@ -264,8 +264,11 @@ function ChatContent() {
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${id}`,
       }, (payload) => {
-        setMessages((prev) => [payload.new as Message, ...prev]);
-        setTimeout(() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true }), 100);
+        setMessages((prev) => {
+          if (prev.some(m => m.id === payload.new.id)) return prev;
+          return [...prev, payload.new as Message];
+        });
+        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
         
         // Mark as read if it's from the other user
         const newMsg = payload.new as Message;
@@ -297,6 +300,18 @@ function ChatContent() {
     setInputText('');
 
     try {
+      if (editingMessage) {
+        let newText = body;
+        if (!newText.endsWith('(Edited)')) {
+          newText = newText + ' (Edited)';
+        }
+        await supabase.from('messages').update({ text: newText, content: newText }).eq('id', editingMessage.id);
+        
+        setMessages(prev => prev.map(m => m.id === editingMessage.id ? { ...m, text: newText, content: newText } : m));
+        setEditingMessage(null);
+        setSending(false);
+        return;
+      }
       let currentConvId = id;
       if (id === 'new') {
         const { data: newConv, error: newError } = await supabase
@@ -493,12 +508,19 @@ function ChatContent() {
 
     if (canDeleteForEveryone) {
       options.push({
+        text: 'Edit',
+        onPress: () => {
+          setEditingMessage(item);
+          setInputText((item.text || item.content || '').replace(' (Edited)', ''));
+        }
+      });
+      options.push({
         text: 'Delete for everyone',
         style: 'destructive' as const,
         onPress: async () => {
           try {
-            await supabase.from('messages').delete().eq('id', item.id);
-            setMessages(prev => prev.filter(m => m.id !== item.id));
+            await supabase.from('messages').update({ text: 'This message was deleted', content: 'This message was deleted', media_url: null, media_type: null, image_url: null, video_url: null }).eq('id', item.id);
+            setMessages(prev => prev.map(m => m.id === item.id ? { ...m, text: 'This message was deleted', content: 'This message was deleted', media_url: undefined, media_type: undefined } : m));
           } catch (e) {
             console.error('Failed to delete message for everyone:', e);
           }
@@ -680,13 +702,19 @@ function ChatContent() {
         )}
       </View>
 
-      {/* Item context banner (for marketplace chats) */}
+      {/* Item context banner */}
       {meta?.item_title && (
         <TouchableOpacity 
           style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: 'rgba(255,255,255,0.015)', borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER }}
           onPress={() => {
             if (meta?.item_id) {
-              router.push(`/marketplace/${meta.item_id}`);
+              if (meta.type === 'event') {
+                router.push(`/events/${meta.item_id}` as any);
+              } else if (meta.type === 'briefcase') {
+                router.push(`/businesses/catalog/${meta.item_id}` as any);
+              } else {
+                router.push(`/marketplace/${meta.item_id}`);
+              }
             }
           }}
           activeOpacity={0.7}
@@ -695,15 +723,22 @@ function ChatContent() {
             <Image source={{ uri: meta.item_image }} style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: theme.colors.SURFACE }} contentFit="cover" />
           )}
           <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 13, color: '#FFFFFF' }} numberOfLines={1}>{meta.item_title}</Text>
-            {typeof meta.item_price === 'number' && (
+            <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 13, color: '#FFFFFF' }} numberOfLines={1}>
+              <Text style={{ color: theme.colors.MUTED, fontFamily: 'Outfit-Regular' }}>
+                {meta.type === 'event' ? 'About: ' : 'Inquiring about: '}
+              </Text>
+              {meta.item_title}
+            </Text>
+            {typeof meta.item_price === 'number' && meta.type !== 'event' && (
               <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 13, color: theme.colors.G }}>
                 {meta.item_price === 0 ? 'FREE' : formatPrice(meta.item_price)}
               </Text>
             )}
           </View>
           <View style={{ height: 30, paddingHorizontal: 12, borderRadius: 15, backgroundColor: 'rgba(130,219,126,0.08)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', justifyContent: 'center' }}>
-            <Text style={{ color: theme.colors.G, fontFamily: 'Inter-SemiBold', fontSize: 12 }}>View Listing</Text>
+            <Text style={{ color: theme.colors.G, fontFamily: 'Inter-SemiBold', fontSize: 12 }}>
+              View {meta.type === 'event' ? 'Event' : 'Listing'}
+            </Text>
           </View>
         </TouchableOpacity>
       )}
@@ -756,16 +791,26 @@ function ChatContent() {
             )}
           </TouchableOpacity>
 
-          <View style={{ flex: 1, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: inputText.trim() ? 'rgba(130,219,126,0.22)' : theme.colors.GLASS_BORDER, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 }}>
-            <TextInput
-              style={{ color: '#FFF', fontFamily: 'Inter-Regular', fontSize: 15, maxHeight: 96, padding: 0 }}
-              placeholder="Message…"
-              placeholderTextColor={theme.colors.LABEL}
-              value={inputText}
-              onChangeText={setInputText}
-              multiline
-              onSubmitEditing={sendMessage}
-            />
+          <View style={{ flex: 1, flexDirection: 'column' }}>
+            {editingMessage && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, paddingHorizontal: 4 }}>
+                <Text style={{ color: theme.colors.G, fontSize: 11, fontFamily: 'Inter-SemiBold' }}>Editing message</Text>
+                <TouchableOpacity onPress={() => { setEditingMessage(null); setInputText(''); }}>
+                  <Ionicons name="close-circle" size={16} color={theme.colors.LABEL} />
+                </TouchableOpacity>
+              </View>
+            )}
+            <View style={{ backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: inputText.trim() ? 'rgba(130,219,126,0.22)' : theme.colors.GLASS_BORDER, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 }}>
+              <TextInput
+                style={{ color: '#FFF', fontFamily: 'Inter-Regular', fontSize: 15, maxHeight: 96, padding: 0 }}
+                placeholder="Message…"
+                placeholderTextColor={theme.colors.LABEL}
+                value={inputText}
+                onChangeText={setInputText}
+                multiline
+                onSubmitEditing={sendMessage}
+              />
+            </View>
           </View>
 
           <TouchableOpacity

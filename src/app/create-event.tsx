@@ -13,6 +13,7 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { StorageService, MobileFile } from '../lib/storage-service';
 import { DateTimePickerModal } from '../components/DateTimePickerModal';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { formatPrice } from '../lib/utils';
 import { EventCard } from '../components/EventCard';
 import { ImageCarousel } from '../components/ImageCarousel';
 
@@ -44,7 +45,11 @@ export default function CreateEventScreen() {
   const [isOnline, setIsOnline] = useState(false);
   const [onlineLink, setOnlineLink] = useState('');
   
+  const [postState, setPostState] = useState('');
+  const [postLga, setPostLga] = useState('');
+  
   const [attachedFiles, setAttachedFiles] = useState<MobileFile[]>([]);
+  const [coverIndex, setCoverIndex] = useState(0);
   
   const [tiers, setTiers] = useState<Array<{ name: string; price: string; isFree: boolean; capacity: string }>>([
     { name: 'Standard Ticket', price: '0', isFree: true, capacity: '100' }
@@ -62,7 +67,11 @@ export default function CreateEventScreen() {
   React.useEffect(() => {
     if (profile?.location) {
       const locStr = [profile.location.ward, profile.location.lga, profile.location.state].filter(Boolean).join(', ');
-      if (locStr) setArea(locStr);
+      if (locStr) {
+        setArea(locStr);
+        setPostState(profile.location.state || '');
+        setPostLga(profile.location.lga || '');
+      }
     }
   }, [profile]);
 
@@ -137,15 +146,18 @@ export default function CreateEventScreen() {
       try {
         let imageUrls: string[] = [];
         if (attachedFiles.length > 0) {
+          const filesToUpload = [...attachedFiles];
+          if (coverIndex > 0 && coverIndex < filesToUpload.length) {
+            const cover = filesToUpload.splice(coverIndex, 1)[0];
+            filesToUpload.unshift(cover);
+          }
           const uploadedImages = await Promise.all(
-            attachedFiles.map((file) => StorageService.uploadPostImage(user.id, file))
+            filesToUpload.map((file) => StorageService.uploadPostImage(user.id, file))
           );
           imageUrls = uploadedImages.map(res => res.url).filter(Boolean) as string[];
         }
         
         const coverUrl = imageUrls.length > 0 ? imageUrls[0] : '';
-
-        const userLoc = profile.location as { state?: string; lga?: string; ward?: string } | undefined;
         
         // Parse start and end time ISOs safely
         const startISO = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), startTime.getHours(), startTime.getMinutes()).toISOString();
@@ -165,9 +177,9 @@ export default function CreateEventScreen() {
             location_address: venue.trim() || (isOnline ? 'Online Event' : 'TBA'),
             location_online: isOnline,
             online_link: isOnline ? onlineLink.trim() : null,
-            state: userLoc?.state || null,
-            lga: userLoc?.lga || null,
-            ward: userLoc?.ward || null,
+            state: postState || null,
+            lga: postLga || null,
+            ward: null,
             status: 'PUBLISHED',
           })
           .select()
@@ -201,9 +213,9 @@ export default function CreateEventScreen() {
           event_location: { address: venue.trim() },
           event_link: `/events/${newEvent.id}`,
           image_urls: imageUrls,
-          state: userLoc?.state || null,
-          lga: userLoc?.lga || null,
-          ward: userLoc?.ward || null,
+          state: postState || null,
+          lga: postLga || null,
+          ward: null,
           timestamp: new Date().toISOString(),
           liked_by: [],
           comment_count: 0,
@@ -378,8 +390,26 @@ export default function CreateEventScreen() {
                     onPress={(data, details = null) => {
                       setVenue(data.description);
                       const d = data as any;
-                      if (d.terms && d.terms.length > 1) {
-                        setArea(d.terms[d.terms.length - 2].value);
+                      if (d.terms && d.terms.length > 0) {
+                        const terms = d.terms;
+                        const countryIdx = terms.findIndex((t: any) => t.value === 'Nigeria');
+                        if (countryIdx > 0) {
+                          const s = terms[countryIdx - 1]?.value || '';
+                          setPostState(s);
+                          if (countryIdx > 1) {
+                            const l = terms[countryIdx - 2]?.value || '';
+                            setPostLga(l);
+                            setArea(`${l}, ${s}`);
+                          }
+                        } else {
+                          const s = terms[terms.length - 1]?.value || '';
+                          setPostState(s);
+                          if (terms.length > 1) {
+                            const l = terms[terms.length - 2]?.value || '';
+                            setPostLga(l);
+                            setArea(`${l}, ${s}`);
+                          }
+                        }
                       }
                     }}
                     query={{
@@ -464,8 +494,8 @@ export default function CreateEventScreen() {
                       placeholder="e.g. 5000"
                       placeholderTextColor="rgba(255,255,255,0.3)"
                       keyboardType="numeric"
-                      value={t.price}
-                      onChangeText={(val) => updateTier(idx, 'price', val)}
+                      value={t.price ? Number(t.price).toLocaleString('en-US') : ''}
+                      onChangeText={(val) => updateTier(idx, 'price', val.replace(/[^0-9]/g, ''))}
                     />
                   </>
                 )}
@@ -496,19 +526,30 @@ export default function CreateEventScreen() {
 
             <View style={stylesheet.photosGrid}>
               {attachedFiles.map((f, i) => (
-                <View key={i} style={stylesheet.photoBox}>
+                <TouchableOpacity 
+                  key={i} 
+                  onPress={() => setCoverIndex(i)}
+                  style={[stylesheet.photoBox, i === coverIndex && { borderWidth: 2, borderColor: theme.colors.G }]}
+                >
                   <Image source={{ uri: f.uri }} style={stylesheet.photoImg} />
-                  {i === 0 && (
+                  {i === coverIndex && (
                     <View style={stylesheet.coverBadge}>
                       <Text style={stylesheet.coverBadgeText}>COVER</Text>
                     </View>
                   )}
-                  <TouchableOpacity style={stylesheet.removePhoto} onPress={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))}>
+                  <TouchableOpacity 
+                    style={stylesheet.removePhoto} 
+                    onPress={() => {
+                      setAttachedFiles(f => f.filter((_, idx) => idx !== i));
+                      if (coverIndex === i) setCoverIndex(0);
+                      else if (coverIndex > i) setCoverIndex(c => c - 1);
+                    }}
+                  >
                     <View style={{ backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: 4 }}>
                       <Feather name="x" size={14} color="#fff" />
                     </View>
                   </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
               ))}
               {attachedFiles.length < 5 && (
                 <TouchableOpacity style={stylesheet.addPhotoBox} onPress={pickImages}>
@@ -578,7 +619,7 @@ export default function CreateEventScreen() {
                     <View style={{ flex: 1 }}>
                       <Text style={{ fontFamily: 'Inter-Medium', color: theme.colors.LABEL, fontSize: 12 }}>{isOnline ? 'Platform' : 'Location'}</Text>
                       <Text style={{ fontFamily: 'Inter-Medium', color: theme.colors.TEXT_PRIMARY, fontSize: 14 }} numberOfLines={2}>
-                        {isOnline ? 'Online Event' : (venue.trim() || 'Location TBA')}
+                        {isOnline ? 'Online Event' : (venue.trim() ? `${venue.trim()}\n${postLga || 'TBA'}, ${postState || 'TBA'}` : 'Location TBA')}
                       </Text>
                     </View>
                   </View>
@@ -603,7 +644,7 @@ export default function CreateEventScreen() {
                           <Text style={{ fontFamily: 'Inter-Regular', color: theme.colors.LABEL, fontSize: 12, marginTop: 2 }}>{t.capacity || 0} Available</Text>
                         </View>
                         <Text style={{ fontFamily: 'Outfit-Bold', color: t.isFree ? theme.colors.G : theme.colors.TEXT_PRIMARY, fontSize: 16 }}>
-                          {t.isFree ? 'FREE' : `₦${t.price || 0}`}
+                          {t.isFree ? 'FREE' : formatPrice(Number(t.price))}
                         </Text>
                       </View>
                     ))}

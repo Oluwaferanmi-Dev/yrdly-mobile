@@ -26,7 +26,7 @@ export default function CreatePostScreen() {
   const [category, setCategory] = useState('General');
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
 
-  const categories = ['General', 'Recommendation', 'Safety', 'Lost & Found', 'Trade'];
+  const categories = ['General', 'Wanted', 'Request', 'Recommendation', 'Giveaway'];
 
   const pickImages = async () => {
     try {

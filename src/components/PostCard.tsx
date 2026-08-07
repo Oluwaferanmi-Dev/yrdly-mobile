@@ -297,14 +297,13 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newBookmarked = !isBookmarked;
     setIsBookmarked(newBookmarked);
-    try {
-      if (newBookmarked) {
-        await supabase.from('post_bookmarks').insert({ post_id: post.id, user_id: currentUser.id });
-      } else {
-        await supabase.from('post_bookmarks').delete().match({ post_id: post.id, user_id: currentUser.id });
-      }
-    } catch (e) {
-      setIsBookmarked(!newBookmarked);
+    
+    if (newBookmarked) {
+      const { error } = await supabase.from('post_bookmarks').insert({ post_id: post.id, user_id: currentUser.id });
+      if (error) setIsBookmarked(false);
+    } else {
+      const { error } = await supabase.from('post_bookmarks').delete().match({ post_id: post.id, user_id: currentUser.id });
+      if (error) setIsBookmarked(true);
     }
   };
 
@@ -422,18 +421,26 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   };
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.95}
-      onPress={onPress}
+    <View
       style={{
-        paddingTop: 18,
+        backgroundColor: theme.colors.SURFACE,
+        marginBottom: 8,
+        paddingTop: 16,
         paddingBottom: 4,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.05)',
+        borderBottomColor: 'rgba(255,255,255,0.04)'
       }}
     >
-      {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12 }}>
+      {/* Header Info */}
+      <TouchableOpacity 
+        activeOpacity={0.9}
+        onPress={() => {
+          if (post.category === 'For Sale' && onPress) onPress();
+          else if (post.category === 'Event' && onPress) onPress();
+          else if (onComment) onComment();
+        }}
+        style={{ flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: 20, marginBottom: 14 }}
+      >
         <TouchableOpacity 
           style={{ flexDirection: 'row', alignItems: 'flex-start', flex: 1, marginRight: 10 }}
           onPress={(e) => {
@@ -441,7 +448,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             router.push(`/profile/${post.user_id}` as any);
           }}
         >
-          <View style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: post.user_id === currentUser?.id ? theme.colors.G : 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.05)', overflow: 'hidden', flexShrink: 0 }}>
+          <View style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.05)', overflow: 'hidden', flexShrink: 0 }}>
             {post.user?.avatar_url || post.author_image ? (
               <Image source={{ uri: StorageService.getOptimizedImageUrl(post.user?.avatar_url || post.author_image || null, 150) || '' }} style={stylesheet.avatarImage} />
             ) : (
@@ -479,10 +486,24 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         >
           <Ionicons name="ellipsis-horizontal" size={20} color={theme.colors.LABEL} />
         </TouchableOpacity>
-      </View>
+      </TouchableOpacity>
 
       {/* Title & Body Text */}
-      <View style={{ paddingHorizontal: 20, marginBottom: (urls.length > 0 || post.video_url) ? 14 : 0 }}>
+      <TouchableOpacity 
+        activeOpacity={0.9}
+        onPress={() => {
+          if (post.category === 'For Sale' && onPress) onPress();
+          else if (post.category === 'Event' && onPress) onPress();
+          else if (onComment) onComment();
+        }}
+        style={{ paddingHorizontal: 20, marginBottom: (urls.length > 0 || post.video_url) ? 14 : 0 }}
+      >
+        <View style={{ marginBottom: 8, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, backgroundColor: post.category === 'Event' ? 'rgba(130,219,126,0.15)' : post.category === 'For Sale' || post.category === 'Selling' ? 'rgba(255, 171, 0, 0.15)' : post.category === 'Wanted' ? 'rgba(255, 82, 82, 0.15)' : post.category === 'Request' ? 'rgba(68, 138, 255, 0.15)' : post.category === 'Recommendation' ? 'rgba(179, 136, 255, 0.15)' : post.category === 'Giveaway' ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255,255,255,0.08)' }}>
+           <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 10, color: post.category === 'Event' ? theme.colors.G : post.category === 'For Sale' || post.category === 'Selling' ? '#FFAB00' : post.category === 'Wanted' ? '#FF5252' : post.category === 'Request' ? '#448AFF' : post.category === 'Recommendation' ? '#B388FF' : post.category === 'Giveaway' ? '#00E676' : theme.colors.MUTED, textTransform: 'uppercase' }}>
+              {post.category === 'For Sale' ? 'Selling' : post.category || 'General Post'}
+           </Text>
+        </View>
+
         {!!post.title && (
           <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF', marginBottom: 6 }}>{post.title}</Text>
         )}
@@ -507,7 +528,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             </View>
           );
         })()}
-      </View>
+      </TouchableOpacity>
 
       {/* Video */}
       {post.video_url && (
@@ -524,34 +545,30 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       {/* Images Carousel */}
       {urls.length > 0 && (
         <View style={{ position: 'relative', marginHorizontal: 20, marginBottom: 12 }}>
-          <ScrollView
+          <FlatList
+            data={urls}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16}
-            onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+            keyExtractor={(item, index) => index.toString()}
+            onMomentumScrollEnd={(e) => {
               const slide = Math.round(e.nativeEvent.contentOffset.x / (width - 40));
               if (slide !== activeImageIndex) setActiveImageIndex(slide);
             }}
-          >
-            {urls.map((item, index) => {
-
-            return (
-                          <TouchableOpacity 
-                            key={index.toString()}
-                            activeOpacity={0.95}
-                            onPress={() => handleImageTap(index)}
-                            style={{ width: width - 40, aspectRatio: 4/3, borderRadius: 16, overflow: 'hidden', backgroundColor: theme.colors.SURFACE }}
-                          >
-                            <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
-                            
-                            <Animated.View style={[stylesheet.heartOverlay, heartAnimatedStyle]}>
-                              <Ionicons name="heart" size={100} color={theme.colors.G} style={stylesheet.heartShadow} />
-                            </Animated.View>
-                          </TouchableOpacity>
-                        );
-            })}
-          </ScrollView>
+            renderItem={({ item, index }) => (
+              <TouchableOpacity 
+                activeOpacity={0.95}
+                onPress={() => handleImageTap(index)}
+                style={{ width: width - 40, aspectRatio: 4/3, borderRadius: 16, overflow: 'hidden', backgroundColor: theme.colors.SURFACE }}
+              >
+                <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+                
+                <Animated.View style={[stylesheet.heartOverlay, heartAnimatedStyle]}>
+                  <Ionicons name="heart" size={100} color={theme.colors.G} style={stylesheet.heartShadow} />
+                </Animated.View>
+              </TouchableOpacity>
+            )}
+          />
           {urls.length > 1 && (
             <View style={stylesheet.paginationDots}>
               {urls.map((_, i) => (
@@ -563,15 +580,24 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       )}
 
       {/* Price / Category badge if applicable */}
-      {(post.category === 'For Sale' || post.category === 'Event') && post.price !== undefined && (
-        <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
-          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 16, color: theme.colors.G }}>
-            {post.category === 'Event' && (post.price === 0 || !post.price) 
-              ? 'FREE' 
-              : formatPrice(post.price)}
-          </Text>
-        </View>
-      )}
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => {
+          if (post.category === 'For Sale' && onPress) onPress();
+          else if (post.category === 'Event' && onPress) onPress();
+          else if (onComment) onComment();
+        }}
+      >
+        {(post.category === 'For Sale' || post.category === 'Event') && post.price !== undefined && (
+          <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 16, color: theme.colors.G }}>
+              {post.category === 'Event' && (post.price === 0 || !post.price) 
+                ? 'FREE' 
+                : formatPrice(post.price)}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
 
       {/* Action Row */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 14, paddingBottom: 10, paddingHorizontal: 20 }}>
@@ -592,17 +618,32 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={{ flexDirection: 'row', alignItems: 'center' }} 
-            onPress={(e) => { e.stopPropagation(); if (onComment) onComment(); }}
-          >
-            <Ionicons name="chatbubble-ellipses-outline" size={19} color={theme.colors.MUTED} />
-            {post.comment_count > 0 && (
+          {post.category !== 'For Sale' ? (
+            <TouchableOpacity 
+              style={{ flexDirection: 'row', alignItems: 'center' }} 
+              onPress={(e) => { e.stopPropagation(); if (onComment) onComment(); }}
+            >
+              <Ionicons name="chatbubble-ellipses-outline" size={19} color={theme.colors.MUTED} />
+              {post.comment_count > 0 && (
+                <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.MUTED, marginLeft: 6 }}>
+                  {post.comment_count}
+                </Text>
+              )}
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity 
+              style={{ flexDirection: 'row', alignItems: 'center' }} 
+              onPress={(e) => { 
+                e.stopPropagation(); 
+                if (onPress) onPress(); 
+              }}
+            >
+              <Ionicons name="chatbox-outline" size={19} color={theme.colors.MUTED} />
               <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.MUTED, marginLeft: 6 }}>
-                {post.comment_count}
+                Message
               </Text>
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity 
             style={{ flexDirection: 'row', alignItems: 'center' }} 
@@ -624,7 +665,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={19} color={isBookmarked ? theme.colors.G : theme.colors.MUTED} />
         </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }, (prevProps, nextProps) => {
   return (

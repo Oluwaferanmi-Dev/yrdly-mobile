@@ -80,9 +80,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   // Build the display label
   let displayLabel = "All Nigeria";
   if (activeFilter) {
-    if (activeFilter.ward && activeFilter.lga) {
-      displayLabel = `${activeFilter.ward}, ${activeFilter.lga}`;
-    } else if (activeFilter.lga && activeFilter.state) {
+    if (activeFilter.lga && activeFilter.state) {
       displayLabel = `${activeFilter.lga}, ${activeFilter.state}`;
     } else if (activeFilter.state) {
       displayLabel = `${activeFilter.state} State`;

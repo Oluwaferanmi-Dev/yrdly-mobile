@@ -280,7 +280,7 @@ export default function BusinessProfileScreen() {
           {/* Name + verified */}
           <View style={sStylesheet.nameRow}>
             <Text style={sStylesheet.nameTxt}>{business.name}</Text>
-            {(business as any).is_verified && <MaterialIcons name="verified" size={18} color={theme.colors.G} />}
+            {(business as any).phone_verified && <MaterialIcons name="verified" size={18} color={theme.colors.G} />}
           </View>
 
           <Text style={sStylesheet.catLocationTxt}>{business.category || 'Business'} · {getLocStr()}</Text>

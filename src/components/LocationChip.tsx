@@ -12,7 +12,7 @@ export function LocationChip() {
   const { displayLabel, activeFilter, setGlobalFilter, userProfileLocation, hasLocation } = useLocation();
   const [modalVisible, setModalVisible] = useState(false);
 
-  const handleSelect = (type: 'all' | 'state' | 'lga' | 'ward') => {
+  const handleSelect = (type: 'all' | 'state' | 'lga') => {
     if (!hasLocation || !userProfileLocation) {
       setModalVisible(false);
       return;
@@ -24,14 +24,11 @@ export function LocationChip() {
       setGlobalFilter({ state: userProfileLocation.state });
     } else if (type === 'lga') {
       setGlobalFilter({ state: userProfileLocation.state, lga: userProfileLocation.lga });
-    } else if (type === 'ward') {
-      setGlobalFilter({ state: userProfileLocation.state, lga: userProfileLocation.lga, ward: userProfileLocation.ward });
     }
     setModalVisible(false);
   };
 
   const currentType = !activeFilter ? 'all' 
-    : activeFilter.ward ? 'ward' 
     : activeFilter.lga ? 'lga' 
     : 'state';
 
@@ -83,15 +80,7 @@ export function LocationChip() {
             </TouchableOpacity>
           )}
 
-          {hasLocation && userProfileLocation?.ward && (
-            <TouchableOpacity 
-              style={[stylesheet.modalOption, { borderBottomColor: colors.borderLight }]}
-              onPress={() => handleSelect('ward')}
-            >
-              <Text style={[stylesheet.modalOptionText, { color: colors.text }]}>{userProfileLocation.ward} (Ward)</Text>
-              {currentType === 'ward' && <Feather name="check" size={20} color={colors.tint} />}
-            </TouchableOpacity>
-          )}
+
 
           <TouchableOpacity 
             style={[stylesheet.closeModalButton, { backgroundColor: colors.inputBackground }]}
