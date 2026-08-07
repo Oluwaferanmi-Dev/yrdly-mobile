@@ -136,7 +136,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
           {profile?.avatar_url
             ? <Image source={{ uri: profile.avatar_url }} style={s.avatar} contentFit="cover" />
             : <View style={[s.avatar, { backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 18 }}>{(profile?.name || '?').charAt(0)}</Text>
+                <Text style={{ color: theme.colors.TEXT_PRIMARY, fontWeight: '800', fontSize: 18 }}>{(profile?.name || '?').charAt(0)}</Text>
               </View>}
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -419,7 +419,7 @@ const sStylesheet = createStyleSheet(theme => ({
       pillTxt: { fontSize: 11, fontWeight: '800' },
       fieldLabel: { fontSize: 14, fontWeight: '700' },
       hint: { fontSize: 12 },
-      menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
+      menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: theme.colors.DARK, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
       menuItem: { paddingVertical: 10, paddingHorizontal: 16 },
       req: { color: '#ef4444', fontWeight: '700' },
       charCount: { fontSize: 11, textAlign: 'right', marginTop: 6 },

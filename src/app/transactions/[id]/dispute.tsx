@@ -291,5 +291,5 @@ const _stylesheet = createStyleSheet(theme => ({
         alignItems: 'center', marginTop: 8,
       },
       submitBtnDisabled: {},
-      submitBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
+      submitBtnText: { color: theme.colors.TEXT_PRIMARY, fontSize: 16, fontWeight: 'bold' },
     }));

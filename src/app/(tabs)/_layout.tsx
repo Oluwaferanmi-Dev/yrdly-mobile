@@ -188,14 +188,14 @@ export default function TabLayout() {
               left: 0,
               right: 0,
               height: tabBarHeight,
-              backgroundColor: 'rgba(12,12,12,0.97)',
+              backgroundColor: theme.colors.GLASS_BG,
               borderTopWidth: 1,
-              borderTopColor: 'rgba(255,255,255,0.08)',
+              borderTopColor: theme.colors.GLASS_BORDER,
               paddingBottom: insets.bottom,
               elevation: 0,
             },
             tabBarActiveTintColor: theme.colors.G,
-            tabBarInactiveTintColor: 'rgba(255,255,255,0.42)',
+            tabBarInactiveTintColor: theme.colors.LABEL,
             tabBarLabel: ({ focused, color }) => {
             return (
                           <Text style={{
@@ -377,7 +377,7 @@ const sStylesheet = createStyleSheet(theme => ({
       optionTitle: {
         fontFamily: 'Outfit-Bold',
         fontSize: 16,
-        color: '#FFF',
+        color: theme.colors.TEXT_PRIMARY,
         marginBottom: 2,
       },
       optionDesc: {
@@ -393,7 +393,7 @@ const sStylesheet = createStyleSheet(theme => ({
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: theme.colors.GLASS_BORDER,
       },
     }));
 

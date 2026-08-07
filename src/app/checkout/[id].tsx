@@ -317,7 +317,7 @@ const _stylesheet = createStyleSheet(theme => ({
       headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', flex: 1 },
 
       card: {
-        backgroundColor: '#0f0f0f',
+        backgroundColor: theme.colors.SURFACE_ALT,
         borderWidth: 1,
         borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 20,
@@ -340,7 +340,7 @@ const _stylesheet = createStyleSheet(theme => ({
       itemTitle: {
         fontFamily: 'Outfit-Bold',
         fontSize: 15,
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
         marginBottom: 4,
       },
       itemMeta: {
@@ -403,7 +403,7 @@ const _stylesheet = createStyleSheet(theme => ({
       priceValue: {
         fontFamily: 'Inter-Regular',
         fontSize: 14,
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
       },
       divider: {
         height: 1,
@@ -418,7 +418,7 @@ const _stylesheet = createStyleSheet(theme => ({
       totalLabel: {
         fontFamily: 'Outfit-Bold',
         fontSize: 16,
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
       },
       totalValue: {
         fontFamily: 'Outfit-Black',
@@ -460,7 +460,7 @@ const _stylesheet = createStyleSheet(theme => ({
       payingTitle: {
         fontFamily: 'Outfit-Bold',
         fontSize: 20,
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
         marginBottom: 6,
       },
       payingSubtitle: {

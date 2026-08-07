@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 26,
     fontFamily: 'Outfit-ExtraBold',
-    color: '#FFFFFF',
+    color: theme.colors.TEXT_PRIMARY,
   },
   subtitleText: {
     fontSize: 14,

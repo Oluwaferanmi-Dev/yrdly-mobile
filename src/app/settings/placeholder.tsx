@@ -31,11 +31,11 @@ export default function GenericSettingsScreen() {
 }
 
 const sStylesheet = createStyleSheet(theme => ({
-      root: { flex: 1, backgroundColor: '#050505' },
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
       header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
       content: { flex: 1, padding: 32, justifyContent: 'center', alignItems: 'center' },
-      title: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff', marginBottom: 8, textAlign: 'center' },
+      title: { fontFamily: 'Outfit-Bold', fontSize: 20, color: theme.colors.TEXT_PRIMARY, marginBottom: 8, textAlign: 'center' },
       subtitle: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.LABEL, textAlign: 'center', lineHeight: 22 },
     }));

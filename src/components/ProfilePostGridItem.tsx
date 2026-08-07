@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   textSnippet: {
     fontSize: 12,
     textAlign: 'center',
-    color: '#FFF'
+    color: '#FFFFFF'
   },
   iconOverlay: {
     position: 'absolute',

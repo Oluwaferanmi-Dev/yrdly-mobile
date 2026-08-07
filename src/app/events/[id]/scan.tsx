@@ -193,7 +193,7 @@ const _stylesheet = createStyleSheet(theme => ({
       headerOverlay: { position: 'absolute', top: 0, left: 0, right: 0 },
       header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12 },
       backBtn: { width: 48, height: 48, justifyContent: 'center', alignItems: 'center' },
-      headerTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' },
+      headerTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: theme.colors.TEXT_PRIMARY },
       viewfinderContainer: {
         flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40,
       },
@@ -201,10 +201,10 @@ const _stylesheet = createStyleSheet(theme => ({
         width: 240, height: 240, position: 'relative', marginBottom: 24,
       },
       corner: { position: 'absolute', width: CORNER_SIZE, height: CORNER_SIZE },
-      topLeft: { top: 0, left: 0, borderTopWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderColor: '#FFFFFF', borderTopLeftRadius: 4 },
-      topRight: { top: 0, right: 0, borderTopWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderColor: '#FFFFFF', borderTopRightRadius: 4 },
-      bottomLeft: { bottom: 0, left: 0, borderBottomWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderColor: '#FFFFFF', borderBottomLeftRadius: 4 },
-      bottomRight: { bottom: 0, right: 0, borderBottomWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderColor: '#FFFFFF', borderBottomRightRadius: 4 },
+      topLeft: { top: 0, left: 0, borderTopWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderColor: theme.colors.TEXT_PRIMARY, borderTopLeftRadius: 4 },
+      topRight: { top: 0, right: 0, borderTopWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderColor: theme.colors.TEXT_PRIMARY, borderTopRightRadius: 4 },
+      bottomLeft: { bottom: 0, left: 0, borderBottomWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderColor: theme.colors.TEXT_PRIMARY, borderBottomLeftRadius: 4 },
+      bottomRight: { bottom: 0, right: 0, borderBottomWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderColor: theme.colors.TEXT_PRIMARY, borderBottomRightRadius: 4 },
       scanHint: { color: 'rgba(255,255,255,0.7)', fontSize: 13, textAlign: 'center' },
       resultBanner: {
         position: 'absolute', bottom: 60, left: 20, right: 20,

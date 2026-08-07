@@ -164,7 +164,7 @@ const _stylesheet = createStyleSheet(theme => ({
         alignItems: 'center',
       },
       avatarFallbackText: {
-        color: '#FFF',
+        color: theme.colors.TEXT_PRIMARY,
         fontWeight: 'bold',
         fontSize: 14,
       },

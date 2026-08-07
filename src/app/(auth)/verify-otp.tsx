@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontFamily: 'Outfit-ExtraBold',
-    color: '#FFFFFF',
+    color: theme.colors.TEXT_PRIMARY,
   },
   subtitleText: {
     fontSize: 14,
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1.5,
     textAlign: 'center',
-    color: '#FFFFFF',
+    color: theme.colors.TEXT_PRIMARY,
     fontSize: 22,
     fontFamily: 'Inter-Bold',
   },

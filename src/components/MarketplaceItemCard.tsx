@@ -177,7 +177,7 @@ const sStylesheet = createStyleSheet(theme => ({
       sellerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
       avatar: { width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', overflow: 'hidden', marginRight: 5 },
       avatarImg: { width: '100%', height: '100%' },
-      avatarTxt: { color: '#fff', fontSize: 9, fontWeight: '800' },
+      avatarTxt: { color: theme.colors.TEXT_PRIMARY, fontSize: 9, fontWeight: '800' },
       sellerName: { flex: 1, fontSize: 11, fontWeight: '600' },
       actRow: { flexDirection: 'row', gap: 6 },
       chatBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 32, borderRadius: 16, borderWidth: 1 },

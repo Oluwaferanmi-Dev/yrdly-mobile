@@ -205,7 +205,7 @@ export default function PayoutsScreen() {
             <View style={{ paddingHorizontal: 20 }}>
               <View style={s.historyContainer}>
                 <View style={{ alignItems: 'center', paddingVertical: 40 }}>
-                  <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' }}>No payouts</Text>
+                  <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.TEXT_PRIMARY }}>No payouts</Text>
                   <Text style={{ fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL, marginTop: 4 }}>Nothing here yet.</Text>
                 </View>
               </View>
@@ -234,16 +234,16 @@ export default function PayoutsScreen() {
 }
 
 const sStylesheet = createStyleSheet(theme => ({
-      root: { flex: 1, backgroundColor: '#050505' },
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
       
       header: { paddingHorizontal: 20, paddingBottom: 12 },
       backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
 
       balanceCard: { backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.2)', borderRadius: 28, padding: 22 },
       balanceHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
       balanceLabel: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL, letterSpacing: 1 },
-      balanceValue: { fontFamily: 'Outfit-Bold', fontSize: 38, color: '#fff', marginBottom: 18, letterSpacing: -1 },
+      balanceValue: { fontFamily: 'Outfit-Bold', fontSize: 38, color: theme.colors.TEXT_PRIMARY, marginBottom: 18, letterSpacing: -1 },
       
       statsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
       statCol: { flex: 1 },
@@ -251,9 +251,9 @@ const sStylesheet = createStyleSheet(theme => ({
       statLabel: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL, marginBottom: 3 },
       statVal: { fontFamily: 'Outfit-Bold', fontSize: 16 },
 
-      bankPreview: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 16 },
+      bankPreview: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: theme.colors.SURFACE, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 16 },
       bankIconBox: { width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(130,219,126,0.08)', alignItems: 'center', justifyContent: 'center' },
-      bankPreviewName: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
+      bankPreviewName: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: theme.colors.TEXT_PRIMARY },
       bankPreviewOwner: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL },
       verifiedBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, backgroundColor: 'rgba(130,219,126,0.1)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.2)' },
       verifiedTxt: { fontFamily: 'Outfit-Bold', fontSize: 10, color: theme.colors.G },
@@ -265,18 +265,18 @@ const sStylesheet = createStyleSheet(theme => ({
       historyTitle: { fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.LABEL, letterSpacing: 1 },
       historyChangeBank: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.G },
 
-      historyContainer: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 24, overflow: 'hidden' },
-      historyContainerTop: { backgroundColor: '#0f0f0f', borderTopWidth: 1, borderLeftWidth: 1, borderRightWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
-      historyContainerBot: { backgroundColor: '#0f0f0f', borderBottomWidth: 1, borderLeftWidth: 1, borderRightWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-      historyContainerMid: { backgroundColor: '#0f0f0f', borderLeftWidth: 1, borderRightWidth: 1, borderColor: theme.colors.GLASS_BORDER },
+      historyContainer: { backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 24, overflow: 'hidden' },
+      historyContainerTop: { backgroundColor: theme.colors.SURFACE_ALT, borderTopWidth: 1, borderLeftWidth: 1, borderRightWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+      historyContainerBot: { backgroundColor: theme.colors.SURFACE_ALT, borderBottomWidth: 1, borderLeftWidth: 1, borderRightWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
+      historyContainerMid: { backgroundColor: theme.colors.SURFACE_ALT, borderLeftWidth: 1, borderRightWidth: 1, borderColor: theme.colors.GLASS_BORDER },
 
       payoutRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 16 },
       payoutIconWrap: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
       payoutMid: { flex: 1 },
-      payoutBank: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+      payoutBank: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       payoutDate: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL },
       payoutRight: { alignItems: 'flex-end', gap: 4 },
-      payoutAmount: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff' },
+      payoutAmount: { fontFamily: 'Outfit-Bold', fontSize: 15, color: theme.colors.TEXT_PRIMARY },
       payoutStatus: { fontFamily: 'Outfit-Bold', fontSize: 10 },
       
       divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER, marginLeft: 70 },

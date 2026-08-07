@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   headline: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: theme.colors.TEXT_PRIMARY,
     lineHeight: 38,
   },
   description: {

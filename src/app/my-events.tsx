@@ -180,7 +180,7 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 16,
         marginBottom: 16,
         overflow: 'hidden',
-        shadowColor: '#000',
+        shadowColor: theme.colors.DARK,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 8,
@@ -204,7 +204,7 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingVertical: 4,
         borderRadius: 12,
       },
-      statusText: { color: '#fff', fontSize: 10, fontFamily: 'Outfit-Bold' },
+      statusText: { color: theme.colors.TEXT_PRIMARY, fontSize: 10, fontFamily: 'Outfit-Bold' },
       eventContent: {
         padding: 16,
       },
@@ -244,6 +244,6 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingVertical: 12,
         borderRadius: 24,
       },
-      createButtonText: { color: '#fff', fontFamily: 'Outfit-Bold', fontSize: 16 },
-      scanBtnText: { color: '#000', fontFamily: 'Outfit-ExtraBold', fontSize: 13 },
+      createButtonText: { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit-Bold', fontSize: 16 },
+      scanBtnText: { color: theme.colors.DARK, fontFamily: 'Outfit-ExtraBold', fontSize: 13 },
     }));

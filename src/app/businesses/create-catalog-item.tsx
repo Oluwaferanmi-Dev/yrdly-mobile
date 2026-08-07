@@ -293,33 +293,33 @@ export default function CreateCatalogItemScreen() {
 }
 
 const stylesheet = createStyleSheet(theme => ({
-      root: { flex: 1, backgroundColor: '#050505' },
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
       
       header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
 
       contentPad: { paddingHorizontal: 20, paddingVertical: 20, gap: 20 },
       
       photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
       photoBox: { width: '31%', aspectRatio: 1, borderRadius: 14, overflow: 'hidden', position: 'relative' },
-      removePhotoBtn: { position: 'absolute', top: 4, right: 4, backgroundColor: '#fff', borderRadius: 10, width: 20, height: 20, alignItems: 'center', justifyContent: 'center' },
+      removePhotoBtn: { position: 'absolute', top: 4, right: 4, backgroundColor: theme.colors.TEXT_PRIMARY, borderRadius: 10, width: 20, height: 20, alignItems: 'center', justifyContent: 'center' },
       addPhotoBtn: { width: '31%', aspectRatio: 1, borderRadius: 14, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
 
       fieldBlock: {},
       fieldLabel: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: theme.colors.LABEL, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
-      input: { width: '100%', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, color: '#fff', fontFamily: 'Inter', fontSize: 15 },
+      input: { width: '100%', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 15 },
       
       priceBox: { flexDirection: 'row', alignItems: 'center', height: 56, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, paddingHorizontal: 16, gap: 8 },
       priceSymbol: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.LABEL },
-      priceInput: { flex: 1, fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff', height: '100%' },
+      priceInput: { flex: 1, fontFamily: 'Outfit-Bold', fontSize: 20, color: theme.colors.TEXT_PRIMARY, height: '100%' },
 
       catWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
       catBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
       catTxt: { fontFamily: 'Inter', fontSize: 13 },
 
-      stockRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18 },
-      stockTitle: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+      stockRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18 },
+      stockTitle: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       stockDesc: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL },
 
       bottomArea: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 34, borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER },
@@ -328,7 +328,7 @@ const stylesheet = createStyleSheet(theme => ({
 
       addedScreen: { alignItems: 'center', justifyContent: 'center', padding: 28, gap: 14 },
       addedIconBox: { width: 72, height: 72, borderRadius: 24, backgroundColor: 'rgba(130,219,126,0.12)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)', alignItems: 'center', justifyContent: 'center' },
-      addedTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff' },
+      addedTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: theme.colors.TEXT_PRIMARY },
       addedSubtitle: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center' },
       addedBtn: { marginTop: 8, paddingHorizontal: 32, paddingVertical: 13, borderRadius: 14, backgroundColor: theme.colors.G },
       addedBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },

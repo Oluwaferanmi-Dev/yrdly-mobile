@@ -87,7 +87,7 @@ export default function ForgotPasswordScreen() {
                     <Ionicons name="checkmark" size={24} color={colors.G} />
                   </View>
                   <Text style={styles.sentText}>
-                    Reset link sent to <Text style={{ color: '#FFFFFF', fontFamily: 'Inter-SemiBold' }}>{email || 'your email'}</Text>. Check your inbox.
+                    Reset link sent to <Text style={{ color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter-SemiBold' }}>{email || 'your email'}</Text>. Check your inbox.
                   </Text>
                 </View>
               )}
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontFamily: 'Outfit-ExtraBold',
-    color: '#FFFFFF',
+    color: theme.colors.TEXT_PRIMARY,
     textAlign: 'center',
   },
   descText: {

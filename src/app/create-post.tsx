@@ -221,7 +221,7 @@ const _stylesheet = createStyleSheet(theme => ({
       },
       headerBtn: { paddingVertical: 8, paddingRight: 16 },
       cancelText: { fontFamily: 'Inter-Medium', fontSize: 15, color: theme.colors.MUTED },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 17, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 17, color: theme.colors.TEXT_PRIMARY },
       postButton: {
         paddingHorizontal: 18,
         paddingVertical: 8,
@@ -253,7 +253,7 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 22,
       },
       avatarText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
-      authorName: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff', marginBottom: 2 },
+      authorName: { fontFamily: 'Outfit-Bold', fontSize: 15, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 },
       areaPill: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -291,7 +291,7 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingHorizontal: 20,
         fontFamily: 'Inter-Regular',
         fontSize: 16,
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
         lineHeight: 24,
         minHeight: 150,
       },
@@ -357,7 +357,7 @@ const _stylesheet = createStyleSheet(theme => ({
         justifyContent: 'center',
         alignItems: 'center',
       },
-      successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: '#fff', textAlign: 'center' },
+      successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: theme.colors.TEXT_PRIMARY, textAlign: 'center' },
       successDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center', lineHeight: 22 },
       backButton: {
         marginTop: 8,

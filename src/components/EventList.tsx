@@ -374,7 +374,7 @@ const sStylesheet = createStyleSheet(theme => ({
       featBadge: { position: 'absolute', top: 14, left: 14, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(130,219,126,0.2)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(130,219,126,0.3)' },
       featBadgeTxt: { color: '#82DB7E', fontSize: 11, fontWeight: '800' },
       heroInfo: { position: 'absolute', bottom: 16, left: 16, right: 16 },
-      heroTitle: { color: '#fff', fontSize: 22, fontWeight: '900', marginBottom: 4, lineHeight: 26 },
+      heroTitle: { color: theme.colors.TEXT_PRIMARY, fontSize: 22, fontWeight: '900', marginBottom: 4, lineHeight: 26 },
       heroMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
       heroMeta: { color: 'rgba(255,255,255,0.8)', fontSize: 12, flex: 1 },
       heroFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 },

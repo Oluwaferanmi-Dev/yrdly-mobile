@@ -286,7 +286,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
             </TouchableOpacity>
             <TouchableOpacity style={f.actionBtn} onPress={handleShare}>
               <Ionicons name="share-social-outline" size={17} color="#fff" />
-              {shareCount > 0 && <Text style={{ color: '#fff', fontSize: 12, marginLeft: 4, fontWeight: 'bold' }}>{shareCount}</Text>}
+              {shareCount > 0 && <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 12, marginLeft: 4, fontWeight: 'bold' }}>{shareCount}</Text>}
             </TouchableOpacity>
           </View>
         </View>
@@ -348,7 +348,7 @@ const cStylesheet = createStyleSheet(theme => ({
       imgWrap: { width: '100%', height: 140, position: 'relative' },
       dateBubble: { position: 'absolute', top: 10, left: 10, backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4, alignItems: 'center' },
       dateDay: { color: '#82DB7E', fontSize: 9, fontWeight: '800' },
-      dateNum: { color: '#fff', fontSize: 15, fontWeight: '900', lineHeight: 17 },
+      dateNum: { color: theme.colors.TEXT_PRIMARY, fontSize: 15, fontWeight: '900', lineHeight: 17 },
       heart: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
       badge: { position: 'absolute', bottom: 8, left: 8, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 12 },
       badgeTxt: { fontSize: 9, fontWeight: '800' },
@@ -361,7 +361,7 @@ const cStylesheet = createStyleSheet(theme => ({
       price: { fontSize: 13, fontWeight: '900', flex: 1 },
       avatarRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
       avatar: { width: 18, height: 18, borderRadius: 9, overflow: 'hidden', justifyContent: 'center', alignItems: 'center' },
-      avatarTxt: { color: '#fff', fontSize: 8, fontWeight: '800' },
+      avatarTxt: { color: theme.colors.TEXT_PRIMARY, fontSize: 8, fontWeight: '800' },
       attendees: { fontSize: 10, color: '#aaa' },
       ctaBtn: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
     }));
@@ -374,7 +374,7 @@ const fStylesheet = createStyleSheet(theme => ({
       overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.28)' },
       dateBubble: { position: 'absolute', top: 12, left: 12, backgroundColor: 'rgba(0,0,0,0.65)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, alignItems: 'center', minWidth: 44 },
       dateMonth: { color: '#82DB7E', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
-      dateDay: { color: '#fff', fontSize: 20, fontWeight: '900', lineHeight: 22 },
+      dateDay: { color: theme.colors.TEXT_PRIMARY, fontSize: 20, fontWeight: '900', lineHeight: 22 },
       badge: { position: 'absolute', bottom: 12, left: 12, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 9, paddingVertical: 4, borderRadius: 20 },
       badgeTxt: { fontSize: 10, fontWeight: '800' },
       topActions: { position: 'absolute', top: 12, right: 12, flexDirection: 'row', gap: 8 },

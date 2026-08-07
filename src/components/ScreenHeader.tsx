@@ -77,5 +77,5 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingHorizontal: 3,
         borderWidth: 1.5,
       },
-      badgeText: { color: '#000', fontSize: 9, fontWeight: '800', fontFamily: 'Outfit' }
+      badgeText: { color: theme.colors.DARK, fontSize: 9, fontWeight: '800', fontFamily: 'Outfit' }
     }));

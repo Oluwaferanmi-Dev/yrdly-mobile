@@ -239,7 +239,7 @@ const sStylesheet = createStyleSheet(theme => ({
       tileOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)' },
       tileBadge: { position: 'absolute', top: 10, right: 10, backgroundColor: 'rgba(255,255,255,0.9)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
       tileBadgeTxt: { color: '#2e7d32', fontSize: 11, fontWeight: '700' },
-      tileTitle: { position: 'absolute', bottom: 12, left: 12, right: 12, color: '#fff', fontSize: 16, fontWeight: '800' },
+      tileTitle: { position: 'absolute', bottom: 12, left: 12, right: 12, color: theme.colors.TEXT_PRIMARY, fontSize: 16, fontWeight: '800' },
       empty: { paddingVertical: 60, alignItems: 'center' },
       emptyTxt: { fontSize: 15, textAlign: 'center' },
       bizCard: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 20, borderWidth: 1, marginBottom: 12 },

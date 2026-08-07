@@ -351,7 +351,7 @@ export default function OtherUserProfileScreen() {
                 onPress={handleMessage}
               >
                 <Ionicons name="chatbubble-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
-                <Text style={[stylesheet.btnActionTxt, { color: '#fff' }]}>Message</Text>
+                <Text style={[stylesheet.btnActionTxt, { color: theme.colors.TEXT_PRIMARY }]}>Message</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -453,18 +453,18 @@ const _stylesheet = createStyleSheet(theme => ({
       avatarWrap: { position: 'relative' },
       avatarImg: { width: 80, height: 80, borderRadius: 40, borderWidth: 2.5, borderColor: theme.colors.GLASS_BORDER },
       avatarFallback: { backgroundColor: theme.colors.G, alignItems: 'center', justifyContent: 'center' },
-      avatarFallbackTxt: { fontSize: 32, fontFamily: 'Outfit-Bold', color: '#050505' },
-      onlineDot: { position: 'absolute', bottom: 3, right: 3, width: 14, height: 14, borderRadius: 7, backgroundColor: theme.colors.G, borderWidth: 2, borderColor: '#050505' },
+      avatarFallbackTxt: { fontSize: 32, fontFamily: 'Outfit-Bold', color: theme.colors.DARK },
+      onlineDot: { position: 'absolute', bottom: 3, right: 3, width: 14, height: 14, borderRadius: 7, backgroundColor: theme.colors.G, borderWidth: 2, borderColor: theme.colors.DARK },
       heroInfo: { flex: 1, justifyContent: 'center' },
       nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-      heroName: { fontSize: 20, fontFamily: 'Outfit-Bold', color: '#fff' },
+      heroName: { fontSize: 20, fontFamily: 'Outfit-Bold', color: theme.colors.TEXT_PRIMARY },
       heroHandle: { fontSize: 13, fontFamily: 'Inter-Regular', color: theme.colors.LABEL, marginBottom: 6 },
       locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
       locationTxt: { fontSize: 12, fontFamily: 'Inter-Regular', color: theme.colors.LABEL },
       heroBio: { fontSize: 14, fontFamily: 'Inter-Regular', color: theme.colors.MUTED, lineHeight: 22, marginBottom: 12 },
       statsRow: { flexDirection: 'row', gap: 20, marginBottom: 16 },
       statBtn: { alignItems: 'center' },
-      statV: { fontSize: 18, fontFamily: 'Outfit-Bold', color: '#fff' },
+      statV: { fontSize: 18, fontFamily: 'Outfit-Bold', color: theme.colors.TEXT_PRIMARY },
       statL: { fontSize: 11, fontFamily: 'Inter-Regular', color: theme.colors.LABEL },
       actionRow: { flexDirection: 'row', gap: 12 },
       btnAction: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 14 },

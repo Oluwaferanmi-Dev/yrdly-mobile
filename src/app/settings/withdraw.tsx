@@ -96,7 +96,7 @@ export default function WithdrawScreen() {
         <ScrollView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 24 }}>
           <View style={{ alignItems: 'center', marginBottom: 24 }}>
             <Text style={{ fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL, marginBottom: 8 }}>You are withdrawing</Text>
-            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 42, color: '#fff', letterSpacing: -1 }}>₦{numAmount.toLocaleString()}</Text>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 42, color: theme.colors.TEXT_PRIMARY, letterSpacing: -1 }}>₦{numAmount.toLocaleString()}</Text>
           </View>
 
           <View style={{ gap: 8, marginBottom: 24 }}>
@@ -228,10 +228,10 @@ export default function WithdrawScreen() {
 }
 
 const sStylesheet = createStyleSheet(theme => ({
-      root: { flex: 1, backgroundColor: '#050505' },
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
       header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
 
       availBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', borderRadius: 14, marginBottom: 20 },
       availBadgeTxt: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.G },
@@ -239,33 +239,33 @@ const sStylesheet = createStyleSheet(theme => ({
       amtLabel: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: theme.colors.LABEL, marginBottom: 8, letterSpacing: 1 },
       amtInputBox: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 64, paddingHorizontal: 16, borderRadius: 18, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
       amtNaira: { fontFamily: 'Outfit-Bold', fontSize: 24, color: theme.colors.LABEL },
-      amtInput: { flex: 1, fontFamily: 'Outfit-Bold', fontSize: 28, color: '#fff', height: '100%' },
+      amtInput: { flex: 1, fontFamily: 'Outfit-Bold', fontSize: 28, color: theme.colors.TEXT_PRIMARY, height: '100%' },
       
       quickAmtsRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
       quickAmtBtn: { flex: 1, paddingVertical: 8, borderRadius: 10, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center' },
       quickAmtTxt: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.MUTED },
 
-      destCard: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginTop: 20 },
+      destCard: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginTop: 20 },
       destIconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.08)', alignItems: 'center', justifyContent: 'center' },
-      destBank: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+      destBank: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       destUser: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL },
       destChange: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.G },
 
-      feeCard: { padding: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginTop: 20 },
+      feeCard: { padding: 16, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginTop: 20 },
       feeRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
       feeRowL: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.MUTED },
-      feeRowR: { fontFamily: 'Inter', fontSize: 13, color: '#fff' },
+      feeRowR: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.TEXT_PRIMARY },
       feeDiv: { height: 1, backgroundColor: theme.colors.GLASS_BORDER, marginVertical: 8 },
-      feeRowNetL: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff' },
+      feeRowNetL: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       feeRowNetR: { fontFamily: 'Outfit-Bold', fontSize: 15, color: theme.colors.G },
 
       footerBtnWrap: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 34, borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER },
       footerBtn: { width: '100%', paddingVertical: 16, borderRadius: 18, backgroundColor: theme.colors.G, alignItems: 'center' },
       footerBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
 
-      confirmRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: '#0f0f0f', borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
+      confirmRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: theme.colors.SURFACE_ALT, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
       confirmRowL: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL },
-      confirmRowR: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+      confirmRowR: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
 
       warningBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16, backgroundColor: 'rgba(255,183,28,0.05)', borderWidth: 1, borderColor: 'rgba(255,183,28,0.2)', borderRadius: 16 },
       warningTxt: { flex: 1, fontFamily: 'Inter', fontSize: 13, color: theme.colors.MUTED, lineHeight: 20 },

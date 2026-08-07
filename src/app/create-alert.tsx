@@ -34,7 +34,7 @@ export default function CreateAlertScreen() {
 
   if (published) {
     return (
-      <View style={[stylesheet.successContainer, { backgroundColor: '#050505' }]}>
+      <View style={[stylesheet.successContainer, { backgroundColor: theme.colors.DARK }]}>
         <View style={stylesheet.successIcon}>
           <Feather name="check" size={34} color={theme.colors.G} />
         </View>
@@ -57,7 +57,7 @@ export default function CreateAlertScreen() {
 
   if (step === 'preview') {
     return (
-      <View style={[stylesheet.container, { backgroundColor: '#050505', paddingTop: insets.top }]}>
+      <View style={[stylesheet.container, { backgroundColor: theme.colors.DARK, paddingTop: insets.top }]}>
         <View style={stylesheet.previewHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <TouchableOpacity onPress={() => setStep('form')} style={stylesheet.backBtn}>
@@ -107,7 +107,7 @@ export default function CreateAlertScreen() {
 
   return (
     <KeyboardAvoidingView 
-      style={[stylesheet.container, { backgroundColor: '#050505', paddingTop: insets.top }]}
+      style={[stylesheet.container, { backgroundColor: theme.colors.DARK, paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={stylesheet.header}>
@@ -247,14 +247,14 @@ const _stylesheet = createStyleSheet(theme => ({
         justifyContent: 'center',
         alignItems: 'center',
       },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
       publishBtn: {
         paddingHorizontal: 18,
         paddingVertical: 8,
         borderRadius: 12,
         backgroundColor: '#ef4444',
       },
-      publishBtnText: { fontFamily: 'Outfit-Bold', fontSize: 13, color: '#fff' },
+      publishBtnText: { fontFamily: 'Outfit-Bold', fontSize: 13, color: theme.colors.TEXT_PRIMARY },
 
       scrollContent: { paddingHorizontal: 20, paddingVertical: 20, paddingBottom: 40 },
       
@@ -294,7 +294,7 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: theme.colors.SURFACE,
         borderWidth: 1,
         borderColor: theme.colors.GLASS_BORDER,
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
         fontFamily: 'Inter-Regular',
         fontSize: 15,
       },
@@ -335,7 +335,7 @@ const _stylesheet = createStyleSheet(theme => ({
         justifyContent: 'center',
         alignItems: 'center',
       },
-      successTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff', textAlign: 'center' },
+      successTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: theme.colors.TEXT_PRIMARY, textAlign: 'center' },
       successDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center' },
       btnPrimary: {
         marginTop: 8,
@@ -366,7 +366,7 @@ const _stylesheet = createStyleSheet(theme => ({
       },
       bannerType: { fontFamily: 'Outfit-Bold', fontSize: 11 },
       bannerMeta: { fontFamily: 'Inter-Regular', fontSize: 10, color: theme.colors.LABEL },
-      bannerDesc: { fontFamily: 'Inter-Regular', fontSize: 13, color: '#fff', lineHeight: 18 },
+      bannerDesc: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.TEXT_PRIMARY, lineHeight: 18 },
 
       heroPreview: {
         paddingHorizontal: 16,
@@ -381,6 +381,6 @@ const _stylesheet = createStyleSheet(theme => ({
       },
       heroType: { fontFamily: 'Outfit-Bold', fontSize: 11 },
       heroTime: { fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL },
-      heroTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff', marginBottom: 8 },
+      heroTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: theme.colors.TEXT_PRIMARY, marginBottom: 8 },
       heroArea: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL },
     }));

@@ -177,9 +177,9 @@ export default function ProfileTab() {
         {/* ── Nav bar (YRDLY New Designs matching) ── */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 }}>
           <View style={{ width: 38 }} />
-          <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: '#FFFFFF' }}>Profile</Text>
+          <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.TEXT_PRIMARY }}>Profile</Text>
           <TouchableOpacity 
-            style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#111111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
+            style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
             onPress={() => router.push('/settings')}
             activeOpacity={0.7}
           >
@@ -216,7 +216,7 @@ export default function ProfileTab() {
             {/* Name & Handle */}
             <View style={{ flex: 1, paddingTop: 4 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 20, color: '#FFFFFF' }} numberOfLines={1}>
+                <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 20, color: theme.colors.TEXT_PRIMARY }} numberOfLines={1}>
                   {profile?.name || user?.user_metadata?.name || 'Anonymous'}
                 </Text>
                 {profile?.phone_verified && (
@@ -242,7 +242,7 @@ export default function ProfileTab() {
           )}
 
           <TouchableOpacity 
-            style={{ height: 36, paddingHorizontal: 20, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', alignSelf: 'flex-start' }} 
+            style={{ height: 36, paddingHorizontal: 20, borderRadius: 18, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', alignSelf: 'flex-start' }} 
             onPress={() => router.push('/profile/edit')}
             activeOpacity={0.8}
           >
@@ -253,7 +253,7 @@ export default function ProfileTab() {
         {/* ── Stats Bar (New Design 3-Column with border dividers) ── */}
         <View style={{ flexDirection: 'row', marginHorizontal: 20, marginBottom: 20, borderTopWidth: 1, borderBottomWidth: 1, borderColor: theme.colors.GLASS_BORDER, paddingVertical: 16 }}>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{posts.length}</Text>
+            <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: theme.colors.TEXT_PRIMARY }}>{posts.length}</Text>
             <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginTop: 2 }}>Posts</Text>
           </View>
           <View style={{ width: 1, height: '100%', backgroundColor: theme.colors.GLASS_BORDER }} />
@@ -261,7 +261,7 @@ export default function ProfileTab() {
             style={{ flex: 1, alignItems: 'center' }}
             onPress={() => router.push(`/network/${user?.id}?mode=followers` as any)}
           >
-            <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{followersCount}</Text>
+            <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: theme.colors.TEXT_PRIMARY }}>{followersCount}</Text>
             <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginTop: 2 }}>Followers</Text>
           </TouchableOpacity>
           <View style={{ width: 1, height: '100%', backgroundColor: theme.colors.GLASS_BORDER }} />
@@ -269,7 +269,7 @@ export default function ProfileTab() {
             style={{ flex: 1, alignItems: 'center' }}
             onPress={() => router.push(`/network/${user?.id}?mode=following` as any)}
           >
-            <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: '#FFFFFF' }}>{followingCount}</Text>
+            <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: theme.colors.TEXT_PRIMARY }}>{followingCount}</Text>
             <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginTop: 2 }}>Following</Text>
           </TouchableOpacity>
         </View>
@@ -278,7 +278,7 @@ export default function ProfileTab() {
         <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
           <Text style={{ fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>QUICK ACCESS</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-            <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/community')}>
+            <PressableCard style={{ width: '48%', backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/community')}>
               <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.G + '15', borderWidth: 1, borderColor: theme.colors.G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
                 <Ionicons name="people-outline" size={18} color={theme.colors.G} />
               </View>
@@ -286,14 +286,14 @@ export default function ProfileTab() {
               <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL }}>Connections & people</Text>
             </PressableCard>
 
-            <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/tickets')}>
+            <PressableCard style={{ width: '48%', backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/tickets')}>
               <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.G + '15', borderWidth: 1, borderColor: theme.colors.G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
                 <MaterialCommunityIcons name="ticket-outline" size={18} color={theme.colors.G} />
               </View>
               <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 }}>Tickets</Text>
             </PressableCard>
 
-            <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/my-events' as any)}>
+            <PressableCard style={{ width: '48%', backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={() => router.push('/my-events' as any)}>
               <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.G + '15', borderWidth: 1, borderColor: theme.colors.G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
                 <Ionicons name="calendar-outline" size={18} color={theme.colors.G} />
               </View>
@@ -301,7 +301,7 @@ export default function ProfileTab() {
               <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL }}>Events you run</Text>
             </PressableCard>
 
-            <PressableCard style={{ width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={handleManageStore}>
+            <PressableCard style={{ width: '48%', backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 16, padding: 14 }} onPress={handleManageStore}>
               <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.G + '15', borderWidth: 1, borderColor: theme.colors.G + '25', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
                 <Ionicons name="storefront-outline" size={18} color={theme.colors.G} />
               </View>

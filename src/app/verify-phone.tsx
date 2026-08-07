@@ -82,7 +82,7 @@ export default function VerifyPhoneScreen() {
           Enter your Nigerian phone number to receive a verification code.
         </Text>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', height: 52, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 16, marginBottom: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', height: 52, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.SURFACE, paddingHorizontal: 16, marginBottom: 16 }}>
           <Feather name="phone" size={18} color={theme.colors.LABEL} style={{ marginRight: 12 }} />
           <TextInput
             style={[stylesheet.input, { color: theme.colors.TEXT_PRIMARY }]}
@@ -105,7 +105,7 @@ export default function VerifyPhoneScreen() {
           {loading ? (
             <ActivityIndicator color="#000" />
           ) : (
-            <Text style={[stylesheet.verifyBtnText, { color: '#000' }]}>Send Code</Text>
+            <Text style={[stylesheet.verifyBtnText, { color: theme.colors.DARK }]}>Send Code</Text>
           )}
         </TouchableOpacity>
       </View>

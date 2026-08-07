@@ -245,23 +245,23 @@ export default function SettingsScreen() {
 }
 
 const sStylesheet = createStyleSheet(theme => ({
-      root: { flex: 1, backgroundColor: '#050505' },
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
       header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
 
       section: { marginBottom: 24 },
       sectionTitle: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: theme.colors.LABEL, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10, marginLeft: 6 },
-      sectionCard: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 24, overflow: 'hidden' },
+      sectionCard: { backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 24, overflow: 'hidden' },
       
       divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER, marginLeft: 66 },
       
       row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16 },
       iconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
       rowMid: { flex: 1, paddingLeft: 14, paddingRight: 8 },
-      rowLabel: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: '#fff' },
+      rowLabel: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       rowSub: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.MUTED, marginTop: 2 },
-      rowValue: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
+      rowValue: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: theme.colors.TEXT_PRIMARY },
 
       adminBanner: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.18)', borderRadius: 18, marginBottom: 12 },
       adminBannerIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(130,219,126,0.12)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.25)', alignItems: 'center', justifyContent: 'center' },

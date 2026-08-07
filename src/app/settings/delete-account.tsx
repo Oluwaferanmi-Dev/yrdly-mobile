@@ -102,7 +102,7 @@ const sStylesheet = createStyleSheet(theme => ({
       root: { flex: 1, backgroundColor: theme.colors.DARK },
       header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
       content: { padding: 20, flexGrow: 1, justifyContent: 'center', paddingBottom: 60 },
       
       warningCard: { 
@@ -126,7 +126,7 @@ const sStylesheet = createStyleSheet(theme => ({
         marginBottom: 20 
       },
       warningTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#ef4444', marginBottom: 12 },
-      warningText: { fontFamily: 'Inter', fontSize: 14, color: '#fff', textAlign: 'center', lineHeight: 22, marginBottom: 16 },
+      warningText: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.TEXT_PRIMARY, textAlign: 'center', lineHeight: 22, marginBottom: 16 },
       
       deleteBtn: {
         backgroundColor: '#ef4444',
@@ -135,5 +135,5 @@ const sStylesheet = createStyleSheet(theme => ({
         justifyContent: 'center',
         alignItems: 'center',
       },
-      deleteBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 16, color: '#fff' },
+      deleteBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 16, color: theme.colors.TEXT_PRIMARY },
     }));

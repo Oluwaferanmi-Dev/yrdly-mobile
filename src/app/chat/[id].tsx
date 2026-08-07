@@ -587,7 +587,7 @@ function ChatContent() {
                 />
                 {!msgText && (
                   <View style={{ position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10 }}>
-                    <Text style={{ fontSize: 10, color: '#FFF' }}>
+                    <Text style={{ fontSize: 10, color: theme.colors.TEXT_PRIMARY }}>
                       {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
                   </View>
@@ -662,7 +662,7 @@ function ChatContent() {
             </View>
           )}
           <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>{title}</Text>
+            <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 15, color: theme.colors.TEXT_PRIMARY }} numberOfLines={1}>{title}</Text>
             <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL }}>@{otherUser?.username || otherUser?.name || 'user'}</Text>
           </View>
         </TouchableOpacity>
@@ -723,7 +723,7 @@ function ChatContent() {
             <Image source={{ uri: meta.item_image }} style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: theme.colors.SURFACE }} contentFit="cover" />
           )}
           <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 13, color: '#FFFFFF' }} numberOfLines={1}>
+            <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 13, color: theme.colors.TEXT_PRIMARY }} numberOfLines={1}>
               <Text style={{ color: theme.colors.MUTED, fontFamily: 'Outfit-Regular' }}>
                 {meta.type === 'event' ? 'About: ' : 'Inquiring about: '}
               </Text>
@@ -800,9 +800,9 @@ function ChatContent() {
                 </TouchableOpacity>
               </View>
             )}
-            <View style={{ backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: inputText.trim() ? 'rgba(130,219,126,0.22)' : theme.colors.GLASS_BORDER, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 }}>
+            <View style={{ backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: inputText.trim() ? 'rgba(130,219,126,0.22)' : theme.colors.GLASS_BORDER, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10 }}>
               <TextInput
-                style={{ color: '#FFF', fontFamily: 'Inter-Regular', fontSize: 15, maxHeight: 96, padding: 0 }}
+                style={{ color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter-Regular', fontSize: 15, maxHeight: 96, padding: 0 }}
                 placeholder="Message…"
                 placeholderTextColor={theme.colors.LABEL}
                 value={inputText}

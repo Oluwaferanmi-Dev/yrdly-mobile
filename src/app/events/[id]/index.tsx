@@ -564,7 +564,7 @@ export default function EventDetailScreen() {
                 activeOpacity={0.8}
               >
                 <Feather name="navigation" size={18} color="#000" style={{ marginRight: 8 }} />
-                <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 14, color: '#000' }}>Get Directions</Text>
+                <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 14, color: theme.colors.DARK }}>Get Directions</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -971,7 +971,7 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: 'rgba(0,0,0,0.6)', 
         paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 
       },
-      galleryBadgeText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
+      galleryBadgeText: { color: theme.colors.TEXT_PRIMARY, fontSize: 12, fontWeight: 'bold' },
       dotsContainer: { 
         position: 'absolute', bottom: 16, left: 0, right: 0, 
         flexDirection: 'row', justifyContent: 'center', alignItems: 'center' 
@@ -994,7 +994,7 @@ const _stylesheet = createStyleSheet(theme => ({
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', 
         paddingVertical: 14, borderRadius: 16, marginTop: 8 
       },
-      directionsTxt: { fontSize: 16, fontWeight: 'bold', marginLeft: 8, color: '#FFF' },
+      directionsTxt: { fontSize: 16, fontWeight: 'bold', marginLeft: 8, color: theme.colors.TEXT_PRIMARY },
       
       aboutHeader: { marginBottom: 12 },
       sectionTitle: { fontSize: 20, fontWeight: 'bold' },
@@ -1005,14 +1005,14 @@ const _stylesheet = createStyleSheet(theme => ({
       organizerRow: { flexDirection: 'row', alignItems: 'center' },
       avatar: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginRight: 16, overflow: 'hidden' },
       avatarImage: { width: '100%', height: '100%' },
-      avatarText: { color: '#FFFFFF', fontSize: 22, fontWeight: 'bold' },
+      avatarText: { color: theme.colors.TEXT_PRIMARY, fontSize: 22, fontWeight: 'bold' },
       organizerInfo: { flex: 1 },
       organizerLabel: { fontSize: 13, marginBottom: 2 },
       sellerName: { fontSize: 17, fontWeight: 'bold' },
       followBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginLeft: 12 },
       followBtnText: { fontWeight: 'bold', fontSize: 14 },
       
-      mapMarker: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3, elevation: 5 },
+      mapMarker: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', shadowColor: theme.colors.DARK, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3, elevation: 5 },
       
       tierCard: { 
         flexDirection: 'row', alignItems: 'center', 
@@ -1062,7 +1062,7 @@ const _stylesheet = createStyleSheet(theme => ({
       inputLabel: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
       input: { padding: 16, borderRadius: 16, marginBottom: 16, fontSize: 16 },
       purchaseBtn: { padding: 18, borderRadius: 16, alignItems: 'center' },
-      purchaseBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+      purchaseBtnText: { color: theme.colors.TEXT_PRIMARY, fontSize: 16, fontWeight: 'bold' },
 
       // Success overlay
       successBackdrop: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.55)' },
@@ -1072,7 +1072,7 @@ const _stylesheet = createStyleSheet(theme => ({
       successTier:  { fontSize: 15, fontWeight: '700', marginBottom: 12 },
       successBody:  { fontSize: 13, textAlign: 'center', lineHeight: 19, marginBottom: 24, maxWidth: 270 },
       successBtn: { width: '100%', height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-      successBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+      successBtnText: { color: theme.colors.TEXT_PRIMARY, fontSize: 16, fontWeight: '800' },
       successSecondary: { height: 40, justifyContent: 'center', alignItems: 'center' },
       successSecondaryText: { fontSize: 14, fontWeight: '600' },
     }));

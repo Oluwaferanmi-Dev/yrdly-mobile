@@ -353,7 +353,7 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
         padding: 10,
         borderRadius: 8,
-        shadowColor: '#000',
+        shadowColor: theme.colors.DARK,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,

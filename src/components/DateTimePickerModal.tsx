@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: 'rgba(255,255,255,0.08)',
   },
   btn: {
     padding: 8,
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
   },
   title: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Outfit-Bold',
   },

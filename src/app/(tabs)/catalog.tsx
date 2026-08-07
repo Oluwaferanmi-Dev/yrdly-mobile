@@ -51,7 +51,7 @@ function NearbyUserCard({ user, currentLoc, sStylesheet, theme }: any) {
           <Image source={avatar} style={sStylesheet.nearbyAvatar} contentFit="cover" />
         ) : (
           <View style={[sStylesheet.nearbyAvatar, { backgroundColor: theme.colors.SURFACE, alignItems: 'center', justifyContent: 'center' }]}>
-            <Text style={{ color: '#fff', fontSize: 24, fontFamily: 'Outfit-Bold' }}>{(user.name || '?')[0].toUpperCase()}</Text>
+            <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 24, fontFamily: 'Outfit-Bold' }}>{(user.name || '?')[0].toUpperCase()}</Text>
           </View>
         )}
       </View>
@@ -377,7 +377,7 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
           }}
           ListEmptyComponent={
             <View style={{ alignItems: 'center', paddingTop: 60, paddingHorizontal: 32 }}>
-              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 17, color: '#fff', marginBottom: 12 }}>Nothing nearby yet</Text>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 17, color: theme.colors.TEXT_PRIMARY, marginBottom: 12 }}>Nothing nearby yet</Text>
               <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.LABEL, textAlign: 'center', lineHeight: 22, marginBottom: 16 }}>Be the first to list something in your neighbourhood.</Text>
             </View>
           }
@@ -400,10 +400,10 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
             </View>
             <ScrollView style={{ padding: 20 }}>
               
-              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: '#fff', marginBottom: 12 }}>PRICE RANGE (₦)</Text>
+              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: theme.colors.TEXT_PRIMARY, marginBottom: 12 }}>PRICE RANGE (₦)</Text>
               <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
                 <TextInput
-                  style={{ flex: 1, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, paddingHorizontal: 12, height: 44, color: '#fff', fontFamily: 'Inter' }}
+                  style={{ flex: 1, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, paddingHorizontal: 12, height: 44, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter' }}
                   placeholder="Min"
                   placeholderTextColor={theme.colors.LABEL}
                   keyboardType="numeric"
@@ -411,7 +411,7 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
                   onChangeText={setFilterPriceMin}
                 />
                 <TextInput
-                  style={{ flex: 1, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, paddingHorizontal: 12, height: 44, color: '#fff', fontFamily: 'Inter' }}
+                  style={{ flex: 1, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, paddingHorizontal: 12, height: 44, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter' }}
                   placeholder="Max"
                   placeholderTextColor={theme.colors.LABEL}
                   keyboardType="numeric"
@@ -420,7 +420,7 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
                 />
               </View>
 
-              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: '#fff', marginBottom: 12 }}>CONDITION</Text>
+              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: theme.colors.TEXT_PRIMARY, marginBottom: 12 }}>CONDITION</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 24 }}>
                 {['Any', 'New', 'Used - Like New', 'Used - Good', 'Used - Fair'].map(c => (
                   <TouchableOpacity 
@@ -433,7 +433,7 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
                 ))}
               </ScrollView>
 
-              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: '#fff', marginBottom: 12 }}>SORT BY</Text>
+              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: theme.colors.TEXT_PRIMARY, marginBottom: 12 }}>SORT BY</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 24 }}>
                 {['Newest', 'Price: Low to High', 'Price: High to Low'].map(s => (
                   <TouchableOpacity 
@@ -446,7 +446,7 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
                 ))}
               </ScrollView>
 
-              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: '#fff', marginBottom: 12 }}>DISTANCE</Text>
+              <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: theme.colors.TEXT_PRIMARY, marginBottom: 12 }}>DISTANCE</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 40 }}>
                 {['Any', '5 km', '10 km', '25 km', '50+ km'].map(d => (
                   <TouchableOpacity 
@@ -899,11 +899,11 @@ const stylesheet = createStyleSheet(theme => ({
       modalContainer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
       modalContent: { backgroundColor: theme.colors.DARK, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, height: '80%' },
       modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-      modalTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      modalTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
       modalFooter: { flexDirection: 'row', gap: 12, marginTop: 20, paddingBottom: 20 },
       modalBtn: { flex: 1, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
       modalBtnText: { fontFamily: 'Outfit-Bold', fontSize: 15 },
-      title: { fontFamily: 'Outfit-ExtraBold', fontSize: 24, color: '#FFFFFF' },
+      title: { fontFamily: 'Outfit-ExtraBold', fontSize: 24, color: theme.colors.TEXT_PRIMARY },
       subtitle: { fontFamily: 'Inter-Medium', fontSize: 13, color: theme.colors.LABEL },
       headerIconBtn: {
         width: 38, height: 38, borderRadius: 19,
@@ -920,7 +920,7 @@ const stylesheet = createStyleSheet(theme => ({
         backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 14, paddingHorizontal: 14, height: 42,
       },
-      searchInput: { flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: '#FFFFFF' },
+      searchInput: { flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       cancelText: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.G },
       
       // Section Pills
@@ -942,7 +942,7 @@ const stylesheet = createStyleSheet(theme => ({
         letterSpacing: 1.2, paddingHorizontal: 20, marginBottom: 12,
       },
       nearbyCard: {
-        width: 155, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
+        width: 155, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 20, paddingHorizontal: 16, paddingVertical: 20,
         alignItems: 'center',
       },
@@ -953,7 +953,7 @@ const stylesheet = createStyleSheet(theme => ({
       },
       nearbyAvatar: { width: '100%', height: '100%' },
       nearbyInfo: { alignItems: 'center', marginBottom: 12 },
-      nearbyName: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff' },
+      nearbyName: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       nearbyHandle: { fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL, marginBottom: 4 },
       nearbyDistRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
       nearbyDistText: { fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL },
@@ -969,13 +969,13 @@ const stylesheet = createStyleSheet(theme => ({
       mutualRow: {
         flexDirection: 'row', alignItems: 'center', gap: 16,
         paddingHorizontal: 16, paddingVertical: 14,
-        backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
+        backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 20,
       },
       mutualAvatarWrap: { width: 52, height: 52, borderRadius: 26, overflow: 'hidden' },
       mutualAvatar: { width: '100%', height: '100%' },
       mutualInfo: { flex: 1 },
-      mutualName: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff' },
+      mutualName: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       mutualSub: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginTop: 2 },
       mutualMeta: { fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.MUTED, marginTop: 4 },
       connectBtnSmall: {
@@ -1019,8 +1019,8 @@ const stylesheet = createStyleSheet(theme => ({
         position: 'absolute', bottom: 8, left: 8, paddingHorizontal: 8, paddingVertical: 2,
         borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.55)',
       },
-      marketplaceCardCondText: { fontFamily: 'Inter-SemiBold', fontSize: 10, color: '#fff' },
-      marketplaceCardTitle: { fontFamily: 'Outfit-SemiBold', fontSize: 13, color: '#fff', marginBottom: 2 },
+      marketplaceCardCondText: { fontFamily: 'Inter-SemiBold', fontSize: 10, color: theme.colors.TEXT_PRIMARY },
+      marketplaceCardTitle: { fontFamily: 'Outfit-SemiBold', fontSize: 13, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 },
       marketplaceCardPrice: { fontFamily: 'Outfit-ExtraBold', fontSize: 15, color: theme.colors.G, marginBottom: 4 },
       marketplaceCardSeller: { flexDirection: 'row', alignItems: 'center', gap: 6 },
       marketplaceCardAvatarWrap: { width: 16, height: 16, borderRadius: 8, overflow: 'hidden' },
@@ -1030,7 +1030,7 @@ const stylesheet = createStyleSheet(theme => ({
       // Events Section
       eventsToolbar: { paddingBottom: 16 },
       eventCard: {
-        width: '100%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
+        width: '100%', backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 24, overflow: 'hidden',
       },
       eventCardImgWrap: { width: '100%', height: 160, position: 'relative' },
@@ -1038,9 +1038,9 @@ const stylesheet = createStyleSheet(theme => ({
       eventCardGradient: { position: 'absolute', inset: 0, backgroundColor: 'rgba(5,5,5,0.75)', top: '40%' },
       eventCardDate: {
         position: 'absolute', top: 12, left: 12, paddingHorizontal: 10, paddingVertical: 4,
-        borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.55)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.55)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
       },
-      eventCardDateText: { fontFamily: 'Outfit-Bold', fontSize: 12, color: '#fff' },
+      eventCardDateText: { fontFamily: 'Outfit-Bold', fontSize: 12, color: theme.colors.TEXT_PRIMARY },
       eventCardSave: {
         position: 'absolute', top: 10, right: 10, width: 30, height: 30, borderRadius: 15,
         backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center',
@@ -1051,25 +1051,25 @@ const stylesheet = createStyleSheet(theme => ({
       },
       eventCardPriceText: { fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.G },
       eventCardInfo: { paddingHorizontal: 16, paddingVertical: 14 },
-      eventCardTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff', marginBottom: 6 },
+      eventCardTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.TEXT_PRIMARY, marginBottom: 6 },
       eventCardMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
       eventCardMetaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
       eventCardMetaText: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL },
 
       // Places Section
       placeRow: {
-        flexDirection: 'row', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
+        flexDirection: 'row', backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 20, overflow: 'hidden',
       },
       placePhotoWrap: { width: 96, height: 96, flexShrink: 0 },
       placePhoto: { width: '100%', height: '100%' },
       placeInfo: { flex: 1, padding: 12, justifyContent: 'center' },
       placeTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-      placeName: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#fff' },
+      placeName: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       placeCategory: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginBottom: 8 },
       placeMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
       placeMetaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-      placeRating: { fontFamily: 'Outfit-Bold', fontSize: 12, color: '#fff' },
+      placeRating: { fontFamily: 'Outfit-Bold', fontSize: 12, color: theme.colors.TEXT_PRIMARY },
       placeDistText: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL },
       placeOpenPill: {
         paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6,
@@ -1082,11 +1082,11 @@ const stylesheet = createStyleSheet(theme => ({
       sheetContent: {
         position: 'absolute', bottom: 0, left: 0, right: 0,
         backgroundColor: '#0A0A0A', borderTopLeftRadius: 28, borderTopRightRadius: 28,
-        borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+        borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
       },
-      sheetHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.1)', alignSelf: 'center', marginTop: 14, marginBottom: 14 },
+      sheetHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: theme.colors.GLASS_BORDER, alignSelf: 'center', marginTop: 14, marginBottom: 14 },
       sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 16 },
-      sheetTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      sheetTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
       sheetReset: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL },
       applyBtn: { backgroundColor: theme.colors.G, borderRadius: 16, height: 50, justifyContent: 'center', alignItems: 'center' },
       applyBtnText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },

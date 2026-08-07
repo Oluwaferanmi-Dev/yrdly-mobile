@@ -120,7 +120,7 @@ export default function EditProfileScreen() {
                   {displayAvatar ? (
                     <Image source={{ uri: displayAvatar }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
                   ) : (
-                    <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 32, color: '#fff' }}>{name.charAt(0)}</Text>
+                    <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 32, color: theme.colors.TEXT_PRIMARY }}>{name.charAt(0)}</Text>
                   )}
                 </View>
               </View>
@@ -250,17 +250,17 @@ export default function EditProfileScreen() {
 }
 
 const sStylesheet = createStyleSheet(theme => ({
-      root: { flex: 1, backgroundColor: '#050505' },
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
       header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16 },
       backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.TEXT_PRIMARY },
       saveBtn: { height: 36, paddingHorizontal: 18, borderRadius: 18, backgroundColor: theme.colors.G, alignItems: 'center', justifyContent: 'center' },
-      saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#050505' },
+      saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
 
       avatarSection: { alignItems: 'center', paddingTop: 12, paddingBottom: 28, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       avatarWrap: { position: 'relative', marginBottom: 12 },
       avatarRing: { width: 96, height: 96, borderRadius: 48 },
-      avatarInner: { flex: 1, borderRadius: 45, backgroundColor: '#050505', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+      avatarInner: { flex: 1, borderRadius: 45, backgroundColor: theme.colors.DARK, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
       cameraOverlay: { position: 'absolute', inset: 0, borderRadius: 48, backgroundColor: 'rgba(0,0,0,0.42)', alignItems: 'center', justifyContent: 'center' },
       changePhotoTxt: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: theme.colors.G },
       photoHintTxt: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL, marginTop: 4 },
@@ -270,20 +270,20 @@ const sStylesheet = createStyleSheet(theme => ({
       label: { fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.LABEL, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 },
       labelOpt: { fontFamily: 'Inter', fontWeight: '400', textTransform: 'none', letterSpacing: 0 },
       
-      inputWrap: { flexDirection: 'row', alignItems: 'center', height: 56, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, paddingHorizontal: 16 },
+      inputWrap: { flexDirection: 'row', alignItems: 'center', height: 56, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, paddingHorizontal: 16 },
       inputIcon: { marginRight: 12 },
       inputPrefix: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.G, marginRight: 4 },
-      input: { flex: 1, fontFamily: 'Inter', fontSize: 15, color: '#fff', height: '100%' },
+      input: { flex: 1, fontFamily: 'Inter', fontSize: 15, color: theme.colors.TEXT_PRIMARY, height: '100%' },
       hintText: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL, marginTop: 5, paddingLeft: 4 },
 
       bioHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
       bioCount: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL },
-      bioInput: { backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, padding: 16, fontFamily: 'Inter', fontSize: 14, color: '#fff', minHeight: 80, textAlignVertical: 'top' },
+      bioInput: { backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, padding: 16, fontFamily: 'Inter', fontSize: 14, color: theme.colors.TEXT_PRIMARY, minHeight: 80, textAlignVertical: 'top' },
 
       verifiedSection: { borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER, paddingTop: 20 },
       verifiedCard: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 16, backgroundColor: 'rgba(255,255,255,0.025)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginBottom: 12 },
       verifiedLabel: { fontFamily: 'Inter-SemiBold', fontSize: 10, color: theme.colors.LABEL, letterSpacing: 0.8, textTransform: 'uppercase' },
-      verifiedValue: { fontFamily: 'Inter', fontSize: 14, color: 'rgba(255,255,255,0.55)' },
+      verifiedValue: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.MUTED },
       verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
       verifiedBadgeTxt: { fontFamily: 'Inter-SemiBold', fontSize: 11, color: theme.colors.G },
       verifiedHint: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL, marginTop: 4, paddingLeft: 4, lineHeight: 18 },

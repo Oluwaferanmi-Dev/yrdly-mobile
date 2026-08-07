@@ -111,7 +111,7 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: PIN_SIZE / 2,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#000',
+        shadowColor: theme.colors.DARK,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.35,
         shadowRadius: 4,
@@ -128,7 +128,7 @@ const _stylesheet = createStyleSheet(theme => ({
         marginTop: -1,
       },
       priceLabel: {
-        color: '#050505',
+        color: theme.colors.DARK,
         fontFamily: 'Outfit',
         fontSize: 8,
         fontWeight: '800',
@@ -143,7 +143,7 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingVertical: 1,
       },
       badgeText: {
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
         fontSize: 7,
         fontWeight: '700',
       },

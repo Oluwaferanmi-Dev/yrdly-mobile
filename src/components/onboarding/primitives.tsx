@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   stepTrack: {
     height: 3,
     borderRadius: 99,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   stepFill: {
     height: '100%',

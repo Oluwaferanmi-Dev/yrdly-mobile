@@ -98,14 +98,14 @@ export function ConvoAvatar({ avatarId, type, online = false, size = 48 }: Props
 
 const _stylesheet = createStyleSheet(theme => ({
       avatar: {
-        backgroundColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: theme.colors.GLASS_BORDER,
       },
       badge: {
         position: 'absolute',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1.5,
-        borderColor: '#050505',
+        borderColor: theme.colors.DARK,
       },
       onlineDot: {
         position: 'absolute',
@@ -114,6 +114,6 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 5,
         backgroundColor: '#22c55e',
         borderWidth: 1.5,
-        borderColor: '#050505',
+        borderColor: theme.colors.DARK,
       },
     }));

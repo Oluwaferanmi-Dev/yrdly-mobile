@@ -121,7 +121,7 @@ const _stylesheet = createStyleSheet(theme => ({
       },
       activeDot: {
         width: 16,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.colors.TEXT_PRIMARY,
       },
       inactiveDot: {
         width: 6,

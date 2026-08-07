@@ -64,7 +64,7 @@ export function GeneralPostForm({
           {profile?.avatar_url
             ? <Image source={{ uri: profile.avatar_url }} style={stylesheet.avatar} contentFit="cover" />
             : <View style={[stylesheet.avatar, { backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 18 }}>{(profile?.name || '?').charAt(0)}</Text>
+                <Text style={{ color: theme.colors.TEXT_PRIMARY, fontWeight: '800', fontSize: 18 }}>{(profile?.name || '?').charAt(0)}</Text>
               </View>
           }
           <View style={[stylesheet.cameraBtn, { backgroundColor: colors.tint }]}>
@@ -208,7 +208,7 @@ const sStylesheet = createStyleSheet(theme => ({
       sub: { fontSize: 12 },
       pill: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1 },
       pillTxt: { fontSize: 12, fontWeight: '800' },
-      menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
+      menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: theme.colors.DARK, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
       menuItem: { paddingVertical: 10, paddingHorizontal: 16 },
       composerCard: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 12 },
       composerInput: { fontSize: 18, minHeight: 140, lineHeight: 26, textAlignVertical: 'top' },

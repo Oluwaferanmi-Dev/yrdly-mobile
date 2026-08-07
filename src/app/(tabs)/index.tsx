@@ -82,13 +82,13 @@ const QuickPostBox = memo(() => {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
-        backgroundColor: 'rgba(255,255,255,0.04)',
+        backgroundColor: theme.colors.SURFACE,
         borderWidth: 1,
         borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 24,
       }}
     >
-      <View style={{ width: 38, height: 38, borderRadius: 19, borderWidth: 2, borderColor: theme.colors.G, overflow: 'hidden', flexShrink: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)' }}>
+      <View style={{ width: 38, height: 38, borderRadius: 19, borderWidth: 2, borderColor: theme.colors.G, overflow: 'hidden', flexShrink: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.SURFACE }}>
         {avatarUri ? (
           <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
         ) : (
@@ -291,7 +291,7 @@ export default function HomeTab() {
               {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
                 <Image source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
               ) : (
-                <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ flex: 1, backgroundColor: theme.colors.SURFACE, justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={{ color: theme.colors.G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
                 </View>
               )}
@@ -325,9 +325,9 @@ export default function HomeTab() {
               <NotificationsIcon size={17} color="rgba(255,255,255,0.85)" />
               {unreadCount > 0 && (
                 <View style={{
-                  position: 'absolute', right: -6, top: -3, backgroundColor: '#EF4444', borderRadius: 9, minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4, borderWidth: 1.5, borderColor: '#050505'
+                  position: 'absolute', right: -6, top: -3, backgroundColor: '#EF4444', borderRadius: 9, minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4, borderWidth: 1.5, borderColor: theme.colors.DARK
                 }}>
-                  <Text style={{ color: '#FFF', fontSize: 10, fontFamily: 'Inter-ExtraBold', lineHeight: 10 }}>
+                  <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 10, fontFamily: 'Inter-ExtraBold', lineHeight: 10 }}>
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </Text>
                 </View>
@@ -337,7 +337,7 @@ export default function HomeTab() {
               {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
                 <Image source={{ uri: profile?.avatar_url || user?.user_metadata?.avatar_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" cachePolicy="memory-disk" />
               ) : (
-                <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ flex: 1, backgroundColor: theme.colors.SURFACE, justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={{ color: theme.colors.G, fontSize: 15, fontFamily: 'Outfit-Bold' }}>{profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}</Text>
                 </View>
               )}
@@ -389,7 +389,7 @@ export default function HomeTab() {
                   marginBottom: 8,
                   borderRadius: 16,
                   elevation: 4,
-                  shadowColor: '#000',
+                  shadowColor: theme.colors.DARK,
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.15,
                   shadowRadius: 12,

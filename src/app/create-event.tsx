@@ -329,7 +329,7 @@ export default function CreateEventScreen() {
 
             <Text style={stylesheet.label}>Event Date</Text>
             <TouchableOpacity style={stylesheet.input} onPress={() => setShowDatePicker(true)}>
-              <Text style={{ color: '#fff' }}>{eventDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</Text>
+              <Text style={{ color: theme.colors.TEXT_PRIMARY }}>{eventDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</Text>
             </TouchableOpacity>
             <DateTimePickerModal
               visible={showDatePicker}
@@ -341,7 +341,7 @@ export default function CreateEventScreen() {
 
             <Text style={stylesheet.label}>Start Time</Text>
             <TouchableOpacity style={stylesheet.input} onPress={() => setShowStartTimePicker(true)}>
-              <Text style={{ color: '#fff' }}>{startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
+              <Text style={{ color: theme.colors.TEXT_PRIMARY }}>{startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
             </TouchableOpacity>
             <DateTimePickerModal
               visible={showStartTimePicker}
@@ -353,7 +353,7 @@ export default function CreateEventScreen() {
 
             <Text style={stylesheet.label}>End Time</Text>
             <TouchableOpacity style={stylesheet.input} onPress={() => setShowEndTimePicker(true)}>
-              <Text style={{ color: '#fff' }}>{endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
+              <Text style={{ color: theme.colors.TEXT_PRIMARY }}>{endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
             </TouchableOpacity>
             <DateTimePickerModal
               visible={showEndTimePicker}
@@ -371,7 +371,7 @@ export default function CreateEventScreen() {
             <Text style={stylesheet.stepDesc}>Where can attendees find your event?</Text>
 
             <View style={stylesheet.switchRow}>
-              <Text style={{ fontFamily: 'Inter-Medium', color: '#fff', fontSize: 15 }}>Online Event</Text>
+              <Text style={{ fontFamily: 'Inter-Medium', color: theme.colors.TEXT_PRIMARY, fontSize: 15 }}>Online Event</Text>
               <Switch value={isOnline} onValueChange={setIsOnline} trackColor={{ false: theme.colors.SURFACE, true: theme.colors.G }} />
             </View>
 
@@ -438,7 +438,7 @@ export default function CreateEventScreen() {
                         flexDirection: 'row',
                       },
                       description: {
-                        color: '#fff',
+                        color: theme.colors.TEXT_PRIMARY,
                       },
                     }}
                     textInputProps={{
@@ -469,7 +469,7 @@ export default function CreateEventScreen() {
             {tiers.map((t, idx) => (
               <View key={idx} style={stylesheet.tierCard}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ fontFamily: 'Outfit-Bold', color: '#fff', fontSize: 16 }}>Ticket Tier {idx + 1}</Text>
+                  <Text style={{ fontFamily: 'Outfit-Bold', color: theme.colors.TEXT_PRIMARY, fontSize: 16 }}>Ticket Tier {idx + 1}</Text>
                   {tiers.length > 1 && (
                     <TouchableOpacity onPress={() => removeTier(idx)} style={{ padding: 4 }}>
                       <Feather name="trash-2" size={18} color="#ef4444" />
@@ -631,7 +631,7 @@ export default function CreateEventScreen() {
                 </View>
 
                 {desc.trim().length > 0 && (
-                  <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' }}>
+                  <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: theme.colors.SURFACE }}>
                     <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: theme.colors.TEXT_PRIMARY, marginBottom: 8 }}>About this event</Text>
                     <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.LABEL, lineHeight: 22 }}>
                       {desc.trim()}
@@ -640,7 +640,7 @@ export default function CreateEventScreen() {
                 )}
 
                 {tiers.length > 0 && (
-                  <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' }}>
+                  <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: theme.colors.SURFACE }}>
                     <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: theme.colors.TEXT_PRIMARY, marginBottom: 8 }}>Tickets</Text>
                     {tiers.map((t, idx) => (
                       <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: t.isFree ? theme.colors.G : 'rgba(255,255,255,0.05)' }}>
@@ -698,11 +698,11 @@ const _stylesheet = createStyleSheet(theme => ({
         alignItems: 'center',
       },
       headerTextContainer: { flex: 1 },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
       headerSubtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.MUTED },
       progressBarBg: {
         height: 3,
-        backgroundColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: theme.colors.GLASS_BORDER,
         width: '100%',
       },
       progressBarFill: {
@@ -713,7 +713,7 @@ const _stylesheet = createStyleSheet(theme => ({
         padding: 20,
         paddingBottom: 40,
       },
-      stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff', marginBottom: 4 },
+      stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: theme.colors.TEXT_PRIMARY, marginBottom: 4 },
       stepDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED, marginBottom: 20 },
       formGroup: { gap: 12 },
       label: { fontFamily: 'Inter-Medium', fontSize: 13, color: '#ccc', marginTop: 8 },
@@ -726,7 +726,7 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingVertical: 12,
         fontFamily: 'Inter-Regular',
         fontSize: 15,
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
       },
       textArea: {
         height: 100,
@@ -839,7 +839,7 @@ const _stylesheet = createStyleSheet(theme => ({
         padding: 16,
         gap: 8,
       },
-      reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff' },
+      reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: theme.colors.TEXT_PRIMARY },
       reviewMetaRow: {
         flexDirection: 'row',
         gap: 8,
@@ -851,7 +851,7 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 8,
         backgroundColor: 'rgba(255,255,255,0.06)',
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: theme.colors.GLASS_BORDER,
       },
       reviewBadgeText: {
         fontFamily: 'Inter-Medium',
@@ -902,6 +902,6 @@ const _stylesheet = createStyleSheet(theme => ({
         justifyContent: 'center',
         alignItems: 'center',
       },
-      successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: '#fff', textAlign: 'center' },
+      successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: theme.colors.TEXT_PRIMARY, textAlign: 'center' },
       successDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center', lineHeight: 22 },
     }));

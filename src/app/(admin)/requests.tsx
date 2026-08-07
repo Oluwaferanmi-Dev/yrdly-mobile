@@ -108,7 +108,7 @@ function RequestCard({ item, onResolve }: { item: DeletionRequest; onResolve: (i
         </TouchableOpacity>
         <TouchableOpacity style={[stylesheet.actionBtn, stylesheet.resolveBtn]} onPress={handleMarkResolved}>
           <Ionicons name="checkmark-circle-outline" size={15} color="#fff" />
-          <Text style={[stylesheet.actionTxt, { color: '#fff' }]}>Mark Resolved</Text>
+          <Text style={[stylesheet.actionTxt, { color: theme.colors.TEXT_PRIMARY }]}>Mark Resolved</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -248,13 +248,13 @@ const _stylesheet = createStyleSheet(theme => ({
         flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 12,
       },
       headerTitle: {
-        fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff',
+        fontFamily: 'Outfit-Bold', fontSize: 20, color: theme.colors.TEXT_PRIMARY,
       },
       countBadge: {
         backgroundColor: '#EF4444', borderRadius: 10,
         paddingHorizontal: 7, paddingVertical: 2, minWidth: 22, alignItems: 'center',
       },
-      countTxt: { color: '#fff', fontFamily: 'Outfit-Bold', fontSize: 12 },
+      countTxt: { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit-Bold', fontSize: 12 },
       emailAllBtn: {
         width: 36, height: 36, borderRadius: 18,
         backgroundColor: theme.colors.GLASS_BG, alignItems: 'center', justifyContent: 'center',
@@ -262,7 +262,7 @@ const _stylesheet = createStyleSheet(theme => ({
       },
       centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32, gap: 12 },
       loadingTxt: { color: theme.colors.LABEL, fontFamily: 'Inter-Regular', marginTop: 8 },
-      emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: '#fff', textAlign: 'center' },
+      emptyTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: theme.colors.TEXT_PRIMARY, textAlign: 'center' },
       emptySubtitle: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center' },
       list: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 32, gap: 12 },
       listHeader: {
@@ -292,7 +292,7 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: '#EF4444', borderWidth: 2, borderColor: theme.colors.DARK,
       },
       cardMeta: { flex: 1 },
-      userName: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
+      userName: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.TEXT_PRIMARY },
       userEmail: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL, marginTop: 2 },
       timeBadge: {
         backgroundColor: theme.colors.SURFACE, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,

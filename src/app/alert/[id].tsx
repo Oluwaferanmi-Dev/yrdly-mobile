@@ -228,7 +228,7 @@ const _stylesheet = createStyleSheet(theme => ({
       descCard: {
         paddingHorizontal: 16,
         paddingVertical: 16,
-        backgroundColor: '#0f0f0f',
+        backgroundColor: theme.colors.SURFACE_ALT,
         borderWidth: 1,
         borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 20,
@@ -250,7 +250,7 @@ const _stylesheet = createStyleSheet(theme => ({
       detailsCard: {
         padding: 16,
         borderRadius: 20,
-        backgroundColor: '#0f0f0f',
+        backgroundColor: theme.colors.SURFACE_ALT,
         borderWidth: 1,
         borderColor: theme.colors.GLASS_BORDER,
         gap: 16,
@@ -266,5 +266,5 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 16,
         gap: 8,
       },
-      contactButtonText: { fontFamily: 'Inter-Bold', fontSize: 16, color: '#fff' },
+      contactButtonText: { fontFamily: 'Inter-Bold', fontSize: 16, color: theme.colors.TEXT_PRIMARY },
     }));

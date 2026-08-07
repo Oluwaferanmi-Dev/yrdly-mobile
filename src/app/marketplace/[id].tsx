@@ -373,7 +373,7 @@ function MarketplaceDetailContent() {
 
 
   return (
-    <View style={[stylesheet.container, { backgroundColor: '#050505' }]}>
+    <View style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
       <Animated.ScrollView 
         style={stylesheet.scrollContent} 
         showsVerticalScrollIndicator={false}
@@ -476,11 +476,11 @@ function MarketplaceDetailContent() {
         <View style={{ paddingHorizontal: 20, paddingTop: 20, gap: 16 }}>
            <View>
              <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
-               <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 22, color: '#fff', flex: 1, lineHeight: 26 }}>
+               <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '800', fontSize: 22, color: theme.colors.TEXT_PRIMARY, flex: 1, lineHeight: 26 }}>
                  {post.title || post.text || 'Untitled'}
                </Text>
                {post.condition && (
-                 <View style={{ marginLeft: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, flexShrink: 0 }}>
+                 <View style={{ marginLeft: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, flexShrink: 0 }}>
                    <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 12, fontWeight: '600', color: theme.colors.MUTED }}>{post.condition}</Text>
                  </View>
                )}
@@ -508,14 +508,14 @@ function MarketplaceDetailContent() {
                </View>
              </View>
            ) : (
-             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 20 }}>
+             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 20 }}>
                <TouchableOpacity onPress={() => router.push(`/profile/${post.user_id}` as any)}>
                  <View style={{ width: 48, height: 48, borderRadius: 24, overflow: 'hidden', backgroundColor: theme.colors.SURFACE }}>
                    {postUser?.avatar_url || post.author_image ? (
                      <Image source={{ uri: postUser?.avatar_url || post.author_image }} style={{ width: '100%', height: '100%' }} />
                    ) : (
                      <View style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.SURFACE }}>
-                        <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'Outfit-Bold' }}>
+                        <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 18, fontFamily: 'Outfit-Bold' }}>
                           {postUser?.name ? postUser.name.charAt(0).toUpperCase() : 'U'}
                         </Text>
                      </View>
@@ -524,13 +524,13 @@ function MarketplaceDetailContent() {
                </TouchableOpacity>
                <View style={{ flex: 1 }}>
                  <TouchableOpacity onPress={() => router.push(`/profile/${post.user_id}` as any)}>
-                   <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 14, color: '#fff' }}>{postUser?.name || post.author_name || 'Unknown Seller'}</Text>
+                   <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 14, color: theme.colors.TEXT_PRIMARY }}>{postUser?.name || post.author_name || 'Unknown Seller'}</Text>
                  </TouchableOpacity>
                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
                    {(postUser as any)?.review_count > 0 ? (
                      <>
                        <Ionicons name="star" size={11} color={theme.colors.GOLD || '#FFD700'} />
-                       <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: '#fff' }}>
+                       <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 11, color: theme.colors.TEXT_PRIMARY }}>
                          {Number((postUser as any)?.rating || 0).toFixed(1)}
                        </Text>
                        <Text style={{ fontFamily: 'Inter-Regular', fontSize: 11, color: theme.colors.LABEL }}>
@@ -575,7 +575,7 @@ function MarketplaceDetailContent() {
               onPress={() => router.push(`/marketplace/edit/${post.id}`)}
               style={{ flex: 1, height: 52, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <Ionicons name="pencil" size={15} color="#fff" />
-              <Text style={{ color: '#fff', fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15 }}>Edit Listing</Text>
+              <Text style={{ color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15 }}>Edit Listing</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={async () => {
@@ -651,7 +651,7 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 12, paddingVertical: 6,
         borderRadius: 16,
       },
-      counterText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
+      counterText: { color: theme.colors.TEXT_PRIMARY, fontSize: 12, fontWeight: 'bold' },
       placeholderImage: { 
         width: width, height: 320, 
         justifyContent: 'center', alignItems: 'center',

@@ -80,7 +80,7 @@ const _stylesheet = createStyleSheet(theme => ({
         width: 38,
         height: 38,
         borderRadius: 19,
-        backgroundColor: '#111111',
+        backgroundColor: theme.colors.SURFACE_ALT,
         borderWidth: 1,
         borderColor: theme.colors.GLASS_BORDER,
         justifyContent: 'center',
@@ -108,7 +108,7 @@ const _stylesheet = createStyleSheet(theme => ({
       title: {
         fontFamily: 'Outfit-ExtraBold',
         fontSize: 26,
-        color: '#FFFFFF',
+        color: theme.colors.TEXT_PRIMARY,
         textAlign: 'center',
         marginBottom: 10,
       },

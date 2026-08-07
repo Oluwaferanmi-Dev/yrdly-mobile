@@ -411,7 +411,7 @@ export default function EditMarketplaceItemScreen() {
                   paddingHorizontal: 16,
                 },
                 listView: {
-                  backgroundColor: '#111111',
+                  backgroundColor: theme.colors.SURFACE_ALT,
                   borderWidth: 1,
                   borderColor: theme.colors.GLASS_BORDER,
                   borderRadius: 14,
@@ -520,11 +520,11 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: 'rgba(0,0,0,0.65)',
         paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6,
       },
-      coverBadgeTxt: { color: '#fff', fontSize: 10, fontFamily: 'Inter-Bold' },
+      coverBadgeTxt: { color: theme.colors.TEXT_PRIMARY, fontSize: 10, fontFamily: 'Inter-Bold' },
       addPhotoBtn: {
         width: 120, height: 120, borderRadius: 14,
         backgroundColor: 'rgba(255,255,255,0.02)',
-        borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)', borderStyle: 'dashed',
+        borderWidth: 1.5, borderColor: theme.colors.GLASS_BORDER, borderStyle: 'dashed',
         alignItems: 'center', justifyContent: 'center',
       },
 

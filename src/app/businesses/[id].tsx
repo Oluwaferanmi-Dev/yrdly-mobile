@@ -164,7 +164,7 @@ export default function BusinessProfileScreen() {
         <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 20, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>Business No Longer Active</Text>
         <Text style={{ color: theme.colors.MUTED, fontSize: 15, textAlign: 'center', lineHeight: 22 }}>This business has been deactivated by the owner and is no longer available.</Text>
         <TouchableOpacity style={{ marginTop: 28, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24, backgroundColor: theme.colors.G }} onPress={() => router.back()}>
-          <Text style={{ color: '#000', fontWeight: '700', fontSize: 15 }}>Go Back</Text>
+          <Text style={{ color: theme.colors.DARK, fontWeight: '700', fontSize: 15 }}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -207,7 +207,7 @@ export default function BusinessProfileScreen() {
                       <View style={[sStylesheet.sheetActionIconBox, { backgroundColor: theme.colors.SURFACE }]}>
                         <Ionicons name="share-social-outline" size={16} color={theme.colors.MUTED} />
                       </View>
-                      <Text style={[sStylesheet.sheetActionTxt, { color: '#fff' }]}>Share Listing</Text>
+                      <Text style={[sStylesheet.sheetActionTxt, { color: theme.colors.TEXT_PRIMARY }]}>Share Listing</Text>
                     </TouchableOpacity>
                   </>
                 ) : (
@@ -216,7 +216,7 @@ export default function BusinessProfileScreen() {
                       <View style={[sStylesheet.sheetActionIconBox, { backgroundColor: theme.colors.SURFACE }]}>
                         <Ionicons name="pencil-outline" size={16} color={theme.colors.MUTED} />
                       </View>
-                      <Text style={[sStylesheet.sheetActionTxt, { color: '#fff' }]}>Edit Item</Text>
+                      <Text style={[sStylesheet.sheetActionTxt, { color: theme.colors.TEXT_PRIMARY }]}>Edit Item</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={sStylesheet.sheetActionItem} onPress={async () => {
                       const in_stock = !catalogSheet.in_stock;
@@ -227,7 +227,7 @@ export default function BusinessProfileScreen() {
                       <View style={[sStylesheet.sheetActionIconBox, { backgroundColor: theme.colors.SURFACE }]}>
                         <Ionicons name="cube-outline" size={16} color={theme.colors.MUTED} />
                       </View>
-                      <Text style={[sStylesheet.sheetActionTxt, { color: '#fff' }]}>{catalogSheet.in_stock ? 'Mark Out of Stock' : 'Mark In Stock'}</Text>
+                      <Text style={[sStylesheet.sheetActionTxt, { color: theme.colors.TEXT_PRIMARY }]}>{catalogSheet.in_stock ? 'Mark Out of Stock' : 'Mark In Stock'}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={[sStylesheet.sheetActionItem, { borderBottomWidth: 0 }]} onPress={async () => {
                       setCatalogItems(its => its.filter(i => i.id !== catalogSheet.id));
@@ -463,21 +463,21 @@ const stylesheet = createStyleSheet(theme => ({
       coverContainer: { height: 155, width: '100%', position: 'relative' },
       backBtn: { position: 'absolute', left: 16, width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
       customerToggleWrap: { position: 'absolute', right: 16, flexDirection: 'row', alignItems: 'center', gap: 10 },
-      customerToggleTxt: { fontFamily: 'Inter', fontSize: 13, color: '#fff' },
+      customerToggleTxt: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.TEXT_PRIMARY },
       toggleTrack: { width: 36, height: 20, borderRadius: 10, padding: 2 },
-      toggleKnob: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#050505' },
+      toggleKnob: { width: 16, height: 16, borderRadius: 8, backgroundColor: theme.colors.DARK },
       
       infoPad: { paddingHorizontal: 20 },
       avatarOverlapWrap: { marginTop: -28, marginBottom: 12 },
-      avatarImage: { width: 64, height: 64, borderRadius: 18, borderWidth: 3, borderColor: '#050505' },
+      avatarImage: { width: 64, height: 64, borderRadius: 18, borderWidth: 3, borderColor: theme.colors.DARK },
       
       nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
-      nameTxt: { fontFamily: 'Outfit-Bold', fontSize: 24, color: '#fff' },
+      nameTxt: { fontFamily: 'Outfit-Bold', fontSize: 24, color: theme.colors.TEXT_PRIMARY },
       catLocationTxt: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.LABEL, marginBottom: 16 },
       
       statsRow: { flexDirection: 'row', gap: 24, marginBottom: 20 },
       statItem: { alignItems: 'flex-start' },
-      statVal: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff', marginBottom: 2 },
+      statVal: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 },
       statLabel: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL },
       
       quickActionsRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
@@ -485,7 +485,7 @@ const stylesheet = createStyleSheet(theme => ({
       actionBtnPrimary: { backgroundColor: 'rgba(130,219,126,0.1)' },
       actionBtnPrimaryTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.G },
       actionBtnSecondary: { backgroundColor: theme.colors.SURFACE },
-      actionBtnSecondaryTxt: { fontFamily: 'Inter', fontSize: 14, color: '#fff' },
+      actionBtnSecondaryTxt: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       
       tabsWrap: { flexDirection: 'row', gap: 16, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       tabBtn: { paddingBottom: 12, position: 'relative' },
@@ -498,7 +498,7 @@ const stylesheet = createStyleSheet(theme => ({
       customerWarningTxt: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.G },
       
       catalogGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-      catalogCard: { width: '48%', backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, overflow: 'hidden', marginBottom: 10 },
+      catalogCard: { width: '48%', backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, overflow: 'hidden', marginBottom: 10 },
       catalogImgBox: { position: 'relative', height: 100, width: '100%' },
       catalogImg: { width: '100%', height: '100%' },
       outOfStockOverlay: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', alignItems: 'center' },
@@ -506,7 +506,7 @@ const stylesheet = createStyleSheet(theme => ({
       stockBadge: { position: 'absolute', top: 6, right: 6, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 7, backgroundColor: 'rgba(0,0,0,0.65)' },
       stockBadgeTxt: { fontFamily: 'Outfit-Bold', fontSize: 10 },
       catalogInfo: { paddingHorizontal: 12, paddingVertical: 10 },
-      catalogTitle: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff', marginBottom: 2, lineHeight: 17 },
+      catalogTitle: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: theme.colors.TEXT_PRIMARY, marginBottom: 2, lineHeight: 17 },
       catalogPrice: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.G },
       
       addItemCard: { width: '48%', height: 160, borderRadius: 18, backgroundColor: 'rgba(130,219,126,0.04)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.2)', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 10 },
@@ -514,11 +514,11 @@ const stylesheet = createStyleSheet(theme => ({
       addItemTxt: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.G },
       
       sheetOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-      sheetContent: { backgroundColor: '#0A0A0A', borderTopLeftRadius: 28, borderTopRightRadius: 28, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 20, paddingBottom: 40, paddingTop: 14 },
-      sheetHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.1)', alignSelf: 'center', marginBottom: 16 },
+      sheetContent: { backgroundColor: '#0A0A0A', borderTopLeftRadius: 28, borderTopRightRadius: 28, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, paddingHorizontal: 20, paddingBottom: 40, paddingTop: 14 },
+      sheetHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: theme.colors.GLASS_BORDER, alignSelf: 'center', marginBottom: 16 },
       sheetHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, marginBottom: 20 },
       sheetImg: { width: 52, height: 52, borderRadius: 14 },
-      sheetTitle: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff', marginBottom: 2 },
+      sheetTitle: { fontFamily: 'Outfit-Bold', fontSize: 15, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 },
       sheetPrice: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.G },
       sheetOutOfStock: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: 'rgba(239,68,68,0.1)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)' },
       sheetOutOfStockTxt: { fontFamily: 'Inter-Bold', fontSize: 10, color: '#ef4444' },
@@ -526,22 +526,22 @@ const stylesheet = createStyleSheet(theme => ({
       sheetActionIconBox: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
       sheetActionTxt: { fontFamily: 'Inter', fontSize: 15 },
       
-      ratingHeader: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 20, marginBottom: 16 },
-      ratingBigNum: { fontFamily: 'Outfit-Bold', fontSize: 48, color: '#fff', lineHeight: 56 },
+      ratingHeader: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 20, marginBottom: 16 },
+      ratingBigNum: { fontFamily: 'Outfit-Bold', fontSize: 48, color: theme.colors.TEXT_PRIMARY, lineHeight: 56 },
       ratingStars: { flexDirection: 'row', gap: 4, marginBottom: 4 },
       ratingBasedOn: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL },
       
-      reviewItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginBottom: 12 },
+      reviewItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 16, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginBottom: 12 },
       reviewAvatar: { width: 36, height: 36, borderRadius: 18 },
       reviewBody: { flex: 1 },
       reviewNameRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-      reviewName: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: '#fff' },
+      reviewName: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: theme.colors.TEXT_PRIMARY },
       reviewDate: { fontFamily: 'Inter', fontSize: 11, color: theme.colors.LABEL },
       reviewStarsRow: { flexDirection: 'row', gap: 2, marginBottom: 6 },
       reviewText: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.MUTED, lineHeight: 20 },
       
-      analyticsCard: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, backgroundColor: '#0f0f0f', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18 },
+      analyticsCard: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18 },
       analyticsIconBox: { width: 40, height: 40, borderRadius: 12, backgroundColor: theme.colors.SURFACE, alignItems: 'center', justifyContent: 'center' },
       analyticsLabel: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL },
-      analyticsValue: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff' },
+      analyticsValue: { fontFamily: 'Outfit-Bold', fontSize: 20, color: theme.colors.TEXT_PRIMARY },
     }));

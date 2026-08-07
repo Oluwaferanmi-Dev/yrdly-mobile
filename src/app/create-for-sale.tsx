@@ -373,7 +373,7 @@ export default function CreateForSaleScreen() {
                     flexDirection: 'row',
                   },
                   description: {
-                    color: '#fff',
+                    color: theme.colors.TEXT_PRIMARY,
                   },
                 }}
                 textInputProps={{
@@ -435,10 +435,10 @@ export default function CreateForSaleScreen() {
                 </Text>
 
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                  <View style={{ backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+                  <View style={{ backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}>
                     <Text style={{ fontFamily: 'Inter-Medium', color: '#ccc', fontSize: 13 }}>{condition || 'Used'}</Text>
                   </View>
-                  <View style={{ backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+                  <View style={{ backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}>
                     <Text style={{ fontFamily: 'Inter-Medium', color: '#ccc', fontSize: 13 }}>{category || 'Other'}</Text>
                   </View>
                 </View>
@@ -451,7 +451,7 @@ export default function CreateForSaleScreen() {
                 </View>
 
                 {desc.trim().length > 0 && (
-                  <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' }}>
+                  <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: theme.colors.SURFACE }}>
                     <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: theme.colors.TEXT_PRIMARY, marginBottom: 8 }}>Description</Text>
                     <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#aaa', lineHeight: 22 }}>
                       {desc.trim()}
@@ -503,11 +503,11 @@ const _stylesheet = createStyleSheet(theme => ({
         alignItems: 'center',
       },
       headerTextContainer: { flex: 1 },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
       headerSubtitle: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL },
       progressBarBg: {
         height: 3,
-        backgroundColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: theme.colors.GLASS_BORDER,
         marginHorizontal: 20,
         marginTop: 14,
         borderRadius: 2,
@@ -521,7 +521,7 @@ const _stylesheet = createStyleSheet(theme => ({
         padding: 20,
         paddingBottom: 40,
       },
-      stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 17, color: '#fff', marginBottom: 4 },
+      stepTitle: { fontFamily: 'Outfit-Bold', fontSize: 17, color: theme.colors.TEXT_PRIMARY, marginBottom: 4 },
       stepDesc: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL, marginBottom: 20 },
       photosGrid: {
         flexDirection: 'row',
@@ -583,7 +583,7 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingVertical: 14,
         fontFamily: 'Inter-Regular',
         fontSize: 15,
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
       },
       textArea: {
         height: 120,
@@ -645,7 +645,7 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: theme.colors.G,
       },
       conditionText: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED },
-      conditionTextActive: { color: '#fff' },
+      conditionTextActive: { color: theme.colors.TEXT_PRIMARY },
       reviewCard: {
         backgroundColor: theme.colors.SURFACE,
         borderWidth: 1,
@@ -662,7 +662,7 @@ const _stylesheet = createStyleSheet(theme => ({
         padding: 16,
         gap: 8,
       },
-      reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: '#fff' },
+      reviewTitle: { fontFamily: 'Outfit-Bold', fontSize: 20, color: theme.colors.TEXT_PRIMARY },
       reviewPrice: { fontFamily: 'Outfit-ExtraBold', fontSize: 22, color: theme.colors.G },
       reviewMetaRow: {
         flexDirection: 'row',
@@ -675,7 +675,7 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 8,
         backgroundColor: 'rgba(255,255,255,0.06)',
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: theme.colors.GLASS_BORDER,
       },
       reviewBadgeText: {
         fontFamily: 'Inter-Medium',
@@ -739,6 +739,6 @@ const _stylesheet = createStyleSheet(theme => ({
         justifyContent: 'center',
         alignItems: 'center',
       },
-      successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: '#fff', textAlign: 'center' },
+      successTitle: { fontFamily: 'Outfit-Bold', fontSize: 24, color: theme.colors.TEXT_PRIMARY, textAlign: 'center' },
       successDesc: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center', lineHeight: 22 },
     }));

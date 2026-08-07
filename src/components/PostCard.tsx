@@ -121,7 +121,7 @@ const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted,
       }}>
         <View style={{
           height: '100%',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: theme.colors.TEXT_PRIMARY,
           width: `${Math.min(100, Math.max(0, progress * 100))}%`,
         }} />
       </View>
@@ -428,7 +428,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         paddingTop: 16,
         paddingBottom: 4,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.04)'
+        borderBottomColor: theme.colors.SURFACE
       }}
     >
       {/* Header Info */}
@@ -448,7 +448,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             router.push(`/profile/${post.user_id}` as any);
           }}
         >
-          <View style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.05)', overflow: 'hidden', flexShrink: 0 }}>
+          <View style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.SURFACE, overflow: 'hidden', flexShrink: 0 }}>
             {post.user?.avatar_url || post.author_image ? (
               <Image source={{ uri: StorageService.getOptimizedImageUrl(post.user?.avatar_url || post.author_image || null, 150) || '' }} style={stylesheet.avatarImage} />
             ) : (
@@ -461,7 +461,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-              <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15, color: '#FFFFFF' }} numberOfLines={1}>
+              <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15, color: theme.colors.TEXT_PRIMARY }} numberOfLines={1}>
                 {post.user?.name || post.author_name || 'Anonymous'}
               </Text>
               {((post.user as any)?.phone_verified) && (
@@ -505,7 +505,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         </View>
 
         {!!post.title && (
-          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: '#FFFFFF', marginBottom: 6 }}>{post.title}</Text>
+          <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: theme.colors.TEXT_PRIMARY, marginBottom: 6 }}>{post.title}</Text>
         )}
         {!!post.text && (() => {
 
@@ -532,7 +532,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
       {/* Video */}
       {post.video_url && (
-        <View style={{ marginHorizontal: 20, borderRadius: 16, overflow: 'hidden', aspectRatio: 4/3, backgroundColor: '#000', marginBottom: 12 }}>
+        <View style={{ marginHorizontal: 20, borderRadius: 16, overflow: 'hidden', aspectRatio: 4/3, backgroundColor: theme.colors.DARK, marginBottom: 12 }}>
           <PostVideo 
             post={post} 
             isVisible={isVisible} 
@@ -812,7 +812,7 @@ const _stylesheet = createStyleSheet(theme => ({
         zIndex: 10,
       },
       heartShadow: {
-        shadowColor: '#000',
+        shadowColor: theme.colors.DARK,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 5,
@@ -825,7 +825,7 @@ const _stylesheet = createStyleSheet(theme => ({
         alignItems: 'center',
       },
       overlayText: {
-        color: '#FFFFFF',
+        color: theme.colors.TEXT_PRIMARY,
         fontSize: 24,
         fontWeight: 'bold',
       },

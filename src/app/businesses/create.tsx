@@ -246,7 +246,7 @@ export default function BusinessEditScreen() {
                   flexDirection: 'row',
                 },
                 description: {
-                  color: '#fff',
+                  color: theme.colors.TEXT_PRIMARY,
                 },
               }}
               textInputProps={{
@@ -304,29 +304,29 @@ export default function BusinessEditScreen() {
 }
 
 const stylesheet = createStyleSheet(theme => ({
-      root: { flex: 1, backgroundColor: '#050505' },
+      root: { flex: 1, backgroundColor: theme.colors.DARK },
       header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: '#fff' },
+      headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
       saveBtn: { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 12, backgroundColor: theme.colors.G },
       saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
       
       contentPad: { paddingHorizontal: 20, paddingVertical: 20, gap: 24 },
       coverContainer: { position: 'relative', height: 140, borderRadius: 20, overflow: 'hidden', backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
       coverOverlay: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
-      changeCoverBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.6)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-      changeCoverTxt: { fontFamily: 'Outfit-Bold', fontSize: 13, color: '#fff' },
+      changeCoverBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.6)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
+      changeCoverTxt: { fontFamily: 'Outfit-Bold', fontSize: 13, color: theme.colors.TEXT_PRIMARY },
       
-      logoSection: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0f0f0f', padding: 16, borderRadius: 20, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, marginTop: -10 },
+      logoSection: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.SURFACE_ALT, padding: 16, borderRadius: 20, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, marginTop: -10 },
       logoWrap: { width: 72, height: 72, borderRadius: 36, backgroundColor: theme.colors.SURFACE, borderWidth: 2, borderColor: theme.colors.G, position: 'relative' },
       logoImg: { width: '100%', height: '100%', borderRadius: 36 },
-      changeLogoBtn: { position: 'absolute', bottom: -4, right: -4, backgroundColor: theme.colors.SURFACE, width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#050505' },
-      logoLabel: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#fff', marginBottom: 4 },
+      changeLogoBtn: { position: 'absolute', bottom: -4, right: -4, backgroundColor: theme.colors.SURFACE, width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: theme.colors.DARK },
+      logoLabel: { fontFamily: 'Outfit-Bold', fontSize: 15, color: theme.colors.TEXT_PRIMARY, marginBottom: 4 },
       logoDesc: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.MUTED, lineHeight: 18 },
       
       fieldBlock: {},
       fieldLabel: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: theme.colors.LABEL, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
-      input: { width: '100%', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, color: '#fff', fontFamily: 'Inter', fontSize: 15 },
+      input: { width: '100%', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 15 },
       textarea: { height: 120, textAlignVertical: 'top' },
       
       catWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

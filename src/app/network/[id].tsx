@@ -271,12 +271,12 @@ const _stylesheet = createStyleSheet(theme => ({
         borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER,
       },
       navBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-      headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', color: '#fff' },
+      headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold', color: theme.colors.TEXT_PRIMARY },
       searchContainer: {
         flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, marginVertical: 12, paddingHorizontal: 12,
         backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, borderWidth: 1, borderRadius: 14, height: 40
       },
-      searchInput: { flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: '#fff' },
+      searchInput: { flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       tabsWrap: { flexDirection: 'row', paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       tabBtn: { flex: 1, paddingVertical: 12, position: 'relative' },
       tabTxt: { fontSize: 14, textAlign: 'center', textTransform: 'capitalize' },
@@ -304,14 +304,14 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: theme.colors.G,
       },
       avatarFallbackText: {
-        color: '#050505',
+        color: theme.colors.DARK,
         fontFamily: 'Outfit-Bold',
         fontSize: 18,
       },
       userName: {
         fontSize: 14,
         fontFamily: 'Inter-SemiBold',
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
       },
       userHandle: {
         fontSize: 12,

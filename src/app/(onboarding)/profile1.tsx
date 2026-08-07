@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontFamily: 'Outfit-ExtraBold',
     fontSize: 22,
-    color: '#fff',
+    color: theme.colors.TEXT_PRIMARY,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.GLASS_BORDER,
     borderRadius: radii.input,
-    color: '#fff',
+    color: theme.colors.TEXT_PRIMARY,
     fontSize: 15,
     fontFamily: 'Inter-Regular',
     paddingHorizontal: 16,

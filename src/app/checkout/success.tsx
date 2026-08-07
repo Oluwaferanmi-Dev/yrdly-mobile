@@ -69,7 +69,7 @@ export default function CheckoutSuccessScreen() {
 const _stylesheet = createStyleSheet(theme => ({
       container: {
         flex: 1,
-        backgroundColor: '#050505',
+        backgroundColor: theme.colors.DARK,
       },
       content: {
         flex: 1,
@@ -91,7 +91,7 @@ const _stylesheet = createStyleSheet(theme => ({
       title: {
         fontFamily: 'Outfit-Bold',
         fontSize: 26,
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
         textAlign: 'center',
         marginBottom: 8,
       },
@@ -128,7 +128,7 @@ const _stylesheet = createStyleSheet(theme => ({
       summaryValue: {
         fontFamily: 'Inter-SemiBold',
         fontSize: 14,
-        color: '#fff',
+        color: theme.colors.TEXT_PRIMARY,
         flex: 1,
         textAlign: 'right',
         paddingLeft: 16,

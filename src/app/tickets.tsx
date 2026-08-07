@@ -331,7 +331,7 @@ const _stylesheet = createStyleSheet(theme => ({
       ticketCard: {
         flexDirection: 'row', borderRadius: 12, marginBottom: 16,
         overflow: 'hidden',
-        shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
+        shadowColor: theme.colors.DARK, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
       },
       ticketAccent: { width: 6 },
       ticketImageWrapper: { padding: 12 },
@@ -361,7 +361,7 @@ const _stylesheet = createStyleSheet(theme => ({
       browseButton: {
         marginTop: 28, paddingVertical: 14, paddingHorizontal: 32, borderRadius: 24,
       },
-      browseButtonText: { color: '#FFFFFF', fontSize: 16, fontFamily: 'Outfit-Bold' },
+      browseButtonText: { color: theme.colors.TEXT_PRIMARY, fontSize: 16, fontFamily: 'Outfit-Bold' },
 
       // Modal
       modalContainer: { flex: 1 },
@@ -384,7 +384,7 @@ const _stylesheet = createStyleSheet(theme => ({
       qrContainer: {
         padding: 24,
         borderRadius: 20, marginBottom: 20,
-        shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4,
+        shadowColor: theme.colors.DARK, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4,
       },
       tokenLabel: { fontSize: 11, fontFamily: 'Outfit-ExtraBold', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 },
       tokenValue: { fontSize: 14, fontFamily: 'Outfit-Bold', letterSpacing: 2, marginBottom: 20 },

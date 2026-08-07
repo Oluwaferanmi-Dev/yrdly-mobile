@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontFamily: 'Outfit-ExtraBold',
     fontSize: 22,
-    color: '#fff',
+    color: theme.colors.TEXT_PRIMARY,
     marginBottom: 4,
   },
   cardSubtitle: {
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.GLASS_BORDER,
   },
   suggestionText: {
-    color: '#fff',
+    color: theme.colors.TEXT_PRIMARY,
     fontFamily: 'Inter-Regular',
     fontSize: 14,
   },

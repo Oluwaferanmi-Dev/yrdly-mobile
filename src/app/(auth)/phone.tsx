@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontFamily: 'Outfit-ExtraBold',
-    color: '#FFFFFF',
+    color: theme.colors.TEXT_PRIMARY,
   },
   subtitleText: {
     fontSize: 14,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     borderColor: colors.GLASS_BORDER,
   },
   countryCode: {
-    color: '#FFFFFF',
+    color: theme.colors.TEXT_PRIMARY,
     fontSize: 14,
     fontFamily: 'Inter-SemiBold',
   },
