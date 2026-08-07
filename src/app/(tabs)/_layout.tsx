@@ -85,7 +85,6 @@ function CreateMenuOverlay({ visible, onClose, onSelect }: { visible: boolean, o
       <Animated.View entering={SlideInDown.duration(300).springify()} exiting={SlideOutDown.duration(200)} style={styles.overlayContent}>
         <View style={styles.optionsContainer}>
           {OPTIONS.map((opt, idx) => {
-          const { styles } = useStyles(sStylesheet);
           return (
                       <TouchableOpacity 
                         key={opt.id} 
@@ -198,7 +197,6 @@ export default function TabLayout() {
             tabBarActiveTintColor: theme.colors.G,
             tabBarInactiveTintColor: 'rgba(255,255,255,0.42)',
             tabBarLabel: ({ focused, color }) => {
-            const { styles } = useStyles(sStylesheet);
             return (
                           <Text style={{
                             color,
@@ -219,7 +217,6 @@ export default function TabLayout() {
           options={{
             title: 'Home',
             tabBarIcon: ({ color, focused }) => {
-            const { styles } = useStyles(sStylesheet);
             return (
                           <TabIconWrapper focused={focused}>
                             <HomeIcon color={focused ? theme.colors.G : color} size={26} filled={focused} />
@@ -233,7 +230,6 @@ export default function TabLayout() {
           options={{
             title: 'Explore',
             tabBarIcon: ({ color, focused }) => {
-            const { styles } = useStyles(sStylesheet);
             return (
                           <TabIconWrapper focused={focused}>
                             <ExploreIcon color={focused ? theme.colors.G : color} size={26} filled={focused} />
@@ -266,7 +262,6 @@ export default function TabLayout() {
           options={{
             title: 'Messages',
             tabBarIcon: ({ color, focused }) => {
-            const { styles } = useStyles(sStylesheet);
             return (
                           <TabIconWrapper focused={focused}>
                             <View>
@@ -287,7 +282,6 @@ export default function TabLayout() {
           options={{
             title: 'Profile',
             tabBarIcon: ({ color, focused }) => {
-            const { styles } = useStyles(sStylesheet);
             return (
                           <TabIconWrapper focused={focused}>
                             <ProfileIcon color={focused ? theme.colors.G : color} size={26} filled={focused} />
