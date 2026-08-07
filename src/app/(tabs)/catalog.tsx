@@ -20,6 +20,7 @@ import { formatPrice, getDistanceStr } from '../../lib/utils';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 import * as Location from 'expo-location';
 import { LocationPicker, LocationValue } from '../../components/LocationPicker';
+import { useFriendshipGlobal } from '../../hooks/use-friendship-global';
 
 const { width } = Dimensions.get('window');
 type TabType = 'Discover' | 'Marketplace' | 'Events' | 'Businesses';
@@ -172,7 +173,7 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
     return (
       <ScrollView style={sStylesheet.sectionContainer} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {users.map(u => (
-          <DiscoverUserCard 
+          <NearbyUserCard 
             key={u.id} 
             user={u} 
             context="neighbor" 
@@ -203,7 +204,7 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
           <Text style={sStylesheet.discoverGroupTitle}>PEOPLE YOU MAY KNOW</Text>
           <View style={{ gap: 0 }}>
             {mutuals.map(p => (
-              <DiscoverUserCard 
+              <NearbyUserCard 
                 key={p.id} 
                 user={p} 
                 context="mutual" 
@@ -220,7 +221,7 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
           <Text style={sStylesheet.discoverGroupTitle}>ACTIVE SELLERS</Text>
           <View style={{ gap: 0 }}>
             {sellers.map(p => (
-              <DiscoverUserCard 
+              <NearbyUserCard 
                 key={p.id} 
                 user={p} 
                 context="seller" 
@@ -457,6 +458,8 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
                   </TouchableOpacity>
                 ))}
               </ScrollView>
+
+
 
               <TouchableOpacity style={sStylesheet.applyBtn} onPress={() => setShowFilter(false)}>
                 <Text style={sStylesheet.applyBtnText}>Apply Filters</Text>
@@ -744,8 +747,8 @@ export default function CatalogTab() {
   const { displayLabel, activeFilter, setGlobalFilter } = useLocation();
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [tempLoc, setTempLoc] = useState<LocationValue>({
-    state: activeFilter.state || '',
-    lga: activeFilter.lga || '',
+    state: activeFilter?.state || '',
+    lga: activeFilter?.lga || '',
   });
 
   const handleApplyLocation = () => {

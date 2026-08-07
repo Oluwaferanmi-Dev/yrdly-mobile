@@ -109,8 +109,12 @@ export class UserReviewService {
     try {
       const { data: reviews, error } = await supabase
         .from('user_reviews')
-        .select('rating')
-        .eq('seller_id', sellerId);
+        .select(`
+          rating,
+          escrow_transactions!inner(status)
+        `)
+        .eq('seller_id', sellerId)
+        .in('escrow_transactions.status', ['completed', 'delivered']);
 
       if (error) throw error;
 

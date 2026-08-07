@@ -1,6 +1,6 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
-import { View, Text, RefreshControl, TouchableOpacity, Platform, Modal } from 'react-native';
+import { View, Text, RefreshControl, TouchableOpacity, Platform, Modal, ActivityIndicator } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
 import { PostCard } from '../../components/PostCard';
@@ -115,7 +115,7 @@ export default function HomeTab() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { activeFilter } = useLocation();
-  const { posts: allPosts, loading, refreshPosts } = usePosts(activeFilter);
+  const { posts: allPosts, loading, refreshPosts, hasMore, isFetchingMore, fetchMore } = usePosts(activeFilter);
   const [refreshing, setRefreshing] = useState(false);
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
   const [activePostId, setActivePostId] = useState<string | null>(null);
@@ -454,6 +454,15 @@ export default function HomeTab() {
           <View style={stylesheet.emptyContainer}>
             <Text style={[stylesheet.emptyText, { color: colors.textMuted }]}>No posts yet. Be the first to post!</Text>
           </View>
+        }
+        onEndReached={fetchMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetchingMore ? (
+            <View style={{ padding: 20, alignItems: 'center' }}>
+              <ActivityIndicator color={theme.colors.GOLD} />
+            </View>
+          ) : null
         }
       />
       <CommentsBottomSheet ref={bottomSheetRef} postId={activeCommentPostId} />

@@ -187,7 +187,7 @@ export default function OtherUserProfileScreen() {
         .limit(1)
         .maybeSingle();
       if (existingChat) {
-        router.push(`/messages/${existingChat.id}`);
+        router.push({ pathname: '/chat/[id]', params: { id: existingChat.id } } as any);
       } else {
         const { data: newChat, error: newChatError } = await supabase
           .from('chats')
@@ -197,8 +197,8 @@ export default function OtherUserProfileScreen() {
           })
           .select('id')
           .single();
-        if (newChat && !newChatError) {
-          router.push(`/chat/${newChat.id}`);
+        if (newChat?.id) {
+          router.push({ pathname: '/chat/[id]', params: { id: newChat.id } } as any);
         }
       }
     } catch (err) {

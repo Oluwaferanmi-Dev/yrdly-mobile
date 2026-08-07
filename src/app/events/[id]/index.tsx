@@ -217,7 +217,21 @@ export default function EventDetailScreen() {
 
   useEffect(() => {
     fetchEvent();
-  }, [fetchEvent]);
+    
+    if (!id) return;
+    const channel = supabase.channel(`public:events:${id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events', filter: `id=eq.${id}` }, () => {
+        fetchEvent();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets', filter: `event_id=eq.${id}` }, () => {
+        fetchEvent();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, fetchEvent]);
 
   useEffect(() => {
     if (user) {
@@ -625,7 +639,7 @@ export default function EventDetailScreen() {
                               participant_id: event.organizer_id,
                               item_id: event.id,
                               item_title: event.title || 'Event',
-                              item_image: event.image_url || '',
+                              item_image: event.cover_image_url || '',
                             } 
                           });
                         }

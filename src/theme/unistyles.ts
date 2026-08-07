@@ -62,10 +62,20 @@ declare module 'react-native-unistyles' {
   export interface UnistylesThemes extends AppThemes {}
 }
 
-UnistylesRegistry.addThemes({
-  light: lightTheme,
-  dark: darkTheme
-}).addConfig({
-  adaptiveThemes: false,
-  initialTheme: 'dark',
-});
+const breakpoints = {
+  phone: 0,
+  tablet: 768,
+  large: 1024
+};
+
+UnistylesRegistry
+  .addThemes({
+    light: lightTheme,
+    dark: darkTheme
+  })
+  // @ts-ignore
+  .addBreakpoints(breakpoints)
+  .addConfig({
+    adaptiveThemes: true,
+    initialTheme: 'dark'
+  });

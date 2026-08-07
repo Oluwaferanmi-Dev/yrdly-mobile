@@ -18,12 +18,16 @@ export const usePosts = (filter?: LocationFilter | null) => {
   const { toast } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const PAGE_SIZE = 15;
 
   const filterState = filter?.state;
   const filterLga = filter?.lga;
   const filterWard = filter?.ward;
 
-  const fetchPosts = useCallback(async () => {
+  const fetchPosts = useCallback(async (pageNum: number = 0, isLoadMore: boolean = false) => {
     // Generate a cache key based on filters
     let filterString: string | undefined = undefined;
     if (filterWard) filterString = `ward=eq.${filterWard}`;
@@ -32,20 +36,22 @@ export const usePosts = (filter?: LocationFilter | null) => {
     
     const cacheFile = FileSystem.documentDirectory + (filterString ? `yrdly_posts_cache_${filterString.replace(/\W/g, '_')}.json` : 'yrdly_posts_cache_all.json');
 
-    try {
-      // 1. Try to load from cache first to instantly populate the UI
-      const fileInfo = await FileSystem.getInfoAsync(cacheFile);
-      if (fileInfo.exists) {
-        const cachedData = await FileSystem.readAsStringAsync(cacheFile);
-        if (cachedData) {
-          const parsedCache = JSON.parse(cachedData) as Post[];
-          // Filter out cached events to prevent zombie events from rendering while DB is fresh
-          const filteredCache = parsedCache.filter(p => p.category !== 'Event');
-          setPosts(filteredCache);
+    if (!isLoadMore) {
+      try {
+        // 1. Try to load from cache first to instantly populate the UI
+        const fileInfo = await FileSystem.getInfoAsync(cacheFile);
+        if (fileInfo.exists) {
+          const cachedData = await FileSystem.readAsStringAsync(cacheFile);
+          if (cachedData) {
+            const parsedCache = JSON.parse(cachedData) as Post[];
+            // Filter out cached events to prevent zombie events from rendering while DB is fresh
+            const filteredCache = parsedCache.filter(p => p.category !== 'Event');
+            setPosts(filteredCache);
+          }
         }
+      } catch (e) {
+        // Ignore cache read errors
       }
-    } catch (e) {
-      // Ignore cache read errors
     }
 
     try {
@@ -96,9 +102,13 @@ export const usePosts = (filter?: LocationFilter | null) => {
       // Hide sold marketplace items from the feed
       query = query.or('category.neq.For Sale,is_sold.eq.false');
 
+      // Pagination
+      const from = pageNum * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
       const [postsRes, eventsRes] = await Promise.all([
-        query.order('timestamp', { ascending: false }),
-        eventsQuery.order('created_at', { ascending: false })
+        query.order('timestamp', { ascending: false }).range(from, to),
+        eventsQuery.order('created_at', { ascending: false }).range(from, to)
       ]);
 
       if (postsRes.error || eventsRes.error) {
@@ -175,19 +185,42 @@ export const usePosts = (filter?: LocationFilter | null) => {
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
 
-      setPosts(merged);
-      
-      // 2. Save fresh data back to cache
-      FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(merged)).catch(() => {});
+      const returnedCount = (postsRes.data?.length || 0) + (eventsRes.data?.length || 0);
+      if (returnedCount < PAGE_SIZE) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
+
+      if (isLoadMore) {
+        setPosts(prev => {
+            const newPosts = [...prev];
+            merged.forEach(p => {
+                if (!newPosts.some(existing => existing.id === p.id)) {
+                    newPosts.push(p);
+                }
+            });
+            // Re-sort just in case
+            return newPosts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        });
+      } else {
+        setPosts(merged);
+        // 2. Save fresh data back to cache
+        FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(merged)).catch(() => {});
+      }
       
       setLoading(false);
+      setIsFetchingMore(false);
     } catch (error) {
       setLoading(false);
+      setIsFetchingMore(false);
     }
   }, [filterState, filterLga, filterWard]);
 
   useEffect(() => {
-    fetchPosts();
+    setPage(0);
+    setHasMore(true);
+    fetchPosts(0, false);
 
     // Set up real-time subscription for all posts
     let filterString: string | undefined = undefined;
@@ -813,9 +846,19 @@ export const usePosts = (filter?: LocationFilter | null) => {
     [user, toast]
   );
 
+  const fetchMore = useCallback(async () => {
+    if (isFetchingMore || !hasMore || loading) return;
+    setIsFetchingMore(true);
+    const nextPage = page + 1;
+    setPage(nextPage);
+    await fetchPosts(nextPage, true);
+  }, [fetchPosts, isFetchingMore, hasMore, loading, page]);
+
   const refreshPosts = useCallback(async () => {
-    await fetchPosts();
+    setPage(0);
+    setHasMore(true);
+    await fetchPosts(0, false);
   }, [fetchPosts]);
 
-  return { posts, loading, createPost, createBusiness, deletePost, deleteBusiness, refreshPosts };
+  return { posts, loading, hasMore, isFetchingMore, fetchMore, createPost, createBusiness, deletePost, deleteBusiness, refreshPosts };
 };

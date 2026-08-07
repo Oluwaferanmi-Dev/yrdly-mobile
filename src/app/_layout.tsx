@@ -178,7 +178,27 @@ export default function Layout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PostHogProvider apiKey={process.env.EXPO_PUBLIC_POSTHOG_KEY!} options={{ host: process.env.EXPO_PUBLIC_POSTHOG_HOST }}>
+      {process.env.EXPO_PUBLIC_POSTHOG_KEY ? (
+        <PostHogProvider apiKey={process.env.EXPO_PUBLIC_POSTHOG_KEY} options={{ host: process.env.EXPO_PUBLIC_POSTHOG_HOST }}>
+          <KeyboardProvider>
+            <ThemeProvider>
+              <BottomSheetModalProvider>
+                <AuthProvider>
+                  <LocationProvider>
+                    <NotificationBadgeProvider>
+                      <FriendshipProvider>
+                        <AudioSettingsHandler />
+                        <NotificationsHandler />
+                        <RootNavigationGuard />
+                      </FriendshipProvider>
+                    </NotificationBadgeProvider>
+                  </LocationProvider>
+                </AuthProvider>
+              </BottomSheetModalProvider>
+            </ThemeProvider>
+          </KeyboardProvider>
+        </PostHogProvider>
+      ) : (
         <KeyboardProvider>
           <ThemeProvider>
             <BottomSheetModalProvider>
@@ -196,7 +216,7 @@ export default function Layout() {
             </BottomSheetModalProvider>
           </ThemeProvider>
         </KeyboardProvider>
-      </PostHogProvider>
+      )}
     </GestureHandlerRootView>
   );
 }

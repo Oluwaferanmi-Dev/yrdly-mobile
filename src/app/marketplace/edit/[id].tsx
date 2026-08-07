@@ -18,10 +18,10 @@ import { parseSafePrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
 import { Post } from '../../../types';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { useCategories } from '../../../hooks/use-categories';
 
 const GOOGLE_MAPS_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
-const CATEGORIES = ['Electronics', 'Furniture', 'Clothing', 'Vehicles', 'Home Goods', 'Sports', 'Other'];
 const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
 
 export default function EditMarketplaceItemScreen() {
@@ -33,6 +33,7 @@ export default function EditMarketplaceItemScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const { deletePost } = usePosts();
+  const { categories, loading: categoriesLoading } = useCategories('marketplace');
 
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +43,7 @@ export default function EditMarketplaceItemScreen() {
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [price, setPrice] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState('');
   const [condition, setCondition] = useState(CONDITIONS[0]);
   const [address, setAddress] = useState('');
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -66,7 +67,7 @@ export default function EditMarketplaceItemScreen() {
       setTitle(data.title || '');
       setText(data.text || '');
       setPrice(data.price?.toString() || '');
-      setCategory(data.category || CATEGORIES[0]);
+      setCategory(data.category || '');
       setCondition(data.condition || CONDITIONS[0]);
       setAddress(data.location?.address || '');
 
@@ -325,18 +326,22 @@ export default function EditMarketplaceItemScreen() {
             <Text style={stylesheet.sectionTitle}>Category</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
-            {CATEGORIES.map(c => {
-              const active = category === c;
-              return (
-                <TouchableOpacity
-                  key={c}
-                  onPress={() => setCategory(c)}
-                  style={[stylesheet.chipBtn, { backgroundColor: active ? 'rgba(130,219,126,0.15)' : theme.colors.SURFACE, borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER }]}
-                >
-                  <Text style={[stylesheet.chipTxt, { color: active ? theme.colors.G : theme.colors.MUTED }]}>{c}</Text>
-                </TouchableOpacity>
-              );
-            })}
+            {categoriesLoading ? (
+              <ActivityIndicator color={theme.colors.GOLD} />
+            ) : (
+              categories.map(c => {
+                const active = category === c.name;
+                return (
+                  <TouchableOpacity
+                    key={c.id}
+                    onPress={() => setCategory(c.name)}
+                    style={[stylesheet.chipBtn, { backgroundColor: active ? 'rgba(130,219,126,0.15)' : theme.colors.SURFACE, borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER }]}
+                  >
+                    <Text style={[stylesheet.chipTxt, { color: active ? theme.colors.G : theme.colors.MUTED }]}>{c.name}</Text>
+                  </TouchableOpacity>
+                );
+              })
+            )}
           </ScrollView>
 
           {/* ── Condition ── */}

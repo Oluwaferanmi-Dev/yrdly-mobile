@@ -15,9 +15,9 @@ import { MarketplaceItemCard } from '../components/MarketplaceItemCard';
 import { ImageCarousel } from '../components/ImageCarousel';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { formatPrice } from '../lib/utils';
+import { useCategories } from '../hooks/use-categories';
 
 const STEPS = ['Photos', 'Details', 'Description', 'Review'];
-const CATEGORIES = ['Fashion', 'Electronics', 'Home & Living', 'Vehicles', 'Food', 'Gaming', 'Books', 'Beauty', 'Services', 'Other'];
 const CONDITIONS = ['New', 'Used – Like New', 'Used – Good', 'Fair'];
 
 export default function CreateForSaleScreen() {
@@ -26,6 +26,7 @@ export default function CreateForSaleScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, profile } = useAuth();
+  const { categories, loading: categoriesLoading } = useCategories('marketplace');
   const [step, setStep] = useState(0);
 
   const [listingType, setListingType] = useState('For Sale');
@@ -293,17 +294,21 @@ export default function CreateForSaleScreen() {
             )}
 
             <Text style={stylesheet.label}>Category</Text>
-            <View style={stylesheet.chipGrid}>
-              {CATEGORIES.map(cat => (
-                <TouchableOpacity
-                  key={cat}
-                  style={[stylesheet.chip, category === cat && stylesheet.chipActive]}
-                  onPress={() => setCategory(cat)}
-                >
-                  <Text style={[stylesheet.chipText, category === cat && stylesheet.chipTextActive]}>{cat}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {categoriesLoading ? (
+              <ActivityIndicator color={theme.colors.GOLD} style={{ marginTop: 10, alignSelf: 'flex-start' }} />
+            ) : (
+              <View style={stylesheet.chipGrid}>
+                {categories.map(cat => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[stylesheet.chip, category === cat.name && stylesheet.chipActive]}
+                    onPress={() => setCategory(cat.name)}
+                  >
+                    <Text style={[stylesheet.chipText, category === cat.name && stylesheet.chipTextActive]}>{cat.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
             <Text style={stylesheet.label}>Condition</Text>
             <View style={stylesheet.conditionList}>

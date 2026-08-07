@@ -5,14 +5,14 @@ import {
   PanResponder, FlatList, Dimensions, ActivityIndicator, Linking, Platform, Image, Alert
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import MapView, { Marker, Region } from 'react-native-maps';
+import { Marker, Region } from 'react-native-maps';
+import MapView from 'react-native-map-clustering';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { useAppTheme } from '../context/ThemeContext';
 import { useAuth } from '../hooks/use-supabase-auth';
-import Supercluster from 'supercluster';
 
 const { width, height } = Dimensions.get('window');
 const SHEET_H = height * 0.62;
@@ -101,14 +101,7 @@ const IconMarker = React.memo(function IconMarker({ icon, color, bg }: { icon: k
   );
 });
 
-const ClusterBubble = React.memo(function ClusterBubble({ count }: { count: number }) {
-  const { styles: ms } = useStyles(msStylesheet);
-  return (
-    <View style={ms.cluster}>
-      <Text style={ms.clusterTxt}>{count}</Text>
-    </View>
-  );
-});
+
 
 export default function MapScreen() {
   const { styles: s, theme } = useStyles(sStylesheet);
@@ -130,8 +123,6 @@ export default function MapScreen() {
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const regionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const sc = useMemo(() => new Supercluster({ radius: 50, maxZoom: 16 }), []);
   const panY = useRef(new Animated.Value(SHEET_H - PEEK)).current;
   const lastY = useRef(SHEET_H - PEEK);
 
@@ -310,23 +301,14 @@ export default function MapScreen() {
     return byFilter.filter(m => m.title.toLowerCase().includes(q) || (m.subtitle||'').toLowerCase().includes(q));
   }, [allMarkers, filter, search]);
 
-  useEffect(() => {
-    sc.load(visibleMarkers.map(m => ({ type:'Feature' as const, properties:{ cluster:false, ...m }, geometry:{ type:'Point' as const, coordinates:[m.lng, m.lat] } })));
-  }, [visibleMarkers, sc]);
 
-  const clusters = useMemo(() => {
-    if (!region) return [];
-    const { latitude:lat, longitude:lng, latitudeDelta:ld, longitudeDelta:lnd } = region;
-    const z = Math.min(Math.max(Math.round(Math.log(360/ld)/Math.LN2),0),20);
-    return sc.getClusters([lng-lnd/2, lat-ld/2, lng+lnd/2, lat+ld/2], z);
-  }, [region, sc, visibleMarkers]);
 
   const areaName = (profile?.location as any)?.lga || (profile?.location as any)?.state || 'Your Area';
   const evtCount = allMarkers.filter(m => m.type === 'event').length;
 
   const locateMe = () => {
     if (!loc) return;
-    mapRef.current?.animateToRegion({ latitude: loc.coords.latitude, longitude: loc.coords.longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 600);
+    (mapRef.current as any)?.animateToRegion({ latitude: loc.coords.latitude, longitude: loc.coords.longitude, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 600);
   };
 
   if (loading) return (
@@ -339,38 +321,25 @@ export default function MapScreen() {
   return (
     <View style={s.fill}>
       <MapView
-        ref={mapRef}
+        ref={mapRef as any}
         style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}
         initialRegion={region || { latitude:6.5244, longitude:3.3792, latitudeDelta:0.0922, longitudeDelta:0.0421 }}
         showsUserLocation showsMyLocationButton={false} showsBuildings={false} pitchEnabled={false}
         moveOnMarkerPress={false}
         userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
         customMapStyle={Platform.OS === 'android' ? (isDarkMode ? DARK_STYLE : []) : undefined}
-        onRegionChangeComplete={(newRegion) => {
-          if (regionTimeout.current) clearTimeout(regionTimeout.current);
-          regionTimeout.current = setTimeout(() => setRegion(newRegion), 300);
-        }}
+        clusterColor="#82DB7E"
+        clusterTextColor="#0B0D0B"
       >
-        {clusters.map((c, i) => {
-          const [lng, lat] = c.geometry.coordinates;
-          const { cluster: isC, point_count, ...p } = c.properties as any;
-          if (isC) return (
-            <Marker key={`cl-${c.id??i}`} coordinate={{ latitude:lat, longitude:lng }}
-              onPress={() => { const z = sc.getClusterExpansionZoom(c.id as number); const d = 360/Math.pow(2,z); mapRef.current?.animateToRegion({ latitude:lat, longitude:lng, latitudeDelta:d, longitudeDelta:d }, 400); }}>
-              <ClusterBubble count={point_count} />
-            </Marker>
-          );
-          const m = p as MapMarker;
-          return (
-            <Marker key={m.id} coordinate={{ latitude:m.lat, longitude:m.lng }}
-              onPress={() => setSelectedPin(selectedPin?.id === m.id ? null : m)}>
-              {m.type==='friend' ? <FriendMarker avatar_url={m.avatar_url} />
-                : m.type==='business' ? <IconMarker icon="storefront-outline" color="#3B82F6" bg="rgba(59,130,246,0.15)" />
-                : m.type==='marketplace' ? <IconMarker icon="pricetag-outline" color="#82DB7E" bg="rgba(130,219,126,0.15)" />
-                : <IconMarker icon="calendar-outline" color="#F59E0B" bg="rgba(245,158,11,0.15)" />}
-            </Marker>
-          );
-        })}
+        {visibleMarkers.map((m) => (
+          <Marker key={m.id} coordinate={{ latitude:m.lat, longitude:m.lng }}
+            onPress={() => setSelectedPin(selectedPin?.id === m.id ? null : m)}>
+            {m.type==='friend' ? <FriendMarker avatar_url={m.avatar_url} />
+              : m.type==='business' ? <IconMarker icon="storefront-outline" color="#3B82F6" bg="rgba(59,130,246,0.15)" />
+              : m.type==='marketplace' ? <IconMarker icon="pricetag-outline" color="#82DB7E" bg="rgba(130,219,126,0.15)" />
+              : <IconMarker icon="calendar-outline" color="#F59E0B" bg="rgba(245,158,11,0.15)" />}
+          </Marker>
+        ))}
       </MapView>
 
       {/* ── Top overlays ── */}

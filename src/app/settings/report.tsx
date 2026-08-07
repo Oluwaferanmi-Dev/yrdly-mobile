@@ -6,20 +6,14 @@ import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
-const CATEGORIES = [
-  { label: 'Bug / Technical Issue', value: 'bug' },
-  { label: 'Marketplace Dispute', value: 'marketplace' },
-  { label: 'Neighbour Behaviour', value: 'behaviour' },
-  { label: 'Safety Concern', value: 'safety' },
-  { label: 'Other / Feedback', value: 'other' },
-];
-
+import { useCategories } from '../../hooks/use-categories';
 export default function ReportScreen() {
   const { styles: s, theme } = useStyles(sStylesheet);
 
   const router = useRouter();
   const { user } = useAuth();
-  const [category, setCategory] = useState('bug');
+  const { categories, loading: categoriesLoading } = useCategories('report');
+  const [category, setCategory] = useState('');
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -68,7 +62,7 @@ export default function ReportScreen() {
     }
   };
 
-  const selectedCategoryLabel = CATEGORIES.find(c => c.value === category)?.label || 'Select Category';
+  const selectedCategoryLabel = category || 'Select Category';
 
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
@@ -94,25 +88,34 @@ export default function ReportScreen() {
 
         {showDropdown && (
           <View style={s.dropdownOptions}>
-            {CATEGORIES.map((c, idx) => {
-            return (
-                          <React.Fragment key={c.value}>
-                            {idx > 0 && <View style={s.divider} />}
-                            <TouchableOpacity
-                              style={s.optionItem}
-                              onPress={() => {
-                                setCategory(c.value);
-                                setShowDropdown(false);
-                              }}
-                            >
-                              <Text style={[s.optionText, c.value === category && { color: theme.colors.G, fontFamily: 'Inter-SemiBold' }]}>
-                                {c.label}
-                              </Text>
-                              {c.value === category && <Ionicons name="checkmark" size={16} color={theme.colors.G} />}
-                            </TouchableOpacity>
-                          </React.Fragment>
-                        );
-            })}
+            {categoriesLoading ? (
+              <ActivityIndicator color={theme.colors.GOLD} style={{ padding: 12 }} />
+            ) : (
+              categories.map((c, idx) => {
+              return (
+                            <React.Fragment key={c.id}>
+                              {idx > 0 && <View style={s.divider} />}
+                              <TouchableOpacity
+                                style={s.optionItem}
+                                onPress={() => {
+                                  setCategory(c.name);
+                                  setShowDropdown(false);
+                                }}
+                              >
+                                <Text style={[
+                                  s.optionText,
+                                  category === c.name && { color: theme.colors.G, fontFamily: 'Inter-SemiBold' }
+                                ]}>
+                                  {c.name}
+                                </Text>
+                                {category === c.name && (
+                                  <Ionicons name="checkmark" size={18} color={theme.colors.G} />
+                                )}
+                              </TouchableOpacity>
+                            </React.Fragment>
+                          );
+                        })
+            )}
           </View>
         )}
 

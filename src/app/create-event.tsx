@@ -16,9 +16,9 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 import { formatPrice } from '../lib/utils';
 import { EventCard } from '../components/EventCard';
 import { ImageCarousel } from '../components/ImageCarousel';
+import { useCategories } from '../hooks/use-categories';
 
 const STEPS = ['Basic Info', 'Date & Time', 'Location', 'Tickets', 'Photos', 'Review'];
-const CATEGORIES = ['Party / Social', 'Sports & Fitness', 'Workshop', 'Concert / Music', 'Community / Meetup', 'Religious', 'Business', 'Other'];
 
 export default function CreateEventScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
@@ -26,6 +26,7 @@ export default function CreateEventScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, profile } = useAuth();
+  const { categories, loading: categoriesLoading } = useCategories('event');
   const [step, setStep] = useState(0);
 
   // Form State
@@ -292,17 +293,21 @@ export default function CreateEventScreen() {
             />
 
             <Text style={stylesheet.label}>Category</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={stylesheet.chipRow}>
-              {CATEGORIES.map(cat => (
-                <TouchableOpacity
-                  key={cat}
-                  style={[stylesheet.chip, eventCategory === cat && stylesheet.chipActive]}
-                  onPress={() => setEventCategory(cat)}
-                >
-                  <Text style={[stylesheet.chipText, eventCategory === cat && stylesheet.chipTextActive]}>{cat}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            {categoriesLoading ? (
+              <ActivityIndicator color={theme.colors.GOLD} style={{ marginTop: 10, alignSelf: 'flex-start' }} />
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={stylesheet.chipRow}>
+                {categories.map(cat => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[stylesheet.chip, eventCategory === cat.name && stylesheet.chipActive]}
+                    onPress={() => setEventCategory(cat.name)}
+                  >
+                    <Text style={[stylesheet.chipText, eventCategory === cat.name && stylesheet.chipTextActive]}>{cat.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
 
             <Text style={stylesheet.label}>Description</Text>
             <TextInput
