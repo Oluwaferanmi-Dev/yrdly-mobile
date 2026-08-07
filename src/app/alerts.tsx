@@ -10,7 +10,7 @@ import { useAppTheme } from '../context/ThemeContext';
 type SeverityFilter = 'all' | 'urgent' | 'caution' | 'information';
 
 const FILTERS: { key: SeverityFilter; label: string; color: string; bg: string }[] = [
-  { key: 'all',         label: 'All',     color: theme.colors.TEXT_PRIMARY,  bg: 'rgba(255,255,255,0.1)' },
+  { key: 'all',         label: 'All',     color: '#FFF',  bg: 'rgba(255,255,255,0.1)' },
   { key: 'urgent',      label: 'Urgent',  color: '#EF4444',  bg: 'rgba(183,28,28,0.18)' },
   { key: 'caution',     label: 'Caution', color: '#FFB74D',  bg: 'rgba(230,81,0,0.15)' },
   { key: 'information', label: 'Info',    color: '#64B5F6',  bg: 'rgba(33,150,243,0.12)' },
