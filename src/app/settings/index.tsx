@@ -156,12 +156,6 @@ export default function SettingsScreen() {
             label="Notifications" sub="Choose what you want to hear" 
             onPress={() => router.push('/settings/notifications' as any)} 
           />
-          <SettingDivider />
-          <SettingRow 
-            icon={<Feather name="moon" size={16} color="#fff" />} 
-            label="Dark Mode" sub="Keep it easy on your eyes" 
-            toggle toggled={isDarkMode} onToggle={toggleDarkMode} chevron={false} 
-          />
         </SettingSection>
 
         <SettingSection title="Community & Support">
@@ -237,7 +231,7 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
-        <Text style={s.footerText}>YRDLY v1.0.0 · Made with 💚 for Nigerian communities</Text>
+        <Text style={s.footerText}>YRDLY v1.01</Text>
 
       </ScrollView>
     </SafeAreaView>

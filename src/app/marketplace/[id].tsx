@@ -67,7 +67,7 @@ function MarketplaceDetailContent() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const isFocused = useIsFocused();
 
   const [post, setPost] = useState<Post | null>(null);
@@ -233,6 +233,10 @@ function MarketplaceDetailContent() {
         { text: 'Cancel', style: 'cancel' },
         { text: 'Block', style: 'destructive', onPress: async () => {
           if (!user || !post) return;
+          const currentBlocks = profile?.blocked_users || [];
+          if (!currentBlocks.includes(post.user_id)) {
+            await updateProfile({ blocked_users: [...currentBlocks, post.user_id] });
+          }
           await supabase.from('user_blocks').insert({ blocker_id: user.id, blocked_id: post.user_id });
           Alert.alert('Success', 'Seller blocked.');
         }}

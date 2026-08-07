@@ -131,7 +131,7 @@ const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted,
 
 export const PostCard = React.memo(function PostCard({ post, onPress, onLike, onComment, onShare, isVisible, onOpenImageViewer }: PostCardProps) {
   const router = useRouter();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, profile, updateProfile } = useAuth();
   const { colors } = useAppTheme();
 
   const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
@@ -375,6 +375,10 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       { text: 'Cancel', style: 'cancel' },
       { text: 'Block', style: 'destructive', onPress: async () => {
         if (!currentUser) return;
+        const currentBlocks = profile?.blocked_users || [];
+        if (!currentBlocks.includes(post.user_id)) {
+          await updateProfile({ blocked_users: [...currentBlocks, post.user_id] });
+        }
         await supabase.from('user_blocks').insert({ blocker_id: currentUser.id, blocked_id: post.user_id });
         Alert.alert('Success', 'User blocked.');
       }}

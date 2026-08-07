@@ -40,7 +40,7 @@ export default function OtherUserProfileScreen() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user: currentUser, profile: currentProfile } = useAuth();
+  const { user: currentUser, profile: currentProfile, updateProfile } = useAuth();
   const { width: windowWidth } = useWindowDimensions();
   const friendship = useFriendshipGlobal(id);
 
@@ -245,6 +245,10 @@ export default function OtherUserProfileScreen() {
                 { text: 'Block User', style: 'destructive', onPress: async () => {
                 try {
                   if (!currentProfile) return;
+                  const currentBlocks = currentProfile?.blocked_users || [];
+                  if (!currentBlocks.includes(profile.id)) {
+                    await updateProfile({ blocked_users: [...currentBlocks, profile.id] });
+                  }
                   await supabase.from('user_blocks').insert({ blocker_id: currentProfile.id, blocked_id: profile.id });
                   Alert.alert('User blocked');
                   router.back();
