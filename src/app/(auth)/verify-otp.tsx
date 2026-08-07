@@ -1,3 +1,4 @@
+import { createStyleSheet, useStyles } from 'react-native-unistyles';
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -8,6 +9,7 @@ import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
 const { colors } = ONBOARDING_THEME;
 
 export default function VerifyOtpScreen() {
+  const { styles, theme } = useStyles(stylesheet);
   const router = useRouter();
   const { phone } = useLocalSearchParams();
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
@@ -111,7 +113,7 @@ export default function VerifyOtpScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesheet = createStyleSheet(theme => ({
   container: {
     flex: 1,
     backgroundColor: colors.DARK,
@@ -167,4 +169,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: 'center',
   },
-});
+}));

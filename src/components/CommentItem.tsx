@@ -101,7 +101,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
       <View style={styles.commentContent}>
         <View style={styles.authorRow}>
           <Text 
-            style={[styles.authorName, { color: colors.TEXT_PRIMARY }]}
+            style={[styles.authorName, { color: theme.colors.TEXT_PRIMARY }]}
             onPress={handleProfilePress}
           >
             {item.user?.name || item.author_name}
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarFallbackText: {
-    color: colors.TEXT_PRIMARY,
+    color: theme.colors.TEXT_PRIMARY,
     fontFamily: 'Inter-Bold',
     fontSize: 14,
   },

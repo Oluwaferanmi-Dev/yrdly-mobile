@@ -1,3 +1,4 @@
+import { createStyleSheet, useStyles } from 'react-native-unistyles';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -36,6 +37,7 @@ const SLIDES = [
 ];
 
 export default function TourScreen() {
+  const { styles, theme } = useStyles(stylesheet);
   const router = useRouter();
   const [idx, setIdx] = useState(0);
   const currentSlide = SLIDES[idx];
@@ -83,7 +85,7 @@ export default function TourScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesheet = createStyleSheet(theme => ({
   container: {
     flex: 1,
     backgroundColor: colors.DARK,
@@ -122,4 +124,4 @@ const styles = StyleSheet.create({
     color: colors.MUTED,
     lineHeight: 24,
   },
-});
+}));

@@ -1,3 +1,4 @@
+import { createStyleSheet, useStyles } from 'react-native-unistyles';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -19,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 const { colors } = ONBOARDING_THEME;
 
 export default function LoginScreen() {
+  const { styles, theme } = useStyles(stylesheet);
   const router = useRouter();
   const { signIn, signInWithGoogle, signInWithApple, loading } = useAuth();
 
@@ -148,7 +150,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesheet = createStyleSheet(theme => ({
   container: {
     flex: 1,
     backgroundColor: colors.DARK,
@@ -216,4 +218,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-SemiBold',
   },
-});
+}));

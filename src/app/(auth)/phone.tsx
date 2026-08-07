@@ -1,3 +1,4 @@
+import { createStyleSheet, useStyles } from 'react-native-unistyles';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -9,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 const { colors, radii } = ONBOARDING_THEME;
 
 export default function PhoneScreen() {
+  const { styles, theme } = useStyles(stylesheet);
   const router = useRouter();
   const [phone, setPhone] = useState('');
 
@@ -76,7 +78,7 @@ export default function PhoneScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesheet = createStyleSheet(theme => ({
   container: {
     flex: 1,
     backgroundColor: colors.DARK,
@@ -150,4 +152,4 @@ const styles = StyleSheet.create({
     color: colors.LABEL,
     lineHeight: 18,
   },
-});
+}));

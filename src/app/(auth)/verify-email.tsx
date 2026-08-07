@@ -1,3 +1,4 @@
+import { createStyleSheet, useStyles } from 'react-native-unistyles';
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -10,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 const { colors } = ONBOARDING_THEME;
 
 export default function VerifyEmailScreen() {
+  const { styles, theme } = useStyles(stylesheet);
   const router = useRouter();
   const { email } = useLocalSearchParams();
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
@@ -161,7 +163,7 @@ export default function VerifyEmailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesheet = createStyleSheet(theme => ({
   container: {
     flex: 1,
     backgroundColor: colors.DARK,
@@ -235,4 +237,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'Inter-SemiBold',
   },
-});
+}));

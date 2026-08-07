@@ -57,16 +57,19 @@ export const appThemes = {
   dark: darkTheme
 };
 
-type AppThemes = typeof appThemes;
-declare module 'react-native-unistyles' {
-  export interface UnistylesThemes extends AppThemes {}
-}
-
 const breakpoints = {
   phone: 0,
   tablet: 768,
   large: 1024
 };
+
+type AppThemes = typeof appThemes;
+type AppBreakpoints = typeof breakpoints;
+
+declare module 'react-native-unistyles' {
+  export interface UnistylesThemes extends AppThemes {}
+  export interface UnistylesBreakpoints extends AppBreakpoints {}
+}
 
 UnistylesRegistry
   .addBreakpoints(breakpoints)

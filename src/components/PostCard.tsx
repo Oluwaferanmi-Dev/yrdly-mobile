@@ -31,7 +31,7 @@ import { AppState } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 
 const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted, setIsVideoMuted }: { post: Post, isVisible?: boolean, isVideoMuted: boolean, setIsVideoMuted: (muted: boolean) => void }) {
-  const { styles: stylesheet } = useStyles(_stylesheet);
+  const { styles: stylesheet, theme } = useStyles(_stylesheet);
   const [isReady, setIsReady] = useState(false);
   const [progress, setProgress] = useState(0);
   const isFocused = useIsFocused();

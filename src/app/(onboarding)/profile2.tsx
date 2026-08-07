@@ -1,3 +1,4 @@
+import { createStyleSheet, useStyles } from 'react-native-unistyles';
 import React, { useState } from 'react';
 import {
   View,
@@ -51,6 +52,7 @@ const ALL_NEIGHBOURHOODS = [
 ];
 
 export default function Profile2Screen() {
+  const { styles, theme } = useStyles(stylesheet);
   const router = useRouter();
   const { user } = useAuth();
 
@@ -217,7 +219,7 @@ export default function Profile2Screen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesheet = createStyleSheet(theme => ({
   container: {
     flex: 1,
     backgroundColor: '#0e0e0e',
@@ -312,4 +314,4 @@ const styles = StyleSheet.create({
     color: colors.LABEL,
     lineHeight: 18,
   },
-});
+}));

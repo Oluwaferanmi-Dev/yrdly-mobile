@@ -286,6 +286,7 @@ export default function HomeTab() {
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
               <NotificationsIcon size={17} color="rgba(255,255,255,0.85)" />
+            </TouchableOpacity>
           </View>
         </View>
         <View style={{ paddingTop: HEADER_HEIGHT }}>

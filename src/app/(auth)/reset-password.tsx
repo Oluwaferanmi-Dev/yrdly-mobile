@@ -1,3 +1,4 @@
+import { createStyleSheet, useStyles } from 'react-native-unistyles';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -19,6 +20,7 @@ import { Alert } from 'react-native';
 const { colors, radii } = ONBOARDING_THEME;
 
 export default function ResetPasswordScreen() {
+  const { styles, theme } = useStyles(stylesheet);
   const router = useRouter();
   const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -132,7 +134,7 @@ export default function ResetPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesheet = createStyleSheet(theme => ({
   container: {
     flex: 1,
     backgroundColor: colors.DARK,
@@ -188,4 +190,4 @@ const styles = StyleSheet.create({
     color: colors.G,
     fontFamily: 'Inter-Medium',
   },
-});
+}));
