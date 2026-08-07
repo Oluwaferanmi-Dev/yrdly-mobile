@@ -45,7 +45,15 @@ export default function ResetPasswordScreen() {
       Alert.alert('Error', error.message || 'Failed to update password');
     } else {
       setDone(true);
-      // Supabase Auth handles the security email automatically if configured.
+      // Trigger the explicit security email via Edge Function
+      try {
+        await supabase.functions.invoke('send-security-email', {
+          body: { type: 'password_update' },
+        });
+      } catch (e) {
+        console.warn('Failed to send security email', e);
+      }
+      
       // Sign out to force the user to log in with the new password.
       setTimeout(async () => {
         await signOut();

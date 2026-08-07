@@ -1,7 +1,7 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePushNotifications } from '../hooks/use-push-notifications';
 import { AuthProvider, useAuth } from '../hooks/use-supabase-auth';
 import { ThemeProvider } from '../context/ThemeContext';
@@ -64,6 +64,17 @@ function RootNavigationGuard() {
   const segments = useSegments();
   const router = useRouter();
 
+  const [profileWaitTime, setProfileWaitTime] = useState(0);
+
+  useEffect(() => {
+    if (user && !profile) {
+      const timer = setTimeout(() => setProfileWaitTime(prev => prev + 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setProfileWaitTime(0);
+    }
+  }, [user, profile, profileWaitTime]);
+
   useEffect(() => {
     if (loading) return;
 
@@ -87,7 +98,14 @@ function RootNavigationGuard() {
       }
 
       // Signed in — wait for profile to load
-      if (!profile) return;
+      if (!profile) {
+        // Deadlock prevention: if we've waited > 4 seconds and profile is still null, 
+        // assume it's a broken OAuth sign-up or network failure and push to onboarding to recover.
+        if (profileWaitTime > 4 && !inOnboarding) {
+          router.replace('/(onboarding)/profile1' as any);
+        }
+        return;
+      }
 
       // If we're on a deep-linked content route, leave it alone
       if (inDeepLink) return;
@@ -110,7 +128,7 @@ function RootNavigationGuard() {
     } catch (navError) {
       console.warn('[RootNavigationGuard] Navigation error (transient):', navError);
     }
-  }, [user, profile, loading, segments, router]);
+  }, [user, profile, loading, segments, router, profileWaitTime]);
 
   return (
     <ErrorBoundary>

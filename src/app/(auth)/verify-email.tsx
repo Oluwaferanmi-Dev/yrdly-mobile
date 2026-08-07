@@ -49,7 +49,7 @@ export default function VerifyEmailScreen() {
     setVerifying(true);
 
     try {
-      const emailStr = (typeof email === 'string' && email) ? email : '';
+      const emailStr = (typeof email === 'string' && email) ? email.trim().toLowerCase() : '';
       const { error: err } = await supabase.auth.verifyOtp({
         email: emailStr,
         token,
@@ -80,7 +80,7 @@ export default function VerifyEmailScreen() {
     setCountdown(45);
     await supabase.auth.resend({
       type: 'signup',
-      email,
+      email: email.trim().toLowerCase(),
     });
   };
 

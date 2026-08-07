@@ -62,20 +62,21 @@ export default function SignUpScreen() {
       return;
     }
 
+    const cleanEmail = email.trim().toLowerCase();
     setError('');
 
-    const { error: err, session } = await signUp(email, password, name);
+    const { error: err, session } = await signUp(cleanEmail, password, name);
     if (err) {
       if (err.message.toLowerCase().includes('already registered') || err.message.toLowerCase().includes('already in use')) {
         try {
-          await supabase.auth.resend({ type: 'signup', email });
+          await supabase.auth.resend({ type: 'signup', email: cleanEmail });
         } catch {}
-        router.push({ pathname: '/(auth)/verify-email', params: { email } } as any);
+        router.push({ pathname: '/(auth)/verify-email', params: { email: cleanEmail } } as any);
         return;
       }
       setError(err.message);
     } else if (!session) {
-      router.push({ pathname: '/(auth)/verify-email', params: { email } } as any);
+      router.push({ pathname: '/(auth)/verify-email', params: { email: cleanEmail } } as any);
     } else {
       router.push('/(auth)/phone' as any);
     }

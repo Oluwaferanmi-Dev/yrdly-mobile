@@ -45,14 +45,15 @@ export default function LoginScreen() {
       return;
     }
 
+    const cleanEmail = email.trim().toLowerCase();
     setError('');
-    const { error: err } = await signIn(email, password);
+    const { error: err } = await signIn(cleanEmail, password);
     if (err) {
       if (err.message.toLowerCase().includes('email not confirmed') || err.message.toLowerCase().includes('unconfirmed')) {
         try {
-          await supabase.auth.resend({ type: 'signup', email });
+          await supabase.auth.resend({ type: 'signup', email: cleanEmail });
         } catch {}
-        router.push({ pathname: '/(auth)/verify-email', params: { email } } as any);
+        router.push({ pathname: '/(auth)/verify-email', params: { email: cleanEmail } } as any);
         return;
       }
       setError(err.message);
