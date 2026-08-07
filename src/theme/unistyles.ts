@@ -69,12 +69,11 @@ const breakpoints = {
 };
 
 UnistylesRegistry
+  .addBreakpoints(breakpoints)
   .addThemes({
     light: lightTheme,
     dark: darkTheme
   })
-  // @ts-ignore
-  .addBreakpoints(breakpoints)
   .addConfig({
     adaptiveThemes: true,
     initialTheme: 'dark'
