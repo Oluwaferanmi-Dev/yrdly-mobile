@@ -12,8 +12,10 @@ import type { Business, CatalogItem } from '../../types';
 const { width } = Dimensions.get('window');
 type Tab = 'catalog' | 'reviews' | 'analytics';
 
+    // duplicate stylesheet removed
+
 export default function BusinessProfileScreen() {
-    const { styles: sStylesheet, theme } = useStyles(stylesheet);
+  const { styles: sStylesheet, theme } = useStyles(stylesheet);
 
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();

@@ -265,8 +265,9 @@ function ChatContent() {
         event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${id}`,
       }, (payload) => {
         setMessages((prev) => {
-          if (prev.some(m => m.id === payload.new.id)) return prev;
-          return [...prev, payload.new as Message];
+          const newMsg = payload.new as Message;
+          if (prev.some(m => m.id === newMsg.id || (m.sender_id === newMsg.sender_id && m.text === newMsg.text && m.created_at === newMsg.created_at))) return prev;
+          return [...prev, newMsg];
         });
         setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
         
@@ -305,7 +306,7 @@ function ChatContent() {
         if (!newText.endsWith('(Edited)')) {
           newText = newText + ' (Edited)';
         }
-        await supabase.from('messages').update({ text: newText }).eq('id', editingMessage.id);
+        const { error: editErr } = await supabase.from('messages').update({ text: newText }).eq('id', editingMessage.id); if (editErr) throw editErr;
         
         setMessages(prev => prev.map(m => m.id === editingMessage.id ? { ...m, text: newText } : m));
         setEditingMessage(null);
@@ -364,7 +365,7 @@ function ChatContent() {
       // We append locally so it shows immediately
       if (data) {
         setMessages(prev => {
-          if (prev.some(m => m.id === data.id)) return prev;
+          if (prev.some(m => m.id === data.id || (m.sender_id === data.sender_id && m.text === data.text && m.created_at === data.created_at))) return prev;
           return [...prev, data as Message];
         });
       }
@@ -445,8 +446,6 @@ function ChatContent() {
         conversation_id: currentConvId,
         media_url: publicUrl,
         media_type: isVideo ? 'video' : 'image',
-        image_url: !isVideo ? publicUrl : null,
-        video_url: isVideo ? publicUrl : null,
       };
 
       const { data, error } = await supabase.from('messages').insert(payload).select().single();
@@ -473,7 +472,7 @@ function ChatContent() {
 
       if (data) {
         setMessages(prev => {
-          if (prev.some(m => m.id === data.id)) return prev;
+          if (prev.some(m => m.id === data.id || (m.sender_id === data.sender_id && m.created_at === data.created_at && (m.media_url === data.media_url)))) return prev;
           return [...prev, data as Message];
         });
       }
@@ -529,8 +528,8 @@ function ChatContent() {
         style: 'destructive' as const,
         onPress: async () => {
           try {
-            await supabase.from('messages').update({ text: 'This message was deleted', media_url: null, media_type: null, image_url: null, video_url: null }).eq('id', item.id);
-            setMessages(prev => prev.map(m => m.id === item.id ? { ...m, text: 'This message was deleted', media_url: undefined, media_type: undefined, image_url: null, video_url: null } : m));
+            const { error: delErr } = await supabase.from('messages').update({ text: 'This message was deleted', media_url: null, media_type: null }).eq('id', item.id); if (delErr) throw delErr;
+            setMessages(prev => prev.map(m => m.id === item.id ? { ...m, text: 'This message was deleted', media_url: undefined, media_type: undefined } : m));
           } catch (e) {
             console.error('Failed to delete message for everyone:', e);
           }
@@ -570,8 +569,8 @@ function ChatContent() {
 
     const isMine = item.sender_id === user?.id;
     const msgText = item.text || item.content || '';
-    const imgUrl = item.media_type === 'image' ? item.media_url : item.image_url;
-    const vidUrl = item.media_type === 'video' ? item.media_url : item.video_url;
+    const imgUrl = item.media_type === 'image' ? item.media_url : null;
+    const vidUrl = item.media_type === 'video' ? item.media_url : null;
     const hasMedia = !!imgUrl || !!vidUrl;
 
     return (

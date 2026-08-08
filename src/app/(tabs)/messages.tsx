@@ -1,5 +1,5 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View, Text, FlatList, TextInput,
   TouchableOpacity, ActivityIndicator, Alert, RefreshControl, Modal
@@ -7,11 +7,12 @@ import {
 import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Swipeable } from 'react-native-gesture-handler';
 type ConvType = 'friend' | 'marketplace' | 'briefcase';
 type FilterTab = 'all' | 'friends' | 'marketplace' | 'business';
 
@@ -146,18 +147,20 @@ export default function MessagesTab() {
     }
   };
 
-  useEffect(() => {
-    fetchConversations();
+  useFocusEffect(
+    useCallback(() => {
+      fetchConversations();
 
-    if (!user) return;
-    const channel = supabase
-      .channel('conversations_realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => fetchConversations())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => fetchConversations())
-      .subscribe();
+      if (!user) return;
+      const channel = supabase
+        .channel('conversations_realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => fetchConversations())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => fetchConversations())
+        .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
+      return () => { supabase.removeChannel(channel); };
+    }, [user])
+  );
 
   const filteredConversations = useMemo(() => {
     return conversations.filter((c) => {
@@ -179,6 +182,59 @@ export default function MessagesTab() {
   const totalUnread = useMemo(() => {
     return conversations.reduce((sum, c) => sum + c.unreadCount, 0);
   }, [conversations]);
+
+  const handleDeleteConversation = useCallback((conversationId: string) => {
+    if (!user) return;
+    Alert.alert(
+      'Delete Conversation',
+      'Are you sure you want to delete this conversation? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { data, error } = await supabase
+                .from('conversations')
+                .select('deleted_by')
+                .eq('id', conversationId)
+                .single();
+
+              if (error) throw error;
+              
+              const currentDeletedBy = data.deleted_by || [];
+              if (!currentDeletedBy.includes(user.id)) {
+                const newDeletedBy = [...currentDeletedBy, user.id];
+                const { error: updateError } = await supabase
+                  .from('conversations')
+                  .update({ deleted_by: newDeletedBy })
+                  .eq('id', conversationId);
+                  
+                if (updateError) throw updateError;
+                
+                setConversations(prev => prev.filter(c => c.id !== conversationId));
+              }
+            } catch (e) {
+              console.error('Failed to delete conversation', e);
+              Alert.alert('Error', 'Failed to delete conversation.');
+            }
+          }
+        }
+      ]
+    );
+  }, [user]);
+
+  const renderRightActions = useCallback((conversationId: string) => {
+    return (
+      <TouchableOpacity 
+        style={stylesheet.deleteAction}
+        onPress={() => handleDeleteConversation(conversationId)}
+      >
+        <Ionicons name="trash-outline" size={24} color="#fff" />
+      </TouchableOpacity>
+    );
+  }, [handleDeleteConversation, stylesheet]);
 
   return (
     <View style={[stylesheet.container, { backgroundColor: theme.colors.DARK, paddingTop: insets.top }]}>
@@ -293,6 +349,7 @@ export default function MessagesTab() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchConversations(true)} tintColor={theme.colors.G} />}
           renderItem={({ item }) => {
           return (
+                    <Swipeable renderRightActions={() => renderRightActions(item.id)} overshootRight={false}>
                       <TouchableOpacity
                         style={[
                           stylesheet.convoRow,
@@ -345,6 +402,7 @@ export default function MessagesTab() {
                           )}
                         </View>
                       </TouchableOpacity>
+                    </Swipeable>
                     );
           }}
         />
@@ -508,4 +566,11 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 22,
       },
       startBtnText: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
+      deleteAction: {
+        backgroundColor: '#ef4444',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 80,
+        height: '100%',
+      },
     }));

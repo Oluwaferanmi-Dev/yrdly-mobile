@@ -169,10 +169,15 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
   
   if (search.trim() && users.length > 0) {
     return (
-      <ScrollView style={sStylesheet.sectionContainer} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        {users.map(u => (
+      <FlatList
+        data={users}
+        keyExtractor={u => u.id}
+        numColumns={2}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100, gap: 16 }}
+        columnWrapperStyle={{ gap: 16 }}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item: u }) => (
           <NearbyUserCard 
-            key={u.id} 
             user={u} 
             context="neighbor" 
             currentLoc={currentLoc}
@@ -180,8 +185,8 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
             theme={theme}
             onPress={() => router.push(`/profile/${u.id}` as any)} 
           />
-        ))}
-      </ScrollView>
+        )}
+      />
     );
   }
 
@@ -242,8 +247,53 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
   );
 }
 
+// ─── CATEGORY DROPDOWN COMPONENT ───────────────────────────────────────────────
+function CategoryDropdown({ category, setCategory, options, theme, label = "Category" }: any) {
+  const [show, setShow] = useState(false);
+  return (
+    <>
+      <TouchableOpacity 
+        style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.SURFACE, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, gap: 6 }} 
+        onPress={() => setShow(true)}
+      >
+        <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: theme.colors.TEXT_PRIMARY }}>{label}: {category}</Text>
+        <Ionicons name="chevron-down" size={14} color={theme.colors.LABEL} />
+      </TouchableOpacity>
+
+      <Modal visible={show} transparent animationType="fade">
+        <TouchableWithoutFeedback onPress={() => setShow(false)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+            <TouchableWithoutFeedback>
+              <View style={{ backgroundColor: theme.colors.BACKGROUND, borderRadius: 16, width: '100%', maxHeight: '70%', overflow: 'hidden', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}>
+                <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY }}>Select {label}</Text>
+                  <TouchableOpacity onPress={() => setShow(false)}>
+                    <Ionicons name="close" size={24} color={theme.colors.MUTED} />
+                  </TouchableOpacity>
+                </View>
+                <ScrollView style={{ padding: 16 }} contentContainerStyle={{ gap: 8, paddingBottom: 32 }}>
+                  {options.map((opt: string) => (
+                    <TouchableOpacity 
+                      key={opt} 
+                      onPress={() => { setCategory(opt); setShow(false); }}
+                      style={{ paddingVertical: 14, paddingHorizontal: 16, borderRadius: 12, backgroundColor: category === opt ? 'rgba(130,219,126,0.1)' : 'transparent', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+                    >
+                      <Text style={{ fontFamily: 'Inter-Medium', fontSize: 16, color: category === opt ? theme.colors.G : theme.colors.TEXT_PRIMARY }}>{opt}</Text>
+                      {category === opt && <Ionicons name="checkmark" size={20} color={theme.colors.G} />}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </>
+  );
+}
+
 // ─── MARKETPLACE SECTION ─────────────────────────────────────────────────────
-function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObject | null }) {
+function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.LocationObject | null, search: string }) {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);
     const { activeFilter } = useLocation();
 
@@ -282,6 +332,10 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
             sort_order: filterSort
           }).select('*, user:users!posts_user_id_fkey(id,name,avatar_url)');
           
+          if (search?.trim()) {
+            q = q.ilike('title', `%${search.trim()}%`);
+          }
+          
           if (activeFilter) {
             if (activeFilter.lga) {
               q = q.eq('lga', activeFilter.lga);
@@ -293,6 +347,9 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
           q = supabase.from('posts').select('*, user:users!posts_user_id_fkey(id,name,avatar_url)').eq('category', 'For Sale').or('is_sold.eq.false,is_sold.is.null');
           if (category !== 'All') {
             q = q.ilike('sub_category', `%${category}%`);
+          }
+          if (search?.trim()) {
+            q = q.ilike('title', `%${search.trim()}%`);
           }
           if (activeFilter) {
             if (activeFilter.lga) {
@@ -320,30 +377,19 @@ function MarketplaceSection({ currentLoc }: { currentLoc: Location.LocationObjec
           }
         }
         
-        const { data } = await q.limit(40);
+        const { data, error } = await q.limit(40);
+        if (error) console.error('Marketplace fetch error:', error);
         if (data) setItems(data as Post[]);
         setLoading(false);
       }
       fetchItems();
-    }, [category, activeFilter, filterCondition, filterPriceMin, filterPriceMax, filterSort, filterDistance, currentLoc])
+    }, [category, activeFilter, filterCondition, filterPriceMin, filterPriceMax, filterSort, filterDistance, currentLoc, search])
   );
 
   return (
     <View style={sStylesheet.sectionContainer}>
-      <View style={sStylesheet.marketplaceToolbar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 20 }}>
-          {CATS.map(cat => {
-          return (
-                      <TouchableOpacity 
-                        key={cat} 
-                        style={[sStylesheet.marketplaceCatBtn, category === cat && sStylesheet.marketplaceCatBtnActive]}
-                        onPress={() => setCategory(cat)}
-                      >
-                        <Text style={[sStylesheet.marketplaceCatText, category === cat && sStylesheet.marketplaceCatTextActive]}>{cat}</Text>
-                      </TouchableOpacity>
-                    );
-          })}
-        </ScrollView>
+      <View style={[sStylesheet.marketplaceToolbar, { paddingHorizontal: 20, paddingRight: 20, justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center' }]}>
+        <CategoryDropdown category={category} setCategory={setCategory} options={CATS} theme={theme} />
         <TouchableOpacity style={sStylesheet.filterBtn} onPress={() => setShowFilter(true)}>
           <Ionicons name="options-outline" size={18} color={theme.colors.MUTED} />
         </TouchableOpacity>
@@ -546,7 +592,7 @@ function CatalogEventCard({ item, router, theme, sStylesheet }: any) {
 }
 
 // ─── EVENTS SECTION ──────────────────────────────────────────────────────────
-function EventsSection({ currentLoc }: { currentLoc: Location.LocationObject | null }) {
+function EventsSection({ currentLoc, search }: { currentLoc: Location.LocationObject | null, search: string }) {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);
     const { activeFilter } = useLocation();
 
@@ -591,6 +637,10 @@ function EventsSection({ currentLoc }: { currentLoc: Location.LocationObject | n
             q = q.eq('state', activeFilter.state);
           }
         }
+        
+        if (search?.trim()) {
+          q = q.ilike('title', `%${search.trim()}%`);
+        }
         // TODO: implement specific date filters based on selected filter state if needed
 
         const { data, error } = await q;
@@ -602,25 +652,13 @@ function EventsSection({ currentLoc }: { currentLoc: Location.LocationObject | n
         setLoading(false);
       }
       fetchEvents();
-    }, [filter, activeFilter])
+    }, [filter, activeFilter, search])
   );
 
   return (
     <View style={sStylesheet.sectionContainer}>
-      <View style={sStylesheet.eventsToolbar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}>
-          {EVENT_FILTERS.map(f => {
-          return (
-                      <TouchableOpacity 
-                        key={f} 
-                        style={[sStylesheet.marketplaceCatBtn, filter === f && sStylesheet.marketplaceCatBtnActive]}
-                        onPress={() => setFilter(f)}
-                      >
-                        <Text style={[sStylesheet.marketplaceCatText, filter === f && sStylesheet.marketplaceCatTextActive]}>{f}</Text>
-                      </TouchableOpacity>
-                    );
-          })}
-        </ScrollView>
+      <View style={[sStylesheet.eventsToolbar, { paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.BACKGROUND, alignItems: 'flex-start' }]}>
+        <CategoryDropdown category={filter} setCategory={setFilter} options={EVENT_FILTERS} theme={theme} label="Filter" />
       </View>
 
       {loading ? (
@@ -641,7 +679,7 @@ function EventsSection({ currentLoc }: { currentLoc: Location.LocationObject | n
 }
 
 // ─── PLACES SECTION ──────────────────────────────────────────────────────────
-function PlacesSection({ currentLoc }: { currentLoc: Location.LocationObject | null }) {
+function PlacesSection({ currentLoc, search }: { currentLoc: Location.LocationObject | null, search: string }) {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);
     const { activeFilter } = useLocation();
 
@@ -667,30 +705,23 @@ function PlacesSection({ currentLoc }: { currentLoc: Location.LocationObject | n
             q = q.eq('state', activeFilter.state);
           }
         }
-        const { data } = await q.limit(20);
+        
+        if (search?.trim()) {
+          q = q.ilike('name', `%${search.trim()}%`);
+        }
+        const { data, error } = await q.limit(20);
+        if (error) console.error('Places fetch error:', error);
         if (data) setBusinesses(data as Business[]);
         setLoading(false);
       }
       fetchPlaces();
-    }, [category, activeFilter])
+    }, [category, activeFilter, search])
   );
 
   return (
     <View style={sStylesheet.sectionContainer}>
-      <View style={sStylesheet.eventsToolbar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}>
-          {PLACE_CATS.map(c => {
-          return (
-                      <TouchableOpacity 
-                        key={c} 
-                        style={[sStylesheet.marketplaceCatBtn, category === c && sStylesheet.marketplaceCatBtnActive]}
-                        onPress={() => setCategory(c)}
-                      >
-                        <Text style={[sStylesheet.marketplaceCatText, category === c && sStylesheet.marketplaceCatTextActive]}>{c}</Text>
-                      </TouchableOpacity>
-                    );
-          })}
-        </ScrollView>
+      <View style={[sStylesheet.eventsToolbar, { paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.BACKGROUND, alignItems: 'flex-start' }]}>
+        <CategoryDropdown category={category} setCategory={setCategory} options={PLACE_CATS} theme={theme} label="Category" />
       </View>
 
       {loading ? (
@@ -757,7 +788,15 @@ export default function CatalogTab() {
   const [activeTab, setActiveTab] = useState<TabType>('Discover');
   const [showSearch, setShowSearch] = useState(false);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [currentLoc, setCurrentLoc] = useState<Location.LocationObject | null>(null);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
 
   useEffect(() => {
     (async () => {
@@ -864,10 +903,10 @@ export default function CatalogTab() {
       </View>
 
       {/* ── Tab Content ── */}
-      {activeTab === 'Discover' && <DiscoverSection currentLoc={currentLoc} search={search} />}
-      {activeTab === 'Marketplace' && <MarketplaceSection currentLoc={currentLoc} />}
-      {activeTab === 'Events' && <EventsSection currentLoc={currentLoc} />}
-      {activeTab === 'Businesses' && <PlacesSection currentLoc={currentLoc} />}
+      {activeTab === 'Discover' && <DiscoverSection currentLoc={currentLoc} search={debouncedSearch} />}
+      {activeTab === 'Marketplace' && <MarketplaceSection currentLoc={currentLoc} search={debouncedSearch} />}
+      {activeTab === 'Events' && <EventsSection currentLoc={currentLoc} search={debouncedSearch} />}
+      {activeTab === 'Businesses' && <PlacesSection currentLoc={currentLoc} search={debouncedSearch} />}
 
       <Modal visible={showLocationPicker} animationType="slide" transparent>
         <View style={sStylesheet.modalContainer}>

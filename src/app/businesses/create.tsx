@@ -265,8 +265,6 @@ export default function BusinessEditScreen() {
             <Text style={sStylesheet.fieldLabel}>Category</Text>
             <View style={sStylesheet.catWrap}>
               {CATS.map(c => {
-                  const { styles: s } = useStyles(sStylesheet);
-
                 const active = category === c;
                 return (
                   <TouchableOpacity 
