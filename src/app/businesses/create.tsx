@@ -8,6 +8,7 @@ import { Image } from 'expo-image';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { StorageService } from '../../lib/storage-service';
+import { resolveCoords } from '../../lib/geocoding-service';
 import * as ImagePicker from 'expo-image-picker';
 import { OpeningHoursPicker } from '../../components/OpeningHoursPicker';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
@@ -37,6 +38,10 @@ export default function BusinessEditScreen() {
   const [category, setCategory] = useState(CATS[0].name);
   const [hours, setHours] = useState('09:00 AM - 05:00 PM');
   const [location, setLocation] = useState('');
+  const [bizLat, setBizLat] = useState<number | null>(null);
+  const [bizLng, setBizLng] = useState<number | null>(null);
+  const [bizLga, setBizLga] = useState('');
+  const [bizWard, setBizWard] = useState('');
   
   const [coverUri, setCoverUri] = useState<string | null>(null);
   const [logoUri, setLogoUri] = useState<string | null>(null);
@@ -58,6 +63,10 @@ export default function BusinessEditScreen() {
             setCategory(data.category || CATS[0].name);
             setHours(data.hours || '09:00 AM - 05:00 PM');
             setLocation(data.location || '');
+            setBizLat(null);
+            setBizLng(null);
+            setBizLga(data.lga || '');
+            setBizWard(data.ward || '');
             setCoverUri(data.cover_image || data.image_urls?.[0] || null);
             setLogoUri(data.logo_url || data.logo || null);
           }
@@ -114,6 +123,11 @@ export default function BusinessEditScreen() {
         category,
         hours: hours.trim(),
         location: location.trim() || 'Location not specified',
+        lga: bizLga || null,
+        ward: bizWard || null,
+        location_geom: bizLat !== null && bizLng !== null
+          ? `POINT(${bizLng} ${bizLat})`
+          : null,
         is_active: true
       };
 
@@ -231,8 +245,21 @@ export default function BusinessEditScreen() {
             <Text style={sStylesheet.fieldLabel}>Location</Text>
             <GooglePlacesAutocomplete
               placeholder={location || "Search for a business location"}
+              fetchDetails={true}
               onPress={(data, details = null) => {
                 setLocation(data.description);
+                if (details?.geometry?.location) {
+                  const lat = details.geometry.location.lat;
+                  const lng = details.geometry.location.lng;
+                  setBizLat(lat);
+                  setBizLng(lng);
+                  resolveCoords(lat, lng).then((match) => {
+                    if (match) {
+                      setBizLga(match.lga);
+                      setBizWard(match.ward);
+                    }
+                  });
+                }
               }}
               query={{
                 key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '',

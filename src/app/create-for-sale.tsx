@@ -4,6 +4,8 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingVi
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { resolveCoords } from '../lib/geocoding-service';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
@@ -46,6 +48,7 @@ export default function CreateForSaleScreen() {
 
   const [postState, setPostState] = useState('');
   const [postLga, setPostLga] = useState('');
+  const [postWard, setPostWard] = useState('');
   const [postLat, setPostLat] = useState<number | null>(null);
   const [postLng, setPostLng] = useState<number | null>(null);
 
@@ -63,6 +66,7 @@ export default function CreateForSaleScreen() {
         setLocation(locStr);
         setPostState(profile.location.state || '');
         setPostLga(profile.location.lga || '');
+        setPostWard(profile.location.ward || '');
       }
     }
   }, [profile]);
@@ -187,7 +191,7 @@ export default function CreateForSaleScreen() {
             visibility: visibility,
             state: postState || null,
             lga: postLga || null,
-            ward: null,
+            ward: postWard || null,
             location_geom: postLat !== null && postLng !== null ? `POINT(${postLng} ${postLat})` : null,
             timestamp: new Date().toISOString(),
             liked_by: [],
@@ -380,22 +384,17 @@ export default function CreateForSaleScreen() {
                 onPress={(data, details = null) => {
                   setLocation(data.description);
                   if (details?.geometry?.location) {
-                    setPostLat(details.geometry.location.lat);
-                    setPostLng(details.geometry.location.lng);
-                  }
-                  const d = data as any;
-                  if (d.terms && d.terms.length > 0) {
-                    const terms = d.terms;
-                    const countryIdx = terms.findIndex((t: any) => t.value === 'Nigeria');
-                    if (countryIdx > 0) {
-                      setPostState(terms[countryIdx - 1]?.value || '');
-                      if (countryIdx > 1) {
-                        setPostLga(terms[countryIdx - 2]?.value || '');
+                    const lat = details.geometry.location.lat;
+                    const lng = details.geometry.location.lng;
+                    setPostLat(lat);
+                    setPostLng(lng);
+                    resolveCoords(lat, lng).then((match) => {
+                      if (match) {
+                        setPostState(match.state);
+                        setPostLga(match.lga);
+                        setPostWard(match.ward);
                       }
-                    } else {
-                      setPostState(terms[terms.length - 1]?.value || '');
-                      if (terms.length > 1) setPostLga(terms[terms.length - 2]?.value || '');
-                    }
+                    });
                   }
                 }}
                 query={{

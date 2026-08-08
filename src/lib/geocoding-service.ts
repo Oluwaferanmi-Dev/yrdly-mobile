@@ -1,15 +1,23 @@
 /**
  * Mobile Geocoding Service
  * Uses expo-location for GPS + Nominatim (free, no key) for reverse geocoding
- * into Nigerian State → LGA. Falls back to manual picker if outside Nigeria.
+ * into Nigerian State → LGA. Falls back to manual picker if outside Nigeria or unmatched.
+ *
+ * NOTE (Optimization): Fetching 8,800 rows client-side is a heavy payload.
+ * A server-side PostGIS RPC (`resolve_location`) is planned as a 
+ * post-submission optimization to handle normalization and distance matching.
  */
 
 import * as Location from 'expo-location';
+import { supabase } from './supabase';
 import lgasData from '../data/lgas.json';
+
+const LGAS: Record<string, string[]> = lgasData;
 
 export interface ResolvedLocation {
   state: string;
   lga: string;
+  ward: string;
   displayAddress: string;
   lat: number;
   lng: number;
@@ -17,27 +25,61 @@ export interface ResolvedLocation {
 
 export const OUTSIDE_NIGERIA = 'outside_nigeria';
 export const PERMISSION_DENIED = 'permission_denied';
+export const UNMATCHED_LOCATION = 'unmatched_location';
 
-const LGAS: Record<string, string[]> = lgasData;
-
-function normalise(name: string): string {
-  return name
-    .replace(/ Local Government Area$/i, '')
-    .replace(/ LGA$/i, '')
-    .replace(/ State$/i, '')
-    .trim()
-    .toLowerCase();
+function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371; // Earth's radius in km
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function matchState(nominatimState: string): string | null {
-  const norm = normalise(nominatimState);
-  return Object.keys(LGAS).find((k) => normalise(k) === norm) ?? null;
+let lgaWardsCache: any[] | null = null;
+
+async function getLgaWards() {
+  if (lgaWardsCache) return lgaWardsCache;
+  const { data, error } = await supabase.from('lga_wards').select('state, lga, ward, latitude, longitude');
+  if (error || !data) {
+    console.error('Failed to fetch lga_wards', error);
+    return [];
+  }
+  lgaWardsCache = data;
+  return lgaWardsCache;
 }
 
-function matchLga(state: string, nominatimCounty: string): string | null {
-  const lgas = LGAS[state] ?? [];
-  const norm = normalise(nominatimCounty);
-  return lgas.find((l) => normalise(l) === norm) ?? null;
+export async function resolveCoords(
+  lat: number,
+  lng: number
+): Promise<{ state: string; lga: string; ward: string } | null> {
+  const wards = await getLgaWards();
+  if (!wards.length) return null;
+
+  // Find closest ward via Haversine nationwide
+  let bestWard = wards[0];
+  let bestDist = Infinity;
+
+  for (const w of wards) {
+    if (w.latitude != null && w.longitude != null) {
+      const d = haversine(lat, lng, Number(w.latitude), Number(w.longitude));
+      if (d < bestDist) {
+        bestDist = d;
+        bestWard = w;
+      }
+    }
+  }
+
+  // Only return unmatched if the closest ward is unreasonably far (e.g., > 50km)
+  if (bestDist > 50) return null;
+
+  return {
+    state: bestWard.state,
+    lga: bestWard.lga,
+    ward: bestWard.ward,
+  };
 }
 
 async function nominatimReverseGeocode(lat: number, lng: number) {
@@ -50,7 +92,7 @@ async function nominatimReverseGeocode(lat: number, lng: number) {
 }
 
 export async function detectLocation(): Promise<
-  ResolvedLocation | { status: typeof OUTSIDE_NIGERIA | typeof PERMISSION_DENIED }
+  ResolvedLocation | { status: typeof OUTSIDE_NIGERIA | typeof PERMISSION_DENIED | typeof UNMATCHED_LOCATION }
 > {
   const { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== 'granted') return { status: PERMISSION_DENIED };
@@ -71,17 +113,13 @@ export async function detectLocation(): Promise<
   const countryCode = (addr.country_code ?? '').toLowerCase();
   if (countryCode !== 'ng') return { status: OUTSIDE_NIGERIA };
 
-  const rawState = addr.state ?? addr.region ?? '';
-  const matchedState = matchState(rawState);
-  if (!matchedState) return { status: OUTSIDE_NIGERIA };
-
-  const rawLga = addr.county ?? addr.city_district ?? addr.city ?? '';
-  const matchedLga = matchLga(matchedState, rawLga) ?? (LGAS[matchedState]?.[0] ?? '');
+  const matched = await resolveCoords(lat, lng);
+  if (!matched) return { status: UNMATCHED_LOCATION };
 
   const city = addr.city ?? addr.town ?? addr.village ?? '';
-  const displayAddress = [city, matchedLga, matchedState].filter(Boolean).join(', ');
+  const displayAddress = [city, matched.lga, matched.state].filter(Boolean).join(', ');
 
-  return { state: matchedState, lga: matchedLga, displayAddress, lat, lng };
+  return { state: matched.state, lga: matched.lga, ward: matched.ward, displayAddress, lat, lng };
 }
 
 export function getAllStates(): string[] {
@@ -91,3 +129,4 @@ export function getAllStates(): string[] {
 export function getLgasForState(state: string): string[] {
   return LGAS[state] ?? [];
 }
+

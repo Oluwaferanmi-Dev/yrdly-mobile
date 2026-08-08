@@ -29,6 +29,7 @@ export interface GpsLocationState {
 export const DEFAULT_BOUNDING_BOX: ResolvedLocation = {
   state: "Lagos",
   lga: "Ikeja",
+  ward: "Ikeja",
   displayAddress: "Nigeria", // Use country-level display for fallback
   lat: 9.0820,
   lng: 8.6753, // Centered roughly on Nigeria

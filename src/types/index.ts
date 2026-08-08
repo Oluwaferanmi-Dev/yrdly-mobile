@@ -19,6 +19,7 @@ export interface Business {
   location: Location;
   image_urls?: string[];
   created_at: string;
+  location_geom?: string | null;
   state?: string | null;
   lga?: string | null;
   ward?: string | null;
