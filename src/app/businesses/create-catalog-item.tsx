@@ -9,7 +9,13 @@ import { supabase } from '../../lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import { StorageService } from '../../lib/storage-service';
 import { useAuth } from '../../hooks/use-supabase-auth';
-const CATS = ['Food', 'Baked Goods', 'Drinks', 'Services', 'Other'];
+const CATS = [
+  { name: 'Food', icon: 'fast-food-outline' },
+  { name: 'Baked Goods', icon: 'pie-chart-outline' },
+  { name: 'Drinks', icon: 'cafe-outline' },
+  { name: 'Services', icon: 'briefcase-outline' },
+  { name: 'Other', icon: 'apps-outline' },
+];
 
 export default function CreateCatalogItemScreen() {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);
@@ -22,7 +28,7 @@ export default function CreateCatalogItemScreen() {
 
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
-  const [category, setCategory] = useState(CATS[0]);
+  const [category, setCategory] = useState(CATS[0].name);
   const [inStock, setInStock] = useState(true);
   const [quantity, setQuantity] = useState('1');
   
@@ -44,7 +50,7 @@ export default function CreateCatalogItemScreen() {
       }
       setTitle(data.title || '');
       setPrice(String(data.price || ''));
-      setCategory(data.category || CATS[0]);
+      setCategory(data.category || CATS[0].name);
       setInStock(data.in_stock ?? true);
       setQuantity(String(data.inventory_count ?? data.quantity ?? 1));
       let imgs: string[] = [];
@@ -168,8 +174,7 @@ export default function CreateCatalogItemScreen() {
           {/* Photo Picker */}
           <View style={sStylesheet.photoGrid}>
             {combinedImages.map((img, i) => {
-            const { styles: s } = useStyles(sStylesheet);
-            return (
+                          return (
                           <View key={i} style={[sStylesheet.photoBox, { borderColor: i === 0 ? theme.colors.G : 'transparent', borderWidth: 2 }]}>
                             <Image source={{ uri: img.url }} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} contentFit="cover" />
                             <TouchableOpacity 
@@ -217,24 +222,22 @@ export default function CreateCatalogItemScreen() {
             </View>
           </View>
 
-          {/* Category */}
           <View style={sStylesheet.fieldBlock}>
             <Text style={sStylesheet.fieldLabel}>Category</Text>
             <View style={sStylesheet.catWrap}>
               {CATS.map(c => {
-                  const { styles: s } = useStyles(sStylesheet);
-
-                const active = category === c;
+                const active = category === c.name;
                 return (
                   <TouchableOpacity 
-                    key={c} 
-                    onPress={() => setCategory(c)} 
+                    key={c.name} 
+                    onPress={() => setCategory(c.name)} 
                     style={[sStylesheet.catBtn, { 
-                      backgroundColor: active ? 'rgba(130,219,126,0.15)' : theme.colors.SURFACE, 
-                      borderColor: active ? 'rgba(130,219,126,0.35)' : theme.colors.GLASS_BORDER 
+                      backgroundColor: active ? theme.colors.G : theme.colors.SURFACE, 
+                      borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER 
                     }]}
                   >
-                    <Text style={[sStylesheet.catTxt, { color: active ? theme.colors.G : theme.colors.MUTED }]}>{c}</Text>
+                    <Ionicons name={c.icon as any} size={18} color={active ? theme.colors.DARK : theme.colors.MUTED} style={{ marginRight: 6 }} />
+                    <Text style={[sStylesheet.catTxt, { color: active ? theme.colors.DARK : theme.colors.MUTED, fontFamily: active ? 'Inter-SemiBold' : 'Inter' }]}>{c.name}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -314,9 +317,9 @@ const stylesheet = createStyleSheet(theme => ({
       priceSymbol: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.LABEL },
       priceInput: { flex: 1, fontFamily: 'Outfit-Bold', fontSize: 20, color: theme.colors.TEXT_PRIMARY, height: '100%' },
 
-      catWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-      catBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
-      catTxt: { fontFamily: 'Inter', fontSize: 13 },
+      catWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+      catBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 100, borderWidth: 1 },
+      catTxt: { fontSize: 14 },
 
       stockRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18 },
       stockTitle: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },

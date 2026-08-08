@@ -14,22 +14,29 @@ export default function SafetyAlertsScreen() {
 
   const [alerts, setAlerts] = useState<SafetyAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'pending' | 'history'>('pending');
 
   useEffect(() => {
     fetchAlerts();
-  }, []);
+  }, [view]);
 
   const fetchAlerts = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('safety_alerts')
         .select(`
           *,
           user:users (id, name, avatar_url)
-        `)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
+        `);
+        
+      if (view === 'pending') {
+        query = query.eq('status', 'pending');
+      } else {
+        query = query.in('status', ['approved', 'rejected', 'resolved']);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       setAlerts(data as SafetyAlert[] || []);
@@ -106,6 +113,15 @@ export default function SafetyAlertsScreen() {
         <View style={{ width: 34 }} />
       </View>
 
+      <View style={s.tabs}>
+        <TouchableOpacity style={[s.tab, view === 'pending' && s.tabActive]} onPress={() => setView('pending')}>
+          <Text style={[s.tabText, view === 'pending' && s.tabTextActive]}>Pending</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[s.tab, view === 'history' && s.tabActive]} onPress={() => setView('history')}>
+          <Text style={[s.tabText, view === 'history' && s.tabTextActive]}>History</Text>
+        </TouchableOpacity>
+      </View>
+
       {loading ? (
         <View style={s.emptyState}>
           <ActivityIndicator size="large" color={theme.colors.G} />
@@ -117,12 +133,14 @@ export default function SafetyAlertsScreen() {
               <View style={s.iconCircle}>
                 <Feather name="check-circle" size={32} color={theme.colors.G} />
               </View>
-              <Text style={s.emptyTitle}>All Caught Up!</Text>
-              <Text style={s.emptySub}>There are no pending safety alerts to review.</Text>
+              <Text style={s.emptyTitle}>{view === 'pending' ? 'All Caught Up!' : 'No History'}</Text>
+              <Text style={s.emptySub}>
+                {view === 'pending' ? 'There are no pending safety alerts to review.' : 'You have not approved or rejected any alerts yet.'}
+              </Text>
             </View>
           ) : (
             alerts.map((alert) => (
-              <View key={alert.id} style={s.alertCard}>
+              <View key={alert.id} style={[s.alertCard, alert.status === 'rejected' && { opacity: 0.6 }]}>
                 <View style={s.alertHeader}>
                   <Text style={s.alertType}>{alert.type.toUpperCase()}</Text>
                   <Text style={[s.alertSeverity, alert.severity === 'urgent' && { color: theme.colors.DANGER }]}>
@@ -134,14 +152,20 @@ export default function SafetyAlertsScreen() {
                 <Text style={s.alertArea}>📍 {alert.area_name}</Text>
                 <Text style={s.alertSub}>Submitted by: {alert.user?.name || 'Unknown'}</Text>
                 
-                <View style={s.actionRow}>
-                  <TouchableOpacity style={[s.btn, s.btnReject]} onPress={() => handleReject(alert.id)}>
-                    <Text style={s.btnTextReject}>Reject</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[s.btn, s.btnApprove]} onPress={() => handleApprove(alert)}>
-                    <Text style={s.btnTextApprove}>Approve</Text>
-                  </TouchableOpacity>
-                </View>
+                {alert.status === 'pending' ? (
+                  <View style={s.actionRow}>
+                    <TouchableOpacity style={[s.btn, s.btnReject]} onPress={() => handleReject(alert.id)}>
+                      <Text style={s.btnTextReject}>Reject</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[s.btn, s.btnApprove]} onPress={() => handleApprove(alert)}>
+                      <Text style={s.btnTextApprove}>Approve</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={s.statusBadge}>
+                    <Text style={s.statusBadgeText}>STATUS: {alert.status.toUpperCase()}</Text>
+                  </View>
+                )}
               </View>
             ))
           )}
@@ -155,8 +179,34 @@ const sStylesheet = createStyleSheet(theme => ({
   root: { flex: 1, backgroundColor: theme.colors.DARK },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
   backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
-  content: { padding: 20, flexGrow: 1 },
+  headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
+  tabs: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.GLASS_BORDER,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabActive: {
+    borderBottomColor: theme.colors.G,
+  },
+  tabText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    color: theme.colors.LABEL,
+  },
+  tabTextActive: {
+    color: theme.colors.G,
+    fontFamily: 'Inter-SemiBold',
+  },
+  content: { padding: 20, paddingBottom: 60 },
   
   emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60, flex: 1 },
   iconCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },

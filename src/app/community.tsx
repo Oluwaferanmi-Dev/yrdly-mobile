@@ -33,9 +33,11 @@ export default function CommunityScreen() {
   
   // Discover State
   const [activeFilterTab, setActiveFilterTab] = useState<'all' | 'neighbors' | 'mutuals' | 'sellers'>('all');
-  const [neighbors, setNeighbors] = useState<any[]>([]);
-  const [mutuals, setMutuals] = useState<any[]>([]);
-  const [sellers, setSellers] = useState<any[]>([]);
+  const [discoverUsers, setDiscoverUsers] = useState<any[]>([]);
+  const [discoverPage, setDiscoverPage] = useState(0);
+  const [hasMoreDiscover, setHasMoreDiscover] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [pendingSentIds, setPendingSentIds] = useState<string[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -48,11 +50,9 @@ export default function CommunityScreen() {
   }, []);
 
 
-  const fetchData = useCallback(async () => {
+  const fetchFriendsAndRequests = useCallback(async () => {
     if (!currentUser) return;
-    setLoading(true);
     try {
-      // ── Pending friend requests ────────────────────────────────
       const { data: reqData } = await supabase
         .from('friend_requests')
         .select(`*, from_user:users!friend_requests_from_user_id_fkey(id, name, avatar_url)`)
@@ -60,7 +60,6 @@ export default function CommunityScreen() {
         .eq('status', 'pending');
       setRequests(reqData || []);
 
-      // ── Accepted friends (both directions) ────────────────────
       const [{ data: sentFriends }, { data: receivedFriends }] = await Promise.all([
         supabase
           .from('friend_requests')
@@ -80,75 +79,135 @@ export default function CommunityScreen() {
       ].filter(f => f.user);
       setFriends(friendList);
 
-      // ── Community discovery ────────────────────────────────────
-      const targetLocation = activeFilter || profile?.location;
-      
-      let userQuery = supabase
-        .from('users')
-        .select('id, name, avatar_url, location, friends, discoverable')
-        .neq('id', currentUser.id)
-        .limit(100);
-
-      if (targetLocation) {
-        if (targetLocation.state) userQuery = userQuery.eq('location->>state', targetLocation.state);
-      }
-
-      const { data: userData, error: userError } = await userQuery;
-      if (userError) console.error('Error fetching users:', userError);
-
       const { data: pendingSent } = await supabase
         .from('friend_requests')
         .select('to_user_id')
         .eq('from_user_id', currentUser.id)
         .eq('status', 'pending');
-      const pendingSentTargetIds = (pendingSent || []).map((r: any) => r.to_user_id);
+      setPendingSentIds((pendingSent || []).map((r: any) => r.to_user_id));
 
+    } catch (e) {
+      console.error(e);
+    }
+  }, [currentUser]);
+
+  const fetchDiscover = useCallback(async (pageNum = 0, refresh = false) => {
+    if (!currentUser || (!hasMoreDiscover && !refresh)) return;
+    
+    if (refresh) {
+      setLoading(true);
+      setDiscoverHasMore(true);
+      setDiscoverPage(0);
+    } else {
+      setIsFetchingMore(true);
+    }
+
+    try {
+      const targetLocation = activeFilter || profile?.location;
       const blocked = profile?.blocked_users || [];
-      const myFriends = friendList.map(f => f.user.id);
+      const myFriends = friends.map(f => f.user.id);
       
-      const discoveredUsers = (userData || [])
-        .filter(u => !blocked.includes(u.id))
-        .filter(u => !myFriends.includes(u.id))
-        .filter(u => !pendingSentTargetIds.includes(u.id))
-        .filter(u => u.discoverable !== false);
+      const PAGE_SIZE = 20;
+      const from = pageNum * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
 
-      const nearbyUsers = discoveredUsers.filter(u => {
-        if (!targetLocation?.lga) return true;
-        return u.location?.lga === targetLocation.lga;
-      });
-      setNeighbors(nearbyUsers);
+      let fetchedUsers: any[] = [];
 
-      const mutualUsers = discoveredUsers.filter(u => {
-        const theirFriends = u.friends || [];
-        return theirFriends.some((fid: string) => myFriends.includes(fid));
-      });
-      setMutuals(mutualUsers);
-
-      let activeSellers: any[] = [];
-      if (targetLocation?.state) {
-        const { data: postData } = await supabase
-          .from('posts')
-          .select('user_id')
-          .eq('category', 'For Sale')
-          .eq('is_sold', false)
-          .eq('state', targetLocation.state)
-          .limit(100);
+      if (activeFilterTab === 'mutuals') {
+        const { data, error } = await supabase.rpc('get_mutual_friends', {
+          p_user_id: currentUser.id,
+          p_limit: PAGE_SIZE,
+          p_offset: from
+        });
+        if (!error && data) {
+           fetchedUsers = data.filter((u: any) => !blocked.includes(u.id));
+        }
+      } else {
+        let query = supabase
+          .from('users')
+          .select('id, name, avatar_url, location, friends, discoverable')
+          .neq('id', currentUser.id)
+          .neq('discoverable', false)
+          .order('created_at', { ascending: false })
+          .range(from, to);
           
-        if (postData) {
-          const sellerIds = Array.from(new Set(postData.map(p => p.user_id)));
-          activeSellers = discoveredUsers.filter(u => sellerIds.includes(u.id));
+        if (targetLocation?.state) {
+          query = query.eq('location->>state', targetLocation.state);
+        }
+          
+        const { data, error } = await query;
+        if (!error && data) {
+           fetchedUsers = data
+             .filter((u: any) => !blocked.includes(u.id))
+             .filter((u: any) => !myFriends.includes(u.id));
+             
+           if (activeFilterTab === 'neighbors' && targetLocation?.lga) {
+             fetchedUsers = fetchedUsers.filter((u: any) => u.location?.lga === targetLocation.lga);
+           }
+           
+           if (activeFilterTab === 'sellers' && targetLocation?.state) {
+              const { data: postData } = await supabase
+                .from('posts')
+                .select('user_id')
+                .eq('category', 'For Sale')
+                .eq('is_sold', false)
+                .eq('state', targetLocation.state)
+                .limit(100);
+                
+              if (postData) {
+                const sellerIds = Array.from(new Set(postData.map(p => p.user_id)));
+                fetchedUsers = fetchedUsers.filter(u => sellerIds.includes(u.id));
+              }
+           }
         }
       }
-      setSellers(activeSellers);
+
+      if (fetchedUsers.length < PAGE_SIZE) {
+        setDiscoverHasMore(false);
+      }
+
+      setDiscoverUsers(prev => refresh ? fetchedUsers : [...prev, ...fetchedUsers]);
 
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+      setIsFetchingMore(false);
     }
-  }, [currentUser, activeFilter, profile?.blocked_users]);
+  }, [currentUser, activeFilter, profile?.blocked_users, activeFilterTab, friends, hasMoreDiscover]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    const init = async () => {
+      setLoading(true);
+      await fetchFriendsAndRequests();
+      await fetchDiscover(0, true);
+    };
+    init();
+  }, [activeFilterTab, activeFilter]); // Re-fetch when tab or location filter changes
+  
+  useEffect(() => {
+    if (!currentUser) return;
+    const reqSub = supabase.channel('community_friend_requests')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'friend_requests', filter: `to_user_id=eq.${currentUser.id}` },
+        () => {
+          fetchFriendsAndRequests();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'friend_requests', filter: `from_user_id=eq.${currentUser.id}` },
+        () => {
+          fetchFriendsAndRequests();
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      reqSub.unsubscribe();
+    };
+  }, [currentUser]);
 
   const handleRequestAction = async (requestId: string, action: 'accepted' | 'declined') => {
     try {
@@ -158,7 +217,7 @@ export default function CommunityScreen() {
         await supabase.from('friend_requests').delete().eq('id', requestId);
       }
       setRequests(prev => prev.filter(r => r.id !== requestId));
-      if (action === 'accepted') fetchData();
+      if (action === 'accepted') fetchFriendsAndRequests();
     } catch (e) {
       console.error(e);
     }
@@ -236,10 +295,8 @@ export default function CommunityScreen() {
         to_user_id: userId,
         status: 'pending'
       });
-      // Mock local state update to show "Requested"
-      setNeighbors(prev => prev.filter(u => u.id !== userId));
-      setMutuals(prev => prev.filter(u => u.id !== userId));
-      setSellers(prev => prev.filter(u => u.id !== userId));
+      // Update local state to show "Requested" instead of removing
+      setPendingSentIds(prev => [...prev, userId]);
     } catch (e) {
       console.error(e);
     } finally {
@@ -372,17 +429,23 @@ export default function CommunityScreen() {
                 </Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.smallActionBtn, { backgroundColor: theme.colors.G + '15' }]}
-              onPress={() => handleAddFriend(item.id)}
-              disabled={actionInProgress[item.id]}
-            >
-              {actionInProgress[item.id] ? (
-                <ActivityIndicator size="small" color={theme.colors.G} />
-              ) : (
-                <Feather name="user-plus" size={16} color={theme.colors.G} />
-              )}
-            </TouchableOpacity>
+            {pendingSentIds.includes(item.id) ? (
+              <View style={[styles.smallActionBtn, { backgroundColor: theme.colors.SURFACE_ALT }]}>
+                <Feather name="clock" size={16} color={theme.colors.LABEL} />
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={[styles.smallActionBtn, { backgroundColor: theme.colors.G + '15' }]}
+                onPress={() => handleAddFriend(item.id)}
+                disabled={actionInProgress[item.id]}
+              >
+                {actionInProgress[item.id] ? (
+                  <ActivityIndicator size="small" color={theme.colors.G} />
+                ) : (
+                  <Feather name="user-plus" size={16} color={theme.colors.G} />
+                )}
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </Animated.View>
@@ -479,26 +542,33 @@ export default function CommunityScreen() {
     </View>
   );
 
+  const loadMoreDiscover = () => {
+    if (!isFetchingMore && hasMoreDiscover) {
+      const nextPage = discoverPage + 1;
+      setDiscoverPage(nextPage);
+      fetchDiscover(nextPage, false);
+    }
+  };
+
   const renderDiscoverSections = () => {
-
-
-    let combined: any[] = [];
-    if (activeFilterTab === 'all') {
-      const allDiscovered = [...mutuals, ...neighbors, ...sellers];
-      const unique = Array.from(new Map(allDiscovered.map(item => [item.id, item])).values());
-      combined = unique;
-    } else if (activeFilterTab === 'mutuals') combined = mutuals;
-    else if (activeFilterTab === 'neighbors') combined = neighbors;
-    else if (activeFilterTab === 'sellers') combined = sellers;
-
     return (
-      <FlatList
-        data={combined}
+      <FlashList
+        {...({ estimatedItemSize: 80 } as any)}
+        data={discoverUsers}
         keyExtractor={(item: any) => item.id}
         renderItem={renderDiscoverUser}
         ListHeaderComponent={discoverHeader}
         contentContainerStyle={styles.listContentPremium}
         showsVerticalScrollIndicator={false}
+        onEndReached={loadMoreDiscover}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetchingMore ? (
+            <View style={{ paddingVertical: 20 }}>
+              <ActivityIndicator size="small" color={theme.colors.G} />
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainerPremium}>
             <View style={[styles.emptyIconBg, { backgroundColor: theme.colors.SURFACE }]}>

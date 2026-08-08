@@ -12,7 +12,16 @@ import * as ImagePicker from 'expo-image-picker';
 import { OpeningHoursPicker } from '../../components/OpeningHoursPicker';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
-const CATS = ['Restaurant & Café', 'Food & Catering', 'Shopping', 'Beauty & Salon', 'Health & Wellness', 'Local Services', 'Tech & Repair', 'Gyms & Fitness'];
+const CATS = [
+  { name: 'Restaurant & Café', icon: 'restaurant-outline' },
+  { name: 'Food & Catering', icon: 'fast-food-outline' },
+  { name: 'Shopping', icon: 'cart-outline' },
+  { name: 'Beauty & Salon', icon: 'cut-outline' },
+  { name: 'Health & Wellness', icon: 'medkit-outline' },
+  { name: 'Local Services', icon: 'briefcase-outline' },
+  { name: 'Tech & Repair', icon: 'hardware-chip-outline' },
+  { name: 'Gyms & Fitness', icon: 'barbell-outline' },
+];
 
 export default function BusinessEditScreen() {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);
@@ -25,7 +34,7 @@ export default function BusinessEditScreen() {
   const [desc, setDesc] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
-  const [category, setCategory] = useState(CATS[0]);
+  const [category, setCategory] = useState(CATS[0].name);
   const [hours, setHours] = useState('09:00 AM - 05:00 PM');
   const [location, setLocation] = useState('');
   
@@ -46,7 +55,7 @@ export default function BusinessEditScreen() {
             setDesc(data.description || '');
             setPhone(data.phone || '');
             setWebsite(data.website || '');
-            setCategory(data.category || CATS[0]);
+            setCategory(data.category || CATS[0].name);
             setHours(data.hours || '09:00 AM - 05:00 PM');
             setLocation(data.location || '');
             setCoverUri(data.cover_image || data.image_urls?.[0] || null);
@@ -176,7 +185,7 @@ export default function BusinessEditScreen() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={sStylesheet.contentPad}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={sStylesheet.contentPad} keyboardShouldPersistTaps="handled">
           
           {/* Cover */}
           <View style={sStylesheet.coverContainer}>
@@ -265,17 +274,18 @@ export default function BusinessEditScreen() {
             <Text style={sStylesheet.fieldLabel}>Category</Text>
             <View style={sStylesheet.catWrap}>
               {CATS.map(c => {
-                const active = category === c;
+                const active = category === c.name;
                 return (
                   <TouchableOpacity 
-                    key={c} 
-                    onPress={() => setCategory(c)} 
+                    key={c.name} 
+                    onPress={() => setCategory(c.name)} 
                     style={[sStylesheet.catBtn, { 
-                      backgroundColor: active ? 'rgba(130,219,126,0.15)' : theme.colors.SURFACE, 
-                      borderColor: active ? 'rgba(130,219,126,0.35)' : theme.colors.GLASS_BORDER 
+                      backgroundColor: active ? theme.colors.G : theme.colors.SURFACE, 
+                      borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER 
                     }]}
                   >
-                    <Text style={[sStylesheet.catTxt, { color: active ? theme.colors.G : theme.colors.MUTED }]}>{c}</Text>
+                    <Ionicons name={c.icon as any} size={18} color={active ? theme.colors.DARK : theme.colors.MUTED} style={{ marginRight: 6 }} />
+                    <Text style={[sStylesheet.catTxt, { color: active ? theme.colors.DARK : theme.colors.MUTED, fontFamily: active ? 'Inter-SemiBold' : 'Inter' }]}>{c.name}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -327,7 +337,7 @@ const stylesheet = createStyleSheet(theme => ({
       input: { width: '100%', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 15 },
       textarea: { height: 120, textAlignVertical: 'top' },
       
-      catWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-      catBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
-      catTxt: { fontFamily: 'Inter', fontSize: 13 },
+      catWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+      catBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 100, borderWidth: 1 },
+      catTxt: { fontSize: 14 },
     }));

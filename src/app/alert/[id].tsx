@@ -22,14 +22,28 @@ export default function AlertDetailsScreen() {
   const fetchAlert = useCallback(async () => {
     if (!id) return;
     try {
-      const { data, error } = await supabase
-        .from('alerts')
+      let { data, error } = await supabase
+        .from('safety_alerts')
         .select('*')
         .eq('id', id)
         .single();
         
+      if (!data) {
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('alerts')
+          .select('*')
+          .eq('id', id)
+          .single();
+        data = fallbackData;
+        if (!data) error = fallbackError;
+      }
+        
       if (data) {
-        setAlert(data);
+        setAlert({
+          ...data,
+          area: data.area_name || data.area,
+          is_resolved: data.status === 'resolved' || data.is_resolved,
+        });
       } else {
         console.error('Alert not found:', error);
       }

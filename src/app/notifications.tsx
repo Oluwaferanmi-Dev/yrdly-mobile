@@ -14,6 +14,8 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { AlertBanner } from '../components/AlertBanner';
 import { NotificationService } from '../lib/notification-service';
+import * as SecureStore from 'expo-secure-store';
+import { AlertService } from '../lib/alert-service';
 
 interface Notification {
   id: string;
@@ -105,7 +107,27 @@ export default function NotificationsScreen() {
         };
       }) as Notification[];
 
-      setNotifications(formatted);
+      const activeAlerts = await AlertService.getActiveAlerts();
+      const mappedAlerts = await Promise.all(
+        activeAlerts.map(async (a) => {
+          const dismissed = await SecureStore.getItemAsync(`yrdly_dismissed_alert_${a.id}`);
+          return {
+            id: `mapped_alert_${a.id}`,
+            type: 'safety_alert',
+            title: a.title,
+            message: a.description,
+            is_read: !!dismissed,
+            created_at: a.created_at,
+            related_id: a.id,
+          };
+        })
+      );
+
+      const combined = [...formatted, ...mappedAlerts].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setNotifications(combined);
     } catch (e) {
       console.error('Fetch notifications error:', e);
     } finally {
@@ -219,10 +241,14 @@ export default function NotificationsScreen() {
                         ]}
                         onPress={() => {
                           if (!item.is_read) {
-                            if (user?.id) {
-                              NotificationService.markAsRead(item.id, user.id).catch(console.error);
+                            if (item.id.startsWith('mapped_alert_')) {
+                              SecureStore.setItemAsync(`yrdly_dismissed_alert_${item.related_id}`, '1').catch(console.error);
                             } else {
-                              supabase.from('notifications').update({ is_read: true }).eq('id', item.id).then();
+                              if (user?.id) {
+                                NotificationService.markAsRead(item.id, user.id).catch(console.error);
+                              } else {
+                                supabase.from('notifications').update({ is_read: true }).eq('id', item.id).then();
+                              }
                             }
                             setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n));
                           }
@@ -238,6 +264,10 @@ export default function NotificationsScreen() {
                           else if (['friend_request', 'friend_accept', 'new_follower'].includes(t)) {
                             if (item.from_user_id) router.push(`/profile/${item.from_user_id}` as any);
                             else router.push('/community' as any);
+                          }
+                          else if (t.includes('alert') || t.includes('safety')) {
+                            if (item.related_id) router.push(`/alert/${item.related_id}` as any);
+                            else router.push('/alerts' as any);
                           }
                           else if (item.related_id) router.push(`/posts/${item.related_id}` as any);
                         }}

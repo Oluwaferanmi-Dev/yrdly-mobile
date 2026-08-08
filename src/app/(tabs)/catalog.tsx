@@ -264,7 +264,7 @@ function CategoryDropdown({ category, setCategory, options, theme, label = "Cate
         <TouchableWithoutFeedback onPress={() => setShow(false)}>
           <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
             <TouchableWithoutFeedback>
-              <View style={{ backgroundColor: theme.colors.BACKGROUND, borderRadius: 16, width: '100%', maxHeight: '70%', overflow: 'hidden', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}>
+              <View style={{ backgroundColor: theme.colors.SURFACE_ALT, borderRadius: 16, width: '100%', maxHeight: '70%', overflow: 'hidden', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}>
                 <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY }}>Select {label}</Text>
                   <TouchableOpacity onPress={() => setShow(false)}>

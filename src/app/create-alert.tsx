@@ -80,7 +80,7 @@ export default function CreateAlertScreen() {
         <Text style={stylesheet.successDesc}>The alert has been submitted to admins for review. It will be live once approved.</Text>
         <TouchableOpacity 
           style={stylesheet.btnPrimary}
-          onPress={() => router.replace('/(tabs)/catalog')}
+          onPress={() => router.replace('/catalog' as any)}
         >
           <Text style={stylesheet.btnPrimaryText}>Back to Explore</Text>
         </TouchableOpacity>
