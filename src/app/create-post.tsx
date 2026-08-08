@@ -10,6 +10,7 @@ import * as Haptics from 'expo-haptics';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { usePosts } from '../hooks/use-posts';
 import { MobileFile } from '../lib/storage-service';
+import * as FileSystem from 'expo-file-system';
 
 export default function CreatePostScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
@@ -25,6 +26,7 @@ export default function CreatePostScreen() {
   const [attachedFiles, setAttachedFiles] = useState<MobileFile[]>([]);
   const [category, setCategory] = useState('General');
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
 
   const categories = ['General'];
 
@@ -37,18 +39,41 @@ export default function CreatePostScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsMultipleSelection: true,
         quality: 0.8,
+        videoMaxDuration: 60,
       });
 
       if (!result.canceled && result.assets) {
-        const newFiles: MobileFile[] = result.assets.map(asset => ({
-          uri: asset.uri,
-          name: asset.fileName || `photo_${Date.now()}.jpg`,
-          type: asset.mimeType || 'image/jpeg',
-        }));
-        setAttachedFiles(prev => [...prev, ...newFiles]);
+        let validFiles: MobileFile[] = [];
+        let videoCount = attachedFiles.filter(f => f.type?.startsWith('video/')).length;
+        
+        for (const asset of result.assets) {
+          const type = asset.type === 'video' ? 'video/mp4' : (asset.mimeType || 'image/jpeg');
+          
+          if (type.startsWith('video/')) {
+            videoCount++;
+            if (videoCount > 3) {
+              Alert.alert('Limit Reached', 'You can only upload up to 3 videos.');
+              continue;
+            }
+            if (asset.uri) {
+              const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+              if (fileInfo.exists && fileInfo.size && fileInfo.size > 50 * 1024 * 1024) {
+                Alert.alert('File too large', 'Each video must be under 50MB.');
+                continue;
+              }
+            }
+          }
+          
+          validFiles.push({
+            uri: asset.uri,
+            name: asset.fileName || `media_${Date.now()}`,
+            type,
+          });
+        }
+        setAttachedFiles(prev => [...prev, ...validFiles]);
       }
     } catch (e) {
       console.error('Pick image error:', e);
@@ -66,13 +91,18 @@ export default function CreatePostScreen() {
     setPosting(true);
 
     try {
+      const images = attachedFiles.filter(f => f.type?.startsWith('image/'));
+      const videos = attachedFiles.filter(f => f.type?.startsWith('video/'));
+
       await createPost(
         {
           text: text.trim(),
           category: category as any,
+          visibility: visibility,
         },
         undefined,
-        attachedFiles.length > 0 ? attachedFiles : undefined
+        images.length > 0 ? images : undefined,
+        videos.length > 0 ? videos : undefined
       );
 
       setPosting(false);
@@ -136,7 +166,7 @@ export default function CreatePostScreen() {
               <Text style={stylesheet.avatarText}>{(profile?.name || 'U').charAt(0).toUpperCase()}</Text>
             </View>
           )}
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <Text style={stylesheet.authorName}>{profile?.name || 'Neighbour'}</Text>
             <TouchableOpacity 
               style={stylesheet.areaPill}
@@ -145,6 +175,16 @@ export default function CreatePostScreen() {
               <Ionicons name="pricetag-outline" size={12} color={theme.colors.G} />
               <Text style={stylesheet.areaText}>{category}</Text>
               <Ionicons name="chevron-down" size={12} color={theme.colors.MUTED} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[stylesheet.areaPill, { backgroundColor: visibility === 'private' ? 'rgba(255, 165, 0, 0.15)' : 'rgba(130,219,126,0.15)' }]}
+              onPress={() => setVisibility(v => v === 'public' ? 'private' : 'public')}
+            >
+              <Ionicons name={visibility === 'public' ? "earth" : "people"} size={12} color={visibility === 'public' ? theme.colors.G : '#FFA500'} />
+              <Text style={[stylesheet.areaText, { color: visibility === 'public' ? theme.colors.G : '#FFA500' }]}>
+                {visibility === 'public' ? 'Public' : 'Friends Only'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

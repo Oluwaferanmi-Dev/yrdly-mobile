@@ -149,6 +149,7 @@ export default function TabLayout() {
             .select('conversation_id')
             .eq('is_read', false)
             .neq('sender_id', user.id)
+            .not('deleted_by', 'cs', `{${user.id}}`)
             .in('conversation_id', activeConvIds);
             
           if (unreadData) {

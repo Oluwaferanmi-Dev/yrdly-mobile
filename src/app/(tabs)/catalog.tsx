@@ -20,7 +20,7 @@ import { formatPrice, getDistanceStr } from '../../lib/utils';
 import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 import * as Location from 'expo-location';
 import { LocationPicker, LocationValue } from '../../components/LocationPicker';
-import { useFriendshipGlobal } from '../../hooks/use-friendship-global';
+import { useFollowStatus } from '../../hooks/use-follow-status';
 
 const { width } = Dimensions.get('window');
 type TabType = 'Discover' | 'Marketplace' | 'Events' | 'Businesses';
@@ -34,18 +34,16 @@ const TABS: { key: TabType; label: string }[] = [
 const CATS = ['All', 'Fashion', 'Electronics', 'Home & Living', 'Vehicles', 'Food', 'Beauty', 'Services'];
 
 // ─── DISCOVER SECTION ────────────────────────────────────────────────────────
-function NearbyUserCard({ user, currentLoc, sStylesheet, theme }: any) {
-  const { status, isLoading, addFriend, cancelRequest, acceptRequest } = useFriendshipGlobal(user.id);
+function NearbyUserCard({ user, currentLoc, sStylesheet, theme, onPress }: any) {
+  const { isFollowing, isFollower, isMutual, actionLoading, toggleFollow } = useFollowStatus(user.id);
   const avatar = user.avatar_url && !user.avatar_url.startsWith('file://') ? { uri: user.avatar_url } : null;
   
   const handleAction = () => {
-    if (status === 'none') addFriend();
-    else if (status === 'request_sent') cancelRequest();
-    else if (status === 'request_received') acceptRequest();
+    toggleFollow();
   };
   
   return (
-    <View style={sStylesheet.nearbyCard}>
+    <TouchableOpacity style={sStylesheet.nearbyCard} onPress={onPress} activeOpacity={0.8}>
       <View style={sStylesheet.nearbyAvatarWrap}>
         {avatar ? (
           <Image source={avatar} style={sStylesheet.nearbyAvatar} contentFit="cover" />
@@ -56,8 +54,8 @@ function NearbyUserCard({ user, currentLoc, sStylesheet, theme }: any) {
         )}
       </View>
       <View style={sStylesheet.nearbyInfo}>
-        <Text style={sStylesheet.nearbyName} numberOfLines={1}>{user.name.split(' ')[0]}</Text>
-        <Text style={sStylesheet.nearbyHandle} numberOfLines={1}>@{user.name.replace(/\s+/g, '').toLowerCase()}</Text>
+        <Text style={sStylesheet.nearbyName} numberOfLines={1}>{(user.name || 'User').split(' ')[0]}</Text>
+        <Text style={sStylesheet.nearbyHandle} numberOfLines={1}>@{user.username || (user.name || 'user').replace(/\s+/g, '').toLowerCase()}</Text>
         <View style={sStylesheet.nearbyDistRow}>
           <Ionicons name="location" size={11} color={theme.colors.LABEL} />
           <Text style={sStylesheet.nearbyDistText}>
@@ -71,19 +69,19 @@ function NearbyUserCard({ user, currentLoc, sStylesheet, theme }: any) {
         </View>
       </View>
       <TouchableOpacity 
-        style={[sStylesheet.connectBtn, status !== 'none' && sStylesheet.connectBtnActive]}
+        style={[sStylesheet.connectBtn, (isFollowing || isMutual) && sStylesheet.connectBtnActive]}
         onPress={handleAction}
-        disabled={isLoading || status === 'friends'}
+        disabled={actionLoading}
       >
-        {isLoading ? (
+        {actionLoading ? (
           <ActivityIndicator size="small" color={theme.colors.tint} />
         ) : (
-          <Text style={[sStylesheet.connectBtnText, status !== 'none' && sStylesheet.connectBtnTextActive]}>
-            {status === 'friends' ? 'Friends' : status === 'request_sent' ? 'Requested' : status === 'request_received' ? 'Accept' : 'Connect'}
+          <Text style={[sStylesheet.connectBtnText, (isFollowing || isMutual) && sStylesheet.connectBtnTextActive]}>
+            {isMutual ? 'Friends' : isFollowing ? 'Following' : isFollower ? 'Follow Back' : 'Follow'}
           </Text>
         )}
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -192,7 +190,7 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
           <Text style={sStylesheet.discoverGroupTitle}>NEARBY PEOPLE</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
             {nearby.map(p => (
-              <NearbyUserCard key={p.id} user={p} currentLoc={currentLoc} sStylesheet={sStylesheet} theme={theme} />
+              <NearbyUserCard key={p.id} user={p} currentLoc={currentLoc} sStylesheet={sStylesheet} theme={theme} onPress={() => router.push(`/profile/${p.id}` as any)} />
             ))}
           </ScrollView>
         </View>

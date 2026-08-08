@@ -14,6 +14,7 @@ import { StorageService, MobileFile } from '../lib/storage-service';
 import { MarketplaceItemCard } from '../components/MarketplaceItemCard';
 import { ImageCarousel } from '../components/ImageCarousel';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import * as FileSystem from 'expo-file-system';
 import { formatPrice } from '../lib/utils';
 import { useCategories } from '../hooks/use-categories';
 
@@ -41,6 +42,7 @@ export default function CreateForSaleScreen() {
   const [coverIndex, setCoverIndex] = useState(0);
   const [listing, setListing] = useState(false);
   const [listed, setListed] = useState(false);
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
 
   const [postState, setPostState] = useState('');
   const [postLga, setPostLga] = useState('');
@@ -80,18 +82,41 @@ export default function CreateForSaleScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsMultipleSelection: true,
         quality: 0.8,
+        videoMaxDuration: 60,
       });
 
       if (!result.canceled && result.assets) {
-        const newFiles: MobileFile[] = result.assets.map(asset => ({
-          uri: asset.uri,
-          name: asset.fileName || `item_${Date.now()}.jpg`,
-          type: asset.mimeType || 'image/jpeg',
-        }));
-        setAttachedFiles(prev => [...prev, ...newFiles]);
+        let validFiles: MobileFile[] = [];
+        let videoCount = attachedFiles.filter(f => f.type?.startsWith('video/')).length;
+        
+        for (const asset of result.assets) {
+          const type = asset.type === 'video' ? 'video/mp4' : (asset.mimeType || 'image/jpeg');
+          
+          if (type.startsWith('video/')) {
+            videoCount++;
+            if (videoCount > 3) {
+              Alert.alert('Limit Reached', 'You can only upload up to 3 videos.');
+              continue;
+            }
+            if (asset.uri) {
+              const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+              if (fileInfo.exists && fileInfo.size && fileInfo.size > 50 * 1024 * 1024) {
+                Alert.alert('File too large', 'Each video must be under 50MB.');
+                continue;
+              }
+            }
+          }
+          
+          validFiles.push({
+            uri: asset.uri,
+            name: asset.fileName || `item_${Date.now()}`,
+            type,
+          });
+        }
+        setAttachedFiles(prev => [...prev, ...validFiles]);
       }
     } catch (e) {
       console.error('Pick image error:', e);
@@ -118,16 +143,30 @@ export default function CreateForSaleScreen() {
       setListing(true);
       try {
         let imageUrls: string[] = [];
+        let videoUrls: string[] = [];
+        
         if (attachedFiles.length > 0) {
-          const filesToUpload = [...attachedFiles];
-          if (coverIndex > 0 && coverIndex < filesToUpload.length) {
-            const cover = filesToUpload.splice(coverIndex, 1)[0];
-            filesToUpload.unshift(cover);
+          const images = attachedFiles.filter(f => f.type?.startsWith('image/'));
+          const videos = attachedFiles.filter(f => f.type?.startsWith('video/'));
+
+          if (images.length > 0) {
+            const filesToUpload = [...images];
+            if (coverIndex > 0 && coverIndex < filesToUpload.length) {
+              const cover = filesToUpload.splice(coverIndex, 1)[0];
+              filesToUpload.unshift(cover);
+            }
+            const uploadedImages = await Promise.all(
+              filesToUpload.map((file) => StorageService.uploadPostImage(user.id, file))
+            );
+            imageUrls = uploadedImages.map(res => res.url).filter(Boolean) as string[];
           }
-          const uploadedImages = await Promise.all(
-            filesToUpload.map((file) => StorageService.uploadPostImage(user.id, file))
-          );
-          imageUrls = uploadedImages.map(res => res.url).filter(Boolean) as string[];
+
+          if (videos.length > 0) {
+            const uploadedVideos = await Promise.all(
+              videos.map((file) => StorageService.uploadPostVideo(user.id, file))
+            );
+            videoUrls = uploadedVideos.map(res => res.url).filter(Boolean) as string[];
+          }
         }
 
         const { error } = await supabase
@@ -143,7 +182,9 @@ export default function CreateForSaleScreen() {
             price: listingType === 'Giveaway' ? 0 : parseFloat(price) || 0,
             condition: condition,
             image_urls: imageUrls,
+            video_urls: videoUrls,
             is_sold: false,
+            visibility: visibility,
             state: postState || null,
             lga: postLga || null,
             ward: null,
@@ -425,8 +466,19 @@ export default function CreateForSaleScreen() {
               <View style={{ padding: 16 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                   <Text style={{ fontFamily: 'Outfit-Bold', fontSize: 24, color: theme.colors.TEXT_PRIMARY, flex: 1, paddingRight: 12 }}>{title.trim() || 'Untitled Item'}</Text>
-                  <View style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
-                    <Text style={{ color: '#F59E0B', fontSize: 10, fontFamily: 'Inter-Bold', textTransform: 'uppercase' }}>Preview</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <TouchableOpacity 
+                      style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, flexDirection: 'row', alignItems: 'center', backgroundColor: visibility === 'private' ? 'rgba(255, 165, 0, 0.15)' : 'rgba(130,219,126,0.15)' }}
+                      onPress={() => setVisibility(v => v === 'public' ? 'private' : 'public')}
+                    >
+                      <Ionicons name={visibility === 'public' ? "earth" : "people"} size={12} color={visibility === 'public' ? theme.colors.G : '#FFA500'} style={{ marginRight: 6 }} />
+                      <Text style={{ color: visibility === 'public' ? theme.colors.G : '#FFA500', fontSize: 12, fontFamily: 'Inter-Medium' }}>
+                        {visibility === 'public' ? 'Public' : 'Friends Only'}
+                      </Text>
+                    </TouchableOpacity>
+                    <View style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
+                      <Text style={{ color: '#F59E0B', fontSize: 10, fontFamily: 'Inter-Bold', textTransform: 'uppercase' }}>Preview</Text>
+                    </View>
                   </View>
                 </View>
 

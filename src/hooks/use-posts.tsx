@@ -123,9 +123,14 @@ export const usePosts = (filter?: LocationFilter | null) => {
       let myFriendsList: string[] = [];
       if (user) {
         try {
-          const { data: uData } = await supabase.from('users').select('friends').eq('id', user.id).maybeSingle();
-          if (uData?.friends && Array.isArray(uData.friends)) {
-            myFriendsList = uData.friends;
+          const [following, followers] = await Promise.all([
+            supabase.from('followers').select('following_id').eq('follower_id', user.id),
+            supabase.from('followers').select('follower_id').eq('following_id', user.id),
+          ]);
+          if (following.data && followers.data) {
+            const followingIds = following.data.map(f => f.following_id);
+            const followerIds = followers.data.map(f => f.follower_id);
+            myFriendsList = followingIds.filter(id => followerIds.includes(id));
           }
         } catch (e) {}
       }
@@ -517,7 +522,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
       postData: Partial<Omit<Post, 'id'>>,
       postIdToUpdate?: string,
       imageFiles?: MobileFile[],
-      videoFile?: MobileFile
+      videoFiles?: MobileFile[]
     ) => {
       if (!user || !profile) {
         toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in.' });
@@ -549,17 +554,13 @@ export const usePosts = (filter?: LocationFilter | null) => {
             imageUrls = [...imageUrls, ...uploadedUrls];
         }
 
-        // Upload video if provided (new posts only)
-        let videoUrl: string | null = null;
-        let videoThumbnailUrl: string | null = null;
-        if (videoFile && !postIdToUpdate) {
-          const { url, error: videoError } = await StorageService.uploadPostVideo(user.id, videoFile);
-          if (videoError) {
-            const errMsg = typeof videoError === 'string' ? videoError : 'Please try a smaller or shorter clip.';
-            toast({ variant: 'destructive', title: 'Video upload failed', description: errMsg });
-            return;
-          }
-          videoUrl = url;
+        // Upload videos if provided (new posts only)
+        let videoUrls: string[] = [];
+        if (videoFiles && videoFiles.length > 0 && !postIdToUpdate) {
+          const uploadedVideos = await Promise.all(
+            videoFiles.map((file) => StorageService.uploadPostVideo(user.id, file))
+          );
+          videoUrls = uploadedVideos.map(res => res.url).filter(Boolean) as string[];
         }
 
         // Clean up the data to remove undefined values and exclude imageFiles
@@ -577,9 +578,8 @@ export const usePosts = (filter?: LocationFilter | null) => {
           user_id: user.id,
           author_name: profile.name || 'Anonymous',
           author_image: profile.avatar_url || '',
-          image_urls: imageUrls.length > 0 ? imageUrls : [],
-          video_url: videoUrl,
-          video_thumbnail_url: videoThumbnailUrl,
+          image_urls: imageUrls.length > 0 ? imageUrls : undefined,
+          video_urls: videoUrls.length > 0 ? videoUrls : undefined,
           timestamp: postIdToUpdate ? postData.timestamp : new Date().toISOString(),
           category: postData.category || 'General',
           // Location stamping — only set on new posts, preserve on edits

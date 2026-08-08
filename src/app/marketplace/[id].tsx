@@ -370,7 +370,7 @@ function MarketplaceDetailContent() {
 
   const imageUrls = post.image_urls?.length ? post.image_urls : post.image_url ? [post.image_url] : [];
   const mediaItems = [];
-  if (post.video_url) mediaItems.push({ type: 'video', url: post.video_url });
+  if (post.video_urls?.[0]) mediaItems.push({ type: 'video', url: post.video_urls?.[0] });
   imageUrls.forEach(url => mediaItems.push({ type: 'image', url }));
 
   const isOwner = user?.id === post.user_id;
@@ -410,7 +410,7 @@ function MarketplaceDetailContent() {
                                         activeOpacity={0.9} 
                                         style={{ flex: 1 }}
                                         onPress={() => {
-                                          const imageIndex = post.video_url ? i - 1 : i;
+                                          const imageIndex = post.video_urls?.[0] ? i - 1 : i;
                                           setCurrentImageIndex(Math.max(0, imageIndex));
                                           setIsGalleryVisible(true);
                                         }}

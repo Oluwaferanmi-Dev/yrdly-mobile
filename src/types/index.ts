@@ -94,7 +94,7 @@ export interface Post {
   image_urls?: string[];
   image_width?: number | null;
   image_height?: number | null;
-  video_url?: string | null;
+  video_urls?: string[];
   video_thumbnail_url?: string | null;
   timestamp: string;
   comment_count: number;

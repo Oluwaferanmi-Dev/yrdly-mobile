@@ -8,7 +8,6 @@ import { AuthProvider, useAuth } from '../hooks/use-supabase-auth';
 import { ThemeProvider } from '../context/ThemeContext';
 import { LocationProvider } from '../context/LocationContext';
 import { NotificationBadgeProvider } from '../context/NotificationBadgeContext';
-import { FriendshipProvider } from '../context/FriendshipContext';
 import * as SplashScreen from 'expo-splash-screen';
 import { PostHogProvider } from 'posthog-react-native';
 import { setAudioModeAsync } from 'expo-audio';
@@ -187,11 +186,9 @@ export default function Layout() {
                 <AuthProvider>
                   <LocationProvider>
                     <NotificationBadgeProvider>
-                      <FriendshipProvider>
-                        <AudioSettingsHandler />
-                        <NotificationsHandler />
-                        <RootNavigationGuard />
-                      </FriendshipProvider>
+                      <AudioSettingsHandler />
+                      <NotificationsHandler />
+                      <RootNavigationGuard />
                     </NotificationBadgeProvider>
                   </LocationProvider>
                 </AuthProvider>
@@ -206,11 +203,9 @@ export default function Layout() {
               <AuthProvider>
                 <LocationProvider>
                   <NotificationBadgeProvider>
-                    <FriendshipProvider>
-                      <AudioSettingsHandler />
-                      <NotificationsHandler />
-                      <RootNavigationGuard />
-                    </FriendshipProvider>
+                    <AudioSettingsHandler />
+                    <NotificationsHandler />
+                    <RootNavigationGuard />
                   </NotificationBadgeProvider>
                 </LocationProvider>
               </AuthProvider>

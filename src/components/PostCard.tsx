@@ -36,7 +36,7 @@ const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted,
   const [progress, setProgress] = useState(0);
   const isFocused = useIsFocused();
   
-  const player = useVideoPlayer(post.video_url || '', player => {
+  const player = useVideoPlayer(post.video_urls?.[0] || '', player => {
     player.loop = true;
     player.muted = isVideoMuted;
     player.timeUpdateEventInterval = 0.05;
@@ -500,7 +500,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           else if (post.category === 'Event' && onPress) onPress();
           else if (onComment) onComment();
         }}
-        style={{ paddingHorizontal: 20, marginBottom: (urls.length > 0 || post.video_url) ? 14 : 0 }}
+        style={{ paddingHorizontal: 20, marginBottom: (urls.length > 0 || post.video_urls?.[0]) ? 14 : 0 }}
       >
         <View style={{ marginBottom: 8, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, backgroundColor: post.category === 'Event' ? 'rgba(130,219,126,0.15)' : post.category === 'For Sale' || post.category === 'Selling' ? 'rgba(255, 171, 0, 0.15)' : post.category === 'Wanted' ? 'rgba(255, 82, 82, 0.15)' : post.category === 'Request' ? 'rgba(68, 138, 255, 0.15)' : post.category === 'Recommendation' ? 'rgba(179, 136, 255, 0.15)' : post.category === 'Giveaway' ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255,255,255,0.08)' }}>
            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 10, color: post.category === 'Event' ? theme.colors.G : post.category === 'For Sale' || post.category === 'Selling' ? '#FFAB00' : post.category === 'Wanted' ? '#FF5252' : post.category === 'Request' ? '#448AFF' : post.category === 'Recommendation' ? '#B388FF' : post.category === 'Giveaway' ? '#00E676' : theme.colors.MUTED, textTransform: 'uppercase' }}>
@@ -535,7 +535,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       </TouchableOpacity>
 
       {/* Video */}
-      {post.video_url && (
+      {post.video_urls?.[0] && (
         <View style={{ marginHorizontal: 20, borderRadius: 16, overflow: 'hidden', aspectRatio: 4/3, backgroundColor: theme.colors.DARK, marginBottom: 12 }}>
           <PostVideo 
             post={post} 

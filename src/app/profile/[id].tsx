@@ -14,7 +14,6 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
-import { useFriendshipGlobal } from '../../hooks/use-friendship-global';
 import { UserReviewService } from '../../lib/user-review-service';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 
@@ -42,7 +41,6 @@ export default function OtherUserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user: currentUser, profile: currentProfile, updateProfile } = useAuth();
   const { width: windowWidth } = useWindowDimensions();
-  const friendship = useFriendshipGlobal(id);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -181,7 +179,7 @@ export default function OtherUserProfileScreen() {
     if (!currentUser || !currentProfile || !profile) return;
     try {
       const { data: existingChat } = await supabase
-        .from('chats')
+        .from('conversations')
         .select('id, participant_ids')
         .contains('participant_ids', [currentProfile.id, profile.id])
         .limit(1)
@@ -189,17 +187,14 @@ export default function OtherUserProfileScreen() {
       if (existingChat) {
         router.push({ pathname: '/chat/[id]', params: { id: existingChat.id } } as any);
       } else {
-        const { data: newChat, error: newChatError } = await supabase
-          .from('chats')
-          .insert({
-            participant_ids: [currentProfile.id, profile.id],
-            last_message: null,
-          })
-          .select('id')
-          .single();
-        if (newChat?.id) {
-          router.push({ pathname: '/chat/[id]', params: { id: newChat.id } } as any);
-        }
+        router.push({ 
+          pathname: '/chat/[id]', 
+          params: { 
+            id: 'new', 
+            participant_id: profile.id, 
+            type: 'general' 
+          } 
+        } as any);
       }
     } catch (err) {
       console.error(err);
@@ -228,6 +223,45 @@ export default function OtherUserProfileScreen() {
   }
 
   const isOwnProfile = currentProfile?.id === profile.id;
+  const isBlockedByMe = currentProfile?.blocked_users?.includes(profile.id);
+
+  if (isBlockedByMe) {
+    return (
+      <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
+        <View style={[stylesheet.header, { borderBottomColor: theme.colors.GLASS_BORDER }]}>
+          <TouchableOpacity onPress={() => router.back()} style={stylesheet.navBtn}>
+            <Ionicons name="chevron-back" size={24} color={theme.colors.TEXT_PRIMARY} />
+          </TouchableOpacity>
+          <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit' }]}>Blocked</Text>
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
+          <Ionicons name="lock-closed" size={48} color={theme.colors.MUTED} style={{ marginBottom: 16 }} />
+          <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 18, fontFamily: 'Outfit-Bold', textAlign: 'center', marginBottom: 8 }}>
+            You have blocked this user
+          </Text>
+          <Text style={{ color: theme.colors.MUTED, fontSize: 14, fontFamily: 'Inter-Regular', textAlign: 'center', marginBottom: 24 }}>
+            You will not see their posts, and they cannot message you.
+          </Text>
+          <TouchableOpacity 
+            style={{ paddingHorizontal: 24, paddingVertical: 12, backgroundColor: theme.colors.G, borderRadius: 24 }}
+            onPress={async () => {
+              if (!currentProfile) return;
+              try {
+                const newBlocks = currentProfile.blocked_users?.filter(id => id !== profile.id) || [];
+                await updateProfile({ blocked_users: newBlocks });
+                await supabase.from('user_blocks').delete().eq('blocker_id', currentProfile.id).eq('blocked_id', profile.id);
+                Alert.alert('Unblocked', 'User has been unblocked.');
+              } catch(e) {
+                console.error(e);
+              }
+            }}
+          >
+            <Text style={{ color: theme.colors.DARK, fontFamily: 'Inter-SemiBold', fontSize: 14 }}>Unblock</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
@@ -350,13 +384,15 @@ export default function OtherUserProfileScreen() {
                 )}
               </TouchableOpacity>
               
-              <TouchableOpacity
-                style={[stylesheet.btnAction, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, borderWidth: 1 }]}
-                onPress={handleMessage}
-              >
-                <Ionicons name="chatbubble-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
-                <Text style={[stylesheet.btnActionTxt, { color: theme.colors.TEXT_PRIMARY }]}>Message</Text>
-              </TouchableOpacity>
+              {isFollowing && isFollower && (
+                <TouchableOpacity
+                  style={[stylesheet.btnAction, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, borderWidth: 1 }]}
+                  onPress={handleMessage}
+                >
+                  <Ionicons name="chatbubble-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
+                  <Text style={[stylesheet.btnActionTxt, { color: theme.colors.TEXT_PRIMARY }]}>Message</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>

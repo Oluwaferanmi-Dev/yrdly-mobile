@@ -18,7 +18,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
   
   const hasImages = post.image_urls && post.image_urls.length > 0;
   const imageUrl = hasImages ? post.image_urls![0] : post.image_url || post.video_thumbnail_url;
-  const hasVideo = !!post.video_url;
+  const hasVideo = !!post.video_urls?.[0];
   
   const scale = useSharedValue(1);
 

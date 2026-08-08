@@ -4,7 +4,7 @@ import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'rea
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { useAppTheme } from '../context/ThemeContext';
-import { useFriendshipGlobal } from '../hooks/use-friendship-global';
+import { useFollowStatus } from '../hooks/use-follow-status';
 import { GlassCard } from './GlassCard';
 
 interface DiscoverUserCardProps {
@@ -26,7 +26,7 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
   const { colors } = useAppTheme();
-  const { status, isLoading, addFriend, cancelRequest, removeFriend, acceptRequest } = useFriendshipGlobal(user.id);
+  const { isFollowing, isMutual, actionLoading, toggleFollow } = useFollowStatus(user.id);
 
   // Derive badge text/icon based on context
   let badgeIcon: keyof typeof Feather.glyphMap = 'map-pin';
@@ -43,15 +43,8 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
     badgeText = 'Active Seller';
   }
 
-  // Handle friendship button action
   const handleAction = () => {
-    if (status === 'none') {
-      addFriend();
-    } else if (status === 'request_sent') {
-      cancelRequest();
-    } else if (status === 'request_received') {
-      acceptRequest();
-    }
+    toggleFollow();
   };
 
   return (
@@ -87,25 +80,25 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
         <TouchableOpacity 
           style={[
             stylesheet.actionButton, 
-            status === 'friends' ? { backgroundColor: 'transparent' } : { backgroundColor: colors.tint + '15' },
-            status === 'friends' && { borderColor: colors.border, borderWidth: 1 }
+            isFollowing ? { backgroundColor: 'transparent' } : { backgroundColor: colors.tint + '15' },
+            isFollowing && { borderColor: colors.border, borderWidth: 1 }
           ]} 
           onPress={handleAction}
-          disabled={isLoading || status === 'friends'}
+          disabled={actionLoading}
         >
-          {isLoading ? (
+          {actionLoading ? (
             <ActivityIndicator size="small" color={colors.tint} />
-          ) : status === 'friends' ? (
+          ) : isFollowing ? (
             <View style={stylesheet.friendsBadge}>
               <Feather name="check" size={14} color={colors.textSecondary} />
-              <Text style={[stylesheet.friendsText, { color: colors.textSecondary }]}>Friends</Text>
+              <Text style={[stylesheet.actionText, { color: colors.textSecondary }]}>
+                Following
+              </Text>
             </View>
-          ) : status === 'request_sent' ? (
-            <Text style={[stylesheet.actionText, { color: colors.tint }]}>Requested</Text>
-          ) : status === 'request_received' ? (
-            <Text style={[stylesheet.actionText, { color: colors.tint }]}>Accept</Text>
           ) : (
-            <Text style={[stylesheet.actionText, { color: colors.tint }]}>Connect</Text>
+            <Text style={[stylesheet.actionText, { color: colors.tint }]}>
+              Follow
+            </Text>
           )}
         </TouchableOpacity>
       </GlassCard>
