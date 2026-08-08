@@ -5,6 +5,9 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/use-supabase-auth';
 
 const SEVERITY_COLORS = {
   information: { bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)', text: '#3b82f6', icon: '#3b82f6' },
@@ -19,6 +22,7 @@ export default function CreateAlertScreen() {
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   
   const [step, setStep] = useState<'form' | 'preview'>('form');
   const [title, setTitle] = useState('');
@@ -26,11 +30,45 @@ export default function CreateAlertScreen() {
   const [severity, setSeverity] = useState<'information' | 'caution' | 'urgent'>('caution');
   const [type, setType] = useState<'safety' | 'amber' | 'info'>('safety');
   const [area, setArea] = useState('');
+  const [alertState, setAlertState] = useState('');
+  const [alertLga, setAlertLga] = useState('');
   const [action, setAction] = useState('');
   
   const [published, setPublished] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const canPreview = title.trim() && desc.trim();
+  const canPreview = title.trim() && desc.trim() && area.trim();
+
+  const handlePublish = async () => {
+    if (!user) return;
+    setIsSubmitting(true);
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      
+      const { error } = await supabase.from('safety_alerts').insert({
+        user_id: user.id,
+        title,
+        description: desc,
+        severity,
+        type,
+        area_name: area,
+        state: alertState,
+        lga: alertLga,
+        action,
+        status: 'pending'
+      });
+
+      if (error) throw error;
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setPublished(true);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to publish alert.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (published) {
     return (
@@ -38,13 +76,13 @@ export default function CreateAlertScreen() {
         <View style={stylesheet.successIcon}>
           <Feather name="check" size={34} color={theme.colors.G} />
         </View>
-        <Text style={stylesheet.successTitle}>Alert Published</Text>
-        <Text style={stylesheet.successDesc}>The alert is now live on the Home Feed and Alerts screen.</Text>
+        <Text style={stylesheet.successTitle}>Alert Submitted</Text>
+        <Text style={stylesheet.successDesc}>The alert has been submitted to admins for review. It will be live once approved.</Text>
         <TouchableOpacity 
           style={stylesheet.btnPrimary}
-          onPress={() => router.replace('/(tabs)/catalog')} // Or wherever alerts are
+          onPress={() => router.replace('/(tabs)/catalog')}
         >
-          <Text style={stylesheet.btnPrimaryText}>View Alerts</Text>
+          <Text style={stylesheet.btnPrimaryText}>Back to Explore</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={{ marginTop: 8 }}>
           <Text style={stylesheet.btnText}>Back to Feed</Text>
@@ -66,13 +104,13 @@ export default function CreateAlertScreen() {
             <Text style={stylesheet.headerTitle}>Preview Alert</Text>
           </View>
           <TouchableOpacity 
-            onPress={() => {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              setPublished(true);
-            }} 
-            style={stylesheet.publishBtn}
+            onPress={handlePublish} 
+            style={[stylesheet.publishBtn, isSubmitting && { opacity: 0.7 }]}
+            disabled={isSubmitting}
           >
-            <Text style={stylesheet.publishBtnText}>Publish Alert</Text>
+            <Text style={stylesheet.publishBtnText}>
+              {isSubmitting ? 'Submitting...' : 'Publish Alert'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -180,9 +218,69 @@ export default function CreateAlertScreen() {
             <TextInput style={stylesheet.input} value={title} onChangeText={setTitle} placeholder="e.g. Road closure at Admiralty Way" placeholderTextColor={theme.colors.MUTED} />
           </View>
           
-          <View>
+          <View style={{ zIndex: 10 }}>
             <Text style={stylesheet.fieldLabel}>Affected Area</Text>
-            <TextInput style={stylesheet.input} value={area} onChangeText={setArea} placeholder="e.g. Lekki Phase 1, Lagos" placeholderTextColor={theme.colors.MUTED} />
+            <GooglePlacesAutocomplete
+              placeholder="e.g. Lekki Phase 1, Lagos"
+              onPress={(data, details = null) => {
+                setArea(data.description);
+                const d = data as any;
+                if (d.terms && d.terms.length > 0) {
+                  const terms = d.terms;
+                  const countryIdx = terms.findIndex((t: any) => t.value === 'Nigeria');
+                  if (countryIdx > 0) {
+                    const s = terms[countryIdx - 1]?.value || '';
+                    setAlertState(s);
+                    if (countryIdx > 1) {
+                      const l = terms[countryIdx - 2]?.value || '';
+                      setAlertLga(l);
+                      setArea(`${l}, ${s}`);
+                    }
+                  } else {
+                    const s = terms[terms.length - 1]?.value || '';
+                    setAlertState(s);
+                    if (terms.length > 1) {
+                      const l = terms[terms.length - 2]?.value || '';
+                      setAlertLga(l);
+                      setArea(`${l}, ${s}`);
+                    }
+                  }
+                }
+              }}
+              query={{
+                key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+                language: 'en',
+                components: 'country:ng',
+              }}
+              styles={{
+                textInput: stylesheet.input,
+                listView: {
+                  backgroundColor: theme.colors.SURFACE,
+                  borderRadius: 12,
+                  marginTop: 8,
+                  borderWidth: 1,
+                  borderColor: theme.colors.GLASS_BORDER,
+                },
+                row: {
+                  backgroundColor: theme.colors.SURFACE,
+                  padding: 13,
+                  height: 44,
+                  flexDirection: 'row',
+                },
+                separator: {
+                  height: 1,
+                  backgroundColor: theme.colors.GLASS_BORDER,
+                },
+                description: {
+                  color: theme.colors.TEXT_PRIMARY,
+                },
+              }}
+              fetchDetails={false}
+              enablePoweredByContainer={false}
+              textInputProps={{
+                placeholderTextColor: theme.colors.MUTED,
+              }}
+            />
           </View>
           
           <View>

@@ -66,9 +66,9 @@ export class AlertService {
   static async getActiveAlerts(): Promise<Alert[]> {
     try {
       const { data, error } = await supabase
-        .from('alerts')
+        .from('safety_alerts')
         .select('*')
-        .eq('is_resolved', false)
+        .eq('status', 'approved')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -77,8 +77,18 @@ export class AlertService {
       }
 
       if (data) {
-        const now = new Date();
-        return data.filter(alert => !alert.expires_at || new Date(alert.expires_at) >= now);
+        return data.map((alert: any) => ({
+          id: alert.id,
+          type: alert.type,
+          title: alert.title,
+          description: alert.description,
+          severity: alert.severity,
+          area: alert.area_name,
+          source: 'user',
+          is_resolved: false,
+          created_at: alert.created_at,
+          radius_km: 0
+        } as Alert));
       }
       return [];
     } catch (error) {

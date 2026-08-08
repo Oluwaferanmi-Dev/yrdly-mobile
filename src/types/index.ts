@@ -214,6 +214,28 @@ export interface Message {
   isRead: boolean;
 }
 
+export interface SafetyAlert {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  severity: 'information' | 'caution' | 'urgent';
+  type: 'safety' | 'amber' | 'info';
+  area_name: string;
+  state?: string;
+  lga?: string;
+  ward?: string;
+  action?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  updated_at: string;
+  user?: {
+    id: string;
+    name: string;
+    avatar_url?: string;
+  };
+}
+
 export interface NotificationSettings {
   friendRequests: boolean;
   messages: boolean;

@@ -77,7 +77,9 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
         <View style={stylesheet.imgWrap}>
           {imageUrl
             ? <Image source={{ uri: StorageService.getOptimizedImageUrl(imageUrl, 400) || imageUrl }} style={stylesheet.img} contentFit="cover" transition={200} />
-            : <View style={[stylesheet.imgPlaceholder, { backgroundColor: colors.inputBackground }]}><Ionicons name="bag-outline" size={28} color={colors.tint} /></View>}
+            : item.video_urls && item.video_urls.length > 0 
+              ? <View style={[stylesheet.imgPlaceholder, { backgroundColor: colors.inputBackground }]}><Ionicons name="play-circle-outline" size={32} color={colors.tint} /></View>
+              : <View style={[stylesheet.imgPlaceholder, { backgroundColor: colors.inputBackground }]}><Ionicons name="bag-outline" size={28} color={colors.tint} /></View>}
 
           {/* Badge */}
           {badge && (

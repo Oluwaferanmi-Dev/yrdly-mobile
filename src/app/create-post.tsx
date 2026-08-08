@@ -168,14 +168,12 @@ export default function CreatePostScreen() {
           )}
           <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <Text style={stylesheet.authorName}>{profile?.name || 'Neighbour'}</Text>
-            <TouchableOpacity 
+            <View 
               style={stylesheet.areaPill}
-              onPress={() => setShowCategoryMenu(!showCategoryMenu)}
             >
               <Ionicons name="pricetag-outline" size={12} color={theme.colors.G} />
               <Text style={stylesheet.areaText}>{category}</Text>
-              <Ionicons name="chevron-down" size={12} color={theme.colors.MUTED} />
-            </TouchableOpacity>
+            </View>
             
             <TouchableOpacity 
               style={[stylesheet.areaPill, { backgroundColor: visibility === 'private' ? 'rgba(255, 165, 0, 0.15)' : 'rgba(130,219,126,0.15)' }]}
@@ -188,23 +186,6 @@ export default function CreatePostScreen() {
             </TouchableOpacity>
           </View>
         </View>
-
-        {showCategoryMenu && (
-          <View style={stylesheet.categoryMenu}>
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat}
-                style={[stylesheet.categoryOption, category === cat && { backgroundColor: theme.colors.G + '20' }]}
-                onPress={() => {
-                  setCategory(cat);
-                  setShowCategoryMenu(false);
-                }}
-              >
-                <Text style={[stylesheet.categoryOptionText, category === cat && { color: theme.colors.G, fontFamily: 'Inter-Bold' }]}>{cat}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
 
         <TextInput
           style={stylesheet.input}
@@ -226,6 +207,11 @@ export default function CreatePostScreen() {
                               source={{ uri: file.uri }}
                               style={stylesheet.attachedImage}
                             />
+                            {file.type?.startsWith('video/') && (
+                              <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)'}}>
+                                <Ionicons name="play-circle" size={32} color="#fff" />
+                              </View>
+                            )}
                             <TouchableOpacity 
                               style={stylesheet.removePhotoBtn}
                               onPress={() => setAttachedFiles(p => p.filter((_, j) => j !== i))}
@@ -242,7 +228,7 @@ export default function CreatePostScreen() {
       <View style={[stylesheet.toolbar, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <TouchableOpacity style={stylesheet.addPhotoBtn} onPress={pickImages}>
           <Ionicons name="image-outline" size={22} color={theme.colors.G} />
-          <Text style={{ color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter-Medium', fontSize: 13, marginLeft: 8 }}>Add Photos</Text>
+          <Text style={{ color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter-Medium', fontSize: 13, marginLeft: 8 }}>Add Media</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

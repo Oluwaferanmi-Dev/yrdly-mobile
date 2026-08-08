@@ -13,6 +13,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { AlertBanner } from '../components/AlertBanner';
+import { NotificationService } from '../lib/notification-service';
 
 interface Notification {
   id: string;
@@ -218,7 +219,11 @@ export default function NotificationsScreen() {
                         ]}
                         onPress={() => {
                           if (!item.is_read) {
-                            supabase.from('notifications').update({ is_read: true }).eq('id', item.id);
+                            if (user?.id) {
+                              NotificationService.markAsRead(item.id, user.id).catch(console.error);
+                            } else {
+                              supabase.from('notifications').update({ is_read: true }).eq('id', item.id).then();
+                            }
                             setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n));
                           }
                           const t = item.type || '';

@@ -123,7 +123,9 @@ export function EventCardCompact({ event, onPress }: EventCardProps) {
         <View style={c.imgWrap}>
           {imageUrl
             ? <Image source={{ uri: imageUrl }} style={StyleSheet.absoluteFillObject} contentFit="cover" transition={200} />
-            : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#1a2210' }]} />}
+            : event.video_urls && event.video_urls.length > 0
+              ? <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#1a2210', justifyContent: 'center', alignItems: 'center' }]}><Ionicons name="play-circle-outline" size={32} color="rgba(130,219,126,0.5)" /></View>
+              : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#1a2210' }]} />}
           {/* Date badge overlay */}
           {dateInfo && (
             <View style={c.dateBubble}>
@@ -258,7 +260,9 @@ export function EventCard({ event, onPress }: EventCardProps) {
         <View style={f.imgWrap}>
           {imageUrl
             ? <Image source={{ uri: StorageService.getOptimizedImageUrl(imageUrl, 800) || imageUrl }} style={StyleSheet.absoluteFillObject} contentFit="cover" transition={200} />
-            : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#1a2210' }]}><Ionicons name="calendar" size={40} color="rgba(130,219,126,0.3)" style={{ margin: 'auto' }} /></View>}
+            : event.video_urls && event.video_urls.length > 0
+              ? <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#1a2210' }]}><Ionicons name="play-circle-outline" size={40} color="rgba(130,219,126,0.5)" style={{ margin: 'auto' }} /></View>
+              : <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#1a2210' }]}><Ionicons name="calendar" size={40} color="rgba(130,219,126,0.3)" style={{ margin: 'auto' }} /></View>}
           <View style={f.overlay} />
 
           {/* Date chip */}

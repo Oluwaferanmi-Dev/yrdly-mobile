@@ -349,82 +349,21 @@ export default function HomeTab() {
         }
         ListHeaderComponent={
           <View>
-            {activeAlerts.length === 1 && (
-              <AlertBanner 
-                alert={activeAlerts[0]} 
-                onPress={() => router.push('/alerts')} 
-                onDismiss={async () => {
-                  // Persist dismissal so it doesn't reappear on refresh
-                  await SecureStore.setItemAsync(`yrdly_dismissed_alert_${activeAlerts[0].id}`, 'true');
-                  setActiveAlerts([]);
-                }}
-              />
-            )}
-            {activeAlerts.length > 1 && (
-              <TouchableOpacity 
-                activeOpacity={0.9} 
-                onPress={() => router.push('/alerts')}
-                style={{
-                  marginHorizontal: 16,
-                  marginTop: 16,
-                  marginBottom: 8,
-                  borderRadius: 16,
-                  elevation: 4,
-                  shadowColor: theme.colors.DARK,
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 12,
-                  overflow: 'visible',
-                }}
-              >
-                {isLiquidGlassSupported ? (
-                  <LiquidGlassView
-                    {...({ intensity: 90, tint: "light", fallbackColor: "rgba(254, 226, 226, 0.95)" } as any)}
-                    style={{
-                      borderRadius: 16,
-                      padding: 16,
-                      borderWidth: 1,
-                      borderColor: 'rgba(252, 165, 165, 0.5)',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      overflow: 'hidden'
+            {activeAlerts.length > 0 && (
+              <View style={{ marginTop: 16 }}>
+                {activeAlerts.map(alert => (
+                  <AlertBanner
+                    key={alert.id}
+                    alert={alert}
+                    onPress={() => router.push('/alerts')}
+                    onDismiss={async () => {
+                      // Persist dismissal so it doesn't reappear on refresh
+                      await SecureStore.setItemAsync(`yrdly_dismissed_alert_${alert.id}`, 'true');
+                      setActiveAlerts(prev => prev.filter(a => a.id !== alert.id));
                     }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="warning" size={24} color="#7f1d1d" />
-                      <Text style={{ marginLeft: 12, fontFamily: 'Inter-Bold', fontSize: 14, color: '#7f1d1d' }}>
-                        {activeAlerts.length} Active Safety Alerts
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color="#7f1d1d" />
-                  </LiquidGlassView>
-                ) : (
-                  <BlurView
-                    intensity={90}
-                    tint="light"
-                    style={{
-                      borderRadius: 16,
-                      padding: 16,
-                      backgroundColor: 'rgba(254, 226, 226, 0.4)',
-                      borderWidth: 1,
-                      borderColor: 'rgba(252, 165, 165, 0.5)',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="warning" size={24} color="#7f1d1d" />
-                      <Text style={{ marginLeft: 12, fontFamily: 'Inter-Bold', fontSize: 14, color: '#7f1d1d' }}>
-                        {activeAlerts.length} Active Safety Alerts
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color="#7f1d1d" />
-                  </BlurView>
-                )}
-              </TouchableOpacity>
+                  />
+                ))}
+              </View>
             )}
             <QuickPostBox />
           </View>

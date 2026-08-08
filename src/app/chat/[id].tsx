@@ -234,7 +234,7 @@ function ChatContent() {
         .map((m: any) => m.id);
         
       if (unreadIds.length > 0) {
-        supabase.from('messages').update({ is_read: true }).in('id', unreadIds).then();
+        supabase.from('messages').update({ is_read: true }).in('id', unreadIds).then(({error}) => { if (error) console.error('MARK AS READ ERROR:', error); });
       }
     }
     setLoading(false);
@@ -273,7 +273,7 @@ function ChatContent() {
         // Mark as read if it's from the other user
         const newMsg = payload.new as Message;
         if (newMsg.sender_id !== user?.id && !newMsg.is_read) {
-          supabase.from('messages').update({ is_read: true }).eq('id', newMsg.id).then();
+          supabase.from('messages').update({ is_read: true }).eq('id', newMsg.id).then(({error}) => { if (error) console.error('MARK AS READ REALTIME ERROR:', error); });
           supabase.from('notifications').delete()
             .eq('user_id', user?.id)
             .eq('type', 'message')
@@ -363,7 +363,10 @@ function ChatContent() {
 
       // We append locally so it shows immediately
       if (data) {
-        setMessages(prev => [...prev, data as Message]);
+        setMessages(prev => {
+          if (prev.some(m => m.id === data.id)) return prev;
+          return [...prev, data as Message];
+        });
       }
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (e) {
@@ -469,7 +472,10 @@ function ChatContent() {
       }
 
       if (data) {
-        setMessages(prev => [...prev, data as Message]);
+        setMessages(prev => {
+          if (prev.some(m => m.id === data.id)) return prev;
+          return [...prev, data as Message];
+        });
       }
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
     } catch(e) {

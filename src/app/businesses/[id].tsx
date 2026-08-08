@@ -329,7 +329,6 @@ export default function BusinessProfileScreen() {
           {/* Tabs */}
           <View style={sStylesheet.tabsWrap}>
             {(['catalog', 'reviews', 'analytics'] as const).map(t => {
-            const { styles: s } = useStyles(sStylesheet);
             return (
                           <TouchableOpacity key={t} onPress={() => setActiveTab(t)} style={sStylesheet.tabBtn}>
                             <Text style={[sStylesheet.tabTxt, { color: activeTab === t ? '#fff' : theme.colors.LABEL, fontFamily: activeTab === t ? 'Outfit-Bold' : 'Outfit-Medium' }]}>
@@ -354,7 +353,6 @@ export default function BusinessProfileScreen() {
               )}
               <View style={sStylesheet.catalogGrid}>
                 {catalogItems.map(item => {
-                const { styles: s } = useStyles(sStylesheet);
                 return (
                                   <TouchableOpacity key={item.id} onPress={() => setCatalogSheet(item)} style={sStylesheet.catalogCard} activeOpacity={0.8}>
                                     <View style={sStylesheet.catalogImgBox}>
@@ -406,7 +404,6 @@ export default function BusinessProfileScreen() {
               </View>
 
               {reviews.map(r => {
-              const { styles: s } = useStyles(sStylesheet);
               return (
                               <View key={r.id} style={sStylesheet.reviewItem}>
                                 <Image source={{ uri: r.users?.avatar_url || 'https://via.placeholder.com/80' }} style={sStylesheet.reviewAvatar} contentFit="cover" />
@@ -437,7 +434,6 @@ export default function BusinessProfileScreen() {
                 { l: 'Inquiries Received', v: inquiriesCount.toString(), icon: '💬' },
                 { l: 'Average Rating', v: `${business.rating?.toFixed(1) || '0'} ★`, icon: '⭐' },
               ].map(sItem => {
-              const { styles: s } = useStyles(sStylesheet);
               return (
                               <View key={sItem.l} style={sStylesheet.analyticsCard}>
                                 <View style={sStylesheet.analyticsIconBox}>

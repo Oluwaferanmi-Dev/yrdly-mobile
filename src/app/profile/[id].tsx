@@ -178,26 +178,27 @@ export default function OtherUserProfileScreen() {
   const handleMessage = async () => {
     if (!currentUser || !currentProfile || !profile) return;
     try {
-      const { data: existingChat } = await supabase
+      const { data: convs, error } = await supabase
         .from('conversations')
-        .select('id, participant_ids')
-        .contains('participant_ids', [currentProfile.id, profile.id])
-        .limit(1)
-        .maybeSingle();
+        .select('id, participant_ids');
+      
+      if (error) {
+        console.error('Error fetching conversations:', error);
+      }
+
+      const existingChat = convs?.find(c => 
+        c.participant_ids?.includes(currentProfile.id) && 
+        c.participant_ids?.includes(profile.id)
+      );
+
       if (existingChat) {
-        router.push({ pathname: '/chat/[id]', params: { id: existingChat.id } } as any);
+        router.push(`/chat/${existingChat.id}` as any);
       } else {
-        router.push({ 
-          pathname: '/chat/[id]', 
-          params: { 
-            id: 'new', 
-            participant_id: profile.id, 
-            type: 'general' 
-          } 
-        } as any);
+        router.push(`/chat/new?participant_id=${profile.id}&type=general` as any);
       }
     } catch (err) {
       console.error(err);
+      Alert.alert('Error', 'Could not open chat. Please try again.');
     }
   };
 
@@ -265,7 +266,7 @@ export default function OtherUserProfileScreen() {
 
   return (
     <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
-      <View style={[stylesheet.header, { paddingTop: 54 }]}>
+      <View style={stylesheet.header}>
         <TouchableOpacity onPress={() => router.back()} style={stylesheet.navBtn}>
           <Ionicons name="chevron-back" size={20} color="#fff" />
         </TouchableOpacity>

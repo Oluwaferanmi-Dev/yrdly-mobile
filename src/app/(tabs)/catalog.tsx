@@ -175,6 +175,9 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
             key={u.id} 
             user={u} 
             context="neighbor" 
+            currentLoc={currentLoc}
+            sStylesheet={sStylesheet}
+            theme={theme}
             onPress={() => router.push(`/profile/${u.id}` as any)} 
           />
         ))}
@@ -200,16 +203,19 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
       {mutuals.length > 0 && (
         <View style={sStylesheet.discoverGroup}>
           <Text style={sStylesheet.discoverGroupTitle}>PEOPLE YOU MAY KNOW</Text>
-          <View style={{ gap: 0 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
             {mutuals.map(p => (
               <NearbyUserCard 
                 key={p.id} 
                 user={p} 
                 context="mutual" 
+                sStylesheet={sStylesheet}
+                theme={theme}
+                currentLoc={currentLoc}
                 onPress={() => router.push(`/profile/${p.id}` as any)} 
               />
             ))}
-          </View>
+          </ScrollView>
         </View>
       )}
 
@@ -217,16 +223,19 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
       {sellers.length > 0 && (
         <View style={sStylesheet.discoverGroup}>
           <Text style={sStylesheet.discoverGroupTitle}>ACTIVE SELLERS</Text>
-          <View style={{ gap: 0 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
             {sellers.map(p => (
               <NearbyUserCard 
                 key={p.id} 
                 user={p} 
                 context="seller" 
+                sStylesheet={sStylesheet}
+                theme={theme}
+                currentLoc={currentLoc}
                 onPress={() => router.push(`/profile/${p.id}` as any)} 
               />
             ))}
-          </View>
+          </ScrollView>
         </View>
       )}
     </ScrollView>
@@ -559,6 +568,22 @@ function EventsSection({ currentLoc }: { currentLoc: Location.LocationObject | n
           .limit(20)
           .order('start_time', { ascending: true });
         
+        if (filter !== 'All') {
+          // If filter is a category, we can search in category field (assuming there's a category field or we check title/description)
+          // For dates like 'Today', we'd need date logic, but for simplicity, we'll try ILIKE on category or title
+          if (['Community', 'Music', 'Food', 'Sports'].includes(filter)) {
+            q = q.ilike('category', `%${filter}%`);
+          } else if (filter === 'Today') {
+            const endOfToday = new Date(today);
+            endOfToday.setHours(23, 59, 59, 999);
+            q = q.lte('start_time', endOfToday.toISOString());
+          } else if (filter === 'This Week') {
+            const endOfWeek = new Date(today);
+            endOfWeek.setDate(endOfWeek.getDate() + 7);
+            q = q.lte('start_time', endOfWeek.toISOString());
+          }
+        }
+        
         if (activeFilter) {
           if (activeFilter.lga) {
             q = q.eq('lga', activeFilter.lga);
@@ -623,7 +648,7 @@ function PlacesSection({ currentLoc }: { currentLoc: Location.LocationObject | n
   const router = useRouter();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
-  const PLACE_CATS = ['All', 'Restaurants', 'Cafés', 'Shopping', 'Beauty', 'Health', 'Services', 'Gyms'];
+  const PLACE_CATS = ['All', 'Restaurant & Café', 'Food & Catering', 'Shopping', 'Beauty & Salon', 'Health & Wellness', 'Local Services', 'Tech & Repair', 'Gyms & Fitness'];
   const [category, setCategory] = useState('All');
 
   useFocusEffect(
@@ -631,7 +656,8 @@ function PlacesSection({ currentLoc }: { currentLoc: Location.LocationObject | n
       async function fetchPlaces() {
         let q = supabase.from('businesses').select('*');
         if (category !== 'All') {
-          const searchCategory = category === 'Cafés' ? 'Cafe' : category;
+          // Because businesses might have slightly different saved categories, use a broad ilike
+          const searchCategory = category.split(' & ')[0]; // E.g., 'Beauty & Salon' -> 'Beauty'
           q = q.ilike('category', `%${searchCategory}%`);
         }
         if (activeFilter) {

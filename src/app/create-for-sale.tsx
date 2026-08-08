@@ -124,7 +124,7 @@ export default function CreateForSaleScreen() {
   };
 
   const canNext = [
-    true,
+    attachedFiles.some(f => f.type?.startsWith('image/')),
     title.trim() && (listingType === 'Giveaway' || price.trim()) && category && condition,
     desc.trim(),
     true,
@@ -259,8 +259,8 @@ export default function CreateForSaleScreen() {
       <ScrollView contentContainerStyle={stylesheet.scrollContent} keyboardShouldPersistTaps="handled">
         {step === 0 && (
           <View>
-            <Text style={stylesheet.stepTitle}>Add Photos</Text>
-            <Text style={stylesheet.stepDesc}>First photo becomes your listing cover.</Text>
+            <Text style={stylesheet.stepTitle}>Add Media</Text>
+            <Text style={stylesheet.stepDesc}>First item becomes your listing cover. At least one image is required.</Text>
             <View style={stylesheet.photosGrid}>
               {attachedFiles.map((file, i) => (
                 <TouchableOpacity 
@@ -269,6 +269,11 @@ export default function CreateForSaleScreen() {
                   style={[stylesheet.photoBox, i === coverIndex && { borderWidth: 2, borderColor: theme.colors.G }]}
                 >
                   <Image source={{ uri: file.uri }} style={stylesheet.photoImg} />
+                  {file.type?.startsWith('video/') && (
+                    <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)'}}>
+                      <Ionicons name="play-circle" size={32} color="#fff" />
+                    </View>
+                  )}
                   {i === coverIndex && (
                     <View style={stylesheet.coverBadge}>
                       <Text style={stylesheet.coverBadgeText}>COVER</Text>

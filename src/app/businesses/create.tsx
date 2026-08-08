@@ -12,7 +12,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { OpeningHoursPicker } from '../../components/OpeningHoursPicker';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
-const CATS = ['Food & Catering', 'Restaurant', 'Shopping', 'Beauty & Salon', 'Local Services', 'Tech & Repair'];
+const CATS = ['Restaurant & Café', 'Food & Catering', 'Shopping', 'Beauty & Salon', 'Health & Wellness', 'Local Services', 'Tech & Repair', 'Gyms & Fitness'];
 
 export default function BusinessEditScreen() {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);

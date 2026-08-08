@@ -154,7 +154,7 @@ export default function CreateEventScreen() {
     true, // date/time always valid due to Date object
     isOnline ? true : (venue.trim() && area.trim()),
     tiers.length > 0 && tiers.every(t => t.name.trim()),
-    true,
+    attachedFiles.some(f => f.type?.startsWith('image/')),
     true,
   ][step];
 
@@ -568,8 +568,8 @@ export default function CreateEventScreen() {
 
         {step === 4 && (
           <View style={stylesheet.formGroup}>
-            <Text style={stylesheet.stepTitle}>Photos</Text>
-            <Text style={stylesheet.stepDesc}>Add eye-catching photos for your event. The first photo will be the cover.</Text>
+            <Text style={stylesheet.stepTitle}>Media</Text>
+            <Text style={stylesheet.stepDesc}>Add eye-catching photos/videos for your event. At least one image is required.</Text>
 
             <View style={stylesheet.photosGrid}>
               {attachedFiles.map((f, i) => (
@@ -579,6 +579,11 @@ export default function CreateEventScreen() {
                   style={[stylesheet.photoBox, i === coverIndex && { borderWidth: 2, borderColor: theme.colors.G }]}
                 >
                   <Image source={{ uri: f.uri }} style={stylesheet.photoImg} />
+                  {f.type?.startsWith('video/') && (
+                    <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)'}}>
+                      <Ionicons name="play-circle" size={32} color="#fff" />
+                    </View>
+                  )}
                   {i === coverIndex && (
                     <View style={stylesheet.coverBadge}>
                       <Text style={stylesheet.coverBadgeText}>COVER</Text>
@@ -601,7 +606,7 @@ export default function CreateEventScreen() {
               {attachedFiles.length < 5 && (
                 <TouchableOpacity style={stylesheet.addPhotoBox} onPress={pickImages}>
                   <Feather name="image" size={24} color={theme.colors.LABEL} />
-                  <Text style={{ color: theme.colors.LABEL, fontSize: 12, marginTop: 4, fontFamily: 'Inter-Regular' }}>Add Photo</Text>
+                  <Text style={{ color: theme.colors.LABEL, fontSize: 12, marginTop: 4, fontFamily: 'Inter-Regular' }}>Add Media</Text>
                 </TouchableOpacity>
               )}
             </View>

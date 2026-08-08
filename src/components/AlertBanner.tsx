@@ -16,7 +16,7 @@ const SEVERITY_COLORS = {
   information: { bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)', text: '#3b82f6', icon: '#3b82f6' },
 };
 
-export const AlertBanner: React.FC<AlertBannerProps> = ({ alert, onPress }) => {
+export const AlertBanner: React.FC<AlertBannerProps> = ({ alert, onPress, onDismiss }) => {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
   const isResolved = alert.status === 'resolved';
@@ -70,6 +70,19 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ alert, onPress }) => {
         <View style={stylesheet.resolvedBadge}>
           <Text style={stylesheet.resolvedText}>RESOLVED</Text>
         </View>
+      )}
+
+      {onDismiss && !isResolved && (
+        <TouchableOpacity 
+          style={stylesheet.dismissButton} 
+          onPress={(e) => {
+            e.stopPropagation();
+            onDismiss();
+          }}
+          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+        >
+          <Ionicons name="close" size={16} color={theme.colors.LABEL} />
+        </TouchableOpacity>
       )}
     </TouchableOpacity>
   );
@@ -129,5 +142,12 @@ const _stylesheet = createStyleSheet(theme => ({
         fontFamily: 'Outfit-Bold',
         fontSize: 10,
         color: theme.colors.G,
+      },
+      dismissButton: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        padding: 4,
+        zIndex: 2,
       },
     }));
