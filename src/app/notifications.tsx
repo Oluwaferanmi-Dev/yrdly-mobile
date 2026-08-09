@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
@@ -147,6 +147,18 @@ export default function NotificationsScreen() {
 
     return () => { supabase.removeChannel(channel); };
   }, [user]);
+
+  // Auto-mark all as read when the screen comes into focus.
+  // Short delay so the list renders first — user briefly sees which items were unread.
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      const t = setTimeout(() => {
+        markAllRead();
+      }, 800);
+      return () => clearTimeout(t);
+    }, [user])
+  );
 
   const markAllRead = async () => {
     if (!user) return;
