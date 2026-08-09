@@ -306,8 +306,22 @@ function ChatContent() {
         if (!newText.endsWith('(Edited)')) {
           newText = newText + ' (Edited)';
         }
-        const { error: editErr } = await supabase.from('messages').update({ text: newText }).eq('id', editingMessage.id); if (editErr) throw editErr;
-        
+        const { error: editErr } = await supabase
+          .from('messages')
+          .update({ text: newText })
+          .eq('id', editingMessage.id);
+
+        if (editErr) {
+          const msg = editErr.message?.includes('15 minutes')
+            ? 'You can only edit messages within 15 minutes of sending.'
+            : editErr.message?.includes('sender')
+            ? 'You can only edit your own messages.'
+            : 'Failed to edit message. Please try again.';
+          Alert.alert('Cannot Edit', msg);
+          setSending(false);
+          return;
+        }
+
         setMessages(prev => prev.map(m => m.id === editingMessage.id ? { ...m, text: newText } : m));
         setEditingMessage(null);
         setSending(false);
@@ -505,8 +519,16 @@ function ChatContent() {
         onPress: async () => {
           try {
             const newDeletedBy = [...(item.deleted_by || []), user.id];
-            await supabase.from('messages').update({ deleted_by: newDeletedBy }).eq('id', item.id);
-            // Optimistic update
+            const { error: delMeErr } = await supabase
+              .from('messages')
+              .update({ deleted_by: newDeletedBy })
+              .eq('id', item.id);
+
+            if (delMeErr) {
+              Alert.alert('Error', 'Failed to delete message. Please try again.');
+              return;
+            }
+
             setMessages(prev => prev.filter(m => m.id !== item.id));
           } catch (e) {
             console.error('Failed to delete message for me:', e);
@@ -528,8 +550,26 @@ function ChatContent() {
         style: 'destructive' as const,
         onPress: async () => {
           try {
-            const { error: delErr } = await supabase.from('messages').update({ text: 'This message was deleted', media_url: null, media_type: null }).eq('id', item.id); if (delErr) throw delErr;
-            setMessages(prev => prev.map(m => m.id === item.id ? { ...m, text: 'This message was deleted', media_url: undefined, media_type: undefined } : m));
+            const { error: delErr } = await supabase
+              .from('messages')
+              .update({ text: 'This message was deleted', media_url: null, media_type: null })
+              .eq('id', item.id);
+
+            if (delErr) {
+              const msg = delErr.message?.includes('15 minutes')
+                ? 'You can only delete messages within 15 minutes of sending.'
+                : delErr.message?.includes('sender')
+                ? 'You can only delete your own messages.'
+                : 'Failed to delete message. Please try again.';
+              Alert.alert('Cannot Delete', msg);
+              return;
+            }
+
+            setMessages(prev => prev.map(m =>
+              m.id === item.id
+                ? { ...m, text: 'This message was deleted', media_url: undefined, media_type: undefined }
+                : m
+            ));
           } catch (e) {
             console.error('Failed to delete message for everyone:', e);
           }
