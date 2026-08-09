@@ -124,6 +124,29 @@ export default function NetworkScreen() {
     }
   };
 
+  const handleRemoveFollower = async (targetId: string) => {
+    if (!currentUser || !currentProfile) return;
+    setActionLoading(prev => ({ ...prev, [targetId]: true }));
+    
+    try {
+      await supabase.from('followers')
+        .delete()
+        .eq('follower_id', targetId)
+        .eq('following_id', currentProfile.id);
+        
+      setCurrentUserFollowers(prev => {
+        const next = new Set(prev);
+        next.delete(targetId);
+        return next;
+      });
+    } catch (e) {
+      console.error('Remove follower error:', e);
+    } finally {
+      setActionLoading(prev => ({ ...prev, [targetId]: false }));
+    }
+  };
+
+
   const renderUser = ({ item }: { item: any }) => {
 
     const isCurrentUser = currentProfile?.id === item.id;
@@ -169,16 +192,22 @@ export default function NetworkScreen() {
               stylesheet.followBtn, 
               activeTab === 'followers' 
                 ? { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER } 
-                : { backgroundColor: 'rgba(130,219,126,0.1)', borderColor: 'rgba(130,219,126,0.25)' }
+                : { backgroundColor: isFollowing ? 'rgba(130,219,126,0.1)' : theme.colors.SURFACE, borderColor: isFollowing ? 'rgba(130,219,126,0.25)' : theme.colors.GLASS_BORDER }
             ]}
-            onPress={() => handleToggleFollow(item.id)}
-            disabled={actionLoading[item.id]}
+            onPress={() => {
+              if (activeTab === 'followers') {
+                handleRemoveFollower(item.id);
+              } else {
+                handleToggleFollow(item.id);
+              }
+            }}
+            disabled={actionLoading[item.id] || (activeTab === 'followers' && !isFollower)}
           >
             {actionLoading[item.id] ? (
               <ActivityIndicator size="small" color={activeTab === 'followers' ? theme.colors.MUTED : theme.colors.G} />
             ) : (
-              <Text style={[stylesheet.followBtnText, activeTab === 'followers' ? { color: theme.colors.MUTED } : { color: theme.colors.G }]}>
-                {activeTab === 'followers' ? 'Remove' : 'Following'}
+              <Text style={[stylesheet.followBtnText, activeTab === 'followers' ? { color: theme.colors.MUTED } : { color: isFollowing ? theme.colors.G : theme.colors.TEXT_PRIMARY }]}>
+                {activeTab === 'followers' ? (isFollower ? 'Remove' : 'Removed') : (isFollowing ? 'Following' : 'Follow')}
               </Text>
             )}
           </TouchableOpacity>
