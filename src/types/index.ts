@@ -23,6 +23,8 @@ export interface Business {
   state?: string | null;
   lga?: string | null;
   ward?: string | null;
+  lat?: number | null;
+  lng?: number | null;
   rating?: number;
   review_count?: number;
   view_count?: number;
@@ -103,6 +105,9 @@ export interface Post {
   state?: string | null;
   lga?: string | null;
   ward?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  location_geom?: string | null;
   title?: string;
   event_date?: string;
   event_time?: string;
@@ -130,6 +135,12 @@ export interface Post {
       lga?: string;
       ward?: string;
     };
+    home_state?: string | null;
+    home_lga?: string | null;
+    home_ward?: string | null;
+    home_lat?: number | null;
+    home_lng?: number | null;
+    home_location_geom?: string | null;
     created_at?: string;
   };
 }
@@ -158,9 +169,20 @@ export interface User {
     city?: string;
     ward?: string;
   };
+  home_state?: string | null;
+  home_lga?: string | null;
+  home_ward?: string | null;
+  home_lat?: number | null;
+  home_lng?: number | null;
+  home_location_geom?: string | null;
   friends?: string[];
   blockedUsers?: string[];
   interests?: string[];
+  current_location?: {
+    lat: number;
+    lng: number;
+    geopoint?: GeoPoint;
+  };
   share_location?: boolean;
   currentLocation?: {
     lat: number;

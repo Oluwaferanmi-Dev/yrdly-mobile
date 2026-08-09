@@ -123,8 +123,11 @@ export default function BusinessEditScreen() {
         category,
         hours: hours.trim(),
         location: location.trim() || 'Location not specified',
+        state: bizState || null,
         lga: bizLga || null,
         ward: bizWard || null,
+        lat: bizLat,
+        lng: bizLng,
         location_geom: bizLat !== null && bizLng !== null
           ? `POINT(${bizLng} ${bizLat})`
           : null,

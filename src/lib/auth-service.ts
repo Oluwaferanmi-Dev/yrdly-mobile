@@ -22,6 +22,12 @@ export interface AuthUser {
     city?: string;
     ward?: string;
   };
+  home_state?: string | null;
+  home_lga?: string | null;
+  home_ward?: string | null;
+  home_lat?: number | null;
+  home_lng?: number | null;
+  home_location_geom?: string | null;
   friends?: string[];
   blocked_users?: string[];
   interests?: string[];
