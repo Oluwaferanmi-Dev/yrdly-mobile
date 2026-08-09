@@ -42,6 +42,8 @@ export default function CreateForSaleScreen() {
   
   const [attachedFiles, setAttachedFiles] = useState<MobileFile[]>([]);
   const [coverIndex, setCoverIndex] = useState(0);
+  // Keyed by URI so dims remain correct if the user changes cover or removes images
+  const [imageDimsMap, setImageDimsMap] = useState<Record<string, { w: number; h: number }>>({})
   const [listing, setListing] = useState(false);
   const [listed, setListed] = useState(false);
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
@@ -119,6 +121,11 @@ export default function CreateForSaleScreen() {
             name: asset.fileName || `item_${Date.now()}`,
             type,
           });
+
+          // Capture dimensions for images; asset.width/height are synchronous from picker
+          if (type.startsWith('image/') && asset.width && asset.height) {
+            setImageDimsMap(prev => ({ ...prev, [asset.uri]: { w: asset.width, h: asset.height } }));
+          }
         }
         setAttachedFiles(prev => [...prev, ...validFiles]);
       }
@@ -173,6 +180,15 @@ export default function CreateForSaleScreen() {
           }
         }
 
+        // Resolve dims for the cover image — that's what ends up as image_urls[0]
+        const coverFile = attachedFiles.find(f => !f.type?.startsWith('video/'))
+          ? (() => {
+              const imgFiles = attachedFiles.filter(f => !f.type?.startsWith('video/'));
+              return imgFiles[coverIndex] ?? imgFiles[0];
+            })()
+          : null;
+        const coverDims = coverFile ? (imageDimsMap[coverFile.uri] ?? null) : null;
+
         const { error } = await supabase
           .from('posts')
           .insert({
@@ -187,6 +203,8 @@ export default function CreateForSaleScreen() {
             condition: condition,
             image_urls: imageUrls,
             video_urls: videoUrls,
+            image_width: coverDims?.w ?? null,
+            image_height: coverDims?.h ?? null,
             is_sold: false,
             visibility: visibility,
             state: postState || null,

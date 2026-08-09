@@ -24,6 +24,8 @@ export default function CreatePostScreen() {
   const [posting, setPosting] = useState(false);
   const [posted, setPosted] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<MobileFile[]>([]);
+  // Keyed by URI so dims stay correct if the user removes images before posting
+  const [imageDimsMap, setImageDimsMap] = useState<Record<string, { w: number; h: number }>>({});
   const [category, setCategory] = useState('General');
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
@@ -67,11 +69,17 @@ export default function CreatePostScreen() {
             }
           }
           
-          validFiles.push({
+          const file: MobileFile = {
             uri: asset.uri,
             name: asset.fileName || `media_${Date.now()}`,
             type,
-          });
+          };
+          validFiles.push(file);
+
+          // Capture dimensions for images; asset.width/height are synchronous from picker
+          if (type.startsWith('image/') && asset.width && asset.height) {
+            setImageDimsMap(prev => ({ ...prev, [asset.uri]: { w: asset.width, h: asset.height } }));
+          }
         }
         setAttachedFiles(prev => [...prev, ...validFiles]);
       }
@@ -94,11 +102,16 @@ export default function CreatePostScreen() {
       const images = attachedFiles.filter(f => f.type?.startsWith('image/'));
       const videos = attachedFiles.filter(f => f.type?.startsWith('video/'));
 
+      // Resolve dims for whichever image will become image_urls[0]
+      const firstImageDims = images.length > 0 ? (imageDimsMap[images[0].uri] ?? null) : null;
+
       await createPost(
         {
           text: text.trim(),
           category: category as any,
           visibility: visibility,
+          image_width: firstImageDims?.w ?? undefined,
+          image_height: firstImageDims?.h ?? undefined,
         },
         undefined,
         images.length > 0 ? images : undefined,

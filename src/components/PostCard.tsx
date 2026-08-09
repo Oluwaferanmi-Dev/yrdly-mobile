@@ -187,20 +187,35 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
 
       if (post.image_width && post.image_height) {
         const displayHeight = (post.image_height / post.image_width) * imageDisplayWidth;
-        setImageHeights((prev) => ({ ...prev, [url]: Math.min(displayHeight, imageDisplayWidth * 1.5) }));
+        setImageHeights((prev) => ({ ...prev, [url]: displayHeight }));
         return;
       }
 
       RNImage.getSize(url, (naturalWidth, naturalHeight) => {
         if (naturalWidth && naturalHeight) {
           const displayHeight = (naturalHeight / naturalWidth) * imageDisplayWidth;
-          setImageHeights((prev) => ({ ...prev, [url]: Math.min(displayHeight, imageDisplayWidth * 1.5) }));
+          setImageHeights((prev) => ({ ...prev, [url]: displayHeight }));
         }
       }, () => {
         // Silently handle get size errors
       });
     });
   }, [urls, post.image_width, post.image_height, imageDisplayWidth]);
+
+  // Clamp rendered height: min 4:5 portrait, max 1.91:1 landscape
+  const MIN_ASPECT = 4 / 5;  // height = width * 1.25  (tallest)
+  const MAX_ASPECT = 1.91;   // height = width / 1.91  (widest)
+  const getImageHeight = (url: string): number => {
+    const cardWidth = width - 40;
+    const rawHeight = imageHeights[url];
+    if (rawHeight) {
+      const rawAspect = cardWidth / rawHeight;
+      const clampedAspect = Math.min(Math.max(rawAspect, MIN_ASPECT), MAX_ASPECT);
+      return cardWidth / clampedAspect;
+    }
+    // Fallback while loading: 4:3
+    return cardWidth * 0.75;
+  };
 
   const triggerHeartAnimation = () => {
     heartScale.value = withSequence(
@@ -563,9 +578,9 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               <TouchableOpacity 
                 activeOpacity={0.95}
                 onPress={() => handleImageTap(index)}
-                style={{ width: width - 40, aspectRatio: 4/3, borderRadius: 16, overflow: 'hidden', backgroundColor: theme.colors.SURFACE }}
+                style={{ width: width - 40, height: getImageHeight(item), borderRadius: 16, overflow: 'hidden', backgroundColor: theme.colors.SURFACE }}
               >
-                <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+                <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="contain" />
                 
                 <Animated.View style={[stylesheet.heartOverlay, heartAnimatedStyle]}>
                   <Ionicons name="heart" size={100} color={theme.colors.G} style={stylesheet.heartShadow} />
