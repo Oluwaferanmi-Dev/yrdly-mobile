@@ -42,7 +42,7 @@ let lgaWardsCache: any[] | null = null;
 
 async function getLgaWards() {
   if (lgaWardsCache) return lgaWardsCache;
-  const { data, error } = await supabase.from('lga_wards').select('state, lga, ward, latitude, longitude');
+  const { data, error } = await supabase.from('lga_wards').select('state, lga, ward, latitude, longitude').limit(10000);
   if (error || !data) {
     console.error('Failed to fetch lga_wards', error);
     return [];

@@ -34,6 +34,7 @@ export default function Profile2Screen() {
 
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isResolving, setIsResolving] = useState(false);
 
   const handleCompleteSetup = async () => {
     setFormError('');
@@ -103,20 +104,35 @@ export default function Profile2Screen() {
                 <GooglePlacesAutocomplete
                   placeholder="Search your neighbourhood…"
                   fetchDetails={true}
-                  onPress={(data, details = null) => {
+                  onPress={async (data, details = null) => {
+                    setFormError('');
                     setLocation(data.description);
                     if (details?.geometry?.location) {
                       const lat = details.geometry.location.lat;
                       const lng = details.geometry.location.lng;
                       setPostLat(lat);
                       setPostLng(lng);
-                      resolveCoords(lat, lng).then((match) => {
+                      
+                      setIsResolving(true);
+                      try {
+                        const match = await resolveCoords(lat, lng);
                         if (match) {
                           setPostState(match.state);
                           setPostLga(match.lga);
                           setPostWard(match.ward);
+                        } else {
+                          setFormError('Location is outside our supported neighbourhoods. Please try a different area.');
+                          setPostState('');
+                          setPostLga('');
+                          setPostWard('');
                         }
-                      });
+                      } catch (error) {
+                        setFormError('Failed to verify location. Please try again.');
+                      } finally {
+                        setIsResolving(false);
+                      }
+                    } else {
+                      setFormError('Could not get location details. Please try another address.');
                     }
                   }}
                   query={{
@@ -148,7 +164,8 @@ export default function Profile2Screen() {
                 <PrimaryBtn
                   label={`Complete Setup & Join`}
                   onClick={handleCompleteSetup}
-                  loading={isSaving}
+                  loading={isSaving || isResolving}
+                  disabled={isResolving}
                 />
               </View>
             </GlassCard>
