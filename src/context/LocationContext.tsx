@@ -23,10 +23,9 @@ const GLOBAL_FILTER_STORAGE_KEY = 'yrdly_global_filter';
 export function LocationProvider({ children }: { children: React.ReactNode }) {
   const { profile } = useAuth();
 
-  const profileLocation = profile?.location as any;
-  const userState = profileLocation?.state || null;
-  const userLga = profileLocation?.lga || null;
-  const userWard = profileLocation?.ward || null;
+  const userState = profile?.home_state || profile?.location?.state || undefined;
+  const userLga = profile?.home_lga || profile?.location?.lga || undefined;
+  const userWard = profile?.home_ward || profile?.location?.ward || undefined;
   const hasLocation = !!userState;
 
   const userProfileLocation: LocationFilter | null = hasLocation 

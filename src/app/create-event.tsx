@@ -13,6 +13,7 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { StorageService, MobileFile } from '../lib/storage-service';
 import { DateTimePickerModal } from '../components/DateTimePickerModal';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { resolveCoords } from '../lib/geocoding-service';
 import * as FileSystem from 'expo-file-system';
 import { formatPrice } from '../lib/utils';
 import { EventCard } from '../components/EventCard';
@@ -49,6 +50,9 @@ export default function CreateEventScreen() {
   
   const [postState, setPostState] = useState('');
   const [postLga, setPostLga] = useState('');
+  const [postWard, setPostWard] = useState('');
+  const [postLat, setPostLat] = useState<number | null>(null);
+  const [postLng, setPostLng] = useState<number | null>(null);
   
   const [attachedFiles, setAttachedFiles] = useState<MobileFile[]>([]);
   const [coverIndex, setCoverIndex] = useState(0);
@@ -220,7 +224,10 @@ export default function CreateEventScreen() {
             online_link: isOnline ? onlineLink.trim() : null,
             state: postState || null,
             lga: postLga || null,
-            ward: null,
+            ward: postWard || null,
+            lat: postLat,
+            lng: postLng,
+            location_geom: postLat !== null && postLng !== null ? `POINT(${postLng} ${postLat})` : null,
             status: 'PUBLISHED',
           })
           .select()
@@ -434,29 +441,22 @@ export default function CreateEventScreen() {
                 <View style={{ zIndex: 10 }}>
                   <GooglePlacesAutocomplete
                     placeholder="Search for a venue or location"
+                    fetchDetails={true}
                     onPress={(data, details = null) => {
                       setVenue(data.description);
-                      const d = data as any;
-                      if (d.terms && d.terms.length > 0) {
-                        const terms = d.terms;
-                        const countryIdx = terms.findIndex((t: any) => t.value === 'Nigeria');
-                        if (countryIdx > 0) {
-                          const s = terms[countryIdx - 1]?.value || '';
-                          setPostState(s);
-                          if (countryIdx > 1) {
-                            const l = terms[countryIdx - 2]?.value || '';
-                            setPostLga(l);
-                            setArea(`${l}, ${s}`);
+                      if (details?.geometry?.location) {
+                        const lat = details.geometry.location.lat;
+                        const lng = details.geometry.location.lng;
+                        setPostLat(lat);
+                        setPostLng(lng);
+                        resolveCoords(lat, lng).then((match) => {
+                          if (match) {
+                            setPostState(match.state);
+                            setPostLga(match.lga);
+                            setPostWard(match.ward);
+                            setArea(`${match.lga}, ${match.state}`);
                           }
-                        } else {
-                          const s = terms[terms.length - 1]?.value || '';
-                          setPostState(s);
-                          if (terms.length > 1) {
-                            const l = terms[terms.length - 2]?.value || '';
-                            setPostLga(l);
-                            setArea(`${l}, ${s}`);
-                          }
-                        }
+                        });
                       }
                     }}
                     query={{

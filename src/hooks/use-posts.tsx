@@ -571,8 +571,6 @@ export const usePosts = (filter?: LocationFilter | null) => {
         );
 
         // Auto-stamp the creator's location from their profile
-        const userLocation = profile.location as { state?: string; lga?: string; ward?: string } | undefined;
-
         const finalPostData = {
           ...cleanedPostData,
           user_id: user.id,
@@ -584,10 +582,13 @@ export const usePosts = (filter?: LocationFilter | null) => {
           category: postData.category || 'General',
           // Location stamping — only set on new posts, preserve on edits
           ...(postIdToUpdate ? { updated_at: new Date().toISOString() } : {
-            state: userLocation?.state || null,
-            lga: userLocation?.lga || null,
-            ward: userLocation?.ward || null,
-            author_location: userLocation ? { state: userLocation.state, lga: userLocation.lga, ward: userLocation.ward } : null,
+            state: profile.home_state || profile.location?.state || null,
+            lga: profile.home_lga || profile.location?.lga || null,
+            ward: profile.home_ward || profile.location?.ward || null,
+            lat: profile.home_lat || null,
+            lng: profile.home_lng || null,
+            location_geom: profile.home_location_geom || null,
+            author_location: (profile.home_state || profile.home_lga) ? { state: profile.home_state, lga: profile.home_lga, ward: profile.home_ward } : profile.location ? { state: profile.location.state, lga: profile.location.lga, ward: profile.location.ward } : null,
           }),
         };
 

@@ -423,7 +423,7 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
                           <View style={sStylesheet.marketplaceCardAvatarWrap}>
                             <Image source={{ uri: item.user?.avatar_url }} style={sStylesheet.marketplaceCardAvatar} />
                           </View>
-                          <Text style={sStylesheet.marketplaceCardArea} numberOfLines={1}>{item.user?.location?.lga || 'Lagos'}</Text>
+                          <Text style={sStylesheet.marketplaceCardArea} numberOfLines={1}>{item.user?.home_lga || item.user?.location?.lga || 'Lagos'}</Text>
                         </View>
                       </TouchableOpacity>
                     );
@@ -657,7 +657,7 @@ function EventsSection({ currentLoc, search }: { currentLoc: Location.LocationOb
 
   return (
     <View style={sStylesheet.sectionContainer}>
-      <View style={[sStylesheet.eventsToolbar, { paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.BACKGROUND, alignItems: 'flex-start' }]}>
+      <View style={[sStylesheet.eventsToolbar, { paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.DARK, alignItems: 'flex-start' }]}>
         <CategoryDropdown category={filter} setCategory={setFilter} options={EVENT_FILTERS} theme={theme} label="Filter" />
       </View>
 
@@ -720,7 +720,7 @@ function PlacesSection({ currentLoc, search }: { currentLoc: Location.LocationOb
 
   return (
     <View style={sStylesheet.sectionContainer}>
-      <View style={[sStylesheet.eventsToolbar, { paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.BACKGROUND, alignItems: 'flex-start' }]}>
+      <View style={[sStylesheet.eventsToolbar, { paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.DARK, alignItems: 'flex-start' }]}>
         <CategoryDropdown category={category} setCategory={setCategory} options={PLACE_CATS} theme={theme} label="Category" />
       </View>
 
@@ -759,8 +759,8 @@ function PlacesSection({ currentLoc, search }: { currentLoc: Location.LocationOb
                               {getDistanceStr(
                                 currentLoc?.coords.latitude,
                                 currentLoc?.coords.longitude,
-                                item.location?.geopoint?.latitude ?? (item.location as any)?.lat,
-                                item.location?.geopoint?.longitude ?? (item.location as any)?.lng
+                                item.lat ?? item.location?.geopoint?.latitude ?? (item.location as any)?.lat,
+                                item.lng ?? item.location?.geopoint?.longitude ?? (item.location as any)?.lng
                               )}
                             </Text>
                             <View style={sStylesheet.placeOpenPill}>

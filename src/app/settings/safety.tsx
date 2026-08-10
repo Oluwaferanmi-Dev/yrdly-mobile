@@ -180,6 +180,8 @@ const sStylesheet = createStyleSheet(theme => ({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
   backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#fff' },
+  statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: theme.colors.SURFACE_ALT, alignSelf: 'flex-start', marginTop: 8 },
+  statusBadgeText: { fontFamily: 'Inter-SemiBold', fontSize: 12, color: theme.colors.TEXT_PRIMARY },
   tabs: {
     flexDirection: 'row',
     paddingHorizontal: 20,

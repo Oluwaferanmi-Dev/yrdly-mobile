@@ -13,6 +13,7 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { useAppTheme } from '../context/ThemeContext';
 import { useAuth } from '../hooks/use-supabase-auth';
+import { useLocation } from '../context/LocationContext';
 
 const { width, height } = Dimensions.get('window');
 const SHEET_H = height * 0.62;
@@ -111,6 +112,7 @@ export default function MapScreen() {
   const { colors, isDarkMode } = useAppTheme();
   const router = useRouter();
   const { user, profile } = useAuth();
+  const { activeFilter } = useLocation();
   const mapRef = useRef<MapView>(null);
 
   const [loc, setLoc] = useState<Location.LocationObject | null>(null);
@@ -163,15 +165,16 @@ export default function MapScreen() {
       const l = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       setLoc(l);
       setRegion({ latitude: l.coords.latitude, longitude: l.coords.longitude, latitudeDelta: 0.0922, longitudeDelta: 0.0421 });
-      if (user?.id) {
+      if (l && user?.id) {
         supabase.from('users').update({ 
-          current_location: { lat: l.coords.latitude, lng: l.coords.longitude }, 
-          location_updated_at: new Date().toISOString() 
+          current_location: { lat: l.coords.latitude, lng: l.coords.longitude },
+          lat: l.coords.latitude,
+          lng: l.coords.longitude
         }).eq('id', user.id).then();
       }
-      await Promise.all([fetchMarkers(), fetchActivity(l)]);
+      await Promise.all([fetchMarkers(), fetchActivity(l || undefined)]);
     })();
-  }, [user]);
+  }, [user, activeFilter?.lga, activeFilter?.state]);
 
   const fetchMarkers = async () => {
     const found: MapMarker[] = [];
@@ -192,23 +195,26 @@ export default function MapScreen() {
       }
     }
     // Events from posts table (legacy)
-    const { data: postEvts } = await supabase.from('posts')
-      .select('id,title,event_location')
-      .eq('category','Event')
-      .not('event_location','is',null)
-      .limit(30);
+    let qPostEvts = supabase.from('posts')
+      .select('id,title,event_location,lat,lng')
+      .eq('category','Event');
+    if (activeFilter?.lga) qPostEvts = qPostEvts.eq('lga', activeFilter.lga);
+    else if (activeFilter?.state) qPostEvts = qPostEvts.eq('state', activeFilter.state);
+    const { data: postEvts } = await qPostEvts.limit(30);
     (postEvts || []).forEach((e: any) => {
-      const lat = parseFloat(e.event_location?.lat ?? e.event_location?.geopoint?.latitude);
-      const lng = parseFloat(e.event_location?.lng ?? e.event_location?.geopoint?.longitude);
+      const lat = parseFloat(e.lat ?? e.event_location?.lat ?? e.event_location?.geopoint?.latitude);
+      const lng = parseFloat(e.lng ?? e.event_location?.lng ?? e.event_location?.geopoint?.longitude);
       if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `evt-${e.id}`, type: 'event', lat, lng, title: e.title || 'Event', subtitle: e.event_location?.address || '', targetId: e.id });
     });
     // Events from events table (new system)
-    const { data: newEvts } = await supabase.from('events')
+    let qNewEvts = supabase.from('events')
       .select('id,title,location_address,lat,lng')
       .eq('status','PUBLISHED')
       .not('lat','is',null)
-      .not('lng','is',null)
-      .limit(50);
+      .not('lng','is',null);
+    if (activeFilter?.lga) qNewEvts = qNewEvts.eq('lga', activeFilter.lga);
+    else if (activeFilter?.state) qNewEvts = qNewEvts.eq('state', activeFilter.state);
+    const { data: newEvts } = await qNewEvts.limit(50);
     (newEvts || []).forEach((e: any) => {
       const lat = parseFloat(e.lat);
       const lng = parseFloat(e.lng);
@@ -216,27 +222,29 @@ export default function MapScreen() {
     });
     
     // Businesses
-    const { data: businesses } = await supabase.from('businesses')
-      .select('id,name,location,image_urls')
-      .eq('is_active', true)
-      .not('location','is',null)
-      .limit(50);
+    let qBiz = supabase.from('businesses')
+      .select('id,name,location,image_urls,lat,lng')
+      .eq('is_active', true);
+    if (activeFilter?.lga) qBiz = qBiz.eq('lga', activeFilter.lga);
+    else if (activeFilter?.state) qBiz = qBiz.eq('state', activeFilter.state);
+    const { data: businesses } = await qBiz.limit(50);
     (businesses || []).forEach((b: any) => {
-      const lat = parseFloat(b.location?.geopoint?.latitude || b.location?.lat);
-      const lng = parseFloat(b.location?.geopoint?.longitude || b.location?.lng);
+      const lat = parseFloat(b.lat ?? b.location?.lat ?? b.location?.geopoint?.latitude);
+      const lng = parseFloat(b.lng ?? b.location?.lng ?? b.location?.geopoint?.longitude);
       if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `biz-${b.id}`, type: 'business', lat, lng, title: b.name || 'Business', subtitle: b.location?.address || '', targetId: b.id });
     });
 
     // Marketplace items
-    const { data: mkt } = await supabase.from('posts')
-      .select('id,title,price,image_urls,event_location')
+    let qMkt = supabase.from('posts')
+      .select('id,title,price,image_urls,event_location,lat,lng')
       .eq('category','For Sale')
-      .or('is_sold.eq.false,is_sold.is.null')
-      .not('event_location','is',null)
-      .limit(30);
+      .or('is_sold.eq.false,is_sold.is.null');
+    if (activeFilter?.lga) qMkt = qMkt.eq('lga', activeFilter.lga);
+    else if (activeFilter?.state) qMkt = qMkt.eq('state', activeFilter.state);
+    const { data: mkt } = await qMkt.limit(30);
     (mkt || []).forEach((p: any) => {
-      const lat = parseFloat(p.event_location?.lat ?? p.event_location?.geopoint?.latitude);
-      const lng = parseFloat(p.event_location?.lng ?? p.event_location?.geopoint?.longitude);
+      const lat = parseFloat(p.lat ?? p.event_location?.lat ?? p.event_location?.geopoint?.latitude);
+      const lng = parseFloat(p.lng ?? p.event_location?.lng ?? p.event_location?.geopoint?.longitude);
       if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `mkt-${p.id}`, type: 'marketplace', lat, lng, title: p.title || 'Item for Sale', subtitle: p.price ? `₦${Number(p.price).toLocaleString()}` : 'Contact for price', targetId: p.id, avatar_url: p.image_urls?.[0] });
     });
 
@@ -246,21 +254,38 @@ export default function MapScreen() {
 
   const fetchActivity = async (userLoc?: Location.LocationObject) => {
     const items: ActivityItem[] = [];
+    
+    let qMkt = supabase.from('posts').select('id,title,price,created_at,image_urls,event_location,lat,lng').eq('category','For Sale').or('is_sold.eq.false,is_sold.is.null').order('created_at',{ascending:false});
+    if (activeFilter?.lga) qMkt = qMkt.eq('lga', activeFilter.lga);
+    else if (activeFilter?.state) qMkt = qMkt.eq('state', activeFilter.state);
+    
+    let qPostEvts = supabase.from('posts').select('id,title,event_date,event_location,attendees,image_urls,lat,lng').eq('category','Event').gte('event_date', new Date().toISOString()).order('event_date',{ascending:true});
+    if (activeFilter?.lga) qPostEvts = qPostEvts.eq('lga', activeFilter.lga);
+    else if (activeFilter?.state) qPostEvts = qPostEvts.eq('state', activeFilter.state);
+    
+    let qNewEvts = supabase.from('events').select('id,title,start_time,location_address,lat,lng,cover_image_url,attendee_count').eq('status','PUBLISHED').gte('start_time', new Date().toISOString()).order('start_time',{ascending:true});
+    if (activeFilter?.lga) qNewEvts = qNewEvts.eq('lga', activeFilter.lga);
+    else if (activeFilter?.state) qNewEvts = qNewEvts.eq('state', activeFilter.state);
+    
+    let qBiz = supabase.from('businesses').select('id,name,location,image_urls,created_at,lat,lng').eq('is_active', true).order('created_at',{ascending:false});
+    if (activeFilter?.lga) qBiz = qBiz.eq('lga', activeFilter.lga);
+    else if (activeFilter?.state) qBiz = qBiz.eq('state', activeFilter.state);
+
     const [{ data: mkt }, { data: postEvts }, { data: newEvts }, { data: bizzes }] = await Promise.all([
-      supabase.from('posts').select('id,title,price,created_at,image_urls,event_location').eq('category','For Sale').or('is_sold.eq.false,is_sold.is.null').order('created_at',{ascending:false}).limit(10),
-      supabase.from('posts').select('id,title,event_date,event_location,attendees,image_urls').eq('category','Event').gte('event_date', new Date().toISOString()).order('event_date',{ascending:true}).limit(5),
-      supabase.from('events').select('id,title,start_time,location_address,lat,lng,cover_image_url,attendee_count').eq('status','PUBLISHED').gte('start_time', new Date().toISOString()).order('start_time',{ascending:true}).limit(10),
-      supabase.from('businesses').select('id,name,location,image_urls,created_at').eq('is_active', true).order('created_at',{ascending:false}).limit(10),
+      qMkt.limit(10),
+      qPostEvts.limit(5),
+      qNewEvts.limit(10),
+      qBiz.limit(10),
     ]);
 
     (mkt||[]).forEach((p:any) => {
-      const lat = parseFloat(p.event_location?.lat ?? p.event_location?.geopoint?.latitude);
-      const lng = parseFloat(p.event_location?.lng ?? p.event_location?.geopoint?.longitude);
+      const lat = parseFloat(p.lat ?? p.event_location?.lat ?? p.event_location?.geopoint?.latitude);
+      const lng = parseFloat(p.lng ?? p.event_location?.lng ?? p.event_location?.geopoint?.longitude);
       items.push({ id:`m-${p.id}`, kind:'market', title: p.title, subtitle:'For sale', meta: p.price ? `₦${Number(p.price).toLocaleString()}` : '', time: formatTimeOrDate(p.created_at), image: p.image_urls?.[0], route:`/marketplace/${p.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
     });
     (postEvts||[]).forEach((e:any) => {
-      const lat = parseFloat(e.event_location?.lat ?? e.event_location?.geopoint?.latitude);
-      const lng = parseFloat(e.event_location?.lng ?? e.event_location?.geopoint?.longitude);
+      const lat = parseFloat(e.lat ?? e.event_location?.lat ?? e.event_location?.geopoint?.latitude);
+      const lng = parseFloat(e.lng ?? e.event_location?.lng ?? e.event_location?.geopoint?.longitude);
       items.push({ id:`e-${e.id}`, kind:'event', title: e.title, subtitle:`${e.event_location?.address||''}`, meta: e.attendees?.length ? `${e.attendees.length} going` : '', time: formatTimeOrDate(e.event_date), image: e.image_urls?.[0], route:`/events/${e.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
     });
     (newEvts||[]).forEach((e:any) => {
@@ -269,8 +294,8 @@ export default function MapScreen() {
       items.push({ id:`ne-${e.id}`, kind:'event', title: e.title, subtitle: e.location_address || 'At venue', meta: e.attendee_count ? `${e.attendee_count} going` : '', time: formatTimeOrDate(e.start_time), image: e.cover_image_url, route:`/events/${e.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
     });
     (bizzes||[]).forEach((b:any) => {
-      const lat = parseFloat(b.location?.geopoint?.latitude || b.location?.lat);
-      const lng = parseFloat(b.location?.geopoint?.longitude || b.location?.lng);
+      const lat = parseFloat(b.lat ?? b.location?.lat ?? b.location?.geopoint?.latitude);
+      const lng = parseFloat(b.lng ?? b.location?.lng ?? b.location?.geopoint?.longitude);
       items.push({ id:`bz-${b.id}`, kind:'biz', title: b.name, subtitle: b.location?.address || 'Local business', time: formatTimeOrDate(b.created_at), image: b.image_urls?.[0], route:`/businesses/${b.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
     });
 
@@ -303,7 +328,7 @@ export default function MapScreen() {
 
 
 
-  const areaName = (profile?.location as any)?.lga || (profile?.location as any)?.state || 'Your Area';
+  const areaName = activeFilter?.lga || activeFilter?.state || 'Your Area';
   const evtCount = allMarkers.filter(m => m.type === 'event').length;
 
   const locateMe = () => {

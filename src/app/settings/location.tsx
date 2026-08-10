@@ -6,58 +6,39 @@ import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
-const ALL_NEIGHBOURHOODS = [
-  'Victoria Island, Eti-Osa, Lagos',
-  'Lekki Phase 1, Eti-Osa, Lagos',
-  'Ikeja GRA, Ikeja, Lagos',
-  'Surulere, Surulere, Lagos',
-  'Yaba, Shomolu, Lagos',
-  'Ikoyi, Eti-Osa, Lagos',
-  'Gbagada, Kosofe, Lagos',
-  'Ajah, Eti-Osa, Lagos',
-  'Maryland, Ikeja, Lagos',
-  'Festac Town, Amuwo-Odofin, Lagos',
-  'Alimosho, Alimosho, Lagos',
-  'Magodo, Kosofe, Lagos',
-  'Opebi, Ikeja, Lagos',
-  'Allen Avenue, Ikeja, Lagos',
-  'Maitama, Abuja (FCT)',
-  'Wuse II, Abuja (FCT)',
-  'Gwarinpa, Abuja (FCT)',
-  'Asokoro, Abuja (FCT)',
-  'Jabi, Abuja (FCT)',
-  'Port Harcourt City, Rivers',
-  'Enugu North, Enugu',
-  'Ibadan North, Oyo',
-  'Benin City, Edo',
-  'Calabar Municipal, Cross River',
-  'Abeokuta South, Ogun',
-  'Kaduna North, Kaduna',
-  'Kano Municipal, Kano',
-];
+import { AuthService } from '../../lib/auth-service';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { resolveCoords } from '../../lib/geocoding-service';
 
 export default function LocationSettingsScreen() {
   const { styles: s, theme } = useStyles(sStylesheet);
 
   const router = useRouter();
-  const { profile, updateProfile } = useAuth();
-  const [search, setSearch] = useState('');
+  const { user, profile, updateProfile } = useAuth();
   const [updating, setUpdating] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
 
-  const currentNeighbourhood = profile?.location?.state || 'Not set';
+  const currentLga = profile?.home_lga || (profile?.location as any)?.lga;
+  const currentState = profile?.home_state || (profile?.location as any)?.state;
+  const currentNeighbourhood = currentLga && currentState 
+    ? `${currentLga}, ${currentState}` 
+    : (currentState || 'Not set');
 
-  const handleSelectNeighbourhood = async (neigh: string) => {
+  const saveLocation = async (state: string, lga: string, ward: string | null, lat: number, lng: number, fullDesc: string) => {
     setUpdating(true);
     try {
-      await updateProfile({
-        location: {
-          ...profile?.location,
-          state: neigh,
-        },
-      });
-      Alert.alert('Success', 'Neighbourhood updated successfully.');
-      setSearch('');
+      if (user?.id) {
+        await AuthService.updateUserProfile(user.id, {
+          location: { state: fullDesc }, // Keep for legacy fallback temporarily
+          home_state: state,
+          home_lga: lga,
+          home_ward: ward || null,
+          home_lat: lat,
+          home_lng: lng,
+          home_location_geom: `POINT(${lng} ${lat})`,
+        });
+        Alert.alert('Success', 'Location updated successfully.');
+      }
     } catch (e: any) {
       Alert.alert('Error', e.message || 'Failed to update location.');
     } finally {
@@ -75,20 +56,22 @@ export default function LocationSettingsScreen() {
         return;
       }
 
-      const loc = await Location.getCurrentPositionAsync({});
-      const reverse = await Location.reverseGeocodeAsync({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-      });
-
-      if (reverse && reverse.length > 0) {
-        const place = reverse[0];
-        const district = place.district || place.subregion || place.city;
-        const region = place.region || place.city || 'Lagos';
-        const formatted = district ? `${district}, ${region}` : 'Victoria Island, Lagos';
-        await handleSelectNeighbourhood(formatted);
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const lat = loc.coords.latitude;
+      const lng = loc.coords.longitude;
+      
+      const match = await resolveCoords(lat, lng);
+      if (match) {
+        await saveLocation(
+          match.state,
+          match.lga,
+          match.ward,
+          lat,
+          lng,
+          `${match.lga}, ${match.state}`
+        );
       } else {
-        await handleSelectNeighbourhood('Victoria Island, Lagos');
+        Alert.alert('Error', 'Could not resolve your location properly.');
       }
     } catch (e: any) {
       Alert.alert('Error', e.message || 'Failed to detect location via GPS.');
@@ -96,10 +79,6 @@ export default function LocationSettingsScreen() {
       setGpsLoading(false);
     }
   };
-
-  const filteredNeighbourhoods = ALL_NEIGHBOURHOODS.filter(n =>
-    n.toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
@@ -115,7 +94,7 @@ export default function LocationSettingsScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+      <View style={s.content}>
         {/* Current Location Display */}
         <View style={s.currentCard}>
           <View style={s.gpsBadge}>
@@ -141,71 +120,64 @@ export default function LocationSettingsScreen() {
 
         {/* Search */}
         <Text style={s.sectionLabel}>CHANGE NEIGHBOURHOOD</Text>
-        <View style={s.searchBox}>
-          <Feather name="search" size={16} color={theme.colors.LABEL} style={{ marginRight: 10 }} />
-          <TextInput
+        
+        <View style={s.searchContainer}>
+          <GooglePlacesAutocomplete
             placeholder="Search communities..."
-            placeholderTextColor={theme.colors.LABEL}
-            style={s.searchInput}
-            value={search}
-            onChangeText={setSearch}
+            fetchDetails={true}
+            onPress={(data, details = null) => {
+              if (details?.geometry?.location) {
+                const lat = details.geometry.location.lat;
+                const lng = details.geometry.location.lng;
+                resolveCoords(lat, lng).then((match) => {
+                  if (match) {
+                    saveLocation(match.state, match.lga, match.ward, lat, lng, data.description);
+                  } else {
+                    Alert.alert('Error', 'Could not resolve location structure.');
+                  }
+                });
+              }
+            }}
+            query={{
+              key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+              language: 'en',
+              components: 'country:ng',
+            }}
+            styles={{
+              textInputContainer: { backgroundColor: 'transparent' },
+              textInput: s.searchInput,
+              listView: s.listView,
+              row: s.listItem,
+              description: s.listItemText,
+              separator: { backgroundColor: theme.colors.GLASS_BORDER },
+            }}
+            textInputProps={{
+              placeholderTextColor: theme.colors.LABEL,
+            }}
           />
-          {search ? (
-            <TouchableOpacity onPress={() => setSearch('')}>
-              <Ionicons name="close-circle" size={16} color={theme.colors.LABEL} />
-            </TouchableOpacity>
-          ) : null}
         </View>
-
-        {/* Search Results / Suggestion List */}
-        <View style={s.listCard}>
-          {filteredNeighbourhoods.map((n, idx) => {
-          return (
-                      <React.Fragment key={n}>
-                        {idx > 0 && <View style={s.divider} />}
-                        <TouchableOpacity
-                          style={s.listItem}
-                          onPress={() => handleSelectNeighbourhood(n)}
-                          disabled={updating}
-                        >
-                          <Text style={[s.listItemText, n === currentNeighbourhood && { color: theme.colors.G, fontFamily: 'Inter-SemiBold' }]}>
-                            {n}
-                          </Text>
-                          {n === currentNeighbourhood && (
-                            <Ionicons name="checkmark" size={18} color={theme.colors.G} />
-                          )}
-                        </TouchableOpacity>
-                      </React.Fragment>
-                    );
-          })}
-          {filteredNeighbourhoods.length === 0 && (
-            <Text style={s.noResults}>No matching neighbourhoods found.</Text>
-          )}
-        </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
 const sStylesheet = createStyleSheet(theme => ({
       root: { flex: 1, backgroundColor: theme.colors.DARK },
-      header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
+      header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, zIndex: 100 },
       backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
       headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
-      content: { padding: 20 },
+      content: { flex: 1, padding: 20 },
       currentCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.SURFACE, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, padding: 16, marginBottom: 16 },
       gpsBadge: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(130,219,126,0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
       currentInfo: { flex: 1 },
       currentLabel: { fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.MUTED, letterSpacing: 0.8, marginBottom: 4 },
       currentValue: { fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.colors.TEXT_PRIMARY },
-      gpsBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: 25, backgroundColor: theme.colors.G, marginBottom: 24 },
+      gpsBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: 25, backgroundColor: theme.colors.G, marginBottom: 24, zIndex: 1 },
       gpsBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
-      sectionLabel: { fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.MUTED, letterSpacing: 0.8, marginBottom: 10 },
-      searchBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 14, height: 48, paddingHorizontal: 12, marginBottom: 16 },
-      searchInput: { flex: 1, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 14, height: '100%' },
-      listCard: { backgroundColor: theme.colors.SURFACE, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, overflow: 'hidden' },
-      listItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 16 },
+      sectionLabel: { fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.MUTED, letterSpacing: 0.8, marginBottom: 10, zIndex: 1 },
+      searchContainer: { flex: 1, zIndex: 50 },
+      searchInput: { backgroundColor: theme.colors.SURFACE, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 14, height: 48, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 14, paddingHorizontal: 12 },
+      listView: { backgroundColor: theme.colors.SURFACE, borderRadius: 14, marginTop: 8, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
+      listItem: { backgroundColor: 'transparent', paddingVertical: 14, paddingHorizontal: 16 },
       listItemText: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
-      divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER },
-      noResults: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.MUTED, textAlign: 'center', paddingVertical: 20 },
     }));

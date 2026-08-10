@@ -144,11 +144,16 @@ export default function ProfileTab() {
   const avatarUri = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
 
   const formattedLocation = useMemo(() => {
-    if (!profile?.location) return null;
+    if (!profile) return null;
+    if (profile.home_state || profile.home_lga) {
+      const parts = [profile.home_ward, profile.home_lga, profile.home_state].filter(Boolean);
+      if (parts.length > 0) return parts.join(', ');
+    }
+    if (!profile.location) return null;
     const loc = profile.location;
     const parts = [loc.city || loc.ward, loc.lga, loc.state].filter(Boolean);
     return parts.length > 0 ? parts.join(', ') : null;
-  }, [profile?.location]);
+  }, [profile?.home_state, profile?.home_lga, profile?.home_ward, profile?.location]);
 
   const handleManageStore = useCallback(async () => {
     if (!user) return;

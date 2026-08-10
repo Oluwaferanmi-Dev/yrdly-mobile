@@ -40,6 +40,7 @@ export default function BusinessEditScreen() {
   const [location, setLocation] = useState('');
   const [bizLat, setBizLat] = useState<number | null>(null);
   const [bizLng, setBizLng] = useState<number | null>(null);
+  const [bizState, setBizState] = useState('');
   const [bizLga, setBizLga] = useState('');
   const [bizWard, setBizWard] = useState('');
   
@@ -65,6 +66,7 @@ export default function BusinessEditScreen() {
             setLocation(data.location || '');
             setBizLat(null);
             setBizLng(null);
+            setBizState(data.state || '');
             setBizLga(data.lga || '');
             setBizWard(data.ward || '');
             setCoverUri(data.cover_image || data.image_urls?.[0] || null);
@@ -258,6 +260,7 @@ export default function BusinessEditScreen() {
                   setBizLng(lng);
                   resolveCoords(lat, lng).then((match) => {
                     if (match) {
+                      setBizState(match.state);
                       setBizLga(match.lga);
                       setBizWard(match.ward);
                     }

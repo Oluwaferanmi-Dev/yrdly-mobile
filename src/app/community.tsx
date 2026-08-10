@@ -96,14 +96,15 @@ export default function CommunityScreen() {
     
     if (refresh) {
       setLoading(true);
-      setDiscoverHasMore(true);
+      setHasMoreDiscover(true);
       setDiscoverPage(0);
     } else {
       setIsFetchingMore(true);
     }
 
     try {
-      const targetLocation = activeFilter || profile?.location;
+      const targetState = activeFilter?.state || profile?.home_state;
+      const targetLga = activeFilter?.lga || profile?.home_lga;
       const blocked = profile?.blocked_users || [];
       const myFriends = friends.map(f => f.user.id);
       
@@ -125,14 +126,17 @@ export default function CommunityScreen() {
       } else {
         let query = supabase
           .from('users')
-          .select('id, name, avatar_url, location, friends, discoverable')
+          .select('id, name, avatar_url, home_state, home_lga, friends, discoverable')
           .neq('id', currentUser.id)
           .neq('discoverable', false)
           .order('created_at', { ascending: false })
           .range(from, to);
           
-        if (targetLocation?.state) {
-          query = query.eq('location->>state', targetLocation.state);
+        if (targetState) {
+          query = query.eq('home_state', targetState);
+        }
+        if (activeFilterTab === 'neighbors' && targetLga) {
+          query = query.eq('home_lga', targetLga);
         }
           
         const { data, error } = await query;
@@ -141,18 +145,17 @@ export default function CommunityScreen() {
              .filter((u: any) => !blocked.includes(u.id))
              .filter((u: any) => !myFriends.includes(u.id));
              
-           if (activeFilterTab === 'neighbors' && targetLocation?.lga) {
-             fetchedUsers = fetchedUsers.filter((u: any) => u.location?.lga === targetLocation.lga);
-           }
-           
-           if (activeFilterTab === 'sellers' && targetLocation?.state) {
-              const { data: postData } = await supabase
+           if (activeFilterTab === 'sellers' && targetState) {
+              let pQuery = supabase
                 .from('posts')
                 .select('user_id')
                 .eq('category', 'For Sale')
-                .eq('is_sold', false)
-                .eq('state', targetLocation.state)
-                .limit(100);
+                .eq('is_sold', false);
+                
+              if (targetState) pQuery = pQuery.eq('state', targetState);
+              if (targetLga) pQuery = pQuery.eq('lga', targetLga);
+              
+              const { data: postData } = await pQuery.limit(100);
                 
               if (postData) {
                 const sellerIds = Array.from(new Set(postData.map(p => p.user_id)));
@@ -163,7 +166,7 @@ export default function CommunityScreen() {
       }
 
       if (fetchedUsers.length < PAGE_SIZE) {
-        setDiscoverHasMore(false);
+        setHasMoreDiscover(false);
       }
 
       setDiscoverUsers(prev => refresh ? fetchedUsers : [...prev, ...fetchedUsers]);
@@ -425,7 +428,7 @@ export default function CommunityScreen() {
               <View style={styles.friendInfo}>
                 <Text style={[styles.userNameSmall, { color: theme.colors.TEXT_PRIMARY }]}>{item.name || 'Anonymous'}</Text>
                 <Text style={[styles.userSubtitle, { color: theme.colors.LABEL }]}>
-                  {item.location?.lga ? `${item.location.lga} • ` : ''}Discover
+                  {item.home_lga ? `${item.home_lga} • ` : ''}Discover
                 </Text>
               </View>
             </TouchableOpacity>
