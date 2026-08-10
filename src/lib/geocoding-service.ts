@@ -72,9 +72,6 @@ export async function resolveCoords(
     }
   }
 
-  // Only return unmatched if the closest ward is unreasonably far (e.g., > 50km)
-  if (bestDist > 50) return null;
-
   return {
     state: bestWard.state,
     lga: bestWard.lga,
