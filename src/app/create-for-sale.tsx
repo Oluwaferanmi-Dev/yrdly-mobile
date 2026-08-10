@@ -60,16 +60,16 @@ export default function CreateForSaleScreen() {
     progress.value = withTiming((step + 1) / STEPS.length);
   }, [step]);
 
-  // Set default location from user profile
+  // Set default location from user profile (home_* fields first, legacy fallback)
   React.useEffect(() => {
-    if (profile?.location) {
-      const locStr = [profile.location.ward, profile.location.lga, profile.location.state].filter(Boolean).join(', ');
-      if (locStr) {
-        setLocation(locStr);
-        setPostState(profile.location.state || '');
-        setPostLga(profile.location.lga || '');
-        setPostWard(profile.location.ward || '');
-      }
+    const state = profile?.home_state || profile?.location?.state;
+    const lga = profile?.home_lga || profile?.location?.lga;
+    const ward = profile?.home_ward || profile?.location?.ward;
+    if (state && lga) {
+      setLocation([ward, lga, state].filter(Boolean).join(', '));
+      setPostState(state);
+      setPostLga(lga);
+      setPostWard(ward || '');
     }
   }, [profile]);
 

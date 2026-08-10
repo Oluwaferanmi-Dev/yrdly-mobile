@@ -34,7 +34,7 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
   
   if (context === 'neighbor') {
     badgeIcon = 'map-pin';
-    badgeText = user.location?.lga ? `${user.location.lga}, ${user.location.state}` : (user.location?.state || 'Nearby');
+    badgeText = user.home_lga ? `${user.home_lga}, ${user.home_state}` : (user.home_state || user.location?.lga ? `${user.location?.lga}, ${user.location?.state}` : 'Nearby');
   } else if (context === 'mutual') {
     badgeIcon = 'users';
     badgeText = `${mutualCount || 1} mutual friend${(mutualCount || 1) !== 1 ? 's' : ''}`;

@@ -336,7 +336,7 @@ export default function OtherUserProfileScreen() {
               <View style={stylesheet.locationRow}>
                 <Ionicons name="location" size={12} color={theme.colors.G} />
                 <Text style={stylesheet.locationTxt}>
-                  {[profile.location?.ward, profile.location?.lga, profile.location?.state].filter(Boolean).join(', ') || 'Unknown Location'}
+                  {[profile.home_ward || profile.location?.ward, profile.home_lga || profile.location?.lga, profile.home_state || profile.location?.state].filter(Boolean).join(', ') || 'Unknown Location'}
                 </Text>
               </View>
             </View>

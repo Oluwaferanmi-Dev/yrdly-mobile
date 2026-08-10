@@ -220,9 +220,11 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
 
   const { colors } = useAppTheme();
 
-  const locationLabel = profile?.location
-    ? [profile.location.ward, profile.location.lga, profile.location.state].filter(Boolean).join(', ')
-    : 'No location set';
+  const locationLabel = (profile?.home_lga || profile?.home_state)
+    ? [profile.home_ward, profile.home_lga, profile.home_state].filter(Boolean).join(', ')
+    : profile?.location
+      ? [profile.location.ward, profile.location.lga, profile.location.state].filter(Boolean).join(', ')
+      : 'No location set';
 
   const canSubmit = values.title.trim().length > 0
     && values.price.trim().length > 0

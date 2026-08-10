@@ -47,9 +47,11 @@ export function GeneralPostForm({
   const pressScale = useRef(new Animated.Value(1)).current;
   const [menuScale] = useState(new Animated.Value(showCategoryMenu ? 1 : 0));
 
-  const locLabel = profile?.location
-    ? [profile.location.ward, profile.location.lga].filter(Boolean).join(', ')
-    : '';
+  const locLabel = (profile?.home_lga || profile?.home_ward)
+    ? [profile.home_ward, profile.home_lga].filter(Boolean).join(', ')
+    : profile?.location
+      ? [profile.location.ward, profile.location.lga].filter(Boolean).join(', ')
+      : '';
 
   const canPost = values.text.trim().length > 0 && !isSubmitting;
 

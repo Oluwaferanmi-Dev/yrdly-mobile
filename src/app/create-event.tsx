@@ -72,13 +72,13 @@ export default function CreateEventScreen() {
   }, [step]);
 
   React.useEffect(() => {
-    if (profile?.location) {
-      const locStr = [profile.location.ward, profile.location.lga, profile.location.state].filter(Boolean).join(', ');
-      if (locStr) {
-        setArea(locStr);
-        setPostState(profile.location.state || '');
-        setPostLga(profile.location.lga || '');
-      }
+    const state = profile?.home_state || profile?.location?.state;
+    const lga = profile?.home_lga || profile?.location?.lga;
+    const ward = profile?.home_ward || profile?.location?.ward;
+    if (state && lga) {
+      setArea([ward, lga, state].filter(Boolean).join(', '));
+      setPostState(state);
+      setPostLga(lga);
     }
   }, [profile]);
 
