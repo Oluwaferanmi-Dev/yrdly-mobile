@@ -25,7 +25,7 @@ const { colors, radii } = ONBOARDING_THEME;
 export default function Profile1Screen() {
   const { styles, theme } = useStyles(stylesheet);
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const { phoneSkipped } = useLocalSearchParams();
 
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
@@ -123,7 +123,7 @@ export default function Profile1Screen() {
           if (uploaded) finalAvatarUrl = uploaded;
         }
 
-        await AuthService.updateUserProfile(user.id, {
+        await updateProfile({
           ...(name ? { name } : {}),
           ...(clean ? { username: clean } : {}),
           ...(bio ? { bio } : {}),

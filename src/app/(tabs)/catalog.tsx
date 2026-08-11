@@ -409,7 +409,7 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
           return (
                       <TouchableOpacity style={sStylesheet.marketplaceCard} onPress={() => router.push(`/marketplace/${item.id}` as any)} activeOpacity={0.9}>
                         <View style={sStylesheet.marketplaceCardImgWrap}>
-                          <Image source={{ uri: Array.isArray(item.image_urls) ? item.image_urls[0] : item.image_url }} style={sStylesheet.marketplaceCardImg} contentFit="cover" />
+                          <Image source={(Array.isArray(item.image_urls) ? item.image_urls[0] : item.image_url) ? { uri: Array.isArray(item.image_urls) ? item.image_urls[0] : item.image_url } : undefined} style={sStylesheet.marketplaceCardImg} contentFit="cover" />
                           <View style={sStylesheet.marketplaceCardSave}>
                             <Ionicons name="heart-outline" size={16} color="#fff" />
                           </View>
@@ -421,7 +421,7 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
                         <Text style={sStylesheet.marketplaceCardPrice}>{formatPrice(item.price || 0)}</Text>
                         <View style={sStylesheet.marketplaceCardSeller}>
                           <View style={sStylesheet.marketplaceCardAvatarWrap}>
-                            <Image source={{ uri: item.user?.avatar_url }} style={sStylesheet.marketplaceCardAvatar} />
+                            <Image source={item.user?.avatar_url ? { uri: item.user.avatar_url } : undefined} style={sStylesheet.marketplaceCardAvatar} />
                           </View>
                           <Text style={sStylesheet.marketplaceCardArea} numberOfLines={1}>{item.user?.home_lga || item.user?.location?.lga || 'Lagos'}</Text>
                         </View>
@@ -558,7 +558,7 @@ function CatalogEventCard({ item, router, theme, sStylesheet }: any) {
   return (
     <TouchableOpacity style={sStylesheet.eventCard} onPress={() => router.push(`/events/${item.id}` as any)} activeOpacity={0.9}>
       <View style={sStylesheet.eventCardImgWrap}>
-        <Image source={{ uri: item.cover_image_url || item.image_url }} style={sStylesheet.eventCardImg} contentFit="cover" />
+        <Image source={(item.cover_image_url || item.image_url) ? { uri: item.cover_image_url || item.image_url } : undefined} style={sStylesheet.eventCardImg} contentFit="cover" />
         <View style={sStylesheet.eventCardGradient} />
         <View style={sStylesheet.eventCardDate}>
           <Text style={sStylesheet.eventCardDateText}>{new Date(item.start_time || item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</Text>
@@ -736,7 +736,7 @@ function PlacesSection({ currentLoc, search }: { currentLoc: Location.LocationOb
           return (
                       <TouchableOpacity style={sStylesheet.placeRow} onPress={() => router.push(`/businesses/${item.id}` as any)} activeOpacity={0.9}>
                         <View style={sStylesheet.placePhotoWrap}>
-                          <Image source={{ uri: item.cover_image || item.logo }} style={sStylesheet.placePhoto} contentFit="cover" />
+                          <Image source={(item.cover_image || item.logo) ? { uri: item.cover_image || item.logo } : undefined} style={sStylesheet.placePhoto} contentFit="cover" />
                         </View>
                         <View style={sStylesheet.placeInfo}>
                           <View style={sStylesheet.placeTitleRow}>

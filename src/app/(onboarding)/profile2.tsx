@@ -23,7 +23,7 @@ const { colors, radii } = ONBOARDING_THEME;
 export default function Profile2Screen() {
   const { styles, theme } = useStyles(stylesheet);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
 
   const [location, setLocation] = useState('');
   const [postState, setPostState] = useState('');
@@ -46,7 +46,7 @@ export default function Profile2Screen() {
     if (user?.id) {
       setIsSaving(true);
       try {
-        await AuthService.updateUserProfile(user.id, {
+        await updateProfile({
           location: { state: location }, // Keep for legacy fallback temporarily
           home_state: postState,
           home_lga: postLga,

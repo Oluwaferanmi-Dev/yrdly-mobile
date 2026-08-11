@@ -578,9 +578,9 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               <TouchableOpacity 
                 activeOpacity={0.95}
                 onPress={() => handleImageTap(index)}
-                style={{ width: width - 40, height: getImageHeight(item), borderRadius: 16, overflow: 'hidden', backgroundColor: theme.colors.SURFACE }}
-              >
-                <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="contain" />
+              style={{ width: width - 40, height: getImageHeight(item), borderRadius: 16, overflow: 'hidden', backgroundColor: '#000' }}
+            >
+              <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="contain" />
                 
                 <Animated.View style={[stylesheet.heartOverlay, heartAnimatedStyle]}>
                   <Ionicons name="heart" size={100} color={theme.colors.G} style={stylesheet.heartShadow} />
