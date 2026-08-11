@@ -229,8 +229,8 @@ export default function MapScreen() {
     else if (activeFilter?.state) qBiz = qBiz.eq('state', activeFilter.state);
     const { data: businesses } = await qBiz.limit(50);
     (businesses || []).forEach((b: any) => {
-      const lat = parseFloat(b.lat ?? b.location?.lat ?? b.location?.geopoint?.latitude);
-      const lng = parseFloat(b.lng ?? b.location?.lng ?? b.location?.geopoint?.longitude);
+      const lat = parseFloat(b.lat ?? b.location?.lat);
+      const lng = parseFloat(b.lng ?? b.location?.lng);
       if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `biz-${b.id}`, type: 'business', lat, lng, title: b.name || 'Business', subtitle: b.location?.address || '', targetId: b.id });
     });
 
@@ -243,8 +243,8 @@ export default function MapScreen() {
     else if (activeFilter?.state) qMkt = qMkt.eq('state', activeFilter.state);
     const { data: mkt } = await qMkt.limit(30);
     (mkt || []).forEach((p: any) => {
-      const lat = parseFloat(p.lat ?? p.event_location?.lat ?? p.event_location?.geopoint?.latitude);
-      const lng = parseFloat(p.lng ?? p.event_location?.lng ?? p.event_location?.geopoint?.longitude);
+      const lat = parseFloat(p.lat ?? p.event_location?.lat);
+      const lng = parseFloat(p.lng ?? p.event_location?.lng);
       if (!isNaN(lat) && !isNaN(lng)) found.push({ id: `mkt-${p.id}`, type: 'marketplace', lat, lng, title: p.title || 'Item for Sale', subtitle: p.price ? `₦${Number(p.price).toLocaleString()}` : 'Contact for price', targetId: p.id, avatar_url: p.image_urls?.[0] });
     });
 
@@ -279,13 +279,13 @@ export default function MapScreen() {
     ]);
 
     (mkt||[]).forEach((p:any) => {
-      const lat = parseFloat(p.lat ?? p.event_location?.lat ?? p.event_location?.geopoint?.latitude);
-      const lng = parseFloat(p.lng ?? p.event_location?.lng ?? p.event_location?.geopoint?.longitude);
+      const lat = parseFloat(p.lat ?? p.event_location?.lat);
+      const lng = parseFloat(p.lng ?? p.event_location?.lng);
       items.push({ id:`m-${p.id}`, kind:'market', title: p.title, subtitle:'For sale', meta: p.price ? `₦${Number(p.price).toLocaleString()}` : '', time: formatTimeOrDate(p.created_at), image: p.image_urls?.[0], route:`/marketplace/${p.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
     });
     (postEvts||[]).forEach((e:any) => {
-      const lat = parseFloat(e.lat ?? e.event_location?.lat ?? e.event_location?.geopoint?.latitude);
-      const lng = parseFloat(e.lng ?? e.event_location?.lng ?? e.event_location?.geopoint?.longitude);
+      const lat = parseFloat(e.lat ?? e.event_location?.lat);
+      const lng = parseFloat(e.lng ?? e.event_location?.lng);
       items.push({ id:`e-${e.id}`, kind:'event', title: e.title, subtitle:`${e.event_location?.address||''}`, meta: e.attendees?.length ? `${e.attendees.length} going` : '', time: formatTimeOrDate(e.event_date), image: e.image_urls?.[0], route:`/events/${e.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
     });
     (newEvts||[]).forEach((e:any) => {
@@ -294,8 +294,8 @@ export default function MapScreen() {
       items.push({ id:`ne-${e.id}`, kind:'event', title: e.title, subtitle: e.location_address || 'At venue', meta: e.attendee_count ? `${e.attendee_count} going` : '', time: formatTimeOrDate(e.start_time), image: e.cover_image_url, route:`/events/${e.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
     });
     (bizzes||[]).forEach((b:any) => {
-      const lat = parseFloat(b.lat ?? b.location?.lat ?? b.location?.geopoint?.latitude);
-      const lng = parseFloat(b.lng ?? b.location?.lng ?? b.location?.geopoint?.longitude);
+      const lat = parseFloat(b.lat ?? b.location?.lat);
+      const lng = parseFloat(b.lng ?? b.location?.lng);
       items.push({ id:`bz-${b.id}`, kind:'biz', title: b.name, subtitle: b.location?.address || 'Local business', time: formatTimeOrDate(b.created_at), image: b.image_urls?.[0], route:`/businesses/${b.id}`, lat: isNaN(lat) ? undefined : lat, lng: isNaN(lng) ? undefined : lng });
     });
 
@@ -390,7 +390,7 @@ export default function MapScreen() {
           ) : (
             <View style={s.locationPill}>
               <Ionicons name="location" size={12} color="#82DB7E" />
-              <Text style={s.locationPillTxt}>{areaName}, Lagos</Text>
+              <Text style={s.locationPillTxt}>{areaName}</Text>
             </View>
           )}
           {!showSearch && (

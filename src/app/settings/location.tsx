@@ -29,7 +29,6 @@ export default function LocationSettingsScreen() {
     try {
       if (user?.id) {
         await AuthService.updateUserProfile(user.id, {
-          location: { state: fullDesc }, // Keep for legacy fallback temporarily
           home_state: state,
           home_lga: lga,
           home_ward: ward || null,

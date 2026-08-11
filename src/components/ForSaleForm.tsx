@@ -48,7 +48,7 @@ interface ForSaleFormProps {
   onChange: (patch: Partial<ForSaleFormValues>) => void;
   onAddPhoto: () => void;
   onRemovePhoto: (index: number) => void;
-  profile?: { name?: string; avatar_url?: string; location?: { ward?: string; lga?: string; state?: string } } | null;
+  profile?: { name?: string; avatar_url?: string; location?: { ward?: string; lga?: string; state?: string }; home_state?: string | null; home_lga?: string | null; home_ward?: string | null } | null;
   isSubmitting: boolean;
   onSubmit: () => void;
   showCategoryMenu?: boolean;

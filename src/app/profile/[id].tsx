@@ -31,6 +31,9 @@ interface UserProfile {
   username?: string;
   email?: string;
   location?: { state?: string; lga?: string; city?: string; ward?: string };
+  home_state?: string | null;
+  home_lga?: string | null;
+  home_ward?: string | null;
 }
 
 export default function OtherUserProfileScreen() {

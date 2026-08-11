@@ -64,8 +64,8 @@ export default function BusinessEditScreen() {
             setCategory(data.category || CATS[0].name);
             setHours(data.hours || '09:00 AM - 05:00 PM');
             setLocation(data.location || '');
-            setBizLat(null);
-            setBizLng(null);
+            setBizLat(data.lat ?? null);
+            setBizLng(data.lng ?? null);
             setBizState(data.state || '');
             setBizLga(data.lga || '');
             setBizWard(data.ward || '');
@@ -117,6 +117,17 @@ export default function BusinessEditScreen() {
       let finalLogo = logoUri;
       let businessId = id;
       
+      // Only include coordinate fields in the payload when the user has
+      // actually resolved a new location (bizLat is non-null after a fresh pick).
+      // On edit without re-picking, we leave lat/lng/location_geom untouched in DB.
+      const coordFields = bizLat !== null && bizLng !== null
+        ? {
+            lat: bizLat,
+            lng: bizLng,
+            location_geom: `POINT(${bizLng} ${bizLat})`,
+          }
+        : {};
+
       const payload = {
         name: name.trim(),
         description: desc.trim(),
@@ -128,11 +139,7 @@ export default function BusinessEditScreen() {
         state: bizState || null,
         lga: bizLga || null,
         ward: bizWard || null,
-        lat: bizLat,
-        lng: bizLng,
-        location_geom: bizLat !== null && bizLng !== null
-          ? `POINT(${bizLng} ${bizLat})`
-          : null,
+        ...coordFields,
         is_active: true
       };
 

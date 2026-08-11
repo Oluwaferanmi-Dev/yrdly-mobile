@@ -16,6 +16,8 @@ interface DiscoverUserCardProps {
       lga?: string;
       state?: string;
     };
+    home_state?: string | null;
+    home_lga?: string | null;
   };
   context: 'neighbor' | 'mutual' | 'seller';
   mutualCount?: number;

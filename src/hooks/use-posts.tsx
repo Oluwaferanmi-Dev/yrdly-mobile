@@ -655,8 +655,12 @@ export const usePosts = (filter?: LocationFilter | null) => {
             imageUrls = businessIdToUpdate ? [...imageUrls, ...uploadedUrls] : uploadedUrls;
         }
 
-        // Auto-stamp the creator's location from their profile
-        const bizLocation = profile?.location as { state?: string; lga?: string; ward?: string } | undefined;
+        // Auto-stamp the creator's location from their profile (home_* fields preferred)
+        const bizLocation = {
+          state: profile?.home_state || (profile?.location as any)?.state,
+          lga: profile?.home_lga || (profile?.location as any)?.lga,
+          ward: profile?.home_ward || (profile?.location as any)?.ward,
+        };
 
         const finalBusinessData = {
             ...businessData,
