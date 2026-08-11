@@ -58,7 +58,7 @@ serve(async (req) => {
         pin_type: 'NUMERIC',
         to: normalized,
         from: 'N-Alert', // Fallback until Yrdly is approved
-        channel: 'dnd',
+        channel: 'generic',
         pin_attempts: 3,
         pin_time_to_live: 10,
         pin_length: 6,
