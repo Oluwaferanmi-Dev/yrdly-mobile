@@ -41,13 +41,29 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
 let lgaWardsCache: any[] | null = null;
 
 async function getLgaWards() {
-  if (lgaWardsCache) return lgaWardsCache;
-  const { data, error } = await supabase.from('lga_wards').select('state, lga, ward, latitude, longitude').limit(10000);
-  if (error || !data) {
-    console.error('Failed to fetch lga_wards', error);
-    return [];
+  if (lgaWardsCache && lgaWardsCache.length > 0) return lgaWardsCache;
+  
+  let allWards: any[] = [];
+  let page = 0;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('lga_wards')
+      .select('state, lga, ward, latitude, longitude')
+      .range(page * 1000, (page + 1) * 1000 - 1);
+      
+    if (error || !data) {
+      console.error('Failed to fetch lga_wards', error);
+      break;
+    }
+    
+    allWards = allWards.concat(data);
+    if (data.length < 1000) hasMore = false;
+    page++;
   }
-  lgaWardsCache = data;
+  
+  lgaWardsCache = allWards;
   return lgaWardsCache;
 }
 
@@ -71,6 +87,9 @@ export async function resolveCoords(
       }
     }
   }
+
+  // Only return unmatched if the closest ward is unreasonably far (e.g., > 50km)
+  if (bestDist > 50) return null;
 
   return {
     state: bestWard.state,
