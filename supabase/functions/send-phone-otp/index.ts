@@ -57,8 +57,8 @@ serve(async (req) => {
         api_key: Deno.env.get('TERMII_API_KEY'),
         pin_type: 'NUMERIC',
         to: normalized,
-        from: 'N-Alert', // Fallback until Yrdly is approved
-        channel: 'generic',
+        from: 'OE Alert',
+        channel: 'dnd',
         pin_attempts: 3,
         pin_time_to_live: 10,
         pin_length: 6,
