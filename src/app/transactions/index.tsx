@@ -176,7 +176,7 @@ export default function TransactionsScreen() {
       {/* Header */}
       <View style={s.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <TouchableOpacity onPress={() => router.push('/(tabs)/profile')} style={s.backBtn}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
             <Ionicons name="chevron-back" size={20} color="#fff" />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Transactions</Text>
