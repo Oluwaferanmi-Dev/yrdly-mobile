@@ -109,8 +109,8 @@ export default function CreateForSaleScreen() {
             }
             if (asset.uri) {
               const fileInfo = await FileSystem.getInfoAsync(asset.uri);
-              if (fileInfo.exists && fileInfo.size && fileInfo.size > 50 * 1024 * 1024) {
-                Alert.alert('File too large', 'Each video must be under 50MB.');
+              if (fileInfo.exists && fileInfo.size && fileInfo.size > 40 * 1024 * 1024) {
+                Alert.alert('File too large', 'Each video must be under 40MB.');
                 continue;
               }
             }

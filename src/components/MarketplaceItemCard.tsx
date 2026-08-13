@@ -10,6 +10,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { useRouter } from 'expo-router';
 import { StorageService } from '../lib/storage-service';
 import { Avatar } from './Avatar';
+import { VerifiedBadge } from './VerifiedBadge';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -137,7 +138,9 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
             />
             <Text style={[stylesheet.sellerName, { color: colors.textSecondary }]} numberOfLines={1}>{sellerName}</Text>
             {(item.user as any)?.phone_verified && (
-              <Ionicons name="checkmark-circle" size={12} color={theme.colors.G} style={{ marginLeft: 2 }} />
+              <View style={{ marginLeft: 2 }}>
+                <VerifiedBadge size={12} />
+              </View>
             )}
           </TouchableOpacity>
 

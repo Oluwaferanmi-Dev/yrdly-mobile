@@ -26,6 +26,7 @@ import { api } from '../../../lib/api';
 import { formatPrice } from '../../../lib/utils';
 import { AttendeeAvatars } from '../../../components/AttendeeAvatars';
 import { useAppTheme } from '../../../context/ThemeContext';
+import { VerifiedBadge } from '../../../components/VerifiedBadge';
 
 const DARK_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
@@ -610,7 +611,9 @@ export default function EventDetailScreen() {
                     {event.organizer?.name || 'Unknown Organizer'}
                   </Text>
                   {(event.organizer as any)?.phone_verified && (
-                    <Ionicons name="checkmark-circle" size={16} color={theme.colors.G} style={{ marginLeft: 4, flexShrink: 0 }} />
+                    <View style={{ marginLeft: 4, flexShrink: 0 }}>
+                      <VerifiedBadge size={16} />
+                    </View>
                   )}
                 </View>
               </View>
