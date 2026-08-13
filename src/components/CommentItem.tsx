@@ -2,12 +2,13 @@ import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Image } from 'expo-image';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { timeAgo } from '../lib/utils';
 import { useAppTheme } from '../context/ThemeContext';
 import { StorageService } from '../lib/storage-service';
 import { Avatar } from './Avatar';
+import { VerifiedBadge } from './VerifiedBadge';
 
 export interface CommentType {
   id: string;
@@ -103,10 +104,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
             {item.user?.name || item.author_name}
           </Text>
           {(item.user?.phone_verified || item.phone_verified) && (
-            <Text>
-              {' '}
-              <MaterialIcons name="verified" size={12} color={colors.tint} />
-            </Text>
+            <View style={{ marginLeft: 4 }}>
+              <VerifiedBadge size={12} />
+            </View>
           )}
           <Text style={[styles.timestamp, { color: '#9CA3AF' }]}>{timeAgo(item.timestamp)}</Text>
         </View>

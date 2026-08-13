@@ -4,7 +4,8 @@ import { View, Text, TouchableOpacity, ActivityIndicator, FlatList, TextInput } 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
-import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { supabase } from '../../lib/supabase';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../hooks/use-supabase-auth';
@@ -174,7 +175,9 @@ export default function NetworkScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={stylesheet.userName} numberOfLines={1}>{item.name}</Text>
             {item.phone_verified && (
-              <MaterialIcons name="verified" size={14} color={theme.colors.G} style={{ marginLeft: 4 }} />
+              <View style={{ marginLeft: 4 }}>
+                <VerifiedBadge size={14} />
+              </View>
             )}
           </View>
           <Text style={stylesheet.userHandle} numberOfLines={1}>@{item.username || 'user'}</Text>

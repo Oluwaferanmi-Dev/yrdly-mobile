@@ -5,6 +5,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Avatar } from '../../components/Avatar';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -282,7 +284,11 @@ export default function BusinessProfileScreen() {
           {/* Name + verified */}
           <View style={sStylesheet.nameRow}>
             <Text style={sStylesheet.nameTxt}>{business.name}</Text>
-            {(business as any).phone_verified && <MaterialIcons name="verified" size={18} color={theme.colors.G} />}
+            {(business as any).phone_verified && (
+              <View style={{ marginLeft: 4 }}>
+                <VerifiedBadge size={18} />
+              </View>
+            )}
           </View>
 
           <Text style={sStylesheet.catLocationTxt}>{business.category || 'Business'} · {getLocStr()}</Text>

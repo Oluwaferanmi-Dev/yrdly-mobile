@@ -72,10 +72,10 @@ export default function EditMarketplaceItemScreen() {
       setAddress(data.location?.address || '');
 
       let imgs: string[] = [];
-      if (Array.isArray(data.media_urls)) {
-        imgs = data.media_urls;
-      } else if (typeof data.media_urls === 'string') {
-        try { imgs = JSON.parse(data.media_urls); } catch (_) {}
+      if (Array.isArray(data.image_urls)) {
+        imgs = data.image_urls;
+      } else if (typeof data.image_urls === 'string') {
+        try { imgs = JSON.parse(data.image_urls); } catch (_) {}
       }
       setExistingImages(imgs);
     }
@@ -139,7 +139,7 @@ export default function EditMarketplaceItemScreen() {
         price: parsedPrice,
         category,
         condition,
-        media_urls: finalImages,
+        image_urls: finalImages,
         // location: address.trim() ? { address: address.trim() } : (post as any)?.location,
       };
 
