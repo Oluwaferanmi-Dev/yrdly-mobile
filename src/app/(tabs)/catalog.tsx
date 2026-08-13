@@ -21,6 +21,7 @@ import { useNotificationBadge } from '../../context/NotificationBadgeContext';
 import * as Location from 'expo-location';
 import { LocationPicker, LocationValue } from '../../components/LocationPicker';
 import { useFollowStatus } from '../../hooks/use-follow-status';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 
 const { width } = Dimensions.get('window');
 type TabType = 'Discover' | 'Marketplace' | 'Events' | 'Businesses';
@@ -34,14 +35,12 @@ const TABS: { key: TabType; label: string }[] = [
 const CATS = ['All', 'Fashion', 'Electronics', 'Home & Living', 'Vehicles', 'Food', 'Beauty', 'Services'];
 
 // ─── DISCOVER SECTION ────────────────────────────────────────────────────────
-function NearbyUserCard({ user, currentLoc, sStylesheet, theme, onPress }: any) {
-  const { isFollowing, isFollower, isMutual, actionLoading, toggleFollow } = useFollowStatus(user.id);
+function NearbyUserCard({ user, currentLoc, sStylesheet, theme, onPress, focusKey }: any) {
+  const { isFollowing, isFollower, isMutual, actionLoading, toggleFollow } = useFollowStatus(user.id, focusKey);
   const avatar = user.avatar_url && !user.avatar_url.startsWith('file://') ? { uri: user.avatar_url } : null;
-  
-  const handleAction = () => {
-    toggleFollow();
-  };
-  
+
+  const handleAction = () => { toggleFollow(); };
+
   return (
     <TouchableOpacity style={sStylesheet.nearbyCard} onPress={onPress} activeOpacity={0.8}>
       <View style={sStylesheet.nearbyAvatarWrap}>
@@ -54,7 +53,10 @@ function NearbyUserCard({ user, currentLoc, sStylesheet, theme, onPress }: any) 
         )}
       </View>
       <View style={sStylesheet.nearbyInfo}>
-        <Text style={sStylesheet.nearbyName} numberOfLines={1}>{(user.name || 'User').split(' ')[0]}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Text style={sStylesheet.nearbyName} numberOfLines={1}>{(user.name || 'User').split(' ')[0]}</Text>
+          {user.phone_verified && <VerifiedBadge size={12} />}
+        </View>
         <Text style={sStylesheet.nearbyHandle} numberOfLines={1}>@{user.username || (user.name || 'user').replace(/\s+/g, '').toLowerCase()}</Text>
         <View style={sStylesheet.nearbyDistRow}>
           <Ionicons name="location" size={11} color={theme.colors.LABEL} />
@@ -62,8 +64,8 @@ function NearbyUserCard({ user, currentLoc, sStylesheet, theme, onPress }: any) 
             {getDistanceStr(
               currentLoc?.coords.latitude, 
               currentLoc?.coords.longitude, 
-              user.currentLocation?.lat, 
-              user.currentLocation?.lng
+              user.home_lat ?? user.current_location?.lat ?? user.currentLocation?.lat, 
+              user.home_lng ?? user.current_location?.lng ?? user.currentLocation?.lng
             )}
           </Text>
         </View>
@@ -85,7 +87,7 @@ function NearbyUserCard({ user, currentLoc, sStylesheet, theme, onPress }: any) 
   );
 }
 
-function DiscoverSection({ currentLoc, search }: { currentLoc: Location.LocationObject | null, search: string }) {
+function DiscoverSection({ currentLoc, search, focusKey }: { currentLoc: Location.LocationObject | null, search: string, focusKey: number }) {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);
     const { activeFilter } = useLocation();
 
@@ -113,9 +115,18 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
 
       if (activeFilter) {
         if (activeFilter.lga) {
-          q = q.eq('lga', activeFilter.lga);
+          q = q.eq('home_lga', activeFilter.lga);
         } else if (activeFilter.state) {
-          q = q.eq('state', activeFilter.state);
+          q = q.eq('home_state', activeFilter.state);
+        }
+      } else {
+        // Default: show people in the same LGA/state as the current user
+        const homeLga = profile.home_lga || profile.location?.lga;
+        const homeState = profile.home_state || profile.location?.state;
+        if (homeLga) {
+          q = q.eq('home_lga', homeLga);
+        } else if (homeState) {
+          q = q.eq('home_state', homeState);
         }
       }
       
@@ -150,8 +161,9 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
     return () => clearTimeout(timeoutId);
   }, [profile, search, activeFilter]);
 
-  const nearby = users; // TODO: properly identify nearby vs mutuals. For now just show all in nearby
-  const mutuals: User[] = []; // Leaving empty since mutuals aren't properly fetched either in this slice logic
+  const nearby = users;
+  const mutuals: User[] = [];
+  const nearbyLabel = activeFilter ? 'IN YOUR AREA' : 'PEOPLE NEARBY';
 
   if (loading) return <ActivityIndicator color={theme.colors.G} style={{ marginTop: 40 }} />;
   
@@ -183,6 +195,7 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
             currentLoc={currentLoc}
             sStylesheet={sStylesheet}
             theme={theme}
+            focusKey={focusKey}
             onPress={() => router.push(`/profile/${u.id}` as any)} 
           />
         )}
@@ -195,10 +208,10 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
       {/* Nearby */}
       {nearby.length > 0 && (
         <View style={sStylesheet.discoverGroup}>
-          <Text style={sStylesheet.discoverGroupTitle}>NEARBY PEOPLE</Text>
+          <Text style={sStylesheet.discoverGroupTitle}>{nearbyLabel}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
             {nearby.map(p => (
-              <NearbyUserCard key={p.id} user={p} currentLoc={currentLoc} sStylesheet={sStylesheet} theme={theme} onPress={() => router.push(`/profile/${p.id}` as any)} />
+              <NearbyUserCard key={p.id} user={p} currentLoc={currentLoc} focusKey={focusKey} sStylesheet={sStylesheet} theme={theme} onPress={() => router.push(`/profile/${p.id}` as any)} />
             ))}
           </ScrollView>
         </View>
@@ -217,6 +230,7 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
                 sStylesheet={sStylesheet}
                 theme={theme}
                 currentLoc={currentLoc}
+                focusKey={focusKey}
                 onPress={() => router.push(`/profile/${p.id}` as any)} 
               />
             ))}
@@ -237,6 +251,7 @@ function DiscoverSection({ currentLoc, search }: { currentLoc: Location.Location
                 sStylesheet={sStylesheet}
                 theme={theme}
                 currentLoc={currentLoc}
+                focusKey={focusKey}
                 onPress={() => router.push(`/profile/${p.id}` as any)} 
               />
             ))}
@@ -409,7 +424,10 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
           return (
                       <TouchableOpacity style={sStylesheet.marketplaceCard} onPress={() => router.push(`/marketplace/${item.id}` as any)} activeOpacity={0.9}>
                         <View style={sStylesheet.marketplaceCardImgWrap}>
-                          <Image source={(Array.isArray(item.image_urls) ? item.image_urls[0] : item.image_url) ? { uri: Array.isArray(item.image_urls) ? item.image_urls[0] : item.image_url } : undefined} style={sStylesheet.marketplaceCardImg} contentFit="cover" />
+                          {(() => {
+                            const imgUrl = Array.isArray(item.image_urls) ? item.image_urls[0] : item.image_url;
+                            return imgUrl ? <Image source={{ uri: imgUrl }} style={sStylesheet.marketplaceCardImg} contentFit="cover" /> : <View style={[sStylesheet.marketplaceCardImg, { backgroundColor: theme.colors.SURFACE_ALT }]} />;
+                          })()}
                           <View style={sStylesheet.marketplaceCardSave}>
                             <Ionicons name="heart-outline" size={16} color="#fff" />
                           </View>
@@ -417,13 +435,13 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
                             <Text style={sStylesheet.marketplaceCardCondText}>{item.condition || 'Good'}</Text>
                           </View>
                         </View>
-                        <Text style={sStylesheet.marketplaceCardTitle} numberOfLines={1}>{item.title || item.text}</Text>
+                        <Text style={sStylesheet.marketplaceCardTitle} numberOfLines={1}>{item.title || item.text || 'Item'}</Text>
                         <Text style={sStylesheet.marketplaceCardPrice}>{formatPrice(item.price || 0)}</Text>
                         <View style={sStylesheet.marketplaceCardSeller}>
                           <View style={sStylesheet.marketplaceCardAvatarWrap}>
-                            <Image source={item.user?.avatar_url ? { uri: item.user.avatar_url } : undefined} style={sStylesheet.marketplaceCardAvatar} />
+                            {item.user?.avatar_url ? <Image source={{ uri: item.user.avatar_url }} style={sStylesheet.marketplaceCardAvatar} contentFit="cover" /> : <View style={[sStylesheet.marketplaceCardAvatar, { backgroundColor: theme.colors.G, justifyContent: 'center', alignItems: 'center' }]}><Text style={{ color: '#000', fontSize: 10, fontWeight: '700' }}>{((item.user?.name || item.author_name || 'S').charAt(0).toUpperCase())}</Text></View>}
                           </View>
-                          <Text style={sStylesheet.marketplaceCardArea} numberOfLines={1}>{item.user?.home_lga || item.user?.location?.lga || 'Lagos'}</Text>
+                          <Text style={sStylesheet.marketplaceCardArea} numberOfLines={1}>{item.user?.home_lga || (typeof item.user?.location === 'object' ? item.user?.location?.lga : null) || 'Lagos'}</Text>
                         </View>
                       </TouchableOpacity>
                     );
@@ -790,6 +808,14 @@ export default function CatalogTab() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [currentLoc, setCurrentLoc] = useState<Location.LocationObject | null>(null);
+  const [focusKey, setFocusKey] = useState(0);
+
+  // Re-fetch follow status for all cards when screen regains focus
+  useFocusEffect(
+    useCallback(() => {
+      setFocusKey(k => k + 1);
+    }, [])
+  );
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -903,7 +929,7 @@ export default function CatalogTab() {
       </View>
 
       {/* ── Tab Content ── */}
-      {activeTab === 'Discover' && <DiscoverSection currentLoc={currentLoc} search={debouncedSearch} />}
+      {activeTab === 'Discover' && <DiscoverSection currentLoc={currentLoc} search={debouncedSearch} focusKey={focusKey} />}
       {activeTab === 'Marketplace' && <MarketplaceSection currentLoc={currentLoc} search={debouncedSearch} />}
       {activeTab === 'Events' && <EventsSection currentLoc={currentLoc} search={debouncedSearch} />}
       {activeTab === 'Businesses' && <PlacesSection currentLoc={currentLoc} search={debouncedSearch} />}

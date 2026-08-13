@@ -47,7 +47,7 @@ export default function Profile2Screen() {
       setIsSaving(true);
       try {
         await updateProfile({
-          location: { state: location }, // Keep for legacy fallback temporarily
+          location: { state: postState, lga: postLga, ward: postWard || undefined },
           home_state: postState,
           home_lga: postLga,
           home_ward: postWard || null,
@@ -113,10 +113,31 @@ export default function Profile2Screen() {
                       setPostLat(lat);
                       setPostLng(lng);
                       
+                      let gState = '';
+                      let gLga = '';
+                      
+                      if (details.address_components) {
+                        details.address_components.forEach(c => {
+                          if (c.types.includes('administrative_area_level_1')) {
+                            gState = c.long_name.replace(' State', '').replace(' state', '').trim();
+                          }
+                          if (c.types.includes('administrative_area_level_2')) {
+                            gLga = c.long_name.replace(' Local Government Area', '').trim();
+                          }
+                          if (c.types.includes('locality') && !gLga) {
+                            gLga = c.long_name;
+                          }
+                        });
+                      }
+
                       setIsResolving(true);
                       try {
                         const match = await resolveCoords(lat, lng);
-                        if (match) {
+                        if (gState && gLga) {
+                          setPostState(gState);
+                          setPostLga(gLga);
+                          setPostWard(match?.ward || '');
+                        } else if (match) {
                           setPostState(match.state);
                           setPostLga(match.lga);
                           setPostWard(match.ward);

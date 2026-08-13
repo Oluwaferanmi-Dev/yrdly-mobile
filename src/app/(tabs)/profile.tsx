@@ -1,6 +1,6 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, TouchableOpacity, FlatList, RefreshControl, useWindowDimensions } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, RefreshControl, useWindowDimensions, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -12,6 +12,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
+import { VerifiedBadge, BusinessBadge, MarketplaceBadge } from '../../components/VerifiedBadge';
 import Animated, { FadeIn, FadeOut, Layout, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -68,6 +69,8 @@ export default function ProfileTab() {
   
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [hasBusiness, setHasBusiness] = useState(false);
+  const [hasMarketplace, setHasMarketplace] = useState(false);
 
   const fetchUserPosts = useCallback(async (isRefresh = false) => {
     if (!user) return;
@@ -80,6 +83,15 @@ export default function ProfileTab() {
 
       if (error) throw error;
       setPosts(data as Post[]);
+      setHasMarketplace((data as Post[]).some(p => p.category === 'For Sale' || p.category === 'Giveaway' || p.category === 'Business'));
+
+      // Check if user has a business
+      try {
+        const { data: bData } = await supabase.from('businesses').select('id').eq('owner_id', user.id).eq('is_active', true).limit(1);
+        if (bData && bData.length > 0) {
+          setHasBusiness(true);
+        }
+      } catch (err) {}
 
       const [{ count: fers }, { count: fing }] = await Promise.all([
         supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', user.id),
@@ -168,12 +180,34 @@ export default function ProfileTab() {
       if (data && data.length > 0) {
         router.push(`/businesses/${data[0].id}` as any);
       } else {
+        if (!profile?.phone_verified) {
+          Alert.alert(
+            "Verification Required",
+            "You must verify your phone number to create a business.",
+            [
+              { text: "Cancel", style: "cancel" },
+              { text: "Verify Now", onPress: () => router.push('/verify-phone' as any) }
+            ]
+          );
+          return;
+        }
         router.push('/businesses/create' as any);
       }
     } catch (e) {
+      if (!profile?.phone_verified) {
+        Alert.alert(
+          "Verification Required",
+          "You must verify your phone number to create a business.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Verify Now", onPress: () => router.push('/verify-phone' as any) }
+          ]
+        );
+        return;
+      }
       router.push('/businesses/create' as any);
     }
-  }, [user, router]);
+  }, [user, profile?.phone_verified, router]);
 
   const listHeader = useMemo(() => {
   return (
@@ -225,7 +259,13 @@ export default function ProfileTab() {
                   {profile?.name || user?.user_metadata?.name || 'Anonymous'}
                 </Text>
                 {profile?.phone_verified && (
-                  <MaterialIcons name="verified" size={18} color={theme.colors.G} />
+                  <VerifiedBadge size={16} />
+                )}
+                {hasBusiness && (
+                  <BusinessBadge size={16} />
+                )}
+                {hasMarketplace && (
+                  <MarketplaceBadge size={16} />
                 )}
               </View>
               <Text style={{ fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL, marginBottom: 6 }}>

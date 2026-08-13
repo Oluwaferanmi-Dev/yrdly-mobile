@@ -1,6 +1,6 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { Tabs, useRouter } from 'expo-router';
-import { View, Platform, Text, TouchableOpacity } from 'react-native';
+import { View, Platform, Text, TouchableOpacity, Alert } from 'react-native';
 import { Plus } from 'phosphor-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../context/ThemeContext';
@@ -70,12 +70,29 @@ function CreateMenuOverlay({ visible, onClose, onSelect }: { visible: boolean, o
 
   if (!visible) return null;
   
+  const { profile } = useAuth();
+  
   const OPTIONS = [
     { id: 'post', title: 'Create Post', desc: 'Share thoughts or photos', icon: PencilSimple, route: '/create-post' },
     { id: 'listing', title: 'Create Listing', desc: 'Sell or give away items', icon: Storefront, route: '/create-for-sale' },
     { id: 'event', title: 'Create Event', desc: 'Host a gathering or party', icon: CalendarBlank, route: '/create-event' },
     { id: 'alert', title: 'Publish Alert', desc: 'Notify neighbors of danger', icon: WarningCircle, route: '/create-alert' },
   ];
+
+  const handleSelect = (route: string) => {
+    if (!profile?.phone_verified && (route === '/create-for-sale' || route === '/create-event')) {
+      Alert.alert(
+        "Verification Required",
+        "You must verify your phone number to post events or listings.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Verify Now", onPress: () => { onClose(); onSelect('/verify-phone'); } }
+        ]
+      );
+      return;
+    }
+    onSelect(route);
+  };
 
   return (
     <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
@@ -90,7 +107,7 @@ function CreateMenuOverlay({ visible, onClose, onSelect }: { visible: boolean, o
                         key={opt.id} 
                         activeOpacity={0.8} 
                         style={styles.optionBtn}
-                        onPress={() => onSelect(opt.route)}
+                        onPress={() => handleSelect(opt.route)}
                       >
                         <View style={styles.optionIconWrap}>
                           <opt.icon size={24} color={theme.colors.G} weight="regular" />

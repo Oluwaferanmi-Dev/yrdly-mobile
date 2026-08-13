@@ -250,11 +250,17 @@ export default function CreateForSaleScreen() {
         <Text style={stylesheet.successDesc}>Your listing is now live in the neighbourhood marketplace.</Text>
         <TouchableOpacity 
           style={stylesheet.btnPrimary}
-          onPress={() => router.replace('/(tabs)/catalog')}
+          onPress={() => {
+            if (router.canDismiss()) router.dismissAll();
+            router.push('/(tabs)/catalog');
+          }}
         >
           <Text style={stylesheet.btnPrimaryText}>View Marketplace</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
+        <TouchableOpacity onPress={() => {
+          if (router.canDismiss()) router.dismissAll();
+          router.push('/(tabs)');
+        }}>
           <Text style={stylesheet.btnText}>Back to Feed</Text>
         </TouchableOpacity>
       </View>

@@ -433,7 +433,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data?.error) throw new Error(data.error);
       
       if (profile) {
-        setProfile({ ...profile, phone_verified: true });
+        const updatedProfile = { ...profile, phone_verified: true };
+        setProfile(updatedProfile);
+        FileSystem.writeAsStringAsync(PROFILE_CACHE_FILE, JSON.stringify(updatedProfile)).catch(() => {});
       }
       return true;
     } finally {

@@ -299,7 +299,10 @@ export default function CreateEventScreen() {
         <Text style={stylesheet.successDesc}>Your event is live and neighbours can now get tickets.</Text>
         <TouchableOpacity 
           style={stylesheet.btnPrimary}
-          onPress={() => router.replace('/(tabs)/catalog')}
+          onPress={() => {
+            if (router.canDismiss()) router.dismissAll();
+            router.push('/(tabs)/catalog');
+          }}
         >
           <Text style={stylesheet.btnPrimaryText}>Explore Events</Text>
         </TouchableOpacity>

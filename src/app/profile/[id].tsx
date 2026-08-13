@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 import { UserReviewService } from '../../lib/user-review-service';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { VerifiedBadge, BusinessBadge, MarketplaceBadge } from '../../components/VerifiedBadge';
 
 interface UserProfile {
   id: string;
@@ -56,6 +57,8 @@ export default function OtherUserProfileScreen() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'posts' | 'reviews'>('posts');
   const [avatarError, setAvatarError] = useState(false);
+  const [hasBusiness, setHasBusiness] = useState(false);
+  const [hasMarketplace, setHasMarketplace] = useState(false);
 
   const fetchProfileAndPosts = useCallback(async () => {
     if (!id) return;
@@ -99,7 +102,18 @@ export default function OtherUserProfileScreen() {
         .eq('user_id', id)
         .order('created_at', { ascending: false });
       
-      if (postData) setPosts(postData as Post[]);
+      if (postData) {
+        setPosts(postData as Post[]);
+        setHasMarketplace(postData.some(p => p.category === 'For Sale' || p.category === 'Giveaway' || p.category === 'Business'));
+      }
+
+      // Check if user has a business
+      try {
+        const { data: bData } = await supabase.from('businesses').select('id').eq('owner_id', id).eq('is_active', true).limit(1);
+        if (bData && bData.length > 0) {
+          setHasBusiness(true);
+        }
+      } catch (err) {}
 
       // Dynamically fetch accurate follower counts
       try {
@@ -328,10 +342,16 @@ export default function OtherUserProfileScreen() {
               <View style={stylesheet.onlineDot} />
             </View>
             <View style={stylesheet.heroInfo}>
-              <View style={stylesheet.nameRow}>
+              <View style={[stylesheet.nameRow, { gap: 6 }]}>
                 <Text style={stylesheet.heroName}>{profile.name}</Text>
                 {profile.phone_verified && (
-                  <MaterialIcons name="verified" size={18} color={theme.colors.G} />
+                  <VerifiedBadge size={16} />
+                )}
+                {hasBusiness && (
+                  <BusinessBadge size={16} />
+                )}
+                {hasMarketplace && (
+                  <MarketplaceBadge size={16} />
                 )}
               </View>
               <Text style={stylesheet.heroHandle}>@{profile.username || 'user'}</Text>

@@ -206,15 +206,29 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   const MIN_ASPECT = 4 / 5;  // height = width * 1.25  (tallest)
   const MAX_ASPECT = 1.91;   // height = width / 1.91  (widest)
   const getImageHeight = (url: string): number => {
-    const cardWidth = width - 40;
-    const rawHeight = imageHeights[url];
-    if (rawHeight) {
-      const rawAspect = cardWidth / rawHeight;
-      const clampedAspect = Math.min(Math.max(rawAspect, MIN_ASPECT), MAX_ASPECT);
-      return cardWidth / clampedAspect;
+    const containerWidth = width - 40;
+    
+    // First prefer exact dimensions if available for this specific post
+    if (post.image_width && post.image_height) {
+      const aspect = post.image_width / post.image_height;
+      if (!isNaN(aspect) && isFinite(aspect) && aspect > 0) {
+        const clampedAspect = Math.min(Math.max(aspect, MIN_ASPECT), MAX_ASPECT);
+        return containerWidth / clampedAspect;
+      }
     }
-    // Fallback while loading: 4:3
-    return cardWidth * 0.75;
+    
+    // Fallback to loaded heights
+    const rawHeight = imageHeights[url];
+    if (rawHeight && rawHeight > 0) {
+      const rawAspect = containerWidth / rawHeight;
+      if (!isNaN(rawAspect) && isFinite(rawAspect) && rawAspect > 0) {
+        const clampedAspect = Math.min(Math.max(rawAspect, MIN_ASPECT), MAX_ASPECT);
+        return containerWidth / clampedAspect;
+      }
+    }
+    
+    // Fallback square
+    return containerWidth;
   };
 
   const triggerHeartAnimation = () => {
@@ -580,7 +594,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
                 onPress={() => handleImageTap(index)}
               style={{ width: width - 40, height: getImageHeight(item), borderRadius: 16, overflow: 'hidden', backgroundColor: '#000' }}
             >
-              <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="contain" />
+              <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
                 
                 <Animated.View style={[stylesheet.heartOverlay, heartAnimatedStyle]}>
                   <Ionicons name="heart" size={100} color={theme.colors.G} style={stylesheet.heartShadow} />

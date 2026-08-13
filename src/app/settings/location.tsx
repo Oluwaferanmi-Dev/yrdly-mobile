@@ -6,7 +6,6 @@ import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { AuthService } from '../../lib/auth-service';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { resolveCoords } from '../../lib/geocoding-service';
 
@@ -14,7 +13,7 @@ export default function LocationSettingsScreen() {
   const { styles: s, theme } = useStyles(sStylesheet);
 
   const router = useRouter();
-  const { user, profile, updateProfile } = useAuth();
+  const { profile, updateProfile } = useAuth();
   const [updating, setUpdating] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
 
@@ -27,17 +26,17 @@ export default function LocationSettingsScreen() {
   const saveLocation = async (state: string, lga: string, ward: string | null, lat: number, lng: number, fullDesc: string) => {
     setUpdating(true);
     try {
-      if (user?.id) {
-        await AuthService.updateUserProfile(user.id, {
-          home_state: state,
-          home_lga: lga,
-          home_ward: ward || null,
-          home_lat: lat,
-          home_lng: lng,
-          home_location_geom: `POINT(${lng} ${lat})`,
-        });
-        Alert.alert('Success', 'Location updated successfully.');
-      }
+      // Use context updateProfile so in-memory state + cache refresh immediately
+      await updateProfile({
+        home_state: state,
+        home_lga: lga,
+        home_ward: ward || null,
+        home_lat: lat,
+        home_lng: lng,
+        home_location_geom: `POINT(${lng} ${lat})`,
+        location: { state, lga, ward: ward || undefined },
+      });
+      Alert.alert('Success', 'Location updated successfully.');
     } catch (e: any) {
       Alert.alert('Error', e.message || 'Failed to update location.');
     } finally {
@@ -128,8 +127,28 @@ export default function LocationSettingsScreen() {
               if (details?.geometry?.location) {
                 const lat = details.geometry.location.lat;
                 const lng = details.geometry.location.lng;
+                
+                let gState = '';
+                let gLga = '';
+                
+                if (details.address_components) {
+                  details.address_components.forEach((c: any) => {
+                    if (c.types.includes('administrative_area_level_1')) {
+                      gState = c.long_name.replace(' State', '').replace(' state', '').trim();
+                    }
+                    if (c.types.includes('administrative_area_level_2')) {
+                      gLga = c.long_name.replace(' Local Government Area', '').trim();
+                    }
+                    if (c.types.includes('locality') && !gLga) {
+                      gLga = c.long_name;
+                    }
+                  });
+                }
+
                 resolveCoords(lat, lng).then((match) => {
-                  if (match) {
+                  if (gState && gLga) {
+                    saveLocation(gState, gLga, match?.ward || null, lat, lng, data.description);
+                  } else if (match) {
                     saveLocation(match.state, match.lga, match.ward, lat, lng, data.description);
                   } else {
                     Alert.alert('Error', 'Could not resolve location structure.');

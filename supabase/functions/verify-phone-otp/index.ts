@@ -13,12 +13,20 @@ serve(async (req) => {
   }
 
   try {
-    const { pinId, pin } = await req.json()
+    const body = await req.json().catch(() => ({}));
+    const { pinId, pin } = body;
+    
+    if (!pinId || !pin) {
+      return new Response(JSON.stringify({ error: 'Missing pinId or pin' }), { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
     
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
-        status: 401,
+      return new Response(JSON.stringify({ error: 'Unauthorized: Missing authorization header' }), { 
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
@@ -35,47 +43,58 @@ serve(async (req) => {
       }),
     })
 
-    const data = await res.json()
+    const data = await res.json().catch(() => ({}))
 
-    // verified is a string "True" not a boolean in Termii
-    if (data.verified !== 'True') {
-      return new Response(JSON.stringify({ error: 'Invalid or expired code' }), { 
-        status: 400,
+    // verified is a string "True" not a boolean in Termii v4
+    if (data.verified !== 'True' && data.verified !== true) {
+      const msg = data.message || data.error || 'Invalid or expired code';
+      return new Response(JSON.stringify({ error: msg }), {
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
     // Mark phone as verified in DB using the user's JWT
-    const supabase = createClient(
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    const supabaseAuth = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
     )
     
-    // Get user from the auth token
-    const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser()
     
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), { 
-        status: 401,
+      return new Response(JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }), { 
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
     
-    const { error: updateError } = await supabase.from('users')
+    // Use service role to update the user's profile
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const { error: updateError } = await supabaseAdmin.from('users')
       .update({ phone: data.msisdn, phone_verified: true })
       .eq('id', user.id)
 
     if (updateError) {
-      throw updateError
+      return new Response(JSON.stringify({ error: updateError.message }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
     }
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 500,
+    return new Response(JSON.stringify({ error: `Edge Function Error: ${error.message}` }), { 
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   }

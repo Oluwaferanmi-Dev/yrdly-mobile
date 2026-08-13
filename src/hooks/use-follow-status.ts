@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './use-supabase-auth';
 
-export function useFollowStatus(targetUserId: string) {
+export function useFollowStatus(targetUserId: string, refreshKey?: number) {
   const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollower, setIsFollower] = useState(false);
@@ -38,7 +38,7 @@ export function useFollowStatus(targetUserId: string) {
     } finally {
       setLoading(false);
     }
-  }, [user, targetUserId]);
+  }, [user, targetUserId, refreshKey]);
 
   useEffect(() => {
     fetchStatus();

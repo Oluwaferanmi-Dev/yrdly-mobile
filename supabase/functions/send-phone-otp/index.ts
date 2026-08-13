@@ -20,7 +20,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized: Missing authorization header' }), { 
-        status: 401, 
+        status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       })
     }
@@ -34,7 +34,7 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseAuth.auth.getUser()
     if (userError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }), { 
-        status: 401, 
+        status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       })
     }
@@ -43,7 +43,7 @@ serve(async (req) => {
     const normalized = phone.startsWith('+') ? phone.slice(1) : phone
     if (!normalized.startsWith('234') || normalized.length < 13) {
       return new Response(JSON.stringify({ error: 'Invalid phone number' }), { 
-        status: 400,
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
