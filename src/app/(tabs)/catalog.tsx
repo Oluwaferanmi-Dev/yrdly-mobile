@@ -762,7 +762,9 @@ function PlacesSection({ currentLoc, search }: { currentLoc: Location.LocationOb
                               <Text style={sStylesheet.placeName} numberOfLines={1}>{item.name}</Text>
                               {/* Verification badge strictly bound to phone_verified */}
                               {(item as any).phone_verified && (
-                                <Ionicons name="checkmark-circle" size={14} color={theme.colors.G} />
+                                <View style={{ marginLeft: 2 }}>
+                                  <VerifiedBadge size={14} />
+                                </View>
                               )}
                             </View>
                             <Ionicons name="heart-outline" size={16} color={theme.colors.LABEL} style={{ marginLeft: 8 }} />
