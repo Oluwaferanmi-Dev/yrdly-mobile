@@ -17,6 +17,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { SceneBg, GlassCard, GlassInput, StepBar, PrimaryBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
 import { AuthService } from '@/lib/auth-service';
+import { StorageService } from '@/lib/storage-service';
 import { useAuth } from '@/hooks/use-supabase-auth';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -119,8 +120,18 @@ export default function Profile1Screen() {
       try {
         let finalAvatarUrl: string | undefined = undefined;
         if (avatarUri) {
-          const uploaded = await AuthService.uploadAvatar(user.id, avatarUri);
-          if (uploaded) finalAvatarUrl = uploaded;
+          const { url, error } = await StorageService.uploadUserAvatar(user.id, {
+            uri: avatarUri,
+            name: `avatar-${user.id}.jpg`,
+            type: 'image/jpeg'
+          });
+          
+          if (error) {
+            setFormError('Failed to upload profile picture. Please try again.');
+            setIsSaving(false);
+            return;
+          }
+          if (url) finalAvatarUrl = url;
         }
 
         await updateProfile({

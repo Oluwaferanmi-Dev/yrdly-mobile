@@ -11,6 +11,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../../context/ThemeContext';
+import { Avatar } from '../../../components/Avatar';
 
 const RESOLUTION_OPTIONS = [
   { value: 'refund_buyer',   label: 'Refund Buyer',            icon: 'rotate-ccw' as const },
@@ -207,12 +208,14 @@ export default function AdminDisputeDetailScreen() {
             const { styles: sStylesheet } = useStyles(stylesheet);
             return (
                           <View key={role} style={sStylesheet.partyRow}>
-                            {p?.avatar_url
-                              ? <Image source={{ uri: p.avatar_url }} style={sStylesheet.avatar} />
-                              : <View style={[sStylesheet.avatar, sStylesheet.avatarFallback, { backgroundColor: theme.colors.SURFACE }]}>
-                                  <Feather name="user" size={16} color={theme.colors.MUTED} />
-                                </View>
-                            }
+                            <Avatar
+                              url={p?.avatar_url}
+                              name={p?.name}
+                              size={36}
+                              style={sStylesheet.avatar as any}
+                              fallbackStyle={[sStylesheet.avatar, sStylesheet.avatarFallback, { backgroundColor: theme.colors.SURFACE }] as any}
+                              fallbackTextStyle={{ color: theme.colors.MUTED, fontSize: 16 } as any}
+                            />
                             <View style={{ flex: 1 }}>
                               <Text style={[sStylesheet.partyRole, { color: theme.colors.MUTED }]}>{role}</Text>
                               <Text style={[sStylesheet.partyName, { color: theme.colors.TEXT_PRIMARY }]}>{p?.name ?? '—'}</Text>

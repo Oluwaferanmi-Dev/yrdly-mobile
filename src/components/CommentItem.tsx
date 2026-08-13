@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { timeAgo } from '../lib/utils';
 import { useAppTheme } from '../context/ThemeContext';
 import { StorageService } from '../lib/storage-service';
+import { Avatar } from './Avatar';
 
 export interface CommentType {
   id: string;
@@ -46,8 +47,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
   const isReply = !!item.parent_id;
   const isOwner = currentUserId && item.user_id === currentUserId;
 
-  const avatarUri = StorageService.getOptimizedImageUrl(item.user?.avatar_url || item.author_image, 100) || '';
-  const avatarSource = useMemo(() => ({ uri: avatarUri }), [avatarUri]);
+  // Removed unused useMemo
 
   const handleDelete = () => {
     Alert.alert(
@@ -85,19 +85,13 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
         style={styles.avatar} 
         onPress={handleProfilePress}
       >
-        {item.user?.avatar_url || item.author_image ? (
-          <Image 
-            source={avatarSource} 
-            style={[styles.avatarImg, isReply && styles.avatarImgSmall]} 
-            contentFit="cover" 
-          />
-        ) : (
-          <View style={[styles.avatarImg, isReply && styles.avatarImgSmall, styles.avatarFallback, { backgroundColor: colors.tint }]}>
-            <Text style={[styles.avatarFallbackText, isReply && { fontSize: 12 }]}>
-              {(item.user?.name || item.author_name || '?').charAt(0).toUpperCase()}
-            </Text>
-          </View>
-        )}
+        <Avatar
+          url={item.user?.avatar_url || item.author_image}
+          name={item.user?.name || item.author_name}
+          size={100}
+          style={[styles.avatarImg, isReply && styles.avatarImgSmall]}
+          fallbackTextStyle={isReply ? { fontSize: 12 } : undefined}
+        />
       </TouchableOpacity>
       
       <View style={styles.commentContent}>

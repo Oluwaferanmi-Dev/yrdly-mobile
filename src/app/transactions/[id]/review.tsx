@@ -13,7 +13,7 @@ import { useAuth } from '../../../hooks/use-supabase-auth';
 import { ReviewService } from '../../../lib/review-service';
 import { UserReviewService } from '../../../lib/user-review-service';
 import { useAppTheme } from '../../../context/ThemeContext';
-
+import { Avatar } from '../../../components/Avatar';
 
 interface TxInfo {
   id: string;
@@ -124,10 +124,14 @@ export default function ReviewScreen() {
           <View style={stylesheet.cardInfo}>
             <Text style={[stylesheet.itemTitle, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={2}>{tx?.item?.title || 'Item'}</Text>
             <View style={stylesheet.sellerRow}>
-              {tx?.seller?.avatar_url
-                ? <Image source={{ uri: tx.seller.avatar_url }} style={stylesheet.avatar} contentFit="cover" />
-                : <View style={[stylesheet.avatar, stylesheet.avatarFallback]}><Text style={[stylesheet.avatarInitial, { color: theme.colors.G }]}>{tx?.seller?.name?.[0]?.toUpperCase() ?? '?'}</Text></View>
-              }
+              <Avatar
+                url={tx?.seller?.avatar_url}
+                name={tx?.seller?.name}
+                size={24}
+                style={stylesheet.avatar as any}
+                fallbackStyle={[stylesheet.avatar, stylesheet.avatarFallback] as any}
+                fallbackTextStyle={[stylesheet.avatarInitial, { color: theme.colors.G }] as any}
+              />
               <Text style={[stylesheet.sellerName, { color: theme.colors.MUTED }]}>Sold by {tx?.seller?.name ?? 'Seller'}</Text>
             </View>
           </View>

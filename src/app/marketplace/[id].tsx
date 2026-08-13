@@ -23,6 +23,7 @@ import { Post, User } from '../../types';
 import { formatPrice, timeAgo } from '../../lib/utils';
 import { useAppTheme } from '../../context/ThemeContext';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
+import { Avatar } from '../../components/Avatar';
 const { width } = Dimensions.get('window');
 
 const MarketVideo = React.memo(({ url, shouldPlay }: { url: string, shouldPlay: boolean }) => {
@@ -515,15 +516,14 @@ function MarketplaceDetailContent() {
              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 20 }}>
                <TouchableOpacity onPress={() => router.push(`/profile/${post.user_id}` as any)}>
                  <View style={{ width: 48, height: 48, borderRadius: 24, overflow: 'hidden', backgroundColor: theme.colors.SURFACE }}>
-                   {postUser?.avatar_url || post.author_image ? (
-                     <Image source={{ uri: postUser?.avatar_url || post.author_image }} style={{ width: '100%', height: '100%' }} />
-                   ) : (
-                     <View style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.SURFACE }}>
-                        <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 18, fontFamily: 'Outfit-Bold' }}>
-                          {postUser?.name ? postUser.name.charAt(0).toUpperCase() : 'U'}
-                        </Text>
-                     </View>
-                   )}
+                    <Avatar
+                      url={postUser?.avatar_url || post.author_image}
+                      name={postUser?.name}
+                      size={48}
+                      style={{ width: '100%', height: '100%' }}
+                      fallbackStyle={{ backgroundColor: theme.colors.SURFACE }}
+                      fallbackTextStyle={{ color: theme.colors.TEXT_PRIMARY, fontSize: 18, fontFamily: 'Outfit-Bold' }}
+                    />
                  </View>
                </TouchableOpacity>
                <View style={{ flex: 1 }}>

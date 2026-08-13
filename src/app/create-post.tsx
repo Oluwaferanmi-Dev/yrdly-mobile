@@ -11,6 +11,7 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { usePosts } from '../hooks/use-posts';
 import { MobileFile } from '../lib/storage-service';
 import * as FileSystem from 'expo-file-system';
+import { Avatar } from '../components/Avatar';
 
 export default function CreatePostScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
@@ -172,13 +173,14 @@ export default function CreatePostScreen() {
 
       <ScrollView contentContainerStyle={stylesheet.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={stylesheet.authorRow}>
-          {profile?.avatar_url ? (
-            <Image source={{ uri: profile.avatar_url }} style={stylesheet.avatarImage} />
-          ) : (
-            <View style={stylesheet.avatar}>
-              <Text style={stylesheet.avatarText}>{(profile?.name || 'U').charAt(0).toUpperCase()}</Text>
-            </View>
-          )}
+          <Avatar
+            url={profile?.avatar_url}
+            name={profile?.name}
+            size={100}
+            style={stylesheet.avatarImage as any}
+            fallbackStyle={stylesheet.avatar as any}
+            fallbackTextStyle={stylesheet.avatarText}
+          />
           <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <Text style={stylesheet.authorName}>{profile?.name || 'Neighbour'}</Text>
             <View 

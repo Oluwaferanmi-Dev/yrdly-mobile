@@ -9,6 +9,7 @@ import { Image } from 'expo-image';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import { Avatar } from '../../components/Avatar';
 const ADMIN_EMAIL = 'support@yrdly.ng'; // Replace with actual admin email
 
 type DeletionRequest = {
@@ -65,13 +66,14 @@ function RequestCard({ item, onResolve }: { item: DeletionRequest; onResolve: (i
       {/* Header */}
       <View style={stylesheet.cardHeader}>
         <View style={stylesheet.avatarWrap}>
-          {item.avatar_url ? (
-            <Image source={{ uri: item.avatar_url }} style={stylesheet.avatar} contentFit="cover" />
-          ) : (
-            <View style={stylesheet.avatarFallback}>
-              <Text style={stylesheet.avatarInitials}>{initials}</Text>
-            </View>
-          )}
+          <Avatar
+            url={item.avatar_url}
+            name={item.name}
+            size={48}
+            style={stylesheet.avatar as any}
+            fallbackStyle={stylesheet.avatarFallback as any}
+            fallbackTextStyle={stylesheet.avatarInitials}
+          />
           {/* Red dot indicator */}
           <View style={stylesheet.urgentDot} />
         </View>

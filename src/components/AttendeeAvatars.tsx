@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../context/ThemeContext';
+import { Avatar } from './Avatar';
 
 export interface AttendeeUser {
   id?: string;
@@ -82,39 +83,14 @@ export function AttendeeAvatars({
                 },
               ]}
             >
-              {hasImage ? (
-                <Image
-                  source={{ uri: user.avatar_url }}
-                  style={[styles.avatarImage, { borderRadius: radius }]}
-                  contentFit="cover"
-                  transition={200}
-                  onError={() => setFailedImages((prev) => ({ ...prev, [index]: true }))}
-                />
-              ) : (
-                <View
-                  style={[
-                    styles.avatarFallback,
-                    {
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: radius,
-                      backgroundColor: colors.tint + '33',
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.initialText,
-                      {
-                        fontSize: Math.max(9, Math.round(size * 0.45)),
-                        color: colors.tint,
-                      },
-                    ]}
-                  >
-                    {initial}
-                  </Text>
-                </View>
-              )}
+              <Avatar
+                url={user?.avatar_url}
+                name={user?.name}
+                size={80}
+                style={{ width: '100%', height: '100%', borderRadius: radius }}
+                fallbackStyle={{ backgroundColor: colors.tint + '33' }}
+                fallbackTextStyle={{ fontSize: Math.max(9, Math.round(size * 0.45)), color: colors.tint }}
+              />
             </View>
           );
         })}

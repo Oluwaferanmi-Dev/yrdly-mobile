@@ -17,6 +17,7 @@ import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 import { UserReviewService } from '../../lib/user-review-service';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { VerifiedBadge, BusinessBadge, MarketplaceBadge } from '../../components/VerifiedBadge';
+import { Avatar } from '../../components/Avatar';
 
 interface UserProfile {
   id: string;
@@ -327,18 +328,13 @@ export default function OtherUserProfileScreen() {
         <View style={stylesheet.profileHero}>
           <View style={stylesheet.heroTopRow}>
             <View style={stylesheet.avatarWrap}>
-              {(profile.avatar_url && !avatarError && !profile.avatar_url.startsWith('file://')) ? (
-                <Image 
-                  source={{ uri: profile.avatar_url }} 
-                  style={stylesheet.avatarImg} 
-                  contentFit="cover" 
-                  onError={() => setAvatarError(true)}
-                />
-              ) : (
-                <View style={[stylesheet.avatarImg, stylesheet.avatarFallback]}>
-                  <Text style={stylesheet.avatarFallbackTxt}>{profile.name ? profile.name.charAt(0).toUpperCase() : '?'}</Text>
-                </View>
-              )}
+              <Avatar
+                url={profile.avatar_url}
+                name={profile.name}
+                size={200}
+                style={stylesheet.avatarImg as any}
+                fallbackTextStyle={stylesheet.avatarFallbackTxt}
+              />
               <View style={stylesheet.onlineDot} />
             </View>
             <View style={stylesheet.heroInfo}>
@@ -468,7 +464,7 @@ export default function OtherUserProfileScreen() {
                 return (
                                   <View key={review.id} style={[stylesheet.reviewCard, { backgroundColor: theme.colors.SURFACE, borderBottomColor: theme.colors.GLASS_BORDER }]}>
                                     <View style={stylesheet.reviewHeader}>
-                                      <Image source={{ uri: review.buyer?.avatar_url }} style={stylesheet.reviewerAvatar} />
+                                      <Avatar url={review.buyer?.avatar_url} name={review.buyer?.name} size={100} style={stylesheet.reviewerAvatar as any} />
                                       <View style={stylesheet.reviewerInfo}>
                                         <Text style={[stylesheet.reviewerName, { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit' }]}>{review.buyer?.name}</Text>
                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>

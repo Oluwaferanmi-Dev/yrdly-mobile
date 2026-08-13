@@ -15,6 +15,7 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import { StorageService } from '../lib/storage-service';
+import { Avatar } from './Avatar';
 const { width } = Dimensions.get('window');
 
 interface PostCardProps {
@@ -481,17 +482,12 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
             router.push(`/profile/${post.user_id}` as any);
           }}
         >
-          <View style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.SURFACE, overflow: 'hidden', flexShrink: 0 }}>
-            {post.user?.avatar_url || post.author_image ? (
-              <Image source={{ uri: StorageService.getOptimizedImageUrl(post.user?.avatar_url || post.author_image || null, 150) || '' }} style={stylesheet.avatarImage} />
-            ) : (
-              <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16, color: theme.colors.G }}>
-                  {getInitials(post.user?.name || post.author_name)}
-                </Text>
-              </View>
-            )}
-          </View>
+          <Avatar
+            url={post.user?.avatar_url || post.author_image}
+            name={post.user?.name || post.author_name}
+            size={150}
+            style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.SURFACE, overflow: 'hidden', flexShrink: 0 }}
+          />
           <View style={{ flex: 1, marginLeft: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
               <Text style={{ fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15, color: theme.colors.TEXT_PRIMARY }} numberOfLines={1}>

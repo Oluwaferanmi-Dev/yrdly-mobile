@@ -13,6 +13,7 @@ import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 import { VerifiedBadge, BusinessBadge, MarketplaceBadge } from '../../components/VerifiedBadge';
+import { Avatar } from '../../components/Avatar';
 import Animated, { FadeIn, FadeOut, Layout, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -233,15 +234,13 @@ export default function ProfileTab() {
             <View style={{ position: 'relative' }}>
               <View style={{ width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center' }}>
                 <View style={{ width: '100%', height: '100%', borderRadius: 40, overflow: 'hidden', backgroundColor: theme.colors.DARK }}>
-                  {avatarUri ? (
-                    <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
-                  ) : (
-                    <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.SURFACE }}>
-                      <Text style={{ fontFamily: 'Outfit-ExtraBold', fontSize: 24, color: theme.colors.G }}>
-                        {profile?.name ? profile.name.charAt(0).toUpperCase() : '?'}
-                      </Text>
-                    </View>
-                  )}
+                  <Avatar 
+                    url={avatarUri} 
+                    name={profile?.name} 
+                    size={200} 
+                    style={{ width: '100%', height: '100%' }}
+                    fallbackTextStyle={{ fontSize: 24, fontFamily: 'Outfit-ExtraBold' }} 
+                  />
                 </View>
               </View>
               <TouchableOpacity 

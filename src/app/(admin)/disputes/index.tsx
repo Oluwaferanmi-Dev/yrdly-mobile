@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { useAppTheme } from '../../../context/ThemeContext';
+import { Avatar } from '../../../components/Avatar';
 
 type DisputeStatus = 'all' | 'open' | 'under_review' | 'resolved' | 'closed';
 
@@ -135,12 +136,14 @@ export default function AdminDisputesScreen() {
         {/* Parties */}
         <View style={sStylesheet.parties}>
           <View style={sStylesheet.party}>
-            {buyer?.avatar_url
-              ? <Image source={{ uri: buyer.avatar_url }} style={sStylesheet.avatar} />
-              : <View style={[sStylesheet.avatar, sStylesheet.avatarFallback, { backgroundColor: theme.colors.SURFACE }]}>
-                  <Feather name="user" size={14} color={theme.colors.MUTED} />
-                </View>
-            }
+            <Avatar
+              url={buyer?.avatar_url}
+              name={buyer?.name}
+              size={24}
+              style={sStylesheet.avatar as any}
+              fallbackStyle={[sStylesheet.avatar, sStylesheet.avatarFallback, { backgroundColor: theme.colors.SURFACE }] as any}
+              fallbackTextStyle={{ color: theme.colors.MUTED, fontSize: 14 } as any}
+            />
             <View style={{ flex: 1 }}>
               <Text style={[sStylesheet.partyRole, { color: theme.colors.MUTED }]}>Buyer</Text>
               <Text style={[sStylesheet.partyName, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>{buyer?.name ?? '—'}</Text>
@@ -154,12 +157,14 @@ export default function AdminDisputesScreen() {
               <Text style={[sStylesheet.partyRole, { color: theme.colors.MUTED }]}>Seller</Text>
               <Text style={[sStylesheet.partyName, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>{seller?.name ?? '—'}</Text>
             </View>
-            {seller?.avatar_url
-              ? <Image source={{ uri: seller.avatar_url }} style={sStylesheet.avatar} />
-              : <View style={[sStylesheet.avatar, sStylesheet.avatarFallback, { backgroundColor: theme.colors.SURFACE }]}>
-                  <Feather name="user" size={14} color={theme.colors.MUTED} />
-                </View>
-            }
+            <Avatar
+              url={seller?.avatar_url}
+              name={seller?.name}
+              size={24}
+              style={sStylesheet.avatar as any}
+              fallbackStyle={[sStylesheet.avatar, sStylesheet.avatarFallback, { backgroundColor: theme.colors.SURFACE }] as any}
+              fallbackTextStyle={{ color: theme.colors.MUTED, fontSize: 14 } as any}
+            />
           </View>
         </View>
 

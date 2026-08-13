@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../lib/api';
+import { BankLogo } from '../../components/BankLogo';
 
 export default function PayoutSettingsScreen() {
   const { styles: s, theme } = useStyles(sStylesheet);
@@ -54,6 +55,12 @@ export default function PayoutSettingsScreen() {
       console.error(e);
     }
   }, []);
+
+  const getBankName = useCallback((code: string) => {
+    if (!code) return '';
+    const bank = banks.find(b => b.code === code);
+    return bank ? bank.name : code;
+  }, [banks]);
 
   useEffect(() => {
     fetchExisting();
@@ -141,10 +148,10 @@ export default function PayoutSettingsScreen() {
           <View style={s.activeBankCard}>
             <View style={s.activeBankHeader}>
               <View style={s.activeBankIcon}>
-                <Ionicons name="business" size={24} color={theme.colors.G} />
+                <BankLogo code={existingBank.bankCode} name={getBankName(existingBank.bankCode)} size={44} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={s.activeBankName}>{existingBank.bankName}</Text>
+                <Text style={s.activeBankName}>{getBankName(existingBank.bankCode)}</Text>
                 <Text style={s.activeBankNum}>{existingBank.accountNumber}</Text>
               </View>
               <View style={s.activeBadge}>
@@ -216,7 +223,7 @@ export default function PayoutSettingsScreen() {
                               style={s.bankListItem} 
                               onPress={() => { setSelectedBank(item); setStep('account'); setAccountNumber(''); setResolvedName(''); }}
                             >
-                              <View style={s.bankIconBox}><Ionicons name="business" size={18} color={theme.colors.G} /></View>
+                              <View style={s.bankIconBox}><BankLogo code={item.code} name={item.name} size={36} /></View>
                               <Text style={s.bankListName}>{item.name}</Text>
                               <Ionicons name="chevron-forward" size={18} color={theme.colors.LABEL} style={{ marginLeft: 'auto' }} />
                             </TouchableOpacity>

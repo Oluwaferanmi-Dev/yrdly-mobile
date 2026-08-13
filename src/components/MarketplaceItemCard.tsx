@@ -9,6 +9,7 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { useAppTheme } from '../context/ThemeContext';
 import { useRouter } from 'expo-router';
 import { StorageService } from '../lib/storage-service';
+import { Avatar } from './Avatar';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -127,11 +128,13 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
             onPress={() => router.push(`/profile/${item.user_id}` as any)}
             hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
           >
-            <View style={[stylesheet.avatar, { backgroundColor: colors.tint }]}>
-              {item.user?.avatar_url
-                ? <Image source={{ uri: item.user.avatar_url }} style={stylesheet.avatarImg} contentFit="cover" />
-                : <Text style={stylesheet.avatarTxt}>{sellerName.charAt(0).toUpperCase()}</Text>}
-            </View>
+            <Avatar
+              url={item.user?.avatar_url}
+              name={sellerName}
+              size={100}
+              style={[stylesheet.avatar as any, { backgroundColor: colors.tint }]}
+              fallbackTextStyle={stylesheet.avatarTxt}
+            />
             <Text style={[stylesheet.sellerName, { color: colors.textSecondary }]} numberOfLines={1}>{sellerName}</Text>
             {(item.user as any)?.phone_verified && (
               <Ionicons name="checkmark-circle" size={12} color={theme.colors.G} style={{ marginLeft: 2 }} />
