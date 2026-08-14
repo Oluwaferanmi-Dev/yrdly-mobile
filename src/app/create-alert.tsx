@@ -52,9 +52,9 @@ export default function CreateAlertScreen() {
         severity,
         type,
         area_name: area,
-        state: alertState,
-        lga: alertLga,
-        action,
+        ...(alertState ? { state: alertState } : {}),
+        ...(alertLga ? { lga: alertLga } : {}),
+        ...(action ? { action } : {}),
         status: 'pending'
       });
 

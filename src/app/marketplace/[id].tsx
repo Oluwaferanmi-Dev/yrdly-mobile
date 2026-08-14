@@ -466,8 +466,8 @@ function MarketplaceDetailContent() {
              </TouchableOpacity>
              <View style={{ flexDirection: 'row', gap: 8 }}>
                {!isOwner && (
-                 <TouchableOpacity onPress={handleToggleLike} style={stylesheet.iconCircle}>
-                   <Ionicons name={isLiked ? "bookmark" : "bookmark-outline"} size={16} color={isLiked ? theme.colors.G : '#FFF'} />
+                 <TouchableOpacity onPress={handleBookmarkToggle} style={stylesheet.iconCircle}>
+                   <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={16} color={isBookmarked ? theme.colors.G : '#FFF'} />
                  </TouchableOpacity>
                )}
                <TouchableOpacity onPress={handleMore} style={stylesheet.iconCircle}>

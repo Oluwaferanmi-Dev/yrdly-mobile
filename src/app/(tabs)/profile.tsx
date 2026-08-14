@@ -112,22 +112,51 @@ export default function ProfileTab() {
     if (!user) return;
     setLoadingSaved(true);
     try {
-      const { data, error } = await supabase
-        .from('post_bookmarks')
-        .select(`
-          post_id,
-          posts (*)
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      const [postRes, eventRes] = await Promise.all([
+        supabase
+          .from('post_bookmarks')
+          .select(`
+            post_id,
+            created_at,
+            posts (*)
+          `)
+          .eq('user_id', user.id),
+        supabase
+          .from('event_bookmarks')
+          .select(`
+            event_id,
+            created_at,
+            events (*)
+          `)
+          .eq('user_id', user.id)
+      ]);
 
-      if (error) throw error;
+      if (postRes.error) throw postRes.error;
+      if (eventRes.error) throw eventRes.error;
       
-      const extractedPosts = data
+      const extractedPosts = postRes.data
         .filter(item => item.posts != null)
-        .map(item => item.posts as unknown as Post);
+        .map(item => ({ ...(item.posts as any), bookmark_created_at: item.created_at }));
         
-      setSavedPosts(extractedPosts);
+      const extractedEvents = eventRes.data
+        .filter(item => item.events != null)
+        .map(item => {
+          const ev = item.events as any;
+          return {
+            id: ev.id,
+            title: ev.title,
+            image_urls: ev.cover_image_url ? [ev.cover_image_url] : [],
+            category: 'Event',
+            event_link: `/events/${ev.id}`,
+            bookmark_created_at: item.created_at,
+          };
+        });
+        
+      const allSaved = [...extractedPosts, ...extractedEvents].sort((a, b) => {
+        return new Date(b.bookmark_created_at).getTime() - new Date(a.bookmark_created_at).getTime();
+      });
+      
+      setSavedPosts(allSaved as unknown as Post[]);
     } catch (error) {
       console.error('Error fetching saved posts:', error);
     } finally {

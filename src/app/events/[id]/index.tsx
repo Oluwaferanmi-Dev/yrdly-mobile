@@ -450,7 +450,7 @@ export default function EventDetailScreen() {
               <Feather name="share" size={20} color="#FFF" />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleBookmark} style={[stylesheet.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-              <Feather name={isBookmarked ? "bookmark" : "bookmark"} size={20} color={isBookmarked ? theme.colors.G : "#FFF"} />
+              <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={20} color={isBookmarked ? theme.colors.G : "#FFF"} />
             </TouchableOpacity>
           </View>
         </View>
@@ -632,19 +632,10 @@ export default function EventDetailScreen() {
                           .order('created_at', { ascending: true });
                         const existing = convs?.find(c => c.type === 'event' && c.item_id === event.id && c.participant_ids?.includes(user.id) && c.participant_ids?.includes(event.organizer_id));
                         if (existing?.id) {
-                          router.push({ pathname: '/chat/[id]', params: { id: existing.id } });
+                          router.push(`/chat/${existing.id}`);
                         } else {
-                          router.push({ 
-                            pathname: '/chat/[id]', 
-                            params: { 
-                              id: 'new',
-                              type: 'event',
-                              participant_id: event.organizer_id,
-                              item_id: event.id,
-                              item_title: event.title || 'Event',
-                              item_image: event.cover_image_url || '',
-                            } 
-                          });
+                          const query = `type=event&participant_id=${encodeURIComponent(event.organizer_id)}&item_id=${encodeURIComponent(event.id)}&item_title=${encodeURIComponent(event.title || 'Event')}&item_image=${encodeURIComponent(event.cover_image_url || '')}`;
+                          router.push(`/chat/new?${query}`);
                         }
                       } catch (err) {
                         console.error('Error starting chat', err);

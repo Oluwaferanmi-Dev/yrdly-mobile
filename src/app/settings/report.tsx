@@ -4,9 +4,12 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'expo-image';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
 import { useCategories } from '../../hooks/use-categories';
+import { StorageService } from '../../lib/storage-service';
 export default function ReportScreen() {
   const { styles: s, theme } = useStyles(sStylesheet);
 
@@ -18,6 +21,27 @@ export default function ReportScreen() {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Please grant permission to access your photos.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setImage(result.assets[0]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!subject.trim() || !description.trim()) {
@@ -27,22 +51,51 @@ export default function ReportScreen() {
 
     setLoading(true);
     try {
+      let uploadedImageUrl = null;
+      if (image && user) {
+        const file = {
+          uri: image.uri,
+          name: image.fileName || `report-${Date.now()}.jpg`,
+          type: image.mimeType || 'image/jpeg',
+        };
+        const { url, error: uploadError } = await StorageService.uploadReportImage(user.id, file);
+        if (uploadError) {
+          console.warn('Failed to upload image', uploadError);
+        } else {
+          uploadedImageUrl = url;
+        }
+      }
+
       // 1. Try to insert into reports table if it exists
+      const insertData: any = {
+        user_id: user?.id || null,
+        category,
+        subject: subject.trim(),
+        description: description.trim(),
+        status: 'open',
+      };
+      
+      if (uploadedImageUrl) {
+        insertData.image_url = uploadedImageUrl;
+      }
+
       const { error } = await supabase
         .from('reports')
-        .insert({
-          user_id: user?.id || null,
-          category,
-          subject: subject.trim(),
-          description: description.trim(),
-          status: 'open',
-        });
+        .insert(insertData);
 
       if (error) {
         // Table probably doesn't exist or RLS issue. Fallback to Email Support.
         console.warn('DB report insert failed, falling back to email client:', error);
         
-        const mailUrl = `mailto:support@yrdly.ng?subject=[Report - ${category}] ${encodeURIComponent(subject)}&body=${encodeURIComponent(description)}`;
+        let bodyText = description;
+        if (uploadedImageUrl) {
+          bodyText += `\n\nAttached Image: ${uploadedImageUrl}`;
+        }
+        
+        const safeSubject = encodeURIComponent(`[Report - ${category}] ${subject}`).replace(/%20/g, ' ');
+        const safeBody = encodeURIComponent(bodyText).replace(/%20/g, ' ');
+        
+        const mailUrl = `mailto:support@yrdly.ng?subject=${safeSubject}&body=${safeBody}`;
         const supported = await Linking.canOpenURL(mailUrl);
         if (supported) {
           await Linking.openURL(mailUrl);
@@ -145,6 +198,27 @@ export default function ReportScreen() {
           />
         </View>
 
+        {/* Attachment */}
+        <Text style={[s.inputLabel, { marginTop: 16 }]}>ATTACHMENT (OPTIONAL)</Text>
+        <TouchableOpacity style={s.imageUploadBtn} onPress={pickImage}>
+          {image ? (
+            <>
+              <Image source={{ uri: image.uri }} style={s.previewImage} contentFit="cover" />
+              <TouchableOpacity
+                style={s.removeImageBtn}
+                onPress={() => setImage(null)}
+              >
+                <Ionicons name="close" size={16} color="#fff" />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Feather name="image" size={24} color={theme.colors.MUTED} />
+              <Text style={s.uploadText}>Tap to select an image</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
         <TouchableOpacity style={s.submitBtn} onPress={handleSubmit} disabled={loading}>
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -173,6 +247,10 @@ const sStylesheet = createStyleSheet(theme => ({
       divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER },
       inputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, height: 48, paddingHorizontal: 16 },
       textInput: { flex: 1, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 14, height: '100%' },
+      imageUploadBtn: { backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, height: 100, justifyContent: 'center', alignItems: 'center', marginTop: 8, overflow: 'hidden' },
+      uploadText: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.MUTED, marginTop: 8 },
+      previewImage: { width: '100%', height: '100%' },
+      removeImageBtn: { position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.6)', width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
       submitBtn: { height: 50, borderRadius: 25, backgroundColor: theme.colors.G, justifyContent: 'center', alignItems: 'center', marginTop: 32 },
       submitBtnText: { fontFamily: 'Inter-SemiBold', fontSize: 15, color: theme.colors.TEXT_PRIMARY },
     }));

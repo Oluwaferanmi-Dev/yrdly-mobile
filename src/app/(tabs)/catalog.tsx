@@ -111,22 +111,22 @@ function DiscoverSection({ currentLoc, search, focusKey }: { currentLoc: Locatio
         
       if (search.trim()) {
         q = q.ilike('name', `%${search.trim()}%`);
-      }
-
-      if (activeFilter) {
-        if (activeFilter.lga) {
-          q = q.eq('home_lga', activeFilter.lga);
-        } else if (activeFilter.state) {
-          q = q.eq('home_state', activeFilter.state);
-        }
       } else {
-        // Default: show people in the same LGA/state as the current user
-        const homeLga = profile.home_lga || profile.location?.lga;
-        const homeState = profile.home_state || profile.location?.state;
-        if (homeLga) {
-          q = q.eq('home_lga', homeLga);
-        } else if (homeState) {
-          q = q.eq('home_state', homeState);
+        if (activeFilter) {
+          if (activeFilter.lga) {
+            q = q.eq('home_lga', activeFilter.lga);
+          } else if (activeFilter.state) {
+            q = q.eq('home_state', activeFilter.state);
+          }
+        } else {
+          // Default: show people in the same LGA/state as the current user
+          const homeLga = profile.home_lga || profile.location?.lga;
+          const homeState = profile.home_state || profile.location?.state;
+          if (homeLga) {
+            q = q.eq('home_lga', homeLga);
+          } else if (homeState) {
+            q = q.eq('home_state', homeState);
+          }
         }
       }
       
