@@ -170,8 +170,7 @@ export default function TabLayout() {
             .in('conversation_id', activeConvIds);
             
           if (unreadData) {
-            const uniqueUnreadConvs = new Set(unreadData.map(m => m.conversation_id));
-            unreadTotal += uniqueUnreadConvs.size;
+            unreadTotal += unreadData.length;
           }
         }
       }
@@ -184,7 +183,6 @@ export default function TabLayout() {
     const channel = supabase
       .channel('messages_badge')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchUnread)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, fetchUnread)
       .subscribe();
 
     return () => {
