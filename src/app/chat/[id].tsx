@@ -397,7 +397,7 @@ function ChatContent() {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: false,
+        allowsEditing: true,
         quality: 0.9,
       });
       if (!result.canceled) {
@@ -416,15 +416,21 @@ function ChatContent() {
       const isVideo = asset.type === 'video';
       const filename = `${user.id}/${Date.now()}.${ext}`;
       
-      const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: 'base64' });
-      const arrayBuffer = decode(base64);
-      
       const bucketName = isVideo ? 'chat-videos' : 'chat-images';
       const mimeExt = ext === 'jpg' ? 'jpeg' : ext;
       
+      let fileBody: ArrayBuffer | Blob;
+      if (isVideo) {
+        const response = await fetch(asset.uri);
+        fileBody = await response.blob();
+      } else {
+        const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: 'base64' });
+        fileBody = decode(base64);
+      }
+      
       const { error: uploadError } = await supabase.storage
         .from(bucketName)
-        .upload(filename, arrayBuffer, { contentType: isVideo ? `video/${mimeExt}` : `image/${mimeExt}` });
+        .upload(filename, fileBody, { contentType: isVideo ? `video/${mimeExt}` : `image/${mimeExt}` });
         
       if (uploadError) throw uploadError;
       
@@ -627,7 +633,7 @@ function ChatContent() {
           ]}
         >
           {imgUrl && (
-            <TouchableOpacity onPress={() => openViewer(imgUrl)}>
+            <TouchableOpacity onPress={() => openViewer(imgUrl)} onLongPress={() => handleMessageLongPress(item)}>
               <View style={{ position: 'relative' }}>
                 <Image 
                   source={{ uri: imgUrl }} 
@@ -645,14 +651,16 @@ function ChatContent() {
             </TouchableOpacity>
           )}
           {vidUrl && (
-            <ChatVideo
-              url={vidUrl}
-              width={220}
-              height={220}
-              borderRadius={14}
-              marginBottom={msgText ? 6 : 0}
-              isFocused={isFocused}
-            />
+            <TouchableOpacity activeOpacity={0.9} onLongPress={() => handleMessageLongPress(item)}>
+              <ChatVideo
+                url={vidUrl}
+                width={220}
+                height={220}
+                borderRadius={14}
+                marginBottom={msgText ? 6 : 0}
+                isFocused={isFocused}
+              />
+            </TouchableOpacity>
           )}
           {!!msgText && (
             <Text style={[stylesheet.bubbleText, { color: isMine ? '#000' : theme.colors.TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 14, fontWeight: isMine ? '600' : '400' }, hasMedia && { paddingHorizontal: 6 }]}>

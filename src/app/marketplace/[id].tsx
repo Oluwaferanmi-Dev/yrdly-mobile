@@ -198,6 +198,20 @@ function MarketplaceDetailContent() {
     }
   };
 
+  const handleBookmarkToggle = async () => {
+    if (!user || !post) return;
+    const newBookmarked = !isBookmarked;
+    setIsBookmarked(newBookmarked);
+    
+    if (newBookmarked) {
+      const { error } = await supabase.from('post_bookmarks').insert({ post_id: post.id, user_id: user.id });
+      if (error) setIsBookmarked(false);
+    } else {
+      const { error } = await supabase.from('post_bookmarks').delete().match({ post_id: post.id, user_id: user.id });
+      if (error) setIsBookmarked(true);
+    }
+  };
+
   const handleMore = () => {
     const isOwner = user?.id === post?.user_id;
     const saveOption = isBookmarked ? 'Unsave Item' : 'Save Item';
@@ -244,19 +258,7 @@ function MarketplaceDetailContent() {
       ]);
     };
 
-    const handleBookmarkToggle = async () => {
-      if (!user || !post) return;
-      const newBookmarked = !isBookmarked;
-      setIsBookmarked(newBookmarked);
-      
-      if (newBookmarked) {
-        const { error } = await supabase.from('post_bookmarks').insert({ post_id: post.id, user_id: user.id });
-        if (error) setIsBookmarked(false);
-      } else {
-        const { error } = await supabase.from('post_bookmarks').delete().match({ post_id: post.id, user_id: user.id });
-        if (error) setIsBookmarked(true);
-      }
-    };
+
 
     if (isOwner) {
       const options = ['Copy Link', saveOption, 'Delete Item', 'Cancel'];
@@ -368,11 +370,13 @@ function MarketplaceDetailContent() {
       </SafeAreaView>
     );
   }
-
-  const imageUrls = post.image_urls?.length ? post.image_urls : post.image_url ? [post.image_url] : [];
+  const parsedImageUrls = Array.isArray(post.image_urls) 
+    ? post.image_urls 
+    : (typeof post.image_urls === 'string' ? JSON.parse(post.image_urls || '[]') : []);
+  const imageUrls = parsedImageUrls.length > 0 ? parsedImageUrls : post.image_url ? [post.image_url] : [];
   const mediaItems = [];
   if (post.video_urls?.[0]) mediaItems.push({ type: 'video', url: post.video_urls?.[0] });
-  imageUrls.forEach(url => mediaItems.push({ type: 'image', url }));
+  imageUrls.forEach((url: string) => mediaItems.push({ type: 'image', url }));
 
   const isOwner = user?.id === post.user_id;
 
@@ -613,7 +617,7 @@ function MarketplaceDetailContent() {
       </View>
 
       <ImageViewing
-        images={imageUrls.map(uri => ({ uri }))}
+        images={imageUrls.map((uri: string) => ({ uri }))}
         imageIndex={currentImageIndex}
         visible={isGalleryVisible}
         onRequestClose={() => setIsGalleryVisible(false)}

@@ -47,9 +47,8 @@ export default function DisputeScreen() {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
-        allowsMultipleSelection: true,
+        allowsEditing: true,
         quality: 0.7,
-        selectionLimit: 5 - photos.length,
       });
       if (!result.canceled) {
         const uris = result.assets.map(a => a.uri);

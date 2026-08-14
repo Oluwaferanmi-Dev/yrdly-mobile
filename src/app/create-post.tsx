@@ -43,7 +43,7 @@ export default function CreatePostScreen() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsMultipleSelection: true,
+        allowsEditing: true,
         quality: 0.8,
         videoMaxDuration: 60,
       });

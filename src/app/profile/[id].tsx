@@ -212,7 +212,7 @@ export default function OtherUserProfileScreen() {
       if (existingChat) {
         router.push(`/chat/${existingChat.id}` as any);
       } else {
-        router.push(`/chat/new?participant_id=${profile.id}&type=general` as any);
+        router.push(`/chat/new?participant_id=${profile.id}&type=friend` as any);
       }
     } catch (err) {
       console.error(err);

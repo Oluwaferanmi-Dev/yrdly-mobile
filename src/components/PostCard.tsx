@@ -174,7 +174,10 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   const heartScale = useSharedValue(0);
   const heartOpacity = useSharedValue(0);
 
-  const urls = post.image_urls?.length ? post.image_urls : post.image_url ? [post.image_url] : [];
+  const parsedUrls = Array.isArray(post.image_urls)
+    ? post.image_urls
+    : (typeof post.image_urls === 'string' ? JSON.parse(post.image_urls || '[]') : []);
+  const urls = parsedUrls.length > 0 ? parsedUrls : post.image_url ? [post.image_url] : [];
 
   useEffect(() => {
     if (isVisible === false) {
@@ -183,7 +186,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
   }, [isVisible]);
 
   useEffect(() => {
-    urls.forEach((url) => {
+    urls.forEach((url: string) => {
       if (!url || imageHeights[url]) return;
 
       if (post.image_width && post.image_height) {
@@ -271,7 +274,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         if ((post.category === 'For Sale' || post.category === 'Event') && onPress) {
           onPress();
         } else if (onOpenImageViewer) {
-          onOpenImageViewer(urls.map(u => ({ uri: u })), index);
+          onOpenImageViewer(urls.map((u: string) => ({ uri: u })), index);
         }
       }, DOUBLE_PRESS_DELAY);
     }
@@ -600,7 +603,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           />
           {urls.length > 1 && (
             <View style={stylesheet.paginationDots}>
-              {urls.map((_, i) => (
+              {urls.map((_: any, i: number) => (
                 <View key={i} style={[stylesheet.carouselDot, activeImageIndex === i ? [stylesheet.activeDot, { backgroundColor: theme.colors.G }] : stylesheet.inactiveDot]} />
               ))}
             </View>

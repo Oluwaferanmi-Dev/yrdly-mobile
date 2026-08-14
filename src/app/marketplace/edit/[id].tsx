@@ -89,7 +89,7 @@ export default function EditMarketplaceItemScreen() {
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
+      allowsEditing: true,
       quality: 0.8,
     });
     if (!result.canceled) {

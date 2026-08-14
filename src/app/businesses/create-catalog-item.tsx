@@ -64,9 +64,8 @@ export default function CreateCatalogItemScreen() {
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
+      allowsEditing: true,
       quality: 0.8,
-      allowsMultipleSelection: true,
     });
     if (!result.canceled) {
       setImageUris(prev => [...prev, ...result.assets.map(a => a.uri)]);

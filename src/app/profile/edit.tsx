@@ -219,7 +219,7 @@ export default function EditProfileScreen() {
                 <Text style={{ fontSize: 16 }}>🇳🇬</Text>
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={s.verifiedLabel}>PHONE</Text>
-                  <Text style={s.verifiedValue}>{(profile as any)?.phone || '+234 801 *** *678'}</Text>
+                  <Text style={s.verifiedValue}>{(profile as any)?.phone || user?.phone || ''}</Text>
                 </View>
                 { (profile as any)?.phone_verified && (
                   <View style={s.verifiedBadge}>

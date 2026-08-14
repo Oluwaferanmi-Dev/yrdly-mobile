@@ -67,15 +67,22 @@ export class StorageService {
 
       const mimeType = options?.contentType || this.getMimeType(file.name, file.type);
 
-      // Read local file as base64 string
-      const base64 = await FileSystem.readAsStringAsync(file.uri, { encoding: 'base64' });
+      let fileBody: ArrayBuffer | Blob;
       
-      // Decode base64 to ArrayBuffer (bulletproof for Supabase RN upload)
-      const arrayBuffer = decode(base64);
+      if (mimeType.startsWith('video/')) {
+        // Use fetch for large files like videos to avoid Out Of Memory crashes
+        const response = await fetch(file.uri);
+        fileBody = await response.blob();
+      } else {
+        // Read local file as base64 string
+        const base64 = await FileSystem.readAsStringAsync(file.uri, { encoding: 'base64' });
+        // Decode base64 to ArrayBuffer (bulletproof for Supabase RN upload)
+        fileBody = decode(base64);
+      }
 
       const { data, error } = await supabase.storage
         .from(bucket)
-        .upload(path, arrayBuffer, {
+        .upload(path, fileBody, {
           cacheControl: options?.cacheControl || '3600',
           upsert: false,
           contentType: mimeType,
