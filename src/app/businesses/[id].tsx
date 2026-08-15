@@ -6,7 +6,7 @@ import { Image } from 'expo-image';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '../../components/Avatar';
-import { VerifiedBadge } from '../../components/VerifiedBadge';
+import { VerifiedBadge, BusinessBadge } from '../../components/VerifiedBadge';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -289,6 +289,9 @@ export default function BusinessProfileScreen() {
                 <VerifiedBadge size={18} />
               </View>
             )}
+            <View style={{ marginLeft: 4 }}>
+              <BusinessBadge size={18} />
+            </View>
           </View>
 
           <Text style={sStylesheet.catLocationTxt}>{business.category || 'Business'} · {getLocStr()}</Text>

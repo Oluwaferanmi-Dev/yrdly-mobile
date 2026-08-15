@@ -222,17 +222,24 @@ export default function CreatePostScreen() {
                               source={{ uri: file.uri }}
                               style={stylesheet.attachedImage}
                             />
-                            {file.type?.startsWith('video/') && (
+                            {file.type?.startsWith('video/') && !posting && (
                               <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)'}}>
                                 <Ionicons name="play-circle" size={32} color="#fff" />
                               </View>
                             )}
-                            <TouchableOpacity 
-                              style={stylesheet.removePhotoBtn}
-                              onPress={() => setAttachedFiles(p => p.filter((_, j) => j !== i))}
-                            >
-                              <Feather name="x" size={14} color="#fff" />
-                            </TouchableOpacity>
+                            {posting && (
+                              <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8}}>
+                                <ActivityIndicator size="small" color="#fff" />
+                              </View>
+                            )}
+                            {!posting && (
+                              <TouchableOpacity 
+                                style={stylesheet.removePhotoBtn}
+                                onPress={() => setAttachedFiles(p => p.filter((_, j) => j !== i))}
+                              >
+                                <Feather name="x" size={14} color="#fff" />
+                              </TouchableOpacity>
+                            )}
                           </View>
                         );
             })}

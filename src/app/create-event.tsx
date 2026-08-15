@@ -190,6 +190,8 @@ export default function CreateEventScreen() {
             const uploadedImages = await Promise.all(
               filesToUpload.map((file) => StorageService.uploadPostImage(user.id, file))
             );
+            const failedImage = uploadedImages.find(res => res.error);
+            if (failedImage) throw new Error('Failed to upload one or more images.');
             imageUrls = uploadedImages.map(res => res.url).filter(Boolean) as string[];
           }
 
@@ -197,6 +199,8 @@ export default function CreateEventScreen() {
             const uploadedVideos = await Promise.all(
               videos.map((file) => StorageService.uploadPostVideo(user.id, file))
             );
+            const failedVideo = uploadedVideos.find(res => res.error);
+            if (failedVideo) throw new Error('Failed to upload one or more videos.');
             videoUrls = uploadedVideos.map(res => res.url).filter(Boolean) as string[];
           }
         }
@@ -582,9 +586,14 @@ export default function CreateEventScreen() {
                   style={[stylesheet.photoBox, i === coverIndex && { borderWidth: 2, borderColor: theme.colors.G }]}
                 >
                   <Image source={{ uri: f.uri }} style={stylesheet.photoImg} />
-                  {f.type?.startsWith('video/') && (
+                  {f.type?.startsWith('video/') && !posting && (
                     <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)'}}>
                       <Ionicons name="play-circle" size={32} color="#fff" />
+                    </View>
+                  )}
+                  {posting && (
+                    <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12}}>
+                      <ActivityIndicator size="small" color="#fff" />
                     </View>
                   )}
                   {i === coverIndex && (
@@ -592,18 +601,20 @@ export default function CreateEventScreen() {
                       <Text style={stylesheet.coverBadgeText}>COVER</Text>
                     </View>
                   )}
-                  <TouchableOpacity 
-                    style={stylesheet.removePhoto} 
-                    onPress={() => {
-                      setAttachedFiles(f => f.filter((_, idx) => idx !== i));
-                      if (coverIndex === i) setCoverIndex(0);
-                      else if (coverIndex > i) setCoverIndex(c => c - 1);
-                    }}
-                  >
-                    <View style={{ backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: 4 }}>
-                      <Feather name="x" size={14} color="#fff" />
-                    </View>
-                  </TouchableOpacity>
+                  {!posting && (
+                    <TouchableOpacity 
+                      style={stylesheet.removePhoto} 
+                      onPress={() => {
+                        setAttachedFiles(f => f.filter((_, idx) => idx !== i));
+                        if (coverIndex === i) setCoverIndex(0);
+                        else if (coverIndex > i) setCoverIndex(c => c - 1);
+                      }}
+                    >
+                      <View style={{ backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: 4 }}>
+                        <Feather name="x" size={14} color="#fff" />
+                      </View>
+                    </TouchableOpacity>
+                  )}
                 </TouchableOpacity>
               ))}
               {attachedFiles.length < 5 && (

@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 import { UserReviewService } from '../../lib/user-review-service';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
-import { VerifiedBadge, BusinessBadge, MarketplaceBadge } from '../../components/VerifiedBadge';
+import { VerifiedBadge, MarketplaceBadge } from '../../components/VerifiedBadge';
 import { Avatar } from '../../components/Avatar';
 
 interface UserProfile {
@@ -343,9 +343,7 @@ export default function OtherUserProfileScreen() {
                 {profile.phone_verified && (
                   <VerifiedBadge size={16} />
                 )}
-                {hasBusiness && (
-                  <BusinessBadge size={16} />
-                )}
+
                 {hasMarketplace && (
                   <MarketplaceBadge size={16} />
                 )}

@@ -12,7 +12,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
-import { VerifiedBadge, BusinessBadge, MarketplaceBadge } from '../../components/VerifiedBadge';
+import { VerifiedBadge, MarketplaceBadge } from '../../components/VerifiedBadge';
 import { Avatar } from '../../components/Avatar';
 import Animated, { FadeIn, FadeOut, Layout, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
@@ -289,9 +289,7 @@ export default function ProfileTab() {
                 {profile?.phone_verified && (
                   <VerifiedBadge size={16} />
                 )}
-                {hasBusiness && (
-                  <BusinessBadge size={16} />
-                )}
+
                 {hasMarketplace && (
                   <MarketplaceBadge size={16} />
                 )}

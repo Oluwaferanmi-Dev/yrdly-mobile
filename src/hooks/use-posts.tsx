@@ -514,7 +514,11 @@ export const usePosts = (filter?: LocationFilter | null) => {
             }
         })
     );
-    return uploadedUrls.filter(url => url !== null) as string[];
+    const filteredUrls = uploadedUrls.filter(url => url !== null) as string[];
+    if (filteredUrls.length < files.length) {
+      throw new Error('Failed to upload one or more images.');
+    }
+    return filteredUrls;
   }, [user]);
 
   const createPost = useCallback(
@@ -560,6 +564,8 @@ export const usePosts = (filter?: LocationFilter | null) => {
           const uploadedVideos = await Promise.all(
             videoFiles.map((file) => StorageService.uploadPostVideo(user.id, file))
           );
+          const failedVideo = uploadedVideos.find(res => res.error);
+          if (failedVideo) throw new Error('Failed to upload one or more videos.');
           videoUrls = uploadedVideos.map(res => res.url).filter(Boolean) as string[];
         }
 

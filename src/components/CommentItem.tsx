@@ -104,11 +104,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
             {item.user?.name || item.author_name}
           </Text>
           {(item.user?.phone_verified || item.phone_verified) && (
-            <View style={{ marginLeft: 4 }}>
-              <VerifiedBadge size={12} />
-            </View>
+            <VerifiedBadge size={12} />
           )}
-          <Text style={[styles.timestamp, { color: '#9CA3AF' }]}>{timeAgo(item.timestamp)}</Text>
+          <Text style={[styles.timestamp, { color: '#9CA3AF', marginLeft: 6 }]}>{timeAgo(item.timestamp)}</Text>
         </View>
 
         <Text style={[styles.commentText, { color: '#9CA3AF' }]}>
@@ -213,7 +211,7 @@ const _stylesheet = createStyleSheet(theme => ({
   authorName: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 13,
-    marginRight: 8,
+    marginRight: 4,
   },
   timestamp: {
     fontFamily: 'Inter-Regular',
