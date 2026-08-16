@@ -45,11 +45,15 @@ export function OneSignalVerificationDialog() {
       if (id && !id.startsWith('local-')) {
         setHasShown(true);
         Alert.alert(
-          'Your OneSignal SDK integration is complete!',
-          'You can now send Push Notifications & In-App Messages through OneSignal. Tap below to enable push notifications.',
+          'Stay connected to your neighborhood',
+          'Get notified when someone messages you, comments on your post, sends a friend request, or when something important happens near you.',
           [
             {
-              text: 'Got it',
+              text: 'Maybe later',
+              style: 'cancel',
+            },
+            {
+              text: 'Enable notifications',
               onPress: () => {
                 oneSignalService.requestPermission();
               },
