@@ -76,7 +76,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "react-native-onesignal",
+      [
+        "onesignal-expo-plugin",
+        {
+          "mode": "development"
+        }
+      ],
       [
         "expo-notifications",
         {
