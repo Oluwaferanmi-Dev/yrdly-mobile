@@ -10,7 +10,6 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../../context/ThemeContext';
 import { Avatar } from '../../../components/Avatar';
 
 type DisputeStatus = 'all' | 'open' | 'under_review' | 'resolved' | 'closed';
@@ -41,8 +40,7 @@ export default function AdminDisputesScreen() {
 
   const router = useRouter();
   const { user } = useAuth();
-  const { colors } = useAppTheme();
-
+  
   const [disputes, setDisputes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

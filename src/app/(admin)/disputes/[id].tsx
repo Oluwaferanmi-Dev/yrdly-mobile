@@ -10,7 +10,6 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../../context/ThemeContext';
 import { Avatar } from '../../../components/Avatar';
 
 const RESOLUTION_OPTIONS = [
@@ -38,8 +37,7 @@ export default function AdminDisputeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { colors } = useAppTheme();
-
+  
   const [dispute, setDispute] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [resolving, setResolving] = useState(false);

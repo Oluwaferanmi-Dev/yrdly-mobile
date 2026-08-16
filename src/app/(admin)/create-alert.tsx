@@ -24,7 +24,7 @@ export default function CreateAlertScreen() {
 
   const router = useRouter();
   const { profile } = useAuth();
-  const { colors, isDarkMode } = useAppTheme();
+  const { isDarkMode } = useAppTheme();
   
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState<'amber' | 'missing_person' | 'community_safety'>('amber');
