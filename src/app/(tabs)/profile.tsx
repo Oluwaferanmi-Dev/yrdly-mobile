@@ -78,6 +78,7 @@ export default function ProfileTab() {
         .from('posts')
         .select('*')
         .eq('user_id', user.id)
+        .neq('moderation_status', 'rejected')
         .order('timestamp', { ascending: false });
 
       if (error) throw error;
@@ -133,7 +134,7 @@ export default function ProfileTab() {
       if (eventRes.error) throw eventRes.error;
       
       const extractedPosts = postRes.data
-        .filter(item => item.posts != null)
+        .filter(item => item.posts != null && (item.posts as any).moderation_status !== 'rejected')
         .map(item => ({ ...(item.posts as any), bookmark_created_at: item.created_at }));
         
       const extractedEvents = eventRes.data

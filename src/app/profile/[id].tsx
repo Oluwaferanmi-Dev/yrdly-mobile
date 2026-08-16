@@ -99,6 +99,7 @@ export default function OtherUserProfileScreen() {
           )
         `)
         .eq('user_id', id)
+        .eq('moderation_status', 'approved')
         .order('created_at', { ascending: false });
       
       if (postData) {

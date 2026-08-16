@@ -19,6 +19,7 @@ import { formatPrice } from '../lib/utils';
 import { EventCard } from '../components/EventCard';
 import { ImageCarousel } from '../components/ImageCarousel';
 import { useCategories } from '../hooks/use-categories';
+import { ModerationService } from '../lib/moderation-service';
 
 const STEPS = ['Basic Info', 'Date & Time', 'Location', 'Tickets', 'Photos', 'Review'];
 
@@ -64,6 +65,7 @@ export default function CreateEventScreen() {
   const [publishing, setPublishing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [published, setPublished] = useState(false);
+  const [moderationStatus, setModerationStatus] = useState<'approved' | 'pending'>('approved');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
 
   const progress = useSharedValue(0.16);
@@ -257,6 +259,27 @@ export default function CreateEventScreen() {
         const startISO = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), startTime.getHours(), startTime.getMinutes()).toISOString();
         const endISO = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), endTime.getHours(), endTime.getMinutes()).toISOString();
 
+        // 1. Moderate Text Before Uploading Media
+        let modStatus = 'approved';
+        let modReason = '';
+        const textToModerate = [eventName.trim(), desc.trim()].filter(Boolean).join(' ');
+        if (textToModerate) {
+           const textMod = await ModerationService.checkText(textToModerate);
+           if (!textMod.isSafe) {
+              modStatus = 'pending';
+              modReason = textMod.reason || 'Flagged text content';
+           }
+        }
+        
+        // Moderate uploaded images
+        if (imageUrls.length > 0) {
+          const imageMod = await ModerationService.checkImages('post-images', imageUrls);
+          if (!imageMod.isSafe) {
+             modStatus = 'pending';
+             modReason = imageMod.reason || 'Flagged image content';
+          }
+        }
+
         const { data: newEvent, error: eventErr } = await supabase
           .from('events')
           .insert({
@@ -267,6 +290,7 @@ export default function CreateEventScreen() {
             cover_image_url: coverUrl,
             video_urls: videoUrls,
             image_urls: imageUrls,
+            moderation_status: modStatus,
             start_time: startISO,
             end_time: endISO,
             location_address: venue.trim() || (isOnline ? 'Online Event' : 'TBA'),
@@ -316,13 +340,27 @@ export default function CreateEventScreen() {
           lga: isOnline ? null : (postLga || null),
           ward: isOnline ? null : (postWard || null),
           visibility: visibility,
+          moderation_status: modStatus,
           timestamp: new Date().toISOString(),
           liked_by: [],
           comment_count: 0,
         });
+        
+        if (modStatus === 'pending') {
+            await supabase.from('moderation_queue').insert({
+                content_id: newEvent.id,
+                table_name: 'events',
+                user_id: user.id,
+                status: 'pending',
+                reason: modReason,
+                text_content: textToModerate,
+                image_urls: imageUrls,
+            });
+        }
 
         setPublishing(false);
         setUploadProgress(0);
+        setModerationStatus(modStatus as any);
         setPublished(true);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } catch (err: any) {
@@ -342,6 +380,27 @@ export default function CreateEventScreen() {
   };
 
   if (published) {
+    if (moderationStatus === 'pending') {
+      return (
+        <View style={[stylesheet.successContainer, { backgroundColor: theme.colors.DARK }]}>
+          <View style={[stylesheet.successIcon, { backgroundColor: 'rgba(255, 165, 0, 0.12)', borderColor: 'rgba(255, 165, 0, 0.25)' }]}>
+            <Feather name="clock" size={34} color="#FFA500" />
+          </View>
+          <Text style={stylesheet.successTitle}>Sent for Moderation</Text>
+          <Text style={stylesheet.successDesc}>Your event was flagged and has been sent for admin review. It will appear on the feed once approved.</Text>
+          <TouchableOpacity 
+            style={stylesheet.btnPrimary}
+            onPress={() => {
+              if (router.canDismiss()) router.dismissAll();
+              router.push('/(tabs)/catalog');
+            }}
+          >
+            <Text style={stylesheet.btnPrimaryText}>Explore Events</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    
     return (
       <View style={[stylesheet.successContainer, { backgroundColor: theme.colors.DARK }]}>
         <View style={stylesheet.successIcon}>

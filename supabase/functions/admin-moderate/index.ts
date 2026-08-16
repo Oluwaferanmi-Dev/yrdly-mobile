@@ -108,6 +108,9 @@ serve(async (req) => {
             updatePayload.images = finalUrls;
         } else {
             updatePayload.image_urls = finalUrls;
+            if (queueItem.table_name === 'events') {
+                updatePayload.cover_image_url = finalUrls[0];
+            }
         }
     }
     

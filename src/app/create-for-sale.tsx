@@ -19,6 +19,7 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 import * as FileSystem from 'expo-file-system/legacy';
 import { formatPrice } from '../lib/utils';
 import { useCategories } from '../hooks/use-categories';
+import { ModerationService } from '../lib/moderation-service';
 
 const STEPS = ['Photos', 'Details', 'Description', 'Review'];
 const CONDITIONS = ['New', 'Used – Like New', 'Used – Good', 'Fair'];
@@ -47,6 +48,7 @@ export default function CreateForSaleScreen() {
   const [listing, setListing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [listed, setListed] = useState(false);
+  const [moderationStatus, setModerationStatus] = useState<'approved' | 'pending'>('approved');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
 
   const [postState, setPostState] = useState('');
@@ -234,7 +236,28 @@ export default function CreateForSaleScreen() {
           : null;
         const coverDims = coverFile ? (imageDimsMap[coverFile.uri] ?? null) : null;
 
-        const { error } = await supabase
+        // 1. Moderate Text Before Uploading Media
+        let modStatus = 'approved';
+        let modReason = '';
+        const textToModerate = [title.trim(), desc.trim()].filter(Boolean).join(' ');
+        if (textToModerate) {
+           const textMod = await ModerationService.checkText(textToModerate);
+           if (!textMod.isSafe) {
+              modStatus = 'pending';
+              modReason = textMod.reason || 'Flagged text content';
+           }
+        }
+        
+        // Moderate uploaded images
+        if (imageUrls.length > 0) {
+          const imageMod = await ModerationService.checkImages('post-images', imageUrls);
+          if (!imageMod.isSafe) {
+             modStatus = 'pending';
+             modReason = imageMod.reason || 'Flagged image content';
+          }
+        }
+
+        const { data: newPost, error } = await supabase
           .from('posts')
           .insert({
             user_id: user.id,
@@ -252,6 +275,7 @@ export default function CreateForSaleScreen() {
             image_height: coverDims?.h ?? null,
             is_sold: false,
             visibility: visibility,
+            moderation_status: modStatus,
             state: postState || null,
             lga: postLga || null,
             ward: postWard || null,
@@ -261,13 +285,27 @@ export default function CreateForSaleScreen() {
             timestamp: new Date().toISOString(),
             liked_by: [],
             comment_count: 0,
-          });
+          })
+          .select('id')
+          .single();
 
         setListing(false);
         setUploadProgress(0);
         if (error) {
           Alert.alert('Error', error.message || 'Failed to publish listing.');
         } else {
+          if (modStatus === 'pending' && newPost) {
+              await supabase.from('moderation_queue').insert({
+                  content_id: newPost.id,
+                  table_name: 'posts',
+                  user_id: user.id,
+                  status: 'pending',
+                  reason: modReason,
+                  text_content: textToModerate,
+                  image_urls: imageUrls,
+              });
+          }
+          setModerationStatus(modStatus as any);
           setListed(true);
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
@@ -288,6 +326,33 @@ export default function CreateForSaleScreen() {
   };
 
   if (listed) {
+    if (moderationStatus === 'pending') {
+      return (
+        <View style={[stylesheet.successContainer, { backgroundColor: theme.colors.DARK }]}>
+          <View style={[stylesheet.successIcon, { backgroundColor: 'rgba(255, 165, 0, 0.12)', borderColor: 'rgba(255, 165, 0, 0.25)' }]}>
+            <Feather name="clock" size={34} color="#FFA500" />
+          </View>
+          <Text style={stylesheet.successTitle}>Sent for Moderation</Text>
+          <Text style={stylesheet.successDesc}>Your listing was flagged and has been sent for admin review. It will appear on the feed once approved.</Text>
+          <TouchableOpacity 
+            style={stylesheet.btnPrimary}
+            onPress={() => {
+              if (router.canDismiss()) router.dismissAll();
+              router.push('/(tabs)/catalog');
+            }}
+          >
+            <Text style={stylesheet.btnPrimaryText}>View Marketplace</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            if (router.canDismiss()) router.dismissAll();
+            router.push('/(tabs)');
+          }}>
+            <Text style={stylesheet.btnText}>Back to Feed</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    
     return (
       <View style={[stylesheet.successContainer, { backgroundColor: theme.colors.DARK }]}>
         <View style={stylesheet.successIcon}>

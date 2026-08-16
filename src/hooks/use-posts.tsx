@@ -764,8 +764,11 @@ export const usePosts = (filter?: LocationFilter | null) => {
         if (user) {
           await UserActivityService.updateUserActivity(user.id);
         }
+
+        return { moderationStatus };
       } catch (error) {
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to save post.' });
+        throw error;
       }
     },
     [user, profile, toast, uploadImages]
@@ -886,8 +889,11 @@ export const usePosts = (filter?: LocationFilter | null) => {
         if (user) {
           await UserActivityService.updateUserActivity(user.id);
         }
+        
+        return { moderationStatus };
       } catch (error) {
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to save business.' });
+        throw error;
       }
     },
     [user, profile, toast, uploadImages]

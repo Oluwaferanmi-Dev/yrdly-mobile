@@ -25,6 +25,7 @@ export default function CreatePostScreen() {
   const [posting, setPosting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [posted, setPosted] = useState(false);
+  const [moderationStatus, setModerationStatus] = useState<'approved' | 'pending'>('approved');
   const [attachedFiles, setAttachedFiles] = useState<MobileFile[]>([]);
   // Keyed by URI so dims stay correct if the user removes images before posting
   const [imageDimsMap, setImageDimsMap] = useState<Record<string, { w: number; h: number }>>({});
@@ -120,7 +121,7 @@ export default function CreatePostScreen() {
       // Resolve dims for whichever image will become image_urls[0]
       const firstImageDims = images.length > 0 ? (imageDimsMap[images[0].uri] ?? null) : null;
 
-      await createPost(
+      const result = await createPost(
         {
           text: text.trim(),
           category: category as any,
@@ -137,6 +138,7 @@ export default function CreatePostScreen() {
       setPosting(false);
       setUploadProgress(0);
       setPosted(true);
+      setModerationStatus(result?.moderationStatus as any || 'approved');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error: any) {
       setPosting(false);
@@ -148,6 +150,24 @@ export default function CreatePostScreen() {
   const hasContent = text.trim().length > 0 || attachedFiles.length > 0;
 
   if (posted) {
+    if (moderationStatus === 'pending') {
+      return (
+        <View style={[stylesheet.successContainer, { backgroundColor: theme.colors.DARK }]}>
+          <View style={[stylesheet.successIcon, { backgroundColor: 'rgba(255, 165, 0, 0.12)', borderColor: 'rgba(255, 165, 0, 0.25)' }]}>
+            <Feather name="clock" size={34} color="#FFA500" />
+          </View>
+          <Text style={stylesheet.successTitle}>Sent for Moderation</Text>
+          <Text style={stylesheet.successDesc}>Your post was flagged and has been sent for admin review. It will appear on the feed once approved.</Text>
+          <TouchableOpacity 
+            style={stylesheet.backButton}
+            onPress={() => router.replace('/(tabs)')}
+          >
+            <Text style={stylesheet.backButtonText}>Back to Feed</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
     return (
       <View style={[stylesheet.successContainer, { backgroundColor: theme.colors.DARK }]}>
         <View style={stylesheet.successIcon}>

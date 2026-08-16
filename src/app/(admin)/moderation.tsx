@@ -139,7 +139,7 @@ export default function ModerationQueueScreen() {
   const handleResolve = async (queueId: string, action: 'approve' | 'reject') => {
     try {
       const { data, error } = await supabase.functions.invoke('admin-moderate', {
-        body: { queue_id: queueId, action }
+        body: { queue_id: queueId, decision: action === 'approve' ? 'approved' : 'rejected' }
       });
 
       if (error) throw error;
