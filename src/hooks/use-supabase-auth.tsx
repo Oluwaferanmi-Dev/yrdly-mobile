@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { AuthService, AuthUser } from '@/lib/auth-service';
 import { supabase } from '@/lib/supabase';
+import { oneSignalService } from '@/lib/onesignal';
 import { usePostHog } from 'posthog-react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import NetInfo from '@react-native-community/netinfo';
@@ -218,6 +219,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (posthog) {
             posthog.identify(user.id);
           }
+          oneSignalService.login(user.id);
 
           try {
             let userProfile = null;
@@ -375,6 +377,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         posthog.capture('user_signed_out');
         posthog.reset();
       }
+      oneSignalService.logout();
       FileSystem.deleteAsync(PROFILE_CACHE_FILE, { idempotent: true }).catch(() => {});
       const result = await AuthService.signOut();
       setUser(null);

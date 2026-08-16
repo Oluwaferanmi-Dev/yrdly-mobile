@@ -13,6 +13,7 @@ import { PostHogProvider } from 'posthog-react-native';
 import { setAudioModeAsync } from 'expo-audio';
 import { OfflineBanner } from '../components/OfflineBanner';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { oneSignalService, OneSignalVerificationDialog } from '../lib/onesignal';
 import { useFonts } from 'expo-font';
 import {
   Outfit_300Light,
@@ -152,6 +153,8 @@ import { getStoredThemePreference } from '../lib/theme-preference';
 
 export default function Layout() {
   useEffect(() => {
+    oneSignalService.initialize();
+    
     getStoredThemePreference().then(theme => {
       if (theme) {
         UnistylesRuntime.setTheme(theme);
@@ -198,6 +201,7 @@ export default function Layout() {
                     <NotificationBadgeProvider>
                       <AudioSettingsHandler />
                       <NotificationsHandler />
+                      <OneSignalVerificationDialog />
                       <RootNavigationGuard />
                     </NotificationBadgeProvider>
                   </LocationProvider>
@@ -215,6 +219,7 @@ export default function Layout() {
                   <NotificationBadgeProvider>
                     <AudioSettingsHandler />
                     <NotificationsHandler />
+                    <OneSignalVerificationDialog />
                     <RootNavigationGuard />
                   </NotificationBadgeProvider>
                 </LocationProvider>
