@@ -256,14 +256,26 @@ export const usePosts = (filter?: LocationFilter | null) => {
           // Don't show sold items in the feed
           if (newPost.category === 'For Sale' && newPost.is_sold) return;
           
-          // Check if post already exists in state
-          setPosts(currentPosts => {
-            if (currentPosts.some(p => p.id === newPost.id)) return currentPosts;
-            return [newPost, ...currentPosts];
-          });
+          // Check private visibility
+          const isPrivate = newPost.visibility === 'private' || (newPost as any).is_private;
           
-          // Fetch user data for the new post
-          const fetchUserData = async () => {
+          const handleInsert = async () => {
+            if (isPrivate && user && newPost.user_id !== user.id) {
+              const [following, followers] = await Promise.all([
+                supabase.from('followers').select('id').eq('follower_id', user.id).eq('following_id', newPost.user_id).maybeSingle(),
+                supabase.from('followers').select('id').eq('follower_id', newPost.user_id).eq('following_id', user.id).maybeSingle(),
+              ]);
+              // If not mutual friends, skip this post
+              if (!following.data || !followers.data) return;
+            }
+
+            // Check if post already exists in state
+            setPosts(currentPosts => {
+              if (currentPosts.some(p => p.id === newPost.id)) return currentPosts;
+              return [newPost, ...currentPosts];
+            });
+            
+            // Fetch user data for the new post
             try {
               const { data: userData, error: userError } = await supabase
                 .from('users')
@@ -277,15 +289,11 @@ export const usePosts = (filter?: LocationFilter | null) => {
                   user: userData
                 };
                 setPosts(prevPosts => prevPosts.map(p => p.id === newPost.id ? postWithUser : p));
-              } else {
-                // Keep the post as is (already added)
               }
-            } catch (error) {
-              // Keep the post as is (already added)
-            }
+            } catch (error) {}
           };
           
-          fetchUserData();
+          handleInsert();
         } else if (payload.eventType === 'UPDATE') {
           // Update existing post in the list
           const updatedPost = payload.new as Post;

@@ -403,12 +403,15 @@ function ChatContent() {
     if (sending || uploadingMedia) return;
     try {
       const isPhoto = type === 'photo';
-      const image = await ImagePicker.openPicker({
-        mediaType: type,
-        cropping: isPhoto,
-        freeStyleCropEnabled: isPhoto,
-        compressImageQuality: 0.9,
-      });
+      const options: any = { mediaType: type };
+      
+      if (isPhoto) {
+        options.cropping = true;
+        options.freeStyleCropEnabled = true;
+        options.compressImageQuality = 0.9;
+      }
+      
+      const image = await ImagePicker.openPicker(options);
 
       if (image) {
         uploadAndSendMedia({
@@ -419,6 +422,7 @@ function ChatContent() {
     } catch (e: any) {
       if (e.message !== 'User cancelled image selection' && e.message !== 'User cancelled') {
         console.log('ImagePicker error:', e);
+        Alert.alert('Error', e.message || 'Failed to pick media');
       }
     }
   };

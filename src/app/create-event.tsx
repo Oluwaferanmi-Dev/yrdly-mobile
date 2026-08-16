@@ -90,12 +90,15 @@ export default function CreateEventScreen() {
   const pickMedia = async (type: 'photo' | 'video') => {
     try {
       const isPhoto = type === 'photo';
-      const image = await ImagePicker.openPicker({
-        mediaType: type,
-        cropping: isPhoto,
-        freeStyleCropEnabled: isPhoto,
-        compressImageQuality: 0.8,
-      });
+      const options: any = { mediaType: type };
+      
+      if (isPhoto) {
+        options.cropping = true;
+        options.freeStyleCropEnabled = true;
+        options.compressImageQuality = 0.8;
+      }
+      
+      const image = await ImagePicker.openPicker(options);
 
       if (image) {
         let validFiles: MobileFile[] = [];
@@ -135,7 +138,7 @@ export default function CreateEventScreen() {
       }
     } catch (e: any) {
       if (e.message !== 'User cancelled image selection' && e.message !== 'User cancelled') {
-        Alert.alert('Error', 'Failed to pick media');
+        Alert.alert('Error', e.message || 'Failed to pick media');
       }
     }
   };
