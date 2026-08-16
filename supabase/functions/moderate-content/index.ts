@@ -53,6 +53,7 @@ serve(async (req) => {
 
       const formData = new FormData()
       formData.append('text', textToModerate)
+      formData.append('lang', 'en')
       formData.append('mode', 'rules')
       formData.append('api_user', apiUser)
       formData.append('api_secret', apiSecret)

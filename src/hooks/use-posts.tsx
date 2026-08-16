@@ -696,7 +696,12 @@ export const usePosts = (filter?: LocationFilter | null) => {
             
             if (error) throw error;
             if (updatedPost) {
-              setPosts(prev => prev.map(p => p.id === updatedPost.id ? (updatedPost as Post) : p));
+              if (moderationStatus === 'approved') {
+                setPosts(prev => prev.map(p => p.id === updatedPost.id ? (updatedPost as Post) : p));
+              } else {
+                // If it became pending after an edit, remove it from the local feed
+                setPosts(prev => prev.filter(p => p.id !== updatedPost.id));
+              }
               
               if (moderationStatus === 'pending') {
                   await supabase.from('moderation_queue').insert({
@@ -728,10 +733,12 @@ export const usePosts = (filter?: LocationFilter | null) => {
             
             if (error) throw error;
             if (newPost) {
-              setPosts(prev => {
-                if (prev.some(p => p.id === newPost.id)) return prev;
-                return [newPost as Post, ...prev];
-              });
+              if (moderationStatus === 'approved') {
+                setPosts(prev => {
+                  if (prev.some(p => p.id === newPost.id)) return prev;
+                  return [newPost as Post, ...prev];
+                });
+              }
               
               if (moderationStatus === 'pending') {
                   await supabase.from('moderation_queue').insert({
