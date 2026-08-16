@@ -110,7 +110,7 @@ export default function HomeTab() {
     const { styles: stylesheet, theme } = useStyles(sStylesheet);
 
   const { user, profile } = useAuth();
-  const { colors, isDarkMode } = useAppTheme();
+  const { isDarkMode } = useAppTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { activeFilter } = useLocation();
@@ -342,8 +342,8 @@ export default function HomeTab() {
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={onRefresh} 
-            tintColor={colors.tint} 
-            colors={[colors.tint]} 
+            tintColor={theme.colors.G} 
+            colors={[theme.colors.G]} 
             progressViewOffset={HEADER_HEIGHT}
           />
         }
@@ -371,7 +371,7 @@ export default function HomeTab() {
         contentContainerStyle={[stylesheet.listContent, { paddingTop: HEADER_HEIGHT, paddingBottom: 80 }]}
         ListEmptyComponent={
           <View style={stylesheet.emptyContainer}>
-            <Text style={[stylesheet.emptyText, { color: colors.textMuted }]}>No posts yet. Be the first to post!</Text>
+            <Text style={[stylesheet.emptyText, { color: theme.colors.MUTED }]}>No posts yet. Be the first to post!</Text>
           </View>
         }
         onEndReached={fetchMore}

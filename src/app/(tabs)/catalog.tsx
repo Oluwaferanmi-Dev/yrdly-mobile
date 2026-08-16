@@ -11,7 +11,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../context/ThemeContext';
 import { useLocation } from '../../context/LocationContext';
 import { MarketplaceItemCard } from '../../components/MarketplaceItemCard';
 import { Skeleton } from '../../components/Skeleton';
@@ -76,7 +75,7 @@ function NearbyUserCard({ user, currentLoc, sStylesheet, theme, onPress, focusKe
         disabled={actionLoading}
       >
         {actionLoading ? (
-          <ActivityIndicator size="small" color={theme.colors.tint} />
+          <ActivityIndicator size="small" color={theme.colors.G} />
         ) : (
           <Text style={[sStylesheet.connectBtnText, (isFollowing || isMutual) && sStylesheet.connectBtnTextActive]}>
             {isMutual ? 'Friends' : isFollowing ? 'Following' : isFollower ? 'Follow Back' : 'Follow'}

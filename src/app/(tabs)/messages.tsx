@@ -10,7 +10,6 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Swipeable } from 'react-native-gesture-handler';
 type ConvType = 'friend' | 'marketplace' | 'briefcase';
@@ -50,8 +49,7 @@ export default function MessagesTab() {
 
   const router = useRouter();
   const { user, profile } = useAuth();
-  const { colors } = useAppTheme();
-  const insets = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);

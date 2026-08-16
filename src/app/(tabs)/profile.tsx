@@ -9,7 +9,6 @@ import { supabase } from '../../lib/supabase';
 import { PostSkeleton } from '../../components/Skeleton';
 import { Post } from '../../types';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { useAppTheme } from '../../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
 import { VerifiedBadge, MarketplaceBadge } from '../../components/VerifiedBadge';
@@ -54,8 +53,7 @@ export default function ProfileTab() {
   const insets = useSafeAreaInsets();
   const { user, profile } = useAuth();
   const router = useRouter();
-  const { colors } = useAppTheme();
-  const { width: windowWidth } = useWindowDimensions();
+    const { width: windowWidth } = useWindowDimensions();
   const TARGET_TILE_WIDTH = 120;
   const numColumns = Math.max(3, Math.floor(windowWidth / TARGET_TILE_WIDTH));
   const GRID_ITEM_WIDTH = windowWidth / numColumns;

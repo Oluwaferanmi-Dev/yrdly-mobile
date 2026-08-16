@@ -133,7 +133,7 @@ export default function TabLayout() {
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { colors, isDarkMode } = useAppTheme();
+  const { isDarkMode } = useAppTheme();
   const { user, profile } = useAuth();
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
