@@ -147,8 +147,18 @@ function RootNavigationGuard() {
 }
 
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { UnistylesRuntime } from 'react-native-unistyles';
+import { getStoredThemePreference } from '../lib/theme-preference';
 
 export default function Layout() {
+  useEffect(() => {
+    getStoredThemePreference().then(theme => {
+      if (theme) {
+        UnistylesRuntime.setTheme(theme);
+      }
+    });
+  }, []);
+
   const [fontsLoaded] = useFonts({
     Outfit: Outfit_400Regular,
     'Outfit-Light': Outfit_300Light,

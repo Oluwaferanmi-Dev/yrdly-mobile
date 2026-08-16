@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/use-supabase-auth';
+import { setStoredThemePreference } from '../../lib/theme-preference';
 
 function SettingSection({ title, children }: { title: string, children: React.ReactNode }) {
   const { styles: s } = useStyles(sStylesheet);
@@ -63,7 +64,9 @@ export default function SettingsScreen() {
   const isDarkMode = UnistylesRuntime.themeName === 'dark';
   
   const toggleDarkMode = (value: boolean) => {
-    UnistylesRuntime.setTheme(value ? 'dark' : 'light');
+    const nextTheme = value ? 'dark' : 'light';
+    UnistylesRuntime.setTheme(nextTheme);
+    setStoredThemePreference(nextTheme);
   };
 
   const handleSignOut = () => {

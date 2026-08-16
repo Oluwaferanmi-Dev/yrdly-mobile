@@ -1,4 +1,5 @@
 import { UnistylesRegistry } from 'react-native-unistyles';
+import { Appearance } from 'react-native';
 import { G, GLOW, GLOW_STRONG, GOLD, BLUE, AMBER, RED, DANGER, WARNING, DIVIDER, SEVERITY, spacing, radii, fonts, glass } from '../constants/tokens';
 
 export const darkTheme = {
@@ -78,6 +79,6 @@ UnistylesRegistry
     dark: darkTheme
   })
   .addConfig({
-    adaptiveThemes: true,
-    initialTheme: 'dark'
+    adaptiveThemes: false,
+    initialTheme: Appearance.getColorScheme() ?? 'dark'
   });
