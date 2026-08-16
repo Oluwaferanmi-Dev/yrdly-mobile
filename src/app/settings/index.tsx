@@ -46,7 +46,7 @@ function SettingRow({
         <Switch 
           value={toggled} 
           onValueChange={onToggle} 
-          trackColor={{ false: 'rgba(255,255,255,0.1)', true: theme.colors.G }} 
+          trackColor={{ false: theme.colors.GLASS_BORDER, true: theme.colors.G }} 
           thumbColor="#fff" 
         />
       )}
@@ -82,7 +82,7 @@ export default function SettingsScreen() {
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Settings</Text>
         <View style={{ width: 34 }} />
@@ -92,7 +92,7 @@ export default function SettingsScreen() {
         
         <SettingSection title="Account & Identity">
           <SettingRow 
-            icon={<Feather name="user" size={16} color="#fff" />} 
+            icon={<Feather name="user" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Edit Profile" sub="Update your name, photo and bio" 
             onPress={() => router.push('/profile/edit' as any)} 
           />
@@ -105,7 +105,7 @@ export default function SettingsScreen() {
           />
           <SettingDivider />
           <SettingRow 
-            icon={<Feather name="mail" size={16} color="#fff" />} 
+            icon={<Feather name="mail" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Email Address" 
             sub={user?.email || 'No email linked'} 
             onPress={() => Alert.alert('Change Email', 'To change your email address, please contact support@yrdly.ng with a valid ID for verification.', [{ text: 'OK' }])} 
@@ -114,19 +114,19 @@ export default function SettingsScreen() {
 
         <SettingSection title="Commerce">
           <SettingRow 
-            icon={<Feather name="shopping-bag" size={16} color="#fff" />} 
+            icon={<Feather name="shopping-bag" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Transactions" sub="Track your orders & marketplace activity" 
             onPress={() => router.push('/transactions' as any)} 
           />
           <SettingDivider />
           <SettingRow 
-            icon={<Ionicons name="wallet-outline" size={18} color="#fff" />} 
+            icon={<Ionicons name="wallet-outline" size={18} color={theme.colors.TEXT_PRIMARY} />} 
             label="Payouts" sub="Manage your earnings & balances" 
             onPress={() => router.push('/settings/payouts' as any)} 
           />
           <SettingDivider />
           <SettingRow 
-            icon={<Ionicons name="business-outline" size={18} color="#fff" />} 
+            icon={<Ionicons name="business-outline" size={18} color={theme.colors.TEXT_PRIMARY} />} 
             label="Bank Account" sub="Manage your linked payout account" 
             onPress={() => router.push('/settings/payout-settings' as any)} 
           />
@@ -134,19 +134,19 @@ export default function SettingsScreen() {
 
         <SettingSection title="Privacy & Location">
           <SettingRow 
-            icon={<Feather name="lock" size={16} color="#fff" />} 
+            icon={<Feather name="lock" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Privacy & Discoverability" sub="Manage location sharing and visibility" 
             onPress={() => router.push('/settings/privacy' as any)} 
           />
           <SettingDivider />
           <SettingRow 
-            icon={<Feather name="map-pin" size={16} color="#fff" />} 
+            icon={<Feather name="map-pin" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Location" sub="Your neighbourhood & location alerts" 
             onPress={() => router.push('/settings/location' as any)} 
           />
           <SettingDivider />
           <SettingRow 
-            icon={<Feather name="shield" size={16} color="#fff" />} 
+            icon={<Feather name="shield" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Blocked Users" sub="Manage who can't see or contact you" 
             value={profile?.blocked_users?.length ? String(profile.blocked_users.length) : '0'} 
             onPress={() => router.push('/settings/blocked' as any)} 
@@ -155,14 +155,14 @@ export default function SettingsScreen() {
 
         <SettingSection title="Preferences">
           <SettingRow 
-            icon={<Feather name="moon" size={16} color="#fff" />} 
+            icon={<Feather name="moon" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Dark Mode" sub="Toggle dark mode theme" 
             toggle 
             toggled={isDarkMode} 
             onToggle={toggleDarkMode} 
           />
           <SettingRow 
-            icon={<Feather name="bell" size={16} color="#fff" />} 
+            icon={<Feather name="bell" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Notifications" sub="Choose what you want to hear" 
             onPress={() => router.push('/settings/notifications' as any)} 
           />
@@ -170,26 +170,26 @@ export default function SettingsScreen() {
 
         <SettingSection title="Community & Support">
           <SettingRow 
-            icon={<Feather name="user-plus" size={16} color="#fff" />} 
+            icon={<Feather name="user-plus" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Invite Neighbours" sub="Invite neighbours to join your community" 
             value="Invite" 
             onPress={() => router.push('/settings/invite' as any)} 
           />
           <SettingDivider />
           <SettingRow 
-            icon={<Feather name="book-open" size={16} color="#fff" />} 
+            icon={<Feather name="book-open" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Neighbourhood Guidelines" sub="What we stand for in every community" 
             onPress={() => router.push('/settings/guidelines' as any)} 
           />
           <SettingDivider />
           <SettingRow 
-            icon={<Feather name="help-circle" size={16} color="#fff" />} 
+            icon={<Feather name="help-circle" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Help Center" sub="FAQs, tutorials and getting support" 
             onPress={() => router.push('/settings/help' as any)} 
           />
           <SettingDivider />
           <SettingRow 
-            icon={<Feather name="flag" size={16} color="#fff" />} 
+            icon={<Feather name="flag" size={16} color={theme.colors.TEXT_PRIMARY} />} 
             label="Report an Issue" sub="Flag a problem or inappropriate content" 
             onPress={() => router.push('/settings/report' as any)} 
           />
@@ -211,19 +211,19 @@ export default function SettingsScreen() {
             </View>
             <SettingSection title="Admin Tools">
               <SettingRow 
-                icon={<Feather name="inbox" size={16} color="#fff" />} 
+                icon={<Feather name="inbox" size={16} color={theme.colors.TEXT_PRIMARY} />} 
                 label="Dispute Resolution" sub="Review and resolve marketplace disputes" 
                 onPress={() => router.push('/(admin)/disputes' as any)} 
               />
               <SettingDivider />
               <SettingRow 
-                icon={<Feather name="shield" size={16} color="#fff" />} 
+                icon={<Feather name="shield" size={16} color={theme.colors.TEXT_PRIMARY} />} 
                 label="Moderation Queue" sub="Review flagged content and users" 
                 onPress={() => router.push('/(admin)/moderation' as any)} 
               />
               <SettingDivider />
               <SettingRow 
-                icon={<Feather name="alert-triangle" size={16} color="#fff" />} 
+                icon={<Feather name="alert-triangle" size={16} color={theme.colors.TEXT_PRIMARY} />} 
                 label="Safety Alerts" sub="Create and manage community safety alerts" 
                 onPress={() => router.push('/settings/safety' as any)} 
               />
@@ -267,7 +267,7 @@ const sStylesheet = createStyleSheet(theme => ({
       divider: { height: 1, backgroundColor: theme.colors.GLASS_BORDER, marginLeft: 66 },
       
       row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16 },
-      iconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      iconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
       rowMid: { flex: 1, paddingLeft: 14, paddingRight: 8 },
       rowLabel: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
       rowSub: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.MUTED, marginTop: 2 },

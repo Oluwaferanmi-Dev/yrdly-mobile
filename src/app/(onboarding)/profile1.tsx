@@ -374,7 +374,7 @@ const stylesheet = createStyleSheet(theme => ({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#111',
+    borderColor: theme.colors.GLASS_BORDER,
   },
   avatarHintText: {
     fontFamily: 'Inter-Regular',

@@ -58,7 +58,7 @@ function FloatingCreateButton({ onPress }: { onPress: () => void }) {
       onPressOut={handlePressOut}
       activeOpacity={0.9}
     >
-      <Plus size={26} color="#FFF" weight="bold" />
+      <Plus size={26} color={theme.colors.TEXT_PRIMARY} weight="bold" />
     </AnimatedTouchableOpacity>
   );
 }

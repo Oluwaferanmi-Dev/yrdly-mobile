@@ -46,7 +46,7 @@ export default function WelcomeScreen() {
           <PrimaryBtn 
             label="Get Started" 
             onClick={() => router.push('/(onboarding)/tour')} 
-            icon={<Ionicons name="arrow-forward" size={18} color="#111" />}
+            icon={<Ionicons name="arrow-forward" size={18} color={theme.colors.DARK} />}
           />
           <SecondaryBtn label="Already have an account? Sign in" onClick={() => router.push('/(auth)/login')} />
         </View>

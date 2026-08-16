@@ -149,7 +149,7 @@ export function GeneralPostForm({
                       <View key={i} style={stylesheet.imgWrap}>
                         <Image source={{ uri: img.thumbnailUri || img.uri }} style={stylesheet.img} contentFit="cover" transition={200} />
                         <TouchableOpacity style={stylesheet.imgRemove} onPress={() => onRemovePhoto(i)}>
-                          <Ionicons name="close-circle" size={20} color="#fff" />
+                          <Ionicons name="close-circle" size={20} color={theme.colors.TEXT_PRIMARY} />
                         </TouchableOpacity>
                       </View>
                     );

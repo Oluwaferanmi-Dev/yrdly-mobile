@@ -162,7 +162,7 @@ export default function AlertDetailsScreen() {
             onPress={() => Linking.openURL(`tel:${alert.contact_info}`)}
             disabled={isResolved}
           >
-            <Feather name="phone" size={18} color="#fff" />
+            <Feather name="phone" size={18} color={theme.colors.TEXT_PRIMARY} />
             <Text style={stylesheet.contactButtonText}>Contact {alert.contact_info}</Text>
           </TouchableOpacity>
         )}

@@ -464,7 +464,7 @@ function MarketplaceDetailContent() {
           {/* Header Buttons over image */}
           <View style={{ position: 'absolute', top: 52, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20 }}>
              <TouchableOpacity onPress={() => router.back()} style={stylesheet.iconCircle}>
-                <Ionicons name="chevron-back" size={24} color="#FFF" />
+                <Ionicons name="chevron-back" size={24} color={theme.colors.TEXT_PRIMARY} />
              </TouchableOpacity>
              <View style={{ flexDirection: 'row', gap: 8 }}>
                {!isOwner && (
@@ -473,7 +473,7 @@ function MarketplaceDetailContent() {
                  </TouchableOpacity>
                )}
                <TouchableOpacity onPress={handleMore} style={stylesheet.iconCircle}>
-                 <Ionicons name="ellipsis-horizontal" size={16} color="#FFF" />
+                 <Ionicons name="ellipsis-horizontal" size={16} color={theme.colors.TEXT_PRIMARY} />
                </TouchableOpacity>
              </View>
           </View>
@@ -580,7 +580,7 @@ function MarketplaceDetailContent() {
             <TouchableOpacity 
               onPress={() => router.push(`/marketplace/edit/${post.id}`)}
               style={{ flex: 1, height: 52, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <Ionicons name="pencil" size={15} color="#fff" />
+              <Ionicons name="pencil" size={15} color={theme.colors.TEXT_PRIMARY} />
               <Text style={{ color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 15 }}>Edit Listing</Text>
             </TouchableOpacity>
             <TouchableOpacity 
@@ -602,12 +602,12 @@ function MarketplaceDetailContent() {
             <TouchableOpacity 
               disabled={post.is_sold}
               onPress={() => router.push({ pathname: '/checkout/[id]', params: { id: post.id, type: 'marketplace' } })}
-              style={{ flex: 1, height: 52, borderRadius: 16, backgroundColor: post.is_sold ? '#111' : theme.colors.G, alignItems: 'center', justifyContent: 'center' }}>
+              style={{ flex: 1, height: 52, borderRadius: 16, backgroundColor: post.is_sold ? theme.colors.SURFACE : theme.colors.G, alignItems: 'center', justifyContent: 'center' }}>
               <Text style={{ color: post.is_sold ? theme.colors.LABEL : theme.colors.DARK, fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16 }}>{post.is_sold ? 'Item Sold' : 'Buy Now'}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={handleMessageSeller}
-              style={{ height: 52, paddingHorizontal: 18, borderRadius: 16, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' }}>
+              style={{ height: 52, paddingHorizontal: 18, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' }}>
               <Text style={{ color: theme.colors.MUTED, fontFamily: 'Inter-Medium', fontSize: 14 }}>Message Seller</Text>
             </TouchableOpacity>
           </>

@@ -82,7 +82,7 @@ export default function LocationSettingsScreen() {
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Location Settings</Text>
         {updating ? (
@@ -107,10 +107,10 @@ export default function LocationSettingsScreen() {
         {/* GPS Button */}
         <TouchableOpacity style={s.gpsBtn} onPress={handleUseGPS} disabled={gpsLoading || updating}>
           {gpsLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={theme.colors.TEXT_PRIMARY} />
           ) : (
             <>
-              <Ionicons name="location-outline" size={18} color="#fff" />
+              <Ionicons name="location-outline" size={18} color={theme.colors.TEXT_PRIMARY} />
               <Text style={s.gpsBtnText}>Use Current Location (GPS)</Text>
             </>
           )}

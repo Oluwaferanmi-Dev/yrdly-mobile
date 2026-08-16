@@ -428,7 +428,7 @@ export default function CreateEventScreen() {
     >
       <View style={stylesheet.header}>
         <TouchableOpacity onPress={handleBack} style={stylesheet.backBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <View style={stylesheet.headerTextContainer}>
           <Text style={stylesheet.headerTitle}>Create Event</Text>
@@ -700,12 +700,12 @@ export default function CreateEventScreen() {
                   <Image source={{ uri: f.uri }} style={stylesheet.photoImg} />
                   {f.type?.startsWith('video/') && !posting && (
                     <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)'}}>
-                      <Ionicons name="play-circle" size={32} color="#fff" />
+                      <Ionicons name="play-circle" size={32} color={theme.colors.TEXT_PRIMARY} />
                     </View>
                   )}
                   {posting && (
                     <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12}}>
-                      <ActivityIndicator size="small" color="#fff" />
+                      <ActivityIndicator size="small" color={theme.colors.TEXT_PRIMARY} />
                     </View>
                   )}
                   {i === coverIndex && (
@@ -723,7 +723,7 @@ export default function CreateEventScreen() {
                       }}
                     >
                       <View style={{ backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: 4 }}>
-                        <Feather name="x" size={14} color="#fff" />
+                        <Feather name="x" size={14} color={theme.colors.TEXT_PRIMARY} />
                       </View>
                     </TouchableOpacity>
                   )}

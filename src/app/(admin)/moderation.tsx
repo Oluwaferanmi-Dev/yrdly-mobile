@@ -154,7 +154,7 @@ export default function ModerationQueueScreen() {
     <View style={[stylesheet.container, { paddingTop: insets.top }]}>
       <View style={stylesheet.header}>
         <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
-          <Ionicons name="chevron-back" size={22} color="#fff" />
+          <Ionicons name="chevron-back" size={22} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <View style={stylesheet.headerCenter}>
           <Text style={stylesheet.headerTitle}>Moderation Queue</Text>

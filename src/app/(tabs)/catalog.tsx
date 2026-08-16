@@ -428,7 +428,7 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
                             return imgUrl ? <Image source={{ uri: imgUrl }} style={sStylesheet.marketplaceCardImg} contentFit="cover" /> : <View style={[sStylesheet.marketplaceCardImg, { backgroundColor: theme.colors.SURFACE_ALT }]} />;
                           })()}
                           <View style={sStylesheet.marketplaceCardSave}>
-                            <Ionicons name="heart-outline" size={16} color="#fff" />
+                            <Ionicons name="heart-outline" size={16} color={theme.colors.TEXT_PRIMARY} />
                           </View>
                           <View style={sStylesheet.marketplaceCardCond}>
                             <Text style={sStylesheet.marketplaceCardCondText}>{item.condition || 'Good'}</Text>
@@ -473,7 +473,7 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
               <Text style={{ fontFamily: 'Inter-Bold', fontSize: 13, color: theme.colors.TEXT_PRIMARY, marginBottom: 12 }}>PRICE RANGE (₦)</Text>
               <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
                 <TextInput
-                  style={{ flex: 1, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, paddingHorizontal: 12, height: 44, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter' }}
+                  style={{ flex: 1, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, paddingHorizontal: 12, height: 44, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter' }}
                   placeholder="Min"
                   placeholderTextColor={theme.colors.LABEL}
                   keyboardType="numeric"
@@ -481,7 +481,7 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
                   onChangeText={setFilterPriceMin}
                 />
                 <TextInput
-                  style={{ flex: 1, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, paddingHorizontal: 12, height: 44, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter' }}
+                  style={{ flex: 1, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 12, paddingHorizontal: 12, height: 44, color: theme.colors.TEXT_PRIMARY, fontFamily: 'Inter' }}
                   placeholder="Max"
                   placeholderTextColor={theme.colors.LABEL}
                   keyboardType="numeric"
@@ -496,9 +496,9 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
                   <TouchableOpacity 
                     key={c} 
                     onPress={() => setFilterCondition(c)}
-                    style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: filterCondition === c ? theme.colors.G : '#111', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: filterCondition === c ? theme.colors.G : theme.colors.GLASS_BORDER }}
+                    style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: filterCondition === c ? theme.colors.G : theme.colors.SURFACE, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: filterCondition === c ? theme.colors.G : theme.colors.GLASS_BORDER }}
                   >
-                    <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: filterCondition === c ? '#050505' : '#fff' }}>{c}</Text>
+                    <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: filterCondition === c ? '#050505' : theme.colors.TEXT_PRIMARY }}>{c}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -509,9 +509,9 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
                   <TouchableOpacity 
                     key={s} 
                     onPress={() => setFilterSort(s)}
-                    style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: filterSort === s ? theme.colors.G : '#111', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: filterSort === s ? theme.colors.G : theme.colors.GLASS_BORDER }}
+                    style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: filterSort === s ? theme.colors.G : theme.colors.SURFACE, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: filterSort === s ? theme.colors.G : theme.colors.GLASS_BORDER }}
                   >
-                    <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: filterSort === s ? '#050505' : '#fff' }}>{s}</Text>
+                    <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: filterSort === s ? '#050505' : theme.colors.TEXT_PRIMARY }}>{s}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -522,7 +522,7 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
                   <TouchableOpacity 
                     key={d} 
                     onPress={() => setFilterDistance(d)}
-                    style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: filterDistance === d ? 'rgba(130,219,126,0.1)' : '#111', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: filterDistance === d ? 'rgba(130,219,126,0.3)' : theme.colors.GLASS_BORDER }}
+                    style={{ paddingHorizontal: 16, height: 36, borderRadius: 18, backgroundColor: filterDistance === d ? 'rgba(130,219,126,0.1)' : theme.colors.SURFACE, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: filterDistance === d ? 'rgba(130,219,126,0.3)' : theme.colors.GLASS_BORDER }}
                   >
                     <Text style={{ fontFamily: 'Inter-Medium', fontSize: 13, color: filterDistance === d ? theme.colors.G : theme.colors.LABEL }}>{d}</Text>
                   </TouchableOpacity>
@@ -581,7 +581,7 @@ function CatalogEventCard({ item, router, theme, sStylesheet }: any) {
           <Text style={sStylesheet.eventCardDateText}>{new Date(item.start_time || item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</Text>
         </View>
         <TouchableOpacity style={sStylesheet.eventCardSave} onPress={toggleSave}>
-          <Ionicons name={saved ? "bookmark" : "bookmark-outline"} size={16} color={saved ? theme.colors.G : "#fff"} />
+          <Ionicons name={saved ? "bookmark" : "bookmark-outline"} size={16} color={saved ? theme.colors.G : theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <View style={sStylesheet.eventCardPrice}>
           <Text style={sStylesheet.eventCardPriceText}>{item.is_free ? 'FREE' : item.price ? formatPrice(item.price) : 'TICKETS'}</Text>
@@ -997,7 +997,7 @@ const stylesheet = createStyleSheet(theme => ({
       subtitle: { fontFamily: 'Inter-Medium', fontSize: 13, color: theme.colors.LABEL },
       headerIconBtn: {
         width: 38, height: 38, borderRadius: 19,
-        backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
+        backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
         justifyContent: 'center', alignItems: 'center', position: 'relative',
       },
       badgeDot: {
@@ -1007,7 +1007,7 @@ const stylesheet = createStyleSheet(theme => ({
       searchBarContainer: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
       searchInputWrap: {
         flex: 1, flexDirection: 'row', alignItems: 'center',
-        backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
+        backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 14, paddingHorizontal: 14, height: 42,
       },
       searchInput: { flex: 1, fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
@@ -1091,7 +1091,7 @@ const stylesheet = createStyleSheet(theme => ({
       marketplaceCatText: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL },
       marketplaceCatTextActive: { fontFamily: 'Inter-Bold', color: theme.colors.DARK },
       filterBtn: {
-        width: 36, height: 36, borderRadius: 12, backgroundColor: '#111',
+        width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.SURFACE,
         borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center',
       },
       

@@ -124,7 +124,7 @@ export default function ReportScreen() {
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Report an Issue</Text>
         <View style={{ width: 34 }} />
@@ -211,7 +211,7 @@ export default function ReportScreen() {
                 style={s.removeImageBtn}
                 onPress={() => setImage(null)}
               >
-                <Ionicons name="close" size={16} color="#fff" />
+                <Ionicons name="close" size={16} color={theme.colors.TEXT_PRIMARY} />
               </TouchableOpacity>
             </>
           ) : (
@@ -224,7 +224,7 @@ export default function ReportScreen() {
 
         <TouchableOpacity style={s.submitBtn} onPress={handleSubmit} disabled={loading}>
           {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={theme.colors.TEXT_PRIMARY} />
           ) : (
             <Text style={s.submitBtnText}>Submit Report</Text>
           )}

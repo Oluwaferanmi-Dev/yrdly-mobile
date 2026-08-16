@@ -178,7 +178,7 @@ export default function ReviewScreen() {
               onPress={handleSubmit}
               disabled={rating === 0 || submitting}
             >
-              {submitting ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={stylesheet.submitText}>Submit Review</Text>}
+              {submitting ? <ActivityIndicator size="small" color={theme.colors.DARK} /> : <Text style={stylesheet.submitText}>Submit Review</Text>}
             </TouchableOpacity>
           </>
         )}
@@ -213,7 +213,7 @@ const _stylesheet = createStyleSheet(theme => ({
       charCount: { fontSize: 11, textAlign: 'right', marginTop: 4 },
       submitBtn: { borderRadius: 14, paddingVertical: 16, alignItems: 'center' },
       submitBtnDisabled: { backgroundColor: '#BDBDBD' },
-      submitText: { color: theme.colors.TEXT_PRIMARY, fontSize: 16, fontWeight: 'bold' },
+      submitText: { color: theme.colors.DARK, fontSize: 16, fontWeight: 'bold' },
       alreadyBox: { alignItems: 'center', paddingTop: 48, gap: 12 },
       alreadyTitle: { fontSize: 22, fontWeight: 'bold' },
       alreadySub: { fontSize: 15, textAlign: 'center' },

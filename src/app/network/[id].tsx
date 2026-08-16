@@ -227,7 +227,7 @@ export default function NetworkScreen() {
     <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
       <View style={stylesheet.header}>
         <TouchableOpacity onPress={() => router.back()} style={stylesheet.navBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={stylesheet.headerTitle}>Connections</Text>
       </View>

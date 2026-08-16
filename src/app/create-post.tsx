@@ -269,12 +269,12 @@ export default function CreatePostScreen() {
                             />
                             {file.type?.startsWith('video/') && !posting && (
                               <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)'}}>
-                                <Ionicons name="play-circle" size={32} color="#fff" />
+                                <Ionicons name="play-circle" size={32} color={theme.colors.TEXT_PRIMARY} />
                               </View>
                             )}
                             {posting && (
                               <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8}}>
-                                <ActivityIndicator size="small" color="#fff" />
+                                <ActivityIndicator size="small" color={theme.colors.TEXT_PRIMARY} />
                               </View>
                             )}
                             {!posting && (
@@ -282,7 +282,7 @@ export default function CreatePostScreen() {
                                 style={stylesheet.removePhotoBtn}
                                 onPress={() => setAttachedFiles(p => p.filter((_, j) => j !== i))}
                               >
-                                <Feather name="x" size={14} color="#fff" />
+                                <Feather name="x" size={14} color={theme.colors.TEXT_PRIMARY} />
                               </TouchableOpacity>
                             )}
                           </View>

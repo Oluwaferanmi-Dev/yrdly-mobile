@@ -38,7 +38,7 @@ export default function NotificationSettingsScreen() {
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Notifications</Text>
         {updating ? (
@@ -58,7 +58,7 @@ export default function NotificationSettingsScreen() {
           <View style={s.row}>
             <View style={s.rowLeft}>
               <View style={s.iconBox}>
-                <Feather name="message-square" size={18} color="#fff" />
+                <Feather name="message-square" size={18} color={theme.colors.TEXT_PRIMARY} />
               </View>
               <View style={s.rowText}>
                 <Text style={s.rowLabel}>Direct Messages</Text>
@@ -80,7 +80,7 @@ export default function NotificationSettingsScreen() {
           <View style={s.row}>
             <View style={s.rowLeft}>
               <View style={s.iconBox}>
-                <Feather name="user-plus" size={18} color="#fff" />
+                <Feather name="user-plus" size={18} color={theme.colors.TEXT_PRIMARY} />
               </View>
               <View style={s.rowText}>
                 <Text style={s.rowLabel}>Friend Requests</Text>
@@ -102,7 +102,7 @@ export default function NotificationSettingsScreen() {
           <View style={s.row}>
             <View style={s.rowLeft}>
               <View style={s.iconBox}>
-                <Feather name="message-circle" size={18} color="#fff" />
+                <Feather name="message-circle" size={18} color={theme.colors.TEXT_PRIMARY} />
               </View>
               <View style={s.rowText}>
                 <Text style={s.rowLabel}>Comments & Replies</Text>
@@ -124,7 +124,7 @@ export default function NotificationSettingsScreen() {
           <View style={s.row}>
             <View style={s.rowLeft}>
               <View style={s.iconBox}>
-                <Feather name="heart" size={18} color="#fff" />
+                <Feather name="heart" size={18} color={theme.colors.TEXT_PRIMARY} />
               </View>
               <View style={s.rowText}>
                 <Text style={s.rowLabel}>Post Reactions</Text>
@@ -146,7 +146,7 @@ export default function NotificationSettingsScreen() {
           <View style={s.row}>
             <View style={s.rowLeft}>
               <View style={s.iconBox}>
-                <Feather name="rss" size={18} color="#fff" />
+                <Feather name="rss" size={18} color={theme.colors.TEXT_PRIMARY} />
               </View>
               <View style={s.rowText}>
                 <Text style={s.rowLabel}>Neighbourhood Updates</Text>
@@ -168,7 +168,7 @@ export default function NotificationSettingsScreen() {
           <View style={s.row}>
             <View style={s.rowLeft}>
               <View style={s.iconBox}>
-                <Feather name="calendar" size={18} color="#fff" />
+                <Feather name="calendar" size={18} color={theme.colors.TEXT_PRIMARY} />
               </View>
               <View style={s.rowText}>
                 <Text style={s.rowLabel}>Event Invites</Text>

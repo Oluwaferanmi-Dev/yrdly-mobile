@@ -109,7 +109,7 @@ function RequestCard({ item, onResolve }: { item: DeletionRequest; onResolve: (i
           <Text style={[stylesheet.actionTxt, { color: theme.colors.G }]}>Contact</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[stylesheet.actionBtn, stylesheet.resolveBtn]} onPress={handleMarkResolved}>
-          <Ionicons name="checkmark-circle-outline" size={15} color="#fff" />
+          <Ionicons name="checkmark-circle-outline" size={15} color={theme.colors.TEXT_PRIMARY} />
           <Text style={[stylesheet.actionTxt, { color: theme.colors.TEXT_PRIMARY }]}>Mark Resolved</Text>
         </TouchableOpacity>
       </View>
@@ -173,7 +173,7 @@ export default function DeletionRequestsScreen() {
       {/* Header */}
       <View style={stylesheet.header}>
         <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
-          <Ionicons name="chevron-back" size={22} color="#fff" />
+          <Ionicons name="chevron-back" size={22} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <View style={stylesheet.headerCenter}>
           <Text style={stylesheet.headerTitle}>Deletion Requests</Text>

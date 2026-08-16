@@ -258,7 +258,7 @@ export default function BusinessProfileScreen() {
           <LinearGradient colors={['rgba(5,5,5,0.1)', 'rgba(5,5,5,0.72)']} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
           
           <TouchableOpacity style={[sStylesheet.backBtn, { top: insets.top + 10 }]} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={24} color="#fff" />
+            <Ionicons name="chevron-back" size={24} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
           
           {isOwner && (

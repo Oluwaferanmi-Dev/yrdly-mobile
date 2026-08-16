@@ -214,7 +214,7 @@ export default function BusinessEditScreen() {
         <View style={sStylesheet.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <TouchableOpacity onPress={() => router.back()} style={sStylesheet.backBtn}>
-              <Ionicons name="chevron-back" size={20} color="#fff" />
+              <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>
             <Text style={sStylesheet.headerTitle}>{id ? 'Edit Business' : 'Create Business'}</Text>
           </View>
@@ -242,7 +242,7 @@ export default function BusinessEditScreen() {
             <View style={sStylesheet.logoWrap}>
               <Image source={{ uri: logoUri || 'https://via.placeholder.com/150' }} style={sStylesheet.logoImg} contentFit="cover" />
               <TouchableOpacity style={sStylesheet.changeLogoBtn} onPress={pickLogo}>
-                <Ionicons name="camera" size={16} color="#fff" />
+                <Ionicons name="camera" size={16} color={theme.colors.TEXT_PRIMARY} />
               </TouchableOpacity>
             </View>
             <View style={{ flex: 1, marginLeft: 16 }}>
@@ -374,7 +374,7 @@ const stylesheet = createStyleSheet(theme => ({
       saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
       
       contentPad: { paddingHorizontal: 20, paddingVertical: 20, gap: 24 },
-      coverContainer: { position: 'relative', height: 140, borderRadius: 20, overflow: 'hidden', backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
+      coverContainer: { position: 'relative', height: 140, borderRadius: 20, overflow: 'hidden', backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
       coverOverlay: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
       changeCoverBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.6)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
       changeCoverTxt: { fontFamily: 'Outfit-Bold', fontSize: 13, color: theme.colors.TEXT_PRIMARY },

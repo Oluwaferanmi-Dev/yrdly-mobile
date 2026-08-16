@@ -195,7 +195,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
                             <Image source={{ uri: img.thumbnailUri || img.uri }}
                               style={s.coverImg} contentFit="cover" transition={200} />
                             <TouchableOpacity style={s.coverRemove} onPress={() => onRemovePhoto(i)}>
-                              <Ionicons name="close-circle" size={26} color="#fff" />
+                              <Ionicons name="close-circle" size={26} color={theme.colors.TEXT_PRIMARY} />
                             </TouchableOpacity>
                           </View>
                         );

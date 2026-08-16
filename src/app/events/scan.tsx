@@ -157,7 +157,7 @@ export default function TicketScannerScreen() {
         {/* Scan Result Alert Banner */}
         {lastResult && (
           <View style={[stylesheet.resultCard, { backgroundColor: lastResult.success ? '#166534' : '#991B1B' }]}>
-            <Ionicons name={lastResult.success ? 'checkmark-circle' : 'alert-circle'} size={32} color="#FFF" />
+            <Ionicons name={lastResult.success ? 'checkmark-circle' : 'alert-circle'} size={32} color={theme.colors.TEXT_PRIMARY} />
             <View style={{ flex: 1 }}>
               <Text style={stylesheet.resultTitle}>{lastResult.success ? 'Entry Approved ✅' : 'Verification Alert ⚠️'}</Text>
               <Text style={stylesheet.resultBody}>{lastResult.message}</Text>

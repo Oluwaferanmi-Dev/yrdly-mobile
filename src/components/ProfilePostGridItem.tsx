@@ -47,7 +47,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
           <Image source={{ uri: StorageService.getOptimizedImageUrl(imageUrl, 300) || imageUrl }} style={styles.image} contentFit="cover" />
           {hasImages && post.image_urls!.length > 1 && !hasVideo && (
             <View style={styles.iconOverlay}>
-              <Feather name="layers" size={14} color="#FFF" />
+              <Feather name="layers" size={14} color={theme.colors.TEXT_PRIMARY} />
             </View>
           )}
         </>
@@ -56,7 +56,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
           <Feather name="video" size={32} color="#A1A1AA" />
         </View>
       ) : (
-        <View style={[styles.placeholder, { backgroundColor: '#111111' }]}>
+        <View style={[styles.placeholder, { backgroundColor: theme.colors.SURFACE }]}>
           <Text style={styles.textSnippet} numberOfLines={3}>
             {post.title || post.text || 'Post'}
           </Text>
@@ -66,7 +66,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
       <View style={styles.badgeContainer}>
         {post.category === 'For Sale' && (
           <View style={styles.badge}>
-            <MaterialIcons name="storefront" size={12} color="#FFF" />
+            <MaterialIcons name="storefront" size={12} color={theme.colors.TEXT_PRIMARY} />
           </View>
         )}
         {post.category === 'Event' && (
@@ -78,7 +78,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
 
       {hasVideo && imageUrl && (
         <View style={styles.iconOverlay}>
-          <Feather name="play" size={16} color="#FFF" />
+          <Feather name="play" size={16} color={theme.colors.TEXT_PRIMARY} />
         </View>
       )}
     </AnimatedTouchable>

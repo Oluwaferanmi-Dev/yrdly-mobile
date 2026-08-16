@@ -73,7 +73,7 @@ export function OpeningHoursPicker({ value, onChange }: { value: string; onChang
             <View style={stylesheet.modalHeader}>
               <Text style={stylesheet.modalTitle}>Opening Hours</Text>
               <TouchableOpacity onPress={() => setVisible(false)}>
-                <Ionicons name="close" size={24} color="#fff" />
+                <Ionicons name="close" size={24} color={theme.colors.TEXT_PRIMARY} />
               </TouchableOpacity>
             </View>
             
@@ -167,7 +167,7 @@ export function OpeningHoursPicker({ value, onChange }: { value: string; onChang
 const _stylesheet = createStyleSheet(theme => ({
       pickerBox: { width: '100%', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
       modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-      modalContent: { backgroundColor: '#111', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
+      modalContent: { backgroundColor: theme.colors.SURFACE, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
       modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
       modalTitle: { color: theme.colors.TEXT_PRIMARY, fontSize: 18, fontWeight: '700' },
       section: { marginBottom: 24 },

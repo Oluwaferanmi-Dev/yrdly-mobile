@@ -440,12 +440,12 @@ export default function EventDetailScreen() {
       <SafeAreaView edges={['top']} style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20 }} pointerEvents="box-none">
         <View style={stylesheet.headerRow}>
           <TouchableOpacity onPress={() => router.back()} style={[stylesheet.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-            <Ionicons name="chevron-back" size={28} color="#FFF" />
+            <Ionicons name="chevron-back" size={28} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
           <View style={stylesheet.headerRightActions}>
             <TouchableOpacity onPress={handleShare} style={[stylesheet.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)', marginRight: 8 }]}>
-              <Feather name="share" size={20} color="#FFF" />
+              <Feather name="share" size={20} color={theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleBookmark} style={[stylesheet.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
               <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={20} color={isBookmarked ? theme.colors.G : "#FFF"} />
@@ -681,7 +681,7 @@ export default function EventDetailScreen() {
               >
                 <Marker coordinate={{ latitude: event.lat, longitude: event.lng }}>
                   <View style={[stylesheet.mapMarker, { backgroundColor: theme.colors.G }]}>
-                    <Feather name="map-pin" size={16} color="#FFF" />
+                    <Feather name="map-pin" size={16} color={theme.colors.TEXT_PRIMARY} />
                   </View>
                 </Marker>
               </MapView>

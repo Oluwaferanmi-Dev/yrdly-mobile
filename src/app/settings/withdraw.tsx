@@ -75,7 +75,7 @@ export default function WithdrawScreen() {
       <SafeAreaView style={s.root} edges={['top', 'bottom']}>
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
         </View>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={theme.colors.G} /></View>
@@ -88,7 +88,7 @@ export default function WithdrawScreen() {
       <SafeAreaView style={s.root} edges={['top', 'bottom']}>
         <View style={s.header}>
           <TouchableOpacity onPress={() => setStep('amount')} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Confirm Withdrawal</Text>
         </View>
@@ -136,7 +136,7 @@ export default function WithdrawScreen() {
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Withdraw Funds</Text>
       </View>

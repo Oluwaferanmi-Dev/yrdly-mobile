@@ -62,7 +62,7 @@ export default function DeleteAccountScreen() {
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Delete Account</Text>
         <View style={{ width: 34 }} />
@@ -88,7 +88,7 @@ export default function DeleteAccountScreen() {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={theme.colors.TEXT_PRIMARY} />
           ) : (
             <Text style={s.deleteBtnText}>Request Account Deletion</Text>
           )}

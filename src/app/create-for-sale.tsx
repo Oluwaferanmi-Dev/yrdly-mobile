@@ -386,7 +386,7 @@ export default function CreateForSaleScreen() {
     >
       <View style={stylesheet.header}>
         <TouchableOpacity onPress={handleBack} style={stylesheet.backBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <View style={stylesheet.headerTextContainer}>
           <Text style={stylesheet.headerTitle}>Item for Sale</Text>
@@ -418,12 +418,12 @@ export default function CreateForSaleScreen() {
                   <Image source={{ uri: file.uri }} style={stylesheet.photoImg} />
                   {file.type?.startsWith('video/') && !posting && (
                     <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)'}}>
-                      <Ionicons name="play-circle" size={32} color="#fff" />
+                      <Ionicons name="play-circle" size={32} color={theme.colors.TEXT_PRIMARY} />
                     </View>
                   )}
                   {posting && (
                     <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12}}>
-                      <ActivityIndicator size="small" color="#fff" />
+                      <ActivityIndicator size="small" color={theme.colors.TEXT_PRIMARY} />
                     </View>
                   )}
                   {i === coverIndex && (
@@ -440,7 +440,7 @@ export default function CreateForSaleScreen() {
                         else if (coverIndex > i) setCoverIndex(c => c - 1);
                       }}
                     >
-                      <Ionicons name="close-circle" size={18} color="#fff" />
+                      <Ionicons name="close-circle" size={18} color={theme.colors.TEXT_PRIMARY} />
                     </TouchableOpacity>
                   )}
                 </TouchableOpacity>

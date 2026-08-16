@@ -28,7 +28,7 @@ export default function PrivacySettingsScreen() {
     <SafeAreaView style={s.root} edges={['top', 'bottom']}>
       <View style={s.header}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Privacy & Discoverability</Text>
         {updating ? (
@@ -47,7 +47,7 @@ export default function PrivacySettingsScreen() {
           <View style={s.row}>
             <View style={s.rowLeft}>
               <View style={s.iconBox}>
-                <Feather name="map-pin" size={18} color="#fff" />
+                <Feather name="map-pin" size={18} color={theme.colors.TEXT_PRIMARY} />
               </View>
               <View style={s.rowText}>
                 <Text style={s.rowLabel}>Share Location</Text>
@@ -68,7 +68,7 @@ export default function PrivacySettingsScreen() {
           <View style={s.row}>
             <View style={s.rowLeft}>
               <View style={s.iconBox}>
-                <Feather name="eye" size={18} color="#fff" />
+                <Feather name="eye" size={18} color={theme.colors.TEXT_PRIMARY} />
               </View>
               <View style={s.rowText}>
                 <Text style={s.rowLabel}>Profile Discoverability</Text>

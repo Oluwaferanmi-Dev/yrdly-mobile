@@ -184,7 +184,7 @@ const _stylesheet = createStyleSheet(theme => ({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: '#111',
+    backgroundColor: theme.colors.SURFACE,
   },
   avatarImgSmall: {
     width: 28,

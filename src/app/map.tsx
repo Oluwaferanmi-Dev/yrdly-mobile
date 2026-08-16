@@ -83,7 +83,7 @@ const FriendMarker = React.memo(function FriendMarker({ avatar_url }: { avatar_u
       <View style={ms.fRing}>
         {avatar_url
           ? <Image source={{ uri: avatar_url }} style={ms.fAvatar} />
-          : <View style={ms.fFallback}><Ionicons name="person" size={16} color="#fff" /></View>}
+          : <View style={ms.fFallback}><Ionicons name="person" size={16} color={theme.colors.TEXT_PRIMARY} /></View>}
       </View>
       <View style={[ms.dot, { backgroundColor: '#8B5CF6' }]} />
     </View>
@@ -337,7 +337,7 @@ export default function MapScreen() {
   };
 
   if (loading) return (
-    <View style={[s.fill, { backgroundColor: '#0B0D0B', justifyContent:'center', alignItems:'center' }]}>
+    <View style={[s.fill, { backgroundColor: theme.colors.DARK, justifyContent:'center', alignItems:'center' }]}>
       <ActivityIndicator size="large" color="#82DB7E" />
       <Text style={{ color:'#82DB7E', marginTop:12, fontWeight:'600' }}>Locating you...</Text>
     </View>
@@ -371,7 +371,7 @@ export default function MapScreen() {
       <View style={[s.topWrap, { paddingTop: insets.top + 8 }]}>
         <View style={s.searchRow}>
           <TouchableOpacity style={s.iconBtn} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={22} color="#fff" />
+            <Ionicons name="chevron-back" size={22} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
           {showSearch ? (
             <View style={s.searchInputWrap}>
@@ -435,7 +435,7 @@ export default function MapScreen() {
                 <Image source={{ uri: selectedPin.avatar_url }} style={s.previewImg} />
               ) : (
                 <View style={s.previewFallback}>
-                  <Ionicons name={selectedPin.type==='event'?'calendar-outline':selectedPin.type==='business'?'storefront-outline':'person'} size={24} color="#fff" />
+                  <Ionicons name={selectedPin.type==='event'?'calendar-outline':selectedPin.type==='business'?'storefront-outline':'person'} size={24} color={theme.colors.TEXT_PRIMARY} />
                 </View>
               )}
             </View>
@@ -468,7 +468,7 @@ export default function MapScreen() {
 }
 
 const sStylesheet = createStyleSheet(theme => ({
-      fill: { flex:1, backgroundColor:'#0B0D0B' },
+      fill: { flex:1, backgroundColor: theme.colors.DARK },
       topWrap: { position:'absolute', top:0, left:0, right:0, zIndex:10 },
       searchRow: { flexDirection:'row', paddingHorizontal:16, gap:12, alignItems: 'center' },
       iconBtn: { width:36, height:36, borderRadius:18, backgroundColor:'rgba(0,0,0,0.5)', alignItems:'center', justifyContent:'center', borderWidth:1, borderColor:'rgba(255,255,255,0.12)' },
@@ -479,7 +479,7 @@ const sStylesheet = createStyleSheet(theme => ({
       chip: { flexDirection:'row', alignItems:'center', paddingHorizontal:14, height: 30, borderRadius:15, backgroundColor:'rgba(0,0,0,0.55)', borderWidth:1, borderColor:'rgba(255,255,255,0.12)' },
       chipTxt: { fontSize:12, fontFamily: 'Inter-Medium' },
       recenterBtn: { position:'absolute', right:16, width:42, height:42, borderRadius:21, backgroundColor:'rgba(0,0,0,0.7)', borderWidth:1, borderColor:'rgba(255,255,255,0.12)', alignItems:'center', justifyContent:'center', zIndex:10 },
-      previewSheet: { position:'absolute', bottom:0, left:0, right:0, backgroundColor:'#111', borderTopLeftRadius:24, borderTopRightRadius:24, borderWidth:1, borderColor:theme.colors.GLASS_BORDER, paddingHorizontal:20, paddingTop:20, paddingBottom:40, zIndex:20 },
+      previewSheet: { position:'absolute', bottom:0, left:0, right:0, backgroundColor:theme.colors.SURFACE, borderTopLeftRadius:24, borderTopRightRadius:24, borderWidth:1, borderColor:theme.colors.GLASS_BORDER, paddingHorizontal:20, paddingTop:20, paddingBottom:40, zIndex:20 },
       handleBar: { width:36, height:4, borderRadius:2, backgroundColor:'rgba(255,255,255,0.12)', alignSelf:'center', marginBottom:18 },
       previewContent: { flexDirection:'row', alignItems:'flex-start', gap:12 },
       previewImgWrap: { width:72, height:72, borderRadius:16, overflow:'hidden', backgroundColor:theme.colors.SURFACE },

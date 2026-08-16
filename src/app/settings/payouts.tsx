@@ -120,7 +120,7 @@ export default function PayoutsScreen() {
       <View style={s.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <TouchableOpacity onPress={() => router.push('/settings' as any)} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Payouts</Text>
         </View>
@@ -237,7 +237,7 @@ const sStylesheet = createStyleSheet(theme => ({
       root: { flex: 1, backgroundColor: theme.colors.DARK },
       
       header: { paddingHorizontal: 20, paddingBottom: 12 },
-      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
       headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
 
       balanceCard: { backgroundColor: 'rgba(130,219,126,0.06)', borderWidth: 1, borderColor: 'rgba(130,219,126,0.2)', borderRadius: 28, padding: 22 },

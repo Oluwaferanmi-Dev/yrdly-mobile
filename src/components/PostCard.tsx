@@ -108,7 +108,7 @@ const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted,
         }}
         activeOpacity={0.8}
       >
-        <Ionicons name={isVideoMuted ? "volume-mute" : "volume-medium"} size={20} color="#FFF" />
+        <Ionicons name={isVideoMuted ? "volume-mute" : "volume-medium"} size={20} color={theme.colors.TEXT_PRIMARY} />
       </TouchableOpacity>
 
       <View style={{
@@ -591,7 +591,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
               <TouchableOpacity 
                 activeOpacity={0.95}
                 onPress={() => handleImageTap(index)}
-              style={{ width: width - 40, height: getImageHeight(item), borderRadius: 16, overflow: 'hidden', backgroundColor: '#000' }}
+              style={{ width: width - 40, height: getImageHeight(item), borderRadius: 16, overflow: 'hidden', backgroundColor: theme.colors.SURFACE_ALT }}
             >
               <Image source={{ uri: StorageService.getOptimizedImageUrl(item, 800) || item }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
                 

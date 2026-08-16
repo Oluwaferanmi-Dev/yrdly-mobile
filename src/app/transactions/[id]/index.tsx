@@ -440,7 +440,7 @@ export default function TransactionDetailScreen() {
               <View key={step.status} style={stylesheet.timelineRow}>
                 <View style={stylesheet.timelineLeft}>
                   <View style={[stylesheet.timelineDot, { borderColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.SURFACE }, done && [stylesheet.timelineDotDone, { backgroundColor: theme.colors.G, borderColor: theme.colors.G }]]}>
-                    {done && <Feather name="check" size={12} color="#FFF" />}
+                    {done && <Feather name="check" size={12} color={theme.colors.DARK} />}
                   </View>
                   {i < TIMELINE_STEPS.length - 1 && (
                     <View style={[stylesheet.timelineLine, { backgroundColor: theme.colors.GLASS_BORDER }, done && [stylesheet.timelineLineDone, { backgroundColor: theme.colors.G }]]} />

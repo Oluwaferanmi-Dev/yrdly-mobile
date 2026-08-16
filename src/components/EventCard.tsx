@@ -286,7 +286,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
               </Animated.View>
             </TouchableOpacity>
             <TouchableOpacity style={f.actionBtn} onPress={handleShare}>
-              <Ionicons name="share-social-outline" size={17} color="#fff" />
+              <Ionicons name="share-social-outline" size={17} color={theme.colors.TEXT_PRIMARY} />
               {shareCount > 0 && <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 12, marginLeft: 4, fontWeight: 'bold' }}>{shareCount}</Text>}
             </TouchableOpacity>
           </View>

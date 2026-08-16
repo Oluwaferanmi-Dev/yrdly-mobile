@@ -124,7 +124,7 @@ export default function EditProfileScreen() {
         {/* Header */}
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Edit Profile</Text>
           <TouchableOpacity 
@@ -153,7 +153,7 @@ export default function EditProfileScreen() {
                 </View>
               </View>
               <View style={s.cameraOverlay}>
-                <Feather name="camera" size={20} color="#fff" />
+                <Feather name="camera" size={20} color={theme.colors.TEXT_PRIMARY} />
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={pickAvatar}>
@@ -280,7 +280,7 @@ export default function EditProfileScreen() {
 const sStylesheet = createStyleSheet(theme => ({
       root: { flex: 1, backgroundColor: theme.colors.DARK },
       header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16 },
-      backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
       headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.TEXT_PRIMARY },
       saveBtn: { height: 36, paddingHorizontal: 18, borderRadius: 18, backgroundColor: theme.colors.G, alignItems: 'center', justifyContent: 'center' },
       saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
@@ -309,7 +309,7 @@ const sStylesheet = createStyleSheet(theme => ({
       bioInput: { backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, padding: 16, fontFamily: 'Inter', fontSize: 14, color: theme.colors.TEXT_PRIMARY, minHeight: 80, textAlignVertical: 'top' },
 
       verifiedSection: { borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER, paddingTop: 20 },
-      verifiedCard: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 16, backgroundColor: 'rgba(255,255,255,0.025)', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginBottom: 12 },
+      verifiedCard: { flexDirection: 'row', alignItems: 'center', height: 56, paddingHorizontal: 16, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 18, marginBottom: 12 },
       verifiedLabel: { fontFamily: 'Inter-SemiBold', fontSize: 10, color: theme.colors.LABEL, letterSpacing: 0.8, textTransform: 'uppercase' },
       verifiedValue: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.MUTED },
       verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },

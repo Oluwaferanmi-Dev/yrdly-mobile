@@ -285,7 +285,7 @@ export default function OtherUserProfileScreen() {
     <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
       <View style={stylesheet.header}>
         <TouchableOpacity onPress={() => router.back()} style={stylesheet.navBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={[stylesheet.headerTitle, { color: theme.colors.MUTED, fontFamily: 'Outfit-Bold' }]}>
           @{profile.username || 'user'}
@@ -318,7 +318,7 @@ export default function OtherUserProfileScreen() {
             }}
             style={stylesheet.navBtn}
         >
-          <Ionicons name="ellipsis-horizontal" size={18} color="#fff" />
+          <Ionicons name="ellipsis-horizontal" size={18} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
       </View>
 
@@ -386,11 +386,11 @@ export default function OtherUserProfileScreen() {
                 disabled={followLoading}
               >
                 {followLoading ? (
-                  <ActivityIndicator size="small" color={isFollowing ? '#fff' : theme.colors.DARK} />
+                  <ActivityIndicator size="small" color={isFollowing ? theme.colors.TEXT_PRIMARY : theme.colors.DARK} />
                 ) : (
                   <>
-                    {isFollowing && <Ionicons name="checkmark" size={16} color="#fff" style={{ marginRight: 6 }} />}
-                    <Text style={[stylesheet.btnActionTxt, { color: isFollowing ? '#fff' : theme.colors.DARK }]}>
+                    {isFollowing && <Ionicons name="checkmark" size={16} color={theme.colors.TEXT_PRIMARY} style={{ marginRight: 6 }} />}
+                    <Text style={[stylesheet.btnActionTxt, { color: isFollowing ? theme.colors.TEXT_PRIMARY : theme.colors.DARK }]}>
                       {isFollowing ? 'Following' : isFollower ? 'Follow Back' : 'Follow'}
                     </Text>
                   </>
@@ -402,7 +402,7 @@ export default function OtherUserProfileScreen() {
                   style={[stylesheet.btnAction, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, borderWidth: 1 }]}
                   onPress={handleMessage}
                 >
-                  <Ionicons name="chatbubble-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
+                  <Ionicons name="chatbubble-outline" size={16} color={theme.colors.TEXT_PRIMARY} style={{ marginRight: 6 }} />
                   <Text style={[stylesheet.btnActionTxt, { color: theme.colors.TEXT_PRIMARY }]}>Message</Text>
                 </TouchableOpacity>
               )}
@@ -415,7 +415,7 @@ export default function OtherUserProfileScreen() {
           {(['posts', 'reviews'] as const).map(t => {
           return (
                       <TouchableOpacity key={t} onPress={() => setActiveTab(t)} style={stylesheet.tabBtn}>
-                        <Text style={[stylesheet.tabTxt, { color: activeTab === t ? '#fff' : theme.colors.LABEL, fontFamily: activeTab === t ? 'Outfit-Bold' : 'Outfit-Medium' }]}>
+                        <Text style={[stylesheet.tabTxt, { color: activeTab === t ? theme.colors.TEXT_PRIMARY : theme.colors.LABEL, fontFamily: activeTab === t ? 'Outfit-Bold' : 'Outfit-Medium' }]}>
                           {t}
                         </Text>
                         {activeTab === t && <View style={stylesheet.tabIndicator} />}

@@ -169,7 +169,7 @@ export default function CreateCatalogItemScreen() {
         <View style={sStylesheet.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <TouchableOpacity onPress={() => router.back()} style={sStylesheet.backBtn}>
-              <Ionicons name="chevron-back" size={20} color="#fff" />
+              <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>
             <Text style={sStylesheet.headerTitle}>{isEditMode ? 'Edit Item' : 'Add Item'}</Text>
           </View>

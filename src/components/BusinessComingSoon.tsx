@@ -80,7 +80,7 @@ export function BusinessComingSoon() {
         
         {/* Main Icon */}
         <Animated.View style={[stylesheet.mainIconWrapper, { backgroundColor: theme.colors.G }, floatStyle]}>
-          <Feather name="briefcase" size={38} color="#FFFFFF" />
+          <Feather name="briefcase" size={38} color={theme.colors.TEXT_PRIMARY} />
         </Animated.View>
 
         {/* Floating Accent Icons */}
@@ -131,7 +131,7 @@ export function BusinessComingSoon() {
         style={[stylesheet.notifyButton, { backgroundColor: theme.colors.G }]}
         activeOpacity={0.8}
       >
-        <Feather name="bell" size={18} color="#FFF" style={{ marginRight: 8 }} />
+        <Feather name="bell" size={18} color={theme.colors.TEXT_PRIMARY} style={{ marginRight: 8 }} />
         <Text style={stylesheet.notifyButtonText}>Notify me when it's live</Text>
       </TouchableOpacity>
     </ScrollView>

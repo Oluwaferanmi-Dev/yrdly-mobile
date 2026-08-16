@@ -138,7 +138,7 @@ export default function ScanTicketScreen() {
       <SafeAreaView style={stylesheet.headerOverlay}>
         <View style={stylesheet.header}>
           <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
-            <Feather name="x" size={28} color="#FFFFFF" />
+            <Feather name="x" size={28} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
           <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY }]}>Scan Ticket</Text>
           <View style={{ width: 48 }} />

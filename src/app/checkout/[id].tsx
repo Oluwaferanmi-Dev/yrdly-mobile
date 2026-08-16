@@ -209,7 +209,7 @@ export default function CheckoutScreen() {
       {/* Header */}
       <View style={[stylesheet.header, { borderBottomColor: theme.colors.GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
-          <Feather name="chevron-left" size={24} color="#fff" />
+          <Feather name="chevron-left" size={24} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY }]}>Checkout</Text>
         <View style={{ width: 34 }} />

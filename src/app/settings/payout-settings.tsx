@@ -124,7 +124,7 @@ export default function PayoutSettingsScreen() {
       <SafeAreaView style={s.root} edges={['top', 'bottom']}>
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
         </View>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={theme.colors.G} /></View>
@@ -137,7 +137,7 @@ export default function PayoutSettingsScreen() {
       <SafeAreaView style={s.root} edges={['top', 'bottom']}>
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={s.headerTitle}>Payout Settings</Text>
@@ -190,7 +190,7 @@ export default function PayoutSettingsScreen() {
             if (existingBank) setIsChangingBank(false); else router.back();
           }
         }} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <View style={{ flex: 1, marginLeft: 12 }}>
           <Text style={s.headerTitle}>{step === 'select' ? 'Select Bank' : 'Verify Account'}</Text>

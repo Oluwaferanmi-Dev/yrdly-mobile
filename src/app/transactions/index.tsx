@@ -177,7 +177,7 @@ export default function TransactionsScreen() {
       <View style={s.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
           <Text style={s.headerTitle}>Transactions</Text>
         </View>
@@ -213,7 +213,7 @@ export default function TransactionsScreen() {
                 key={f.key}
                 onPress={() => setFilter(f.key)}
                 style={[s.filterPill, { 
-                  backgroundColor: active ? theme.colors.G : '#111', 
+                  backgroundColor: active ? theme.colors.G : theme.colors.SURFACE, 
                   borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER 
                 }]}
               >
@@ -260,7 +260,7 @@ const sStylesheet = createStyleSheet(theme => ({
       root: { flex: 1, backgroundColor: theme.colors.DARK },
       
       header: { paddingHorizontal: 20, paddingBottom: 12 },
-      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
+      backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
       headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
 
       roleTabsWrap: { paddingHorizontal: 20, marginBottom: 12 },
@@ -277,7 +277,7 @@ const sStylesheet = createStyleSheet(theme => ({
       listContent: { paddingHorizontal: 20, paddingBottom: 40 },
       
       rowCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, borderRadius: 20, padding: 16, gap: 16 },
-      rowThumbBox: { width: 52, height: 52, borderRadius: 14, backgroundColor: '#111', overflow: 'hidden' },
+      rowThumbBox: { width: 52, height: 52, borderRadius: 14, backgroundColor: theme.colors.SURFACE_ALT, overflow: 'hidden' },
       rowMid: { flex: 1 },
       rowTitle: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 },
       rowParty: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL, marginBottom: 1 },

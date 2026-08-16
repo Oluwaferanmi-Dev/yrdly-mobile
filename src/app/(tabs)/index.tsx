@@ -95,7 +95,7 @@ const QuickPostBox = memo(() => {
         )}
       </View>
 
-      <Text style={{ flex: 1, color: 'rgba(255,255,255,0.28)', fontSize: 14, fontFamily: 'Inter-Regular' }} numberOfLines={1}>
+      <Text style={{ flex: 1, color: theme.colors.MUTED, fontSize: 14, fontFamily: 'Inter-Regular' }} numberOfLines={1}>
         What's happening in your neighbourhood?
       </Text>
 
@@ -280,11 +280,11 @@ export default function HomeTab() {
             <LocationChip />
           </View>
           <View style={stylesheet.headerRight}>
-            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
-              <MapIcon size={17} color="rgba(255,255,255,0.85)" />
+            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
+              <MapIcon size={17} color={theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
-              <NotificationsIcon size={17} color="rgba(255,255,255,0.85)" />
+            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
+              <NotificationsIcon size={17} color={theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>
           </View>
         </View>
@@ -308,11 +308,11 @@ export default function HomeTab() {
           </View>
 
           <View style={stylesheet.headerRight}>
-            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
-              <MapIcon size={17} color="rgba(255,255,255,0.85)" />
+            <TouchableOpacity style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 8 }} onPress={() => router.push('/map')}>
+              <MapIcon size={17} color={theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
-              <NotificationsIcon size={17} color="rgba(255,255,255,0.85)" />
+            <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center', position: 'relative', marginRight: 8 }}>
+              <NotificationsIcon size={17} color={theme.colors.TEXT_PRIMARY} />
               {unreadCount > 0 && (
                 <View style={{
                   position: 'absolute', right: -6, top: -3, backgroundColor: '#EF4444', borderRadius: 9, minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4, borderWidth: 1.5, borderColor: theme.colors.DARK

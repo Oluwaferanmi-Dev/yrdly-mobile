@@ -16,7 +16,7 @@ export default function GenericSettingsScreen() {
     <SafeAreaView style={s.root} edges={['top']}>
       <View style={s.header}>
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>{headerTitle}</Text>
         <View style={{ width: 34 }} />

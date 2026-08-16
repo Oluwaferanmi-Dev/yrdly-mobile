@@ -229,7 +229,7 @@ export default function MessagesTab() {
         style={stylesheet.deleteAction}
         onPress={() => handleDeleteConversation(conversationId)}
       >
-        <Ionicons name="trash-outline" size={24} color="#fff" />
+        <Ionicons name="trash-outline" size={24} color={theme.colors.TEXT_PRIMARY} />
       </TouchableOpacity>
     );
   }, [handleDeleteConversation, stylesheet]);
