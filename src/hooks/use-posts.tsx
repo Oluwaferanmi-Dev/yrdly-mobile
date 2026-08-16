@@ -68,7 +68,8 @@ export const usePosts = (filter?: LocationFilter | null) => {
             created_at,
             phone_verified
           )
-        `);
+        `)
+        .eq('moderation_status', 'approved');
 
       let eventsQuery = supabase
         .from('events')
@@ -84,6 +85,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
           )
         `)
         .eq('status', 'PUBLISHED')
+        .eq('moderation_status', 'approved')
         .or(`end_time.gte.${new Date().toISOString()},and(end_time.is.null,start_time.gte.${new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()})`);
 
       // Apply location filters
@@ -250,6 +252,8 @@ export const usePosts = (filter?: LocationFilter | null) => {
         if (payload.eventType === 'INSERT') {
           const newPost = payload.new as Post;
           
+          if (newPost.moderation_status && newPost.moderation_status !== 'approved') return;
+
           // Double check filter client-side just in case
           if (filterState && newPost.state && newPost.state !== filterState) return;
           if (filterLga && newPost.lga && newPost.lga !== filterLga) return;
@@ -298,6 +302,12 @@ export const usePosts = (filter?: LocationFilter | null) => {
         } else if (payload.eventType === 'UPDATE') {
           // Update existing post in the list
           const updatedPost = payload.new as Post;
+
+          // If a post was rejected or pending, remove it from the feed
+          if (updatedPost.moderation_status && updatedPost.moderation_status !== 'approved') {
+             setPosts(prevPosts => prevPosts.filter(p => p.id !== updatedPost.id));
+             return;
+          }
 
           // If a For Sale post just became sold, remove it from the feed instantly
           if (updatedPost.category === 'For Sale' && updatedPost.is_sold) {
@@ -359,6 +369,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
         if (payload.eventType === 'INSERT') {
           const newEvent = payload.new as any;
           if (newEvent.status !== 'PUBLISHED') return;
+          if (newEvent.moderation_status && newEvent.moderation_status !== 'approved') return;
           
           if (filterState && newEvent.state && newEvent.state !== filterState) return;
           if (filterLga && newEvent.lga && newEvent.lga !== filterLga) return;
@@ -420,7 +431,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
             (updatedEvent.end_time && new Date(updatedEvent.end_time).getTime() < Date.now()) || 
             (!updatedEvent.end_time && updatedEvent.start_time && new Date(updatedEvent.start_time).getTime() < Date.now() - 24 * 60 * 60 * 1000);
             
-          if (updatedEvent.status !== 'PUBLISHED' || isExpired) {
+          if (updatedEvent.status !== 'PUBLISHED' || isExpired || (updatedEvent.moderation_status && updatedEvent.moderation_status !== 'approved')) {
             setPosts(prevPosts => prevPosts.filter(p => p.id !== updatedEvent.id));
             return;
           }
@@ -593,12 +604,14 @@ export const usePosts = (filter?: LocationFilter | null) => {
         };
 
         // 1. Moderate Text Before Uploading Media
+        let moderationStatus = 'approved';
+        let moderationReason = '';
         const textToModerate = [postData.text, postData.title, postData.description].filter(Boolean).join(' ');
         if (textToModerate) {
            const textMod = await ModerationService.checkText(textToModerate);
            if (!textMod.isSafe) {
-              toast({ variant: 'destructive', title: 'Content Flagged', description: 'Your post contains inappropriate language and was blocked.' });
-              return;
+              moderationStatus = 'pending';
+              moderationReason = textMod.reason || 'Flagged text content';
            }
         }
 
@@ -613,12 +626,16 @@ export const usePosts = (filter?: LocationFilter | null) => {
             if (uploadedUrls.length > 0) {
               const imageMod = await ModerationService.checkImages('post-images', uploadedUrls);
               if (!imageMod.isSafe) {
-                 toast({ variant: 'destructive', title: 'Content Flagged', description: 'One or more of your images were flagged as inappropriate.' });
-                 return;
+                 moderationStatus = 'pending';
+                 moderationReason = imageMod.reason || 'Flagged image content';
+              }
+              
+              if (imageMod.urls && imageMod.urls.length > 0) {
+                  imageUrls = [...imageUrls, ...imageMod.urls];
+              } else {
+                  imageUrls = [...imageUrls, ...uploadedUrls];
               }
             }
-            
-            imageUrls = [...imageUrls, ...uploadedUrls];
         }
 
         // Upload videos if provided (new posts only)
@@ -656,6 +673,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
           video_urls: videoUrls.length > 0 ? videoUrls : undefined,
           timestamp: postIdToUpdate ? postData.timestamp : new Date().toISOString(),
           category: postData.category || 'General',
+          moderation_status: moderationStatus,
           // Location stamping — only set on new posts, preserve on edits
           ...(postIdToUpdate ? { updated_at: new Date().toISOString() } : {
             state: profile.home_state || profile.location?.state || null,
@@ -679,8 +697,24 @@ export const usePosts = (filter?: LocationFilter | null) => {
             if (error) throw error;
             if (updatedPost) {
               setPosts(prev => prev.map(p => p.id === updatedPost.id ? (updatedPost as Post) : p));
+              
+              if (moderationStatus === 'pending') {
+                  await supabase.from('moderation_queue').insert({
+                      content_id: updatedPost.id,
+                      table_name: 'posts',
+                      user_id: user.id,
+                      status: 'pending',
+                      reason: moderationReason,
+                      text_content: textToModerate,
+                      image_urls: imageUrls,
+                  });
+              }
             }
-            toast({ title: 'Success', description: 'Post updated successfully.' });
+            if (moderationStatus === 'pending') {
+               toast({ title: 'Pending Review', description: 'Your post was flagged and is pending admin review.' });
+            } else {
+               toast({ title: 'Success', description: 'Post updated successfully.' });
+            }
         } else {
             const { data: newPost, error } = await supabase
               .from('posts')
@@ -698,8 +732,25 @@ export const usePosts = (filter?: LocationFilter | null) => {
                 if (prev.some(p => p.id === newPost.id)) return prev;
                 return [newPost as Post, ...prev];
               });
+              
+              if (moderationStatus === 'pending') {
+                  await supabase.from('moderation_queue').insert({
+                      content_id: newPost.id,
+                      table_name: 'posts',
+                      user_id: user.id,
+                      status: 'pending',
+                      reason: moderationReason,
+                      text_content: textToModerate,
+                      image_urls: imageUrls,
+                  });
+              }
             }
-            toast({ title: 'Success', description: 'Post created successfully.' });
+            
+            if (moderationStatus === 'pending') {
+               toast({ title: 'Pending Review', description: 'Your post was flagged and is pending admin review.' });
+            } else {
+               toast({ title: 'Success', description: 'Post created successfully.' });
+            }
         }
         
         // Update user activity after successful post creation/update
@@ -726,12 +777,14 @@ export const usePosts = (filter?: LocationFilter | null) => {
 
       try {
         // Moderate Text
+        let moderationStatus = 'approved';
+        let moderationReason = '';
         const textToModerate = [businessData.name, businessData.description].filter(Boolean).join(' ');
         if (textToModerate) {
            const textMod = await ModerationService.checkText(textToModerate);
            if (!textMod.isSafe) {
-              toast({ variant: 'destructive', title: 'Content Flagged', description: 'Your business details contain inappropriate language.' });
-              return;
+              moderationStatus = 'pending';
+              moderationReason = textMod.reason || 'Flagged text content';
            }
         }
 
@@ -743,12 +796,12 @@ export const usePosts = (filter?: LocationFilter | null) => {
             if (uploadedUrls.length > 0) {
               const imageMod = await ModerationService.checkImages('post-images', uploadedUrls);
               if (!imageMod.isSafe) {
-                 toast({ variant: 'destructive', title: 'Content Flagged', description: 'One or more of your images were flagged as inappropriate.' });
-                 return;
+                 moderationStatus = 'pending';
+                 moderationReason = imageMod.reason || 'Flagged image content';
               }
+              const finalUrls = imageMod.urls && imageMod.urls.length > 0 ? imageMod.urls : uploadedUrls;
+              imageUrls = businessIdToUpdate ? [...imageUrls, ...finalUrls] : finalUrls;
             }
-
-            imageUrls = businessIdToUpdate ? [...imageUrls, ...uploadedUrls] : uploadedUrls;
         }
 
         // Auto-stamp the creator's location from their profile (home_* fields preferred)
@@ -762,6 +815,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
             ...businessData,
             owner_id: user.id,
             image_urls: imageUrls,
+            moderation_status: moderationStatus,
             // Location stamping — only set on new businesses, preserve on edits
             ...(businessIdToUpdate ? {} : {
               state: bizLocation?.state || null,
@@ -778,17 +832,47 @@ export const usePosts = (filter?: LocationFilter | null) => {
                 .eq('id', businessIdToUpdate);
             
             if (error) throw error;
-            toast({ title: 'Success', description: 'Business updated successfully.' });
+            
+            if (moderationStatus === 'pending') {
+                await supabase.from('moderation_queue').insert({
+                    content_id: businessIdToUpdate,
+                    table_name: 'businesses',
+                    user_id: user.id,
+                    status: 'pending',
+                    reason: moderationReason,
+                    text_content: textToModerate,
+                    image_urls: imageUrls,
+                });
+                toast({ title: 'Pending Review', description: 'Business update was flagged and is pending admin review.' });
+            } else {
+                toast({ title: 'Success', description: 'Business updated successfully.' });
+            }
         } else {
-            const { error } = await supabase
+            const { data: newBiz, error } = await supabase
                 .from('businesses')
                 .insert({
                     ...finalBusinessData,
                     created_at: new Date().toISOString(),
-                });
+                })
+                .select('id')
+                .single();
             
             if (error) throw error;
-            toast({ title: 'Success', description: 'Business added successfully.' });
+            
+            if (moderationStatus === 'pending' && newBiz) {
+                await supabase.from('moderation_queue').insert({
+                    content_id: newBiz.id,
+                    table_name: 'businesses',
+                    user_id: user.id,
+                    status: 'pending',
+                    reason: moderationReason,
+                    text_content: textToModerate,
+                    image_urls: imageUrls,
+                });
+                toast({ title: 'Pending Review', description: 'Business creation was flagged and is pending admin review.' });
+            } else {
+                toast({ title: 'Success', description: 'Business added successfully.' });
+            }
         }
         
         // Update user activity after successful business creation/update

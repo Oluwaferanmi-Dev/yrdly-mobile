@@ -14,14 +14,13 @@ export class ModerationService {
 
       if (error) {
         console.error('[ModerationService] Error checking text:', error);
-        // Fail open so we don't block users if the API is down
-        return { isSafe: true };
+        return { isSafe: false, reason: 'moderation_error' };
       }
 
       return data;
     } catch (e) {
       console.error('[ModerationService] Exception checking text:', e);
-      return { isSafe: true };
+      return { isSafe: false, reason: 'moderation_error' };
     }
   }
 
@@ -30,8 +29,8 @@ export class ModerationService {
    * @param bucket The Supabase storage bucket the images are stored in
    * @param paths The array of paths in the bucket, or public URLs
    */
-  static async checkImages(bucket: string, paths: string[]): Promise<{ isSafe: boolean; reason?: string }> {
-    if (!paths || paths.length === 0) return { isSafe: true };
+  static async checkImages(bucket: string, paths: string[]): Promise<{ isSafe: boolean; reason?: string; urls?: string[] }> {
+    if (!paths || paths.length === 0) return { isSafe: true, urls: [] };
 
     try {
       const { data, error } = await supabase.functions.invoke('moderate-content', {
@@ -40,14 +39,13 @@ export class ModerationService {
 
       if (error) {
         console.error('[ModerationService] Error checking images:', error);
-        // Fail open so we don't block users if the API is down
-        return { isSafe: true };
+        return { isSafe: false, reason: 'moderation_error', urls: paths };
       }
 
       return data;
     } catch (e) {
       console.error('[ModerationService] Exception checking images:', e);
-      return { isSafe: true };
+      return { isSafe: false, reason: 'moderation_error', urls: paths };
     }
   }
 }

@@ -65,7 +65,7 @@ serve(async (req) => {
       const data = await response.json()
       if (data.status !== 'success') {
         console.error('Sightengine Text API error:', data)
-        return new Response(JSON.stringify({ isSafe: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) // Fail open to not block users
+        return new Response(JSON.stringify({ isSafe: false, reason: 'moderation_error' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) 
       }
 
       // Check profanity, personal info, extremis, etc. based on rules
@@ -83,51 +83,63 @@ serve(async (req) => {
     if (type === 'image') {
       const paths = Array.isArray(content) ? content : [content];
       if (paths.length === 0) {
-         return new Response(JSON.stringify({ isSafe: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+         return new Response(JSON.stringify({ isSafe: true, urls: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      // Need Admin Client to download and move files across buckets securely
+      // target bucket is where it should go if safe
+      const targetBucket = bucket || 'post-images';
+
+      // Need Admin Client to generate signed URLs and move files across buckets securely
       const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       )
 
+      const finalUrls = [];
+
       for (const path of paths) {
         let storagePath = path;
-        let storageBucket = bucket;
+        let storageBucket = 'pending-moderation'; // Defaults to pending
 
+        // If the client passed a full URL, parse it
         if (path.includes('/storage/v1/object/public/')) {
            const parts = path.split('/storage/v1/object/public/')[1].split('/');
            storageBucket = parts[0];
            storagePath = parts.slice(1).join('/');
+        } else if (path.includes('/storage/v1/object/sign/')) {
+           const parts = path.split('/storage/v1/object/sign/')[1].split('/');
+           storageBucket = parts[0];
+           storagePath = parts.slice(1).join('/');
         }
 
-        if (!storageBucket || !storagePath) continue;
+        if (!storagePath) continue;
 
-        // Download the file
-        const { data: fileBlob, error: downloadError } = await supabaseAdmin.storage.from(storageBucket).download(storagePath)
+        // Generate signed URL for Sightengine
+        const { data: signedData, error: signError } = await supabaseAdmin.storage.from(storageBucket).createSignedUrl(storagePath, 60)
         
-        if (downloadError || !fileBlob) {
-          console.error(`Failed to download image ${storagePath} from ${storageBucket}`, downloadError);
-          continue; // Fail open or skip
+        if (signError || !signedData?.signedUrl) {
+          console.error(`Failed to sign image ${storagePath} from ${storageBucket}`, signError);
+          // Fail closed: leave in pending, return error
+          return new Response(JSON.stringify({ isSafe: false, reason: 'moderation_error' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
-        // Send to Sightengine
-        const formData = new FormData();
-        formData.append('media', fileBlob, 'image.jpg');
-        formData.append('models', 'nudity-2.0,gore,wad,offensive');
-        formData.append('api_user', apiUser);
-        formData.append('api_secret', apiSecret);
+        // Send to Sightengine via URL
+        const queryParams = new URLSearchParams({
+          models: 'nudity-2.0,gore,wad,offensive',
+          api_user: apiUser,
+          api_secret: apiSecret,
+          url: signedData.signedUrl
+        });
 
-        const response = await fetch('https://api.sightengine.com/1.0/check.json', {
-          method: 'POST',
-          body: formData,
-        })
+        const response = await fetch(`https://api.sightengine.com/1.0/check.json?${queryParams.toString()}`, {
+          method: 'GET'
+        });
         const data = await response.json();
         
         if (data.status !== 'success') {
            console.error('Sightengine Image API error:', data);
-           continue;
+           // Fail closed: leave in pending, return error
+           return new Response(JSON.stringify({ isSafe: false, reason: 'moderation_error' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
         // Determine safety
@@ -139,25 +151,28 @@ serve(async (req) => {
           }
         }
         if (data.gore && data.gore.prob > 0.5) isSafe = false;
-        if (data.weapon && data.weapon > 0.5) isSafe = false;
-        if (data.drugs && data.drugs > 0.5) isSafe = false;
+        if (data.wad && data.wad.weapon > 0.5) isSafe = false;
+        if (data.wad && data.wad.drugs > 0.5) isSafe = false;
         if (data.offensive && data.offensive.prob > 0.5) isSafe = false;
 
         if (!isSafe) {
            // Move to quarantine
            const quarantinePath = `${user.id}/${Date.now()}_${storagePath.replace(/\\//g, '_')}`;
            
-           const arrayBuffer = await fileBlob.arrayBuffer();
-           await supabaseAdmin.storage.from('quarantine').upload(quarantinePath, arrayBuffer);
-           
-           // Delete original
+           await supabaseAdmin.storage.from(storageBucket).copy(storagePath, quarantinePath, { destinationBucket: 'quarantine' });
            await supabaseAdmin.storage.from(storageBucket).remove([storagePath]);
 
            return new Response(JSON.stringify({ isSafe: false, reason: 'inappropriate_image' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        } else {
+           // Safe: Move to target public bucket
+           await supabaseAdmin.storage.from(storageBucket).copy(storagePath, storagePath, { destinationBucket: targetBucket });
+           await supabaseAdmin.storage.from(storageBucket).remove([storagePath]);
+           const { data: publicData } = supabaseAdmin.storage.from(targetBucket).getPublicUrl(storagePath);
+           finalUrls.push(publicData.publicUrl);
         }
       }
 
-      return new Response(JSON.stringify({ isSafe: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ isSafe: true, urls: finalUrls }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     return new Response(JSON.stringify({ error: 'Invalid type' }), { 

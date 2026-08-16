@@ -118,6 +118,8 @@ export default function Profile1Screen() {
       setIsSaving(true);
       try {
         let finalAvatarUrl: string | undefined = undefined;
+        let avatarModerationStatus = 'approved';
+        let avatarModerationReason = '';
         if (avatarUri) {
           const { url, error } = await StorageService.uploadUserAvatar(user.id, {
             uri: avatarUri,
@@ -133,11 +135,12 @@ export default function Profile1Screen() {
           if (url) {
             const imageMod = await ModerationService.checkImages('user-avatars', [url]);
             if (!imageMod.isSafe) {
-               setFormError('Your profile picture was flagged as inappropriate.');
-               setIsSaving(false);
-               return;
+               avatarModerationStatus = 'pending';
+               avatarModerationReason = imageMod.reason || 'Flagged image content';
+               finalAvatarUrl = url;
+            } else {
+               finalAvatarUrl = imageMod.urls && imageMod.urls.length > 0 ? imageMod.urls[0] : url;
             }
-            finalAvatarUrl = url;
           }
         }
 
@@ -145,8 +148,23 @@ export default function Profile1Screen() {
           ...(name ? { name } : {}),
           ...(clean ? { username: clean } : {}),
           ...(bio ? { bio } : {}),
-          ...(finalAvatarUrl ? { avatar_url: finalAvatarUrl } : {}),
+          // Only apply immediately if approved
+          ...(finalAvatarUrl && avatarModerationStatus === 'approved' ? { avatar_url: finalAvatarUrl } : {}),
         });
+
+        if (avatarModerationStatus === 'pending') {
+            const { supabase } = require('@/lib/supabase'); // importing supabase dynamically if not present or just add it to top
+            await supabase.from('moderation_queue').insert({
+                content_id: user.id,
+                table_name: 'users',
+                user_id: user.id,
+                status: 'pending',
+                reason: avatarModerationReason,
+                image_urls: [finalAvatarUrl],
+            });
+            // We don't want to alert here maybe, we just let them go to the next step,
+            // but their avatar is empty or previous one.
+        }
       } catch (e) {
         console.error('Error saving profile step 1:', e);
       } finally {

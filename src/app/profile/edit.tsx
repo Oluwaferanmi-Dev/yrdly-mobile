@@ -60,6 +60,8 @@ export default function EditProfileScreen() {
     setLoading(true);
     try {
       let finalAvatarUrl = (profile as any)?.avatar_url;
+      let avatarModerationStatus = 'approved';
+      let avatarModerationReason = '';
 
       if (avatarUri) {
         const file = { uri: avatarUri, name: 'avatar.jpg', type: 'image/jpeg' };
@@ -67,11 +69,12 @@ export default function EditProfileScreen() {
         if (url) {
            const imageMod = await ModerationService.checkImages('user-avatars', [url]);
            if (!imageMod.isSafe) {
-              Alert.alert('Content Flagged', 'Your profile picture was flagged as inappropriate.');
-              setLoading(false);
-              return;
+              avatarModerationStatus = 'pending';
+              avatarModerationReason = imageMod.reason || 'Flagged image content';
+              finalAvatarUrl = url; // keep original url for queue insertion
+           } else {
+              finalAvatarUrl = imageMod.urls && imageMod.urls.length > 0 ? imageMod.urls[0] : url;
            }
-           finalAvatarUrl = url;
         }
       }
 
@@ -79,13 +82,26 @@ export default function EditProfileScreen() {
         name: name.trim(),
         username: handle.trim() || undefined,
         bio: bio.trim() || undefined,
-        avatar_url: finalAvatarUrl,
+        // Only update avatar_url immediately if it is approved
+        ...(avatarModerationStatus === 'approved' && avatarUri ? { avatar_url: finalAvatarUrl } : {}),
       });
 
-      if (finalAvatarUrl) {
+      if (finalAvatarUrl && avatarModerationStatus === 'approved') {
         await supabase.auth.updateUser({
           data: { avatar_url: finalAvatarUrl, name: name.trim() },
         });
+      }
+      
+      if (avatarModerationStatus === 'pending') {
+          await supabase.from('moderation_queue').insert({
+              content_id: user.id, // using user.id as content_id for users table
+              table_name: 'users',
+              user_id: user.id,
+              status: 'pending',
+              reason: avatarModerationReason,
+              image_urls: [finalAvatarUrl],
+          });
+          Alert.alert('Pending Review', 'Your new profile picture was flagged and is pending admin review.');
       }
 
       setSaved(true);

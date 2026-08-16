@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import type { CatalogItem } from '@/types';
 import { StorageService, MobileFile } from '@/lib/storage-service';
+import { ModerationService } from '@/lib/moderation-service';
 
 export class CatalogService {
   /**
@@ -33,10 +34,28 @@ export class CatalogService {
             throw new Error('Unauthorized: You do not own this business');
           }
 
+          // Moderate text
+          let moderationStatus = 'approved';
+          let moderationReason = '';
+          const textToModerate = `${itemData.title} ${itemData.description}`;
+          const textMod = await ModerationService.checkText(textToModerate);
+          if (!textMod.isSafe) {
+             moderationStatus = 'pending';
+             moderationReason = textMod.reason || 'Flagged text content';
+          }
+
           // Upload images if provided
           let imageUrls: string[] = [];
           if (imageFiles && imageFiles.length > 0) {
             imageUrls = await this.uploadImages(businessId, imageFiles);
+            const imageMod = await ModerationService.checkImages('catalog-items', imageUrls);
+            if (!imageMod.isSafe) {
+               moderationStatus = 'pending';
+               moderationReason = imageMod.reason || 'Flagged image content';
+            }
+            if (imageMod.urls && imageMod.urls.length > 0) {
+              imageUrls = imageMod.urls;
+            }
           }
 
           // Insert catalog item
@@ -51,11 +70,24 @@ export class CatalogService {
               images: imageUrls,
               in_stock: (itemData.quantity !== undefined ? itemData.quantity > 0 : true) && (itemData.in_stock ?? true),
               quantity: itemData.quantity ?? 1,
+              moderation_status: moderationStatus,
             })
             .select('id')
             .single();
 
           if (error) throw error;
+
+          if (moderationStatus === 'pending' && data) {
+              await supabase.from('moderation_queue').insert({
+                  content_id: data.id,
+                  table_name: 'catalog_items',
+                  user_id: user.id,
+                  status: 'pending',
+                  reason: moderationReason,
+                  text_content: textToModerate,
+                  image_urls: imageUrls,
+              });
+          }
 
           console.log('Catalog item created successfully', {
             itemId: data.id,
@@ -101,10 +133,33 @@ export class CatalogService {
             throw new Error('Unauthorized: You do not own this business');
           }
 
+          // Moderate text if provided
+          let moderationStatus = 'approved';
+          let moderationReason = '';
+          let textToModerate = '';
+          if (itemData.title || itemData.description) {
+            textToModerate = `${itemData.title || ''} ${itemData.description || ''}`;
+            if (textToModerate.trim()) {
+              const textMod = await ModerationService.checkText(textToModerate);
+              if (!textMod.isSafe) {
+                 moderationStatus = 'pending';
+                 moderationReason = textMod.reason || 'Flagged text content';
+              }
+            }
+          }
+
           // Upload new images if provided
           let newImageUrls: string[] = [];
           if (newImageFiles && newImageFiles.length > 0) {
             newImageUrls = await this.uploadImages(businessId, newImageFiles);
+            const imageMod = await ModerationService.checkImages('catalog-items', newImageUrls);
+            if (!imageMod.isSafe) {
+               moderationStatus = 'pending';
+               moderationReason = imageMod.reason || 'Flagged image content';
+            }
+            if (imageMod.urls && imageMod.urls.length > 0) {
+              newImageUrls = imageMod.urls;
+            }
           }
 
           // Combine existing and new images
@@ -115,6 +170,7 @@ export class CatalogService {
           if (newImageFiles || existingImages) {
             updateData.images = allImages;
           }
+          updateData.moderation_status = moderationStatus;
           updateData.updated_at = new Date().toISOString();
 
           const { error } = await supabase
@@ -124,6 +180,18 @@ export class CatalogService {
             .eq('business_id', businessId);
 
           if (error) throw error;
+          
+          if (moderationStatus === 'pending') {
+              await supabase.from('moderation_queue').insert({
+                  content_id: itemId,
+                  table_name: 'catalog_items',
+                  user_id: user.id,
+                  status: 'pending',
+                  reason: moderationReason,
+                  text_content: textToModerate,
+                  image_urls: allImages,
+              });
+          }
 
           console.log('Catalog item updated successfully', {
             itemId,
@@ -260,7 +328,7 @@ export class CatalogService {
       const fileName = `${businessId}/${Date.now()}-${i}.${fileExt}`;
 
       const { data, error } = await StorageService.uploadFile(
-        'catalog-items',
+        'pending-moderation',
         fileName,
         file
       );
@@ -270,7 +338,7 @@ export class CatalogService {
         continue;
       }
 
-      imageUrls.push(StorageService.getPublicUrl('catalog-items', fileName));
+      imageUrls.push(StorageService.getPublicUrl('pending-moderation', fileName));
     }
 
     return imageUrls;
