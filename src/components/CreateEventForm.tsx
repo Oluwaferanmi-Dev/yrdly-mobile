@@ -8,7 +8,6 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useAppTheme } from '../context/ThemeContext';
 export const EVENT_CATEGORIES = ['Party','Music','Sports','Food','Networking','Community','Education','Arts','Tech','Other'];
 
 export interface TicketTierInput { id: string; name: string; price: string; capacity: string; }
@@ -41,7 +40,7 @@ interface Props {
 }
 
 // Collapsible ticket card
-function TicketCard({ tier, idx, onChange, onRemove, canRemove, colors }: any) {
+function TicketCard({ tier, idx, onChange, onRemove, canRemove }: any) {
     const { styles: tk, theme } = useStyles(tkStylesheet);
 
   const [open, setOpen] = useState(true);
@@ -52,14 +51,14 @@ function TicketCard({ tier, idx, onChange, onRemove, canRemove, colors }: any) {
   };
   const rotate = rot.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
   return (
-    <View style={[tk.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+    <View style={[tk.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
       <TouchableOpacity style={tk.header} onPress={toggle}>
-        <View style={[tk.iconWrap, { backgroundColor: colors.tint + '20' }]}>
-          <Ionicons name="ticket-outline" size={16} color={colors.tint} />
+        <View style={[tk.iconWrap, { backgroundColor: theme.colors.G + '20' }]}>
+          <Ionicons name="ticket-outline" size={16} color={theme.colors.G} />
         </View>
-        <Text style={[tk.name, { color: colors.text }]}>{tier.name || `Ticket ${idx + 1}`}</Text>
+        <Text style={[tk.name, { color: theme.colors.TEXT_PRIMARY }]}>{tier.name || `Ticket ${idx + 1}`}</Text>
         <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-          {!open && <Text style={[tk.price, { color: colors.tint }]}>{tier.price === '0' || !tier.price ? 'Free' : `₦${tier.price}`}</Text>}
+          {!open && <Text style={[tk.price, { color: theme.colors.G }]}>{tier.price === '0' || !tier.price ? 'Free' : `₦${tier.price}`}</Text>}
           {canRemove && (
             <TouchableOpacity
               onPress={(e) => {
@@ -73,27 +72,27 @@ function TicketCard({ tier, idx, onChange, onRemove, canRemove, colors }: any) {
             </TouchableOpacity>
           )}
           <Animated.View style={{ transform: [{ rotate }] }}>
-            <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+            <Ionicons name="chevron-down" size={16} color={theme.colors.MUTED} />
           </Animated.View>
         </View>
       </TouchableOpacity>
       {open && (
         <View style={tk.body}>
-          <TextInput style={[tk.input, { color: colors.text, borderColor: colors.borderLight }]}
+          <TextInput style={[tk.input, { color: theme.colors.TEXT_PRIMARY, borderColor: theme.colors.GLASS_BORDER }]}
             value={tier.name} onChangeText={v => onChange({ ...tier, name: v })}
-            placeholder="Ticket name (e.g. VIP)" placeholderTextColor={colors.textMuted} />
+            placeholder="Ticket name (e.g. VIP)" placeholderTextColor={theme.colors.MUTED} />
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
             <View style={{ flex: 1 }}>
-              <Text style={[tk.label, { color: colors.textMuted }]}>Price (₦)</Text>
-              <TextInput style={[tk.input, { color: colors.text, borderColor: colors.borderLight }]}
+              <Text style={[tk.label, { color: theme.colors.MUTED }]}>Price (₦)</Text>
+              <TextInput style={[tk.input, { color: theme.colors.TEXT_PRIMARY, borderColor: theme.colors.GLASS_BORDER }]}
                 value={tier.price} onChangeText={v => onChange({ ...tier, price: v.replace(/[^0-9.]/g,'') })}
-                keyboardType="numeric" placeholder="0 for Free" placeholderTextColor={colors.textMuted} />
+                keyboardType="numeric" placeholder="0 for Free" placeholderTextColor={theme.colors.MUTED} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[tk.label, { color: colors.textMuted }]}>Capacity</Text>
-              <TextInput style={[tk.input, { color: colors.text, borderColor: colors.borderLight }]}
+              <Text style={[tk.label, { color: theme.colors.MUTED }]}>Capacity</Text>
+              <TextInput style={[tk.input, { color: theme.colors.TEXT_PRIMARY, borderColor: theme.colors.GLASS_BORDER }]}
                 value={tier.capacity} onChangeText={v => onChange({ ...tier, capacity: v.replace(/[^0-9]/g,'') })}
-                keyboardType="numeric" placeholder="Unlimited" placeholderTextColor={colors.textMuted} />
+                keyboardType="numeric" placeholder="Unlimited" placeholderTextColor={theme.colors.MUTED} />
             </View>
           </View>
           {canRemove && (
@@ -111,8 +110,7 @@ function TicketCard({ tier, idx, onChange, onRemove, canRemove, colors }: any) {
 export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, profile, isDarkMode, isSubmitting, onSubmit, showCategoryMenu, onCategoryChange, categories, onSelectCategory }: Props) {
     const { styles: s, theme } = useStyles(sStylesheet);
 
-  const { colors } = useAppTheme();
-  const [showDate, setShowDate] = useState(false);
+    const [showDate, setShowDate] = useState(false);
   const [showTime, setShowTime] = useState(false);
   const [showLocation, setShowLocation] = useState(false);
 
@@ -131,30 +129,30 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
   return (
     <>
       {/* Host card */}
-      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           {profile?.avatar_url
             ? <Image source={{ uri: profile.avatar_url }} style={s.avatar} contentFit="cover" />
-            : <View style={[s.avatar, { backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }]}>
+            : <View style={[s.avatar, { backgroundColor: theme.colors.G, justifyContent: 'center', alignItems: 'center' }]}>
                 <Text style={{ color: theme.colors.TEXT_PRIMARY, fontWeight: '800', fontSize: 18 }}>{(profile?.name || '?').charAt(0)}</Text>
               </View>}
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text style={[s.hostName, { color: colors.text }]}>{profile?.name || 'You'}</Text>
+              <Text style={[s.hostName, { color: theme.colors.TEXT_PRIMARY }]}>{profile?.name || 'You'}</Text>
             <View style={{ position: 'relative', zIndex: 50 }}>
               <TouchableOpacity 
-                style={[s.pill, { backgroundColor: colors.tint + '20', borderColor: colors.tint + '50' }]}
+                style={[s.pill, { backgroundColor: theme.colors.G + '20', borderColor: theme.colors.G + '50' }]}
                 onPress={onCategoryChange}>
-                <Ionicons name="calendar-outline" size={10} color={colors.tint} />
-                <Text style={[s.pillTxt, { color: colors.tint }]}>Event</Text>
-                <Ionicons name="chevron-down" size={10} color={colors.tint} />
+                <Ionicons name="calendar-outline" size={10} color={theme.colors.G} />
+                <Text style={[s.pillTxt, { color: theme.colors.G }]}>Event</Text>
+                <Ionicons name="chevron-down" size={10} color={theme.colors.G} />
               </TouchableOpacity>
               {showCategoryMenu && categories && onSelectCategory && (
-                <View style={[s.menu, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+                <View style={[s.menu, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
                   {categories.map(cat => {
                   return (
                                       <TouchableOpacity key={cat} style={s.menuItem} onPress={() => onSelectCategory(cat)}>
-                                        <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
+                                        <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 14 }}>{cat}</Text>
                                       </TouchableOpacity>
                                     );
                   })}
@@ -163,31 +161,31 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
             </View>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}>
-              <Text style={[s.hostSub, { color: colors.textMuted }]}>{locFromProfile}</Text>
-              <Text style={[s.hostSub, { color: colors.textMuted }]}>·</Text>
-              <Ionicons name="globe-outline" size={11} color={colors.tint} />
-              <Text style={[s.hostSub, { color: colors.tint }]}>Public</Text>
+              <Text style={[s.hostSub, { color: theme.colors.MUTED }]}>{locFromProfile}</Text>
+              <Text style={[s.hostSub, { color: theme.colors.MUTED }]}>·</Text>
+              <Ionicons name="globe-outline" size={11} color={theme.colors.G} />
+              <Text style={[s.hostSub, { color: theme.colors.G }]}>Public</Text>
             </View>
           </View>
         </View>
       </View>
 
       {/* Cover */}
-      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="image-outline" size={15} color={colors.tint} />
-            <Text style={[s.fieldLabel, { color: colors.text }]}>Event Cover <Text style={s.req}>*</Text></Text>
+            <Ionicons name="image-outline" size={15} color={theme.colors.G} />
+            <Text style={[s.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Event Cover <Text style={s.req}>*</Text></Text>
           </View>
-          <Text style={[s.charCount, { color: colors.textMuted }]}>{values.images.length}/10</Text>
+          <Text style={[s.charCount, { color: theme.colors.MUTED }]}>{values.images.length}/10</Text>
         </View>
-        <Text style={[s.hint, { color: colors.textMuted }]}>Add a cover photo for your event</Text>
+        <Text style={[s.hint, { color: theme.colors.MUTED }]}>Add a cover photo for your event</Text>
 
         {values.images.length === 0 ? (
-          <TouchableOpacity onPress={onAddPhoto} style={[s.coverEmpty, { borderColor: colors.tint }]}>
-            <Ionicons name="image-outline" size={32} color={colors.tint} />
-            <Text style={[s.coverEmptyLabel, { color: colors.text }]}>Add Cover Photo</Text>
-            <Text style={[s.hint, { color: colors.textMuted }]}>JPG, PNG or WebP. Max 10MB</Text>
+          <TouchableOpacity onPress={onAddPhoto} style={[s.coverEmpty, { borderColor: theme.colors.G }]}>
+            <Ionicons name="image-outline" size={32} color={theme.colors.G} />
+            <Text style={[s.coverEmptyLabel, { color: theme.colors.TEXT_PRIMARY }]}>Add Cover Photo</Text>
+            <Text style={[s.hint, { color: theme.colors.MUTED }]}>JPG, PNG or WebP. Max 10MB</Text>
           </TouchableOpacity>
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }} contentContainerStyle={{ gap: 8 }}>
@@ -202,9 +200,9 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
                           </View>
                         );
             })}
-            <TouchableOpacity onPress={onAddPhoto} style={[s.coverEmpty, { borderColor: colors.tint, width: 100, height: 100 }]}>
-              <Ionicons name="add" size={24} color={colors.textMuted} />
-              <Text style={[{ color: colors.textMuted, fontSize: 12, marginTop: 4 }]}>Add more</Text>
+            <TouchableOpacity onPress={onAddPhoto} style={[s.coverEmpty, { borderColor: theme.colors.G, width: 100, height: 100 }]}>
+              <Ionicons name="add" size={24} color={theme.colors.MUTED} />
+              <Text style={[{ color: theme.colors.MUTED, fontSize: 12, marginTop: 4 }]}>Add more</Text>
             </TouchableOpacity>
           </ScrollView>
         )}
@@ -213,63 +211,63 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Title */}
-      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-          <Ionicons name="pricetag-outline" size={15} color={colors.tint} />
-          <Text style={[s.fieldLabel, { color: colors.text }]}>Event Title <Text style={s.req}>*</Text></Text>
+          <Ionicons name="pricetag-outline" size={15} color={theme.colors.G} />
+          <Text style={[s.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Event Title <Text style={s.req}>*</Text></Text>
         </View>
-        <TextInput style={[s.titleInput, { color: colors.text }]}
+        <TextInput style={[s.titleInput, { color: theme.colors.TEXT_PRIMARY }]}
           placeholder="e.g. Community Football Tournament"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={theme.colors.MUTED}
           value={values.title} onChangeText={t => onChange({ title: t.slice(0, 80) })} maxLength={80} />
-        <Text style={[s.charCount, { color: colors.textMuted }]}>{values.title.length}/80</Text>
+        <Text style={[s.charCount, { color: theme.colors.MUTED }]}>{values.title.length}/80</Text>
       </View>
 
       {/* Description */}
-      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-          <Ionicons name="document-text-outline" size={15} color={colors.tint} />
-          <Text style={[s.fieldLabel, { color: colors.text }]}>Event Description <Text style={s.req}>*</Text></Text>
+          <Ionicons name="document-text-outline" size={15} color={theme.colors.G} />
+          <Text style={[s.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Event Description <Text style={s.req}>*</Text></Text>
         </View>
-        <TextInput style={[s.descInput, { color: colors.text }]}
+        <TextInput style={[s.descInput, { color: theme.colors.TEXT_PRIMARY }]}
           placeholder="Tell people about your event..."
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={theme.colors.MUTED}
           value={values.text} onChangeText={t => onChange({ text: t.slice(0, 1000) })}
           multiline textAlignVertical="top" maxLength={1000} />
-        <Text style={[s.charCount, { color: colors.textMuted }]}>{values.text.length}/1000</Text>
+        <Text style={[s.charCount, { color: theme.colors.MUTED }]}>{values.text.length}/1000</Text>
       </View>
 
       {/* Date + Time */}
       <View style={s.row}>
-        <View style={[s.card, s.half, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+        <View style={[s.card, s.half, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <Ionicons name="calendar-outline" size={14} color={colors.tint} />
-            <Text style={[s.fieldLabel, { color: colors.text }]}>Date <Text style={s.req}>*</Text></Text>
+            <Ionicons name="calendar-outline" size={14} color={theme.colors.G} />
+            <Text style={[s.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Date <Text style={s.req}>*</Text></Text>
           </View>
           {Platform.OS === 'ios' ? (
             <DateTimePicker value={values.eventDate} mode="date" display="compact"
               onChange={(_, d) => d && onChange({ eventDate: d })}
-              themeVariant={isDarkMode ? 'dark' : 'light'} accentColor={colors.tint} />
+              themeVariant={isDarkMode ? 'dark' : 'light'} accentColor={theme.colors.G} />
           ) : (
-            <TouchableOpacity style={[s.pickerBtn, { borderColor: colors.borderLight }]} onPress={() => setShowDate(true)}>
-              <Text style={[s.pickerTxt, { color: values.eventDate ? colors.text : colors.textMuted }]}>{dateLabel}</Text>
-              <Ionicons name="chevron-down" size={14} color={colors.textMuted} />
+            <TouchableOpacity style={[s.pickerBtn, { borderColor: theme.colors.GLASS_BORDER }]} onPress={() => setShowDate(true)}>
+              <Text style={[s.pickerTxt, { color: values.eventDate ? theme.colors.TEXT_PRIMARY : theme.colors.MUTED }]}>{dateLabel}</Text>
+              <Ionicons name="chevron-down" size={14} color={theme.colors.MUTED} />
             </TouchableOpacity>
           )}
         </View>
-        <View style={[s.card, s.half, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+        <View style={[s.card, s.half, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <Ionicons name="time-outline" size={14} color={colors.tint} />
-            <Text style={[s.fieldLabel, { color: colors.text }]}>Time <Text style={s.req}>*</Text></Text>
+            <Ionicons name="time-outline" size={14} color={theme.colors.G} />
+            <Text style={[s.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Time <Text style={s.req}>*</Text></Text>
           </View>
           {Platform.OS === 'ios' ? (
             <DateTimePicker value={values.eventDate} mode="time" display="compact"
               onChange={(_, d) => d && onChange({ eventDate: d })}
-              themeVariant={isDarkMode ? 'dark' : 'light'} accentColor={colors.tint} />
+              themeVariant={isDarkMode ? 'dark' : 'light'} accentColor={theme.colors.G} />
           ) : (
-            <TouchableOpacity style={[s.pickerBtn, { borderColor: colors.borderLight }]} onPress={() => setShowTime(true)}>
-              <Text style={[s.pickerTxt, { color: colors.text }]}>{timeLabel}</Text>
-              <Ionicons name="chevron-down" size={14} color={colors.textMuted} />
+            <TouchableOpacity style={[s.pickerBtn, { borderColor: theme.colors.GLASS_BORDER }]} onPress={() => setShowTime(true)}>
+              <Text style={[s.pickerTxt, { color: theme.colors.TEXT_PRIMARY }]}>{timeLabel}</Text>
+              <Ionicons name="chevron-down" size={14} color={theme.colors.MUTED} />
             </TouchableOpacity>
           )}
         </View>
@@ -285,16 +283,16 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       )}
 
       {/* Location */}
-      <View style={[s.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <TouchableOpacity style={s.settingsRow} onPress={() => setShowLocation(o => !o)}>
-          <View style={[s.settingsIcon, { backgroundColor: colors.tint + '15' }]}>
-            <Ionicons name="location-outline" size={18} color={colors.tint} />
+          <View style={[s.settingsIcon, { backgroundColor: theme.colors.G + '15' }]}>
+            <Ionicons name="location-outline" size={18} color={theme.colors.G} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[s.fieldLabel, { color: colors.text }]}>Location <Text style={s.req}>*</Text></Text>
-            <Text style={[s.hint, { color: colors.textMuted }]} numberOfLines={1}>{locationLabel}</Text>
+            <Text style={[s.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Location <Text style={s.req}>*</Text></Text>
+            <Text style={[s.hint, { color: theme.colors.MUTED }]} numberOfLines={1}>{locationLabel}</Text>
           </View>
-          <Ionicons name={showLocation ? 'chevron-up' : 'chevron-forward'} size={16} color={colors.textMuted} />
+          <Ionicons name={showLocation ? 'chevron-up' : 'chevron-forward'} size={16} color={theme.colors.MUTED} />
         </TouchableOpacity>
         {showLocation && (
           <View style={{ paddingHorizontal: 14, paddingBottom: 12, zIndex: 20 }}>
@@ -308,22 +306,22 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
               }}
               query={{ key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY, language: 'en', components: 'country:ng' }}
               styles={{
-                textInput: [s.googleInput, { color: colors.text, backgroundColor: colors.inputBackground || colors.background }],
+                textInput: [s.googleInput, { color: theme.colors.TEXT_PRIMARY, backgroundColor: theme.colors.SURFACE || theme.colors.DARK }],
                 row: { backgroundColor: theme.colors.DARK },
-                description: { color: colors.text },
+                description: { color: theme.colors.TEXT_PRIMARY },
                 listView: { backgroundColor: theme.colors.DARK, zIndex: 100 },
               }}
-              textInputProps={{ placeholderTextColor: colors.textMuted }}
+              textInputProps={{ placeholderTextColor: theme.colors.MUTED }}
             />
           </View>
         )}
       </View>
 
       {/* Category */}
-      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <Ionicons name="grid-outline" size={15} color={colors.tint} />
-          <Text style={[s.fieldLabel, { color: colors.text }]}>Category <Text style={s.req}>*</Text></Text>
+          <Ionicons name="grid-outline" size={15} color={theme.colors.G} />
+          <Text style={[s.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Category <Text style={s.req}>*</Text></Text>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {EVENT_CATEGORIES.map(cat => {
@@ -333,8 +331,8 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
             const active = values.eventCategory === cat;
             return (
               <TouchableOpacity key={cat} onPress={() => onChange({ eventCategory: cat })}
-                style={[s.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
-                <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat}</Text>
+                style={[s.chip, { backgroundColor: active ? theme.colors.G : theme.colors.SURFACE_ALT, borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER }]}>
+                <Text style={[s.chipTxt, { color: active ? '#0B0D0B' : theme.colors.TEXT_SECONDARY }]}>{cat}</Text>
               </TouchableOpacity>
             );
           })}
@@ -342,49 +340,48 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
       </View>
 
       {/* Ticketed toggle */}
-      <View style={[s.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={[s.settingsRow, { paddingVertical: 14 }]}>
           <View style={{ flex: 1 }}>
-            <Text style={[s.fieldLabel, { color: colors.text }]}>Is this a ticketed event?</Text>
-            <Text style={[s.hint, { color: colors.textMuted }]}>Charge for entry and manage tickets</Text>
+            <Text style={[s.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Is this a ticketed event?</Text>
+            <Text style={[s.hint, { color: theme.colors.MUTED }]}>Charge for entry and manage tickets</Text>
           </View>
           <Switch value={values.isTicketed}
             onValueChange={v => {
               if (!v) onChange({ isTicketed: false, ticketTiers: [{ id: '1', name: 'Free Admission', price: '0', capacity: '' }] });
               else onChange({ isTicketed: true, ticketTiers: [{ id: '1', name: 'General Admission', price: '', capacity: '' }] });
             }}
-            trackColor={{ false: colors.borderLight, true: colors.tint }}
+            trackColor={{ false: theme.colors.GLASS_BORDER, true: theme.colors.G }}
             thumbColor="#fff" />
         </View>
       </View>
 
       {/* Tickets */}
-      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[s.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="ticket-outline" size={15} color={colors.tint} />
-            <Text style={[s.fieldLabel, { color: colors.text }]}>Ticket Settings</Text>
+            <Ionicons name="ticket-outline" size={15} color={theme.colors.G} />
+            <Text style={[s.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Ticket Settings</Text>
           </View>
           {values.isTicketed && (
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }} onPress={addTier}>
-              <Ionicons name="add-circle-outline" size={16} color={colors.tint} />
-              <Text style={[s.hint, { color: colors.tint, fontWeight: '700' }]}>Add Tickets</Text>
+              <Ionicons name="add-circle-outline" size={16} color={theme.colors.G} />
+              <Text style={[s.hint, { color: theme.colors.G, fontWeight: '700' }]}>Add Tickets</Text>
             </TouchableOpacity>
           )}
         </View>
-        <Text style={[s.hint, { color: colors.textMuted, marginBottom: 12 }]}>Add tickets, pricing and availability</Text>
+        <Text style={[s.hint, { color: theme.colors.MUTED, marginBottom: 12 }]}>Add tickets, pricing and availability</Text>
         {values.ticketTiers.map((tier, i) => (
           <TicketCard key={tier.id} tier={tier} idx={i}
             onChange={(t: TicketTierInput) => updateTier(i, t)}
             onRemove={() => removeTier(i)}
-            canRemove={values.ticketTiers.length > 1}
-            colors={colors} />
+            canRemove={values.ticketTiers.length > 1} />
         ))}
         {!values.isTicketed && (
-          <Text style={[s.hint, { color: colors.textMuted }]}>Free entry — no ticketing required</Text>
+          <Text style={[s.hint, { color: theme.colors.MUTED }]}>Free entry — no ticketing required</Text>
         )}
         {values.isTicketed && (
-          <Text style={[s.hint, { color: colors.textMuted, marginTop: 4 }]}>Paid tickets require a linked bank account in Payout Settings.</Text>
+          <Text style={[s.hint, { color: theme.colors.MUTED, marginTop: 4 }]}>Paid tickets require a linked bank account in Payout Settings.</Text>
         )}
       </View>
 
@@ -395,7 +392,7 @@ export function CreateEventForm({ values, onChange, onAddPhoto, onRemovePhoto, p
           onPressIn={() => Animated.spring(pressScale, { toValue: 0.97, useNativeDriver: true, speed: 50 }).start()}
           onPressOut={() => Animated.spring(pressScale, { toValue: 1, useNativeDriver: true, speed: 50 }).start()}
           activeOpacity={1}
-          style={[s.publishBtn, { backgroundColor: canPublish ? colors.tint : colors.tint + '50', shadowColor: colors.tint }]}>
+          style={[s.publishBtn, { backgroundColor: canPublish ? theme.colors.G : theme.colors.G + '50', shadowColor: theme.colors.G }]}>
           <Ionicons name="calendar-outline" size={18} color="#0B0D0B" style={{ marginRight: 10 }} />
           <Text style={s.publishTxt}>{isSubmitting ? 'Creating Event…' : 'Create Event'}</Text>
         </TouchableOpacity>

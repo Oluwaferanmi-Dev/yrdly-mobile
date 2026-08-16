@@ -14,7 +14,6 @@ import {
   PERMISSION_DENIED,
   ResolvedLocation,
 } from '../lib/geocoding-service';
-import { useAppTheme } from '../context/ThemeContext';
 
 export interface LocationValue {
   state: string;
@@ -34,8 +33,7 @@ type PickerMode = 'state' | 'lga';
 export function LocationPicker({ value, onChange }: LocationPickerProps) {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const [detecting, setDetecting] = useState(false);
+    const [detecting, setDetecting] = useState(false);
   const [detectionResult, setDetectionResult] = useState<
     'success' | 'outside' | 'denied' | null
   >(null);
@@ -98,20 +96,20 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
     <View>
       {/* GPS Auto-detect button */}
       <TouchableOpacity
-        style={[stylesheet.gpsBtn, { borderColor: colors.tint }, detecting && stylesheet.gpsBtnLoading]}
+        style={[stylesheet.gpsBtn, { borderColor: theme.colors.G }, detecting && stylesheet.gpsBtnLoading]}
         onPress={handleAutoDetect}
         disabled={detecting}
         activeOpacity={0.8}
       >
         {detecting ? (
           <>
-            <ActivityIndicator size="small" color={colors.tint} style={{ marginRight: 8 }} />
-            <Text style={[stylesheet.gpsBtnText, { color: colors.tint }]}>Detecting your location…</Text>
+            <ActivityIndicator size="small" color={theme.colors.G} style={{ marginRight: 8 }} />
+            <Text style={[stylesheet.gpsBtnText, { color: theme.colors.G }]}>Detecting your location…</Text>
           </>
         ) : (
           <>
-            <Ionicons name="location-outline" size={18} color={colors.tint} style={{ marginRight: 8 }} />
-            <Text style={[stylesheet.gpsBtnText, { color: colors.tint }]}>Auto-detect my location</Text>
+            <Ionicons name="location-outline" size={18} color={theme.colors.G} style={{ marginRight: 8 }} />
+            <Text style={[stylesheet.gpsBtnText, { color: theme.colors.G }]}>Auto-detect my location</Text>
           </>
         )}
       </TouchableOpacity>
@@ -142,67 +140,67 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
 
       {/* Divider */}
       <View style={stylesheet.divider}>
-        <View style={[stylesheet.dividerLine, { backgroundColor: colors.border }]} />
-        <Text style={[stylesheet.dividerText, { color: colors.textMuted }]}>or select manually</Text>
-        <View style={[stylesheet.dividerLine, { backgroundColor: colors.border }]} />
+        <View style={[stylesheet.dividerLine, { backgroundColor: theme.colors.GLASS_BORDER }]} />
+        <Text style={[stylesheet.dividerText, { color: theme.colors.MUTED }]}>or select manually</Text>
+        <View style={[stylesheet.dividerLine, { backgroundColor: theme.colors.GLASS_BORDER }]} />
       </View>
 
       {/* State selector */}
       <View style={stylesheet.fieldGroup}>
-        <Text style={[stylesheet.label, { color: colors.text }]}>State *</Text>
+        <Text style={[stylesheet.label, { color: theme.colors.TEXT_PRIMARY }]}>State *</Text>
         <TouchableOpacity
-          style={[stylesheet.selector, { backgroundColor: theme.colors.SURFACE, borderColor: colors.border }, value.state ? { borderColor: colors.tint } : null]}
+          style={[stylesheet.selector, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }, value.state ? { borderColor: theme.colors.G } : null]}
           onPress={() => openPicker('state')}
           activeOpacity={0.8}
         >
-          <Text style={[stylesheet.selectorText, { color: colors.text }, !value.state && { color: colors.textMuted }]}>
+          <Text style={[stylesheet.selectorText, { color: theme.colors.TEXT_PRIMARY }, !value.state && { color: theme.colors.MUTED }]}>
             {value.state || 'Select your state'}
           </Text>
-          <Feather name="chevron-down" size={18} color={value.state ? colors.tint : colors.textMuted} />
+          <Feather name="chevron-down" size={18} color={value.state ? theme.colors.G : theme.colors.MUTED} />
         </TouchableOpacity>
       </View>
 
       {/* LGA selector */}
       <View style={stylesheet.fieldGroup}>
-        <Text style={[stylesheet.label, { color: colors.text }]}>Local Government Area *</Text>
+        <Text style={[stylesheet.label, { color: theme.colors.TEXT_PRIMARY }]}>Local Government Area *</Text>
         <TouchableOpacity
           style={[
             stylesheet.selector,
-            { backgroundColor: theme.colors.SURFACE, borderColor: colors.border },
-            value.lga ? { borderColor: colors.tint } : null,
+            { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER },
+            value.lga ? { borderColor: theme.colors.G } : null,
             !value.state && stylesheet.selectorDisabled,
           ]}
           onPress={() => value.state && openPicker('lga')}
           activeOpacity={0.8}
         >
-          <Text style={[stylesheet.selectorText, { color: colors.text }, !value.lga && { color: colors.textMuted }]}>
+          <Text style={[stylesheet.selectorText, { color: theme.colors.TEXT_PRIMARY }, !value.lga && { color: theme.colors.MUTED }]}>
             {value.lga || (!value.state ? 'Select state first' : 'Select your LGA')}
           </Text>
-          <Feather name="chevron-down" size={18} color={value.lga ? colors.tint : colors.textMuted} />
+          <Feather name="chevron-down" size={18} color={value.lga ? theme.colors.G : theme.colors.MUTED} />
         </TouchableOpacity>
       </View>
 
       {/* Picker Modal */}
       <Modal visible={pickerVisible} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={[stylesheet.modal, { backgroundColor: theme.colors.DARK }]}>
-          <View style={[stylesheet.modalHeader, { borderBottomColor: colors.borderLight }]}>
-            <Text style={[stylesheet.modalTitle, { color: colors.text }]}>
+          <View style={[stylesheet.modalHeader, { borderBottomColor: theme.colors.GLASS_BORDER }]}>
+            <Text style={[stylesheet.modalTitle, { color: theme.colors.TEXT_PRIMARY }]}>
               {pickerMode === 'state' ? 'Select State' : 'Select LGA'}
             </Text>
             <TouchableOpacity onPress={() => setPickerVisible(false)} style={stylesheet.modalClose}>
-              <Feather name="x" size={24} color={colors.text} />
+              <Feather name="x" size={24} color={theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>
           </View>
 
           {/* Search */}
-          <View style={[stylesheet.searchBox, { backgroundColor: theme.colors.SURFACE, borderColor: colors.border }]}>
-            <Feather name="search" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
+          <View style={[stylesheet.searchBox, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
+            <Feather name="search" size={18} color={theme.colors.MUTED} style={{ marginRight: 8 }} />
             <TextInput
-              style={[stylesheet.searchInput, { color: colors.text }]}
+              style={[stylesheet.searchInput, { color: theme.colors.TEXT_PRIMARY }]}
               value={search}
               onChangeText={setSearch}
               placeholder={pickerMode === 'state' ? 'Search states…' : 'Search LGAs…'}
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={theme.colors.MUTED}
               autoFocus
             />
           </View>
@@ -221,14 +219,14 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
                     pickerMode === 'state' ? handleSelectState(item) : handleSelectLga(item)
                   }
                 >
-                  <Text style={[stylesheet.listItemText, { color: colors.text }, isSelected && { color: colors.tint, fontWeight: '700' }]}>
+                  <Text style={[stylesheet.listItemText, { color: theme.colors.TEXT_PRIMARY }, isSelected && { color: theme.colors.G, fontWeight: '700' }]}>
                     {item}
                   </Text>
-                  {isSelected && <Feather name="check" size={18} color={colors.tint} />}
+                  {isSelected && <Feather name="check" size={18} color={theme.colors.G} />}
                 </TouchableOpacity>
               );
             }}
-            ItemSeparatorComponent={() => <View style={[stylesheet.itemSep, { backgroundColor: colors.borderLight }]} />}
+            ItemSeparatorComponent={() => <View style={[stylesheet.itemSep, { backgroundColor: theme.colors.GLASS_BORDER }]} />}
             keyboardShouldPersistTaps="handled"
           />
         </SafeAreaView>

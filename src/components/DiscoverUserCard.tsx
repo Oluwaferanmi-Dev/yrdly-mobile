@@ -3,7 +3,6 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
-import { useAppTheme } from '../context/ThemeContext';
 import { useFollowStatus } from '../hooks/use-follow-status';
 import { GlassCard } from './GlassCard';
 import { Avatar } from './Avatar';
@@ -28,8 +27,7 @@ interface DiscoverUserCardProps {
 export function DiscoverUserCard({ user, context, mutualCount, onPress }: DiscoverUserCardProps) {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const { isFollowing, isMutual, actionLoading, toggleFollow } = useFollowStatus(user.id);
+    const { isFollowing, isMutual, actionLoading, toggleFollow } = useFollowStatus(user.id);
 
   // Derive badge text/icon based on context
   let badgeIcon: keyof typeof Feather.glyphMap = 'map-pin';
@@ -52,24 +50,24 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={stylesheet.container}>
-      <GlassCard intensity={80} style={StyleSheet.flatten([stylesheet.card, { borderColor: colors.border }])}>
+      <GlassCard intensity={80} style={StyleSheet.flatten([stylesheet.card, { borderColor: theme.colors.GLASS_BORDER }])}>
         <Avatar
           url={user.avatar_url}
           name={user.name}
           size={100}
           style={[stylesheet.avatar as any, { backgroundColor: theme.colors.DARK }]}
-          fallbackStyle={{ backgroundColor: colors.tint }}
-          fallbackTextStyle={{ color: colors.background, fontSize: 20, fontWeight: '800' }}
+          fallbackStyle={{ backgroundColor: theme.colors.G }}
+          fallbackTextStyle={{ color: theme.colors.DARK, fontSize: 20, fontWeight: '800' }}
         />
         
         <View style={stylesheet.content}>
-          <Text style={[stylesheet.name, { color: colors.text }]} numberOfLines={1}>
+          <Text style={[stylesheet.name, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>
             {user.name || 'Anonymous'}
           </Text>
           
           <View style={stylesheet.badgeRow}>
-            <Feather name={badgeIcon} size={12} color={colors.textSecondary} />
-            <Text style={[stylesheet.badgeText, { color: colors.textSecondary }]} numberOfLines={1}>
+            <Feather name={badgeIcon} size={12} color={theme.colors.TEXT_SECONDARY} />
+            <Text style={[stylesheet.badgeText, { color: theme.colors.TEXT_SECONDARY }]} numberOfLines={1}>
               {badgeText}
             </Text>
           </View>
@@ -78,23 +76,23 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
         <TouchableOpacity 
           style={[
             stylesheet.actionButton, 
-            isFollowing ? { backgroundColor: 'transparent' } : { backgroundColor: colors.tint + '15' },
-            isFollowing && { borderColor: colors.border, borderWidth: 1 }
+            isFollowing ? { backgroundColor: 'transparent' } : { backgroundColor: theme.colors.G + '15' },
+            isFollowing && { borderColor: theme.colors.GLASS_BORDER, borderWidth: 1 }
           ]} 
           onPress={handleAction}
           disabled={actionLoading}
         >
           {actionLoading ? (
-            <ActivityIndicator size="small" color={colors.tint} />
+            <ActivityIndicator size="small" color={theme.colors.G} />
           ) : isFollowing ? (
             <View style={stylesheet.friendsBadge}>
-              <Feather name="check" size={14} color={colors.textSecondary} />
-              <Text style={[stylesheet.actionText, { color: colors.textSecondary }]}>
+              <Feather name="check" size={14} color={theme.colors.TEXT_SECONDARY} />
+              <Text style={[stylesheet.actionText, { color: theme.colors.TEXT_SECONDARY }]}>
                 Following
               </Text>
             </View>
           ) : (
-            <Text style={[stylesheet.actionText, { color: colors.tint }]}>
+            <Text style={[stylesheet.actionText, { color: theme.colors.G }]}>
               Follow
             </Text>
           )}

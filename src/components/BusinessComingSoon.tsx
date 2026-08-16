@@ -11,15 +11,13 @@ import Animated, {
   Easing, 
   withDelay 
 } from 'react-native-reanimated';
-import { useAppTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 export function BusinessComingSoon() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  
+    
   // Animations
   const pulseScale = useSharedValue(1);
   const floatY = useSharedValue(0);
@@ -77,60 +75,60 @@ export function BusinessComingSoon() {
       {/* Animated Centerpiece */}
       <View style={stylesheet.iconContainer}>
         {/* Background pulse rings */}
-        <Animated.View style={[stylesheet.pulseRing, { backgroundColor: colors.tint + '15' }, pulseStyle]} />
-        <Animated.View style={[stylesheet.pulseRingInner, { backgroundColor: colors.tint + '25' }, pulseStyle]} />
+        <Animated.View style={[stylesheet.pulseRing, { backgroundColor: theme.colors.G + '15' }, pulseStyle]} />
+        <Animated.View style={[stylesheet.pulseRingInner, { backgroundColor: theme.colors.G + '25' }, pulseStyle]} />
         
         {/* Main Icon */}
-        <Animated.View style={[stylesheet.mainIconWrapper, { backgroundColor: colors.tint }, floatStyle]}>
+        <Animated.View style={[stylesheet.mainIconWrapper, { backgroundColor: theme.colors.G }, floatStyle]}>
           <Feather name="briefcase" size={38} color="#FFFFFF" />
         </Animated.View>
 
         {/* Floating Accent Icons */}
-        <Animated.View style={[stylesheet.accentIcon, stylesheet.accent1, { backgroundColor: theme.colors.SURFACE, shadowColor: colors.text }, opacity1Style]}>
-          <Feather name="trending-up" size={16} color={colors.tint} />
+        <Animated.View style={[stylesheet.accentIcon, stylesheet.accent1, { backgroundColor: theme.colors.SURFACE, shadowColor: theme.colors.TEXT_PRIMARY }, opacity1Style]}>
+          <Feather name="trending-up" size={16} color={theme.colors.G} />
         </Animated.View>
-        <Animated.View style={[stylesheet.accentIcon, stylesheet.accent2, { backgroundColor: theme.colors.SURFACE, shadowColor: colors.text }, opacity2Style]}>
+        <Animated.View style={[stylesheet.accentIcon, stylesheet.accent2, { backgroundColor: theme.colors.SURFACE, shadowColor: theme.colors.TEXT_PRIMARY }, opacity2Style]}>
           <Feather name="star" size={18} color="#FFC107" />
         </Animated.View>
-        <Animated.View style={[stylesheet.accentIcon, stylesheet.accent3, { backgroundColor: theme.colors.SURFACE, shadowColor: colors.text }, opacity3Style]}>
+        <Animated.View style={[stylesheet.accentIcon, stylesheet.accent3, { backgroundColor: theme.colors.SURFACE, shadowColor: theme.colors.TEXT_PRIMARY }, opacity3Style]}>
           <Feather name="map-pin" size={16} color="#FF5252" />
         </Animated.View>
       </View>
 
       {/* Text Content */}
-      <Text style={[stylesheet.title, { color: colors.text }]}>
-        Yrdly <Text style={{ color: colors.tint }}>Businesses</Text>
+      <Text style={[stylesheet.title, { color: theme.colors.TEXT_PRIMARY }]}>
+        Yrdly <Text style={{ color: theme.colors.G }}>Businesses</Text>
       </Text>
       
-      <Text style={[stylesheet.subtitle, { color: colors.textSecondary }]}>
+      <Text style={[stylesheet.subtitle, { color: theme.colors.TEXT_SECONDARY }]}>
         We are building a vibrant new space for you to discover, connect with, and support your favorite local shops and services.
       </Text>
 
       {/* Features List */}
       <View style={stylesheet.featuresContainer}>
         <View style={stylesheet.featureItem}>
-          <View style={[stylesheet.featureIcon, { backgroundColor: colors.inputBackground }]}>
-            <Feather name="search" size={16} color={colors.tint} />
+          <View style={[stylesheet.featureIcon, { backgroundColor: theme.colors.SURFACE }]}>
+            <Feather name="search" size={16} color={theme.colors.G} />
           </View>
-          <Text style={[stylesheet.featureText, { color: colors.text }]}>Find local services near you</Text>
+          <Text style={[stylesheet.featureText, { color: theme.colors.TEXT_PRIMARY }]}>Find local services near you</Text>
         </View>
         <View style={stylesheet.featureItem}>
-          <View style={[stylesheet.featureIcon, { backgroundColor: colors.inputBackground }]}>
-            <Feather name="message-square" size={16} color={colors.tint} />
+          <View style={[stylesheet.featureIcon, { backgroundColor: theme.colors.SURFACE }]}>
+            <Feather name="message-square" size={16} color={theme.colors.G} />
           </View>
-          <Text style={[stylesheet.featureText, { color: colors.text }]}>Connect directly with owners</Text>
+          <Text style={[stylesheet.featureText, { color: theme.colors.TEXT_PRIMARY }]}>Connect directly with owners</Text>
         </View>
         <View style={stylesheet.featureItem}>
-          <View style={[stylesheet.featureIcon, { backgroundColor: colors.inputBackground }]}>
-            <Feather name="star" size={16} color={colors.tint} />
+          <View style={[stylesheet.featureIcon, { backgroundColor: theme.colors.SURFACE }]}>
+            <Feather name="star" size={16} color={theme.colors.G} />
           </View>
-          <Text style={[stylesheet.featureText, { color: colors.text }]}>Read and leave trusted reviews</Text>
+          <Text style={[stylesheet.featureText, { color: theme.colors.TEXT_PRIMARY }]}>Read and leave trusted reviews</Text>
         </View>
       </View>
 
       {/* Action Button */}
       <TouchableOpacity 
-        style={[stylesheet.notifyButton, { backgroundColor: colors.tint }]}
+        style={[stylesheet.notifyButton, { backgroundColor: theme.colors.G }]}
         activeOpacity={0.8}
       >
         <Feather name="bell" size={18} color="#FFF" style={{ marginRight: 8 }} />

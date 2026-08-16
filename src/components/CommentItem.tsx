@@ -5,7 +5,6 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { timeAgo } from '../lib/utils';
-import { useAppTheme } from '../context/ThemeContext';
 import { StorageService } from '../lib/storage-service';
 import { Avatar } from './Avatar';
 import { VerifiedBadge } from './VerifiedBadge';
@@ -40,8 +39,7 @@ interface CommentItemProps {
 
 export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, onReply, onLike, onDelete, onPressProfile }) => {
   const { styles, theme } = useStyles(_stylesheet);
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const [showReplies, setShowReplies] = useState(false);
 
   const hasReplies = item.replies && item.replies.length > 0;
@@ -135,8 +133,8 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
       
       {hasReplies && !showReplies && (
         <TouchableOpacity style={styles.viewRepliesBtn} onPress={() => setShowReplies(true)}>
-          <View style={[styles.viewRepliesLine, { backgroundColor: colors.border }]} />
-          <Text style={[styles.viewRepliesText, { color: colors.textMuted }]}>
+          <View style={[styles.viewRepliesLine, { backgroundColor: theme.colors.GLASS_BORDER }]} />
+          <Text style={[styles.viewRepliesText, { color: theme.colors.MUTED }]}>
             View {item.replies!.length} {item.replies!.length === 1 ? 'reply' : 'replies'}
           </Text>
         </TouchableOpacity>
@@ -156,8 +154,8 @@ export const CommentItem: React.FC<CommentItemProps> = ({ item, currentUserId, o
             />
           ))}
           <TouchableOpacity style={styles.viewRepliesBtn} onPress={() => setShowReplies(false)}>
-            <View style={[styles.viewRepliesLine, { backgroundColor: colors.border }]} />
-            <Text style={[styles.viewRepliesText, { color: colors.textMuted }]}>Hide replies</Text>
+            <View style={[styles.viewRepliesLine, { backgroundColor: theme.colors.GLASS_BORDER }]} />
+            <Text style={[styles.viewRepliesText, { color: theme.colors.MUTED }]}>Hide replies</Text>
           </TouchableOpacity>
         </View>
       )}

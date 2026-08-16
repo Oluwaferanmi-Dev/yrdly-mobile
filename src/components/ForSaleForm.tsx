@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppTheme } from '../context/ThemeContext';
 const { width } = Dimensions.get('window');
 const PHOTO_SIZE = (width - 48 - 24) / 3; // 3-up with margins
 
@@ -64,8 +63,7 @@ function PriceTypeSelector({ value, onChange }: { value: boolean; onChange: (v: 
     const { styles: pg } = useStyles(pgStylesheet);
     const { styles: dd } = useStyles(ddStylesheet);
 
-  const { colors } = useAppTheme();
-  const slide = useRef(new Animated.Value(value ? 1 : 0)).current;
+    const slide = useRef(new Animated.Value(value ? 1 : 0)).current;
 
   const select = (negotiable: boolean) => {
     Animated.spring(slide, { toValue: negotiable ? 1 : 0, useNativeDriver: true, speed: 40, bounciness: 4 }).start();
@@ -75,13 +73,13 @@ function PriceTypeSelector({ value, onChange }: { value: boolean; onChange: (v: 
   const translateX = slide.interpolate({ inputRange: [0, 1], outputRange: [0, (width - 64) / 2] });
 
   return (
-    <View style={[pt.wrap, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]}>
-      <Animated.View style={[pt.indicator, { backgroundColor: colors.tint, transform: [{ translateX }] }]} />
+    <View style={[pt.wrap, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
+      <Animated.View style={[pt.indicator, { backgroundColor: theme.colors.G, transform: [{ translateX }] }]} />
       <TouchableOpacity style={pt.btn} onPress={() => select(false)}>
-        <Text style={[pt.label, { color: !value ? '#0B0D0B' : colors.textMuted }]}>Fixed Price</Text>
+        <Text style={[pt.label, { color: !value ? '#0B0D0B' : theme.colors.MUTED }]}>Fixed Price</Text>
       </TouchableOpacity>
       <TouchableOpacity style={pt.btn} onPress={() => select(true)}>
-        <Text style={[pt.label, { color: value ? '#0B0D0B' : colors.textMuted }]}>Negotiable</Text>
+        <Text style={[pt.label, { color: value ? '#0B0D0B' : theme.colors.MUTED }]}>Negotiable</Text>
       </TouchableOpacity>
     </View>
   );
@@ -99,8 +97,7 @@ function Dropdown({
     const { styles: pg } = useStyles(pgStylesheet);
     const { styles: dd } = useStyles(ddStylesheet);
 
-  const { colors } = useAppTheme();
-  const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(false);
   const heightAnim = useRef(new Animated.Value(0)).current;
 
   const toggle = () => {
@@ -114,29 +111,29 @@ function Dropdown({
 
   return (
     <View style={{ zIndex: open ? 20 : 1 }}>
-      <View style={[dd.row, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[dd.row, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={dd.labelRow}>
-          <Ionicons name={icon as any} size={16} color={colors.tint} />
-          <Text style={[dd.label, { color: colors.text }]}>{label}</Text>
+          <Ionicons name={icon as any} size={16} color={theme.colors.G} />
+          <Text style={[dd.label, { color: theme.colors.TEXT_PRIMARY }]}>{label}</Text>
         </View>
         <TouchableOpacity style={dd.valueRow} onPress={toggle}>
-          <Text style={[dd.value, { color: value ? colors.text : colors.textMuted }]}>
+          <Text style={[dd.value, { color: value ? theme.colors.TEXT_PRIMARY : theme.colors.MUTED }]}>
             {value || placeholder}
           </Text>
-          <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={16} color={colors.textMuted} />
+          <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={16} color={theme.colors.MUTED} />
         </TouchableOpacity>
       </View>
       {open && (
-        <Animated.View style={[dd.menu, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight, maxHeight: heightAnim }]}>
+        <Animated.View style={[dd.menu, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, maxHeight: heightAnim }]}>
           <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
             {options.map(opt => {
             return (
-                          <TouchableOpacity key={opt} style={[dd.item, { borderBottomColor: colors.borderLight }]}
+                          <TouchableOpacity key={opt} style={[dd.item, { borderBottomColor: theme.colors.GLASS_BORDER }]}
                             onPress={() => { onSelect(opt); toggle(); }}>
-                            <Text style={[dd.itemTxt, { color: opt === value ? colors.tint : colors.text, fontWeight: opt === value ? '700' : '400' }]}>
+                            <Text style={[dd.itemTxt, { color: opt === value ? theme.colors.G : theme.colors.TEXT_PRIMARY, fontWeight: opt === value ? '700' : '400' }]}>
                               {opt}
                             </Text>
-                            {opt === value && <Ionicons name="checkmark" size={16} color={colors.tint} />}
+                            {opt === value && <Ionicons name="checkmark" size={16} color={theme.colors.G} />}
                           </TouchableOpacity>
                         );
             })}
@@ -148,8 +145,8 @@ function Dropdown({
 }
 
 // ── Photo gallery ─────────────────────────────────────────────────────────────
-function PhotoGallery({ images, onAdd, onRemove, colors }: {
-  images: PostImage[]; onAdd: () => void; onRemove: (i: number) => void; colors: any;
+function PhotoGallery({ images, onAdd, onRemove }: {
+  images: PostImage[]; onAdd: () => void; onRemove: (i: number) => void;
 }) {
     const { styles: stylesheet, theme } = useStyles(sStylesheet);
     const { styles: pt } = useStyles(ptStylesheet);
@@ -162,11 +159,11 @@ function PhotoGallery({ images, onAdd, onRemove, colors }: {
     <View style={pg.wrap}>
       <View style={pg.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Ionicons name="camera-outline" size={16} color={colors.tint} />
-          <Text style={[pg.title, { color: colors.text }]}>Add Photos</Text>
+          <Ionicons name="camera-outline" size={16} color={theme.colors.G} />
+          <Text style={[pg.title, { color: theme.colors.TEXT_PRIMARY }]}>Add Photos</Text>
           <Text style={[pg.req, { color: '#ef4444' }]}> *</Text>
         </View>
-        <Text style={[pg.hint, { color: colors.textMuted }]}>Add up to 10 photos</Text>
+        <Text style={[pg.hint, { color: theme.colors.MUTED }]}>Add up to 10 photos</Text>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false}
@@ -174,9 +171,9 @@ function PhotoGallery({ images, onAdd, onRemove, colors }: {
         onMomentumScrollEnd={e => setActiveDot(Math.round(e.nativeEvent.contentOffset.x / (PHOTO_SIZE + 10)))}>
 
         {/* Add photo slot */}
-        <TouchableOpacity onPress={onAdd} style={[pg.addSlot, { borderColor: colors.tint, backgroundColor: theme.colors.SURFACE }]}>
-          <Ionicons name="camera-outline" size={28} color={colors.tint} />
-          <Text style={[pg.addLabel, { color: colors.tint }]}>Add Photo</Text>
+        <TouchableOpacity onPress={onAdd} style={[pg.addSlot, { borderColor: theme.colors.G, backgroundColor: theme.colors.SURFACE }]}>
+          <Ionicons name="camera-outline" size={28} color={theme.colors.G} />
+          <Text style={[pg.addLabel, { color: theme.colors.G }]}>Add Photo</Text>
         </TouchableOpacity>
 
         {/* Uploaded images */}
@@ -189,7 +186,7 @@ function PhotoGallery({ images, onAdd, onRemove, colors }: {
                     )}
                     <TouchableOpacity style={[pg.removeBtn, { backgroundColor: theme.colors.DARK }]}
                       onPress={() => onRemove(i)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                      <Ionicons name="close" size={12} color={colors.text} />
+                      <Ionicons name="close" size={12} color={theme.colors.TEXT_PRIMARY} />
                     </TouchableOpacity>
                     {i === 0 && (
                       <View style={pg.coverBadge}><Text style={pg.coverBadgeTxt}>Cover</Text></View>
@@ -203,7 +200,7 @@ function PhotoGallery({ images, onAdd, onRemove, colors }: {
       {images.length > 0 && (
         <View style={pg.dots}>
           {[...Array(Math.min(images.length + 1, 6))].map((_, i) => (
-            <View key={i} style={[pg.dot, { backgroundColor: i === activeDot ? colors.tint : colors.borderLight }]} />
+            <View key={i} style={[pg.dot, { backgroundColor: i === activeDot ? theme.colors.G : theme.colors.GLASS_BORDER }]} />
           ))}
         </View>
       )}
@@ -218,8 +215,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
     const { styles: pg } = useStyles(pgStylesheet);
     const { styles: dd } = useStyles(ddStylesheet);
 
-  const { colors } = useAppTheme();
-
+  
   const locationLabel = (profile?.home_lga || profile?.home_state)
     ? [profile.home_ward, profile.home_lga, profile.home_state].filter(Boolean).join(', ')
     : profile?.location
@@ -238,30 +234,30 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
   return (
     <>
       {/* ── Seller card ── */}
-      <View style={[stylesheet.sellerCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.sellerCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         {profile?.avatar_url
           ? <Image source={{ uri: profile.avatar_url }} style={stylesheet.avatar} contentFit="cover" />
-          : <View style={[stylesheet.avatar, stylesheet.avatarFallback, { backgroundColor: colors.tint }]}>
+          : <View style={[stylesheet.avatar, stylesheet.avatarFallback, { backgroundColor: theme.colors.G }]}>
               <Text style={stylesheet.avatarLetter}>{(profile?.name || '?').charAt(0).toUpperCase()}</Text>
             </View>
         }
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[stylesheet.sellerName, { color: colors.text }]}>{profile?.name || 'You'}</Text>
+            <Text style={[stylesheet.sellerName, { color: theme.colors.TEXT_PRIMARY }]}>{profile?.name || 'You'}</Text>
             <View style={{ position: 'relative', zIndex: 50 }}>
               <TouchableOpacity
-                style={[stylesheet.forSalePill, { backgroundColor: colors.tint + '20', borderColor: colors.tint + '60' }]}
+                style={[stylesheet.forSalePill, { backgroundColor: theme.colors.G + '20', borderColor: theme.colors.G + '60' }]}
                 onPress={onCategoryChange}>
-                <Ionicons name="pricetag-outline" size={10} color={colors.tint} />
-                <Text style={[stylesheet.forSaleLabel, { color: colors.tint }]}>For Sale</Text>
-                <Ionicons name="chevron-down" size={10} color={colors.tint} />
+                <Ionicons name="pricetag-outline" size={10} color={theme.colors.G} />
+                <Text style={[stylesheet.forSaleLabel, { color: theme.colors.G }]}>For Sale</Text>
+                <Ionicons name="chevron-down" size={10} color={theme.colors.G} />
               </TouchableOpacity>
               {showCategoryMenu && categories && onSelectCategory && (
-                <View style={[stylesheet.menu, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+                <View style={[stylesheet.menu, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
                   {categories.map(cat => {
                   return (
                                       <TouchableOpacity key={cat} style={stylesheet.menuItem} onPress={() => onSelectCategory(cat)}>
-                                        <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
+                                        <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 14 }}>{cat}</Text>
                                       </TouchableOpacity>
                                     );
                   })}
@@ -270,52 +266,52 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
             </View>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
-            <Text style={[stylesheet.sellerLocation, { color: colors.textMuted }]}>{locationLabel}</Text>
-            <Text style={[stylesheet.sellerLocation, { color: colors.textMuted }]}>·</Text>
-            <Ionicons name="globe-outline" size={12} color={colors.tint} />
-            <Text style={[stylesheet.sellerLocation, { color: colors.tint }]}>Public</Text>
+            <Text style={[stylesheet.sellerLocation, { color: theme.colors.MUTED }]}>{locationLabel}</Text>
+            <Text style={[stylesheet.sellerLocation, { color: theme.colors.MUTED }]}>·</Text>
+            <Ionicons name="globe-outline" size={12} color={theme.colors.G} />
+            <Text style={[stylesheet.sellerLocation, { color: theme.colors.G }]}>Public</Text>
           </View>
         </View>
       </View>
 
       {/* ── Photo gallery ── */}
-      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
-        <PhotoGallery images={values.images} onAdd={onAddPhoto} onRemove={onRemovePhoto} colors={colors} />
+      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
+        <PhotoGallery images={values.images} onAdd={onAddPhoto} onRemove={onRemovePhoto} />
       </View>
 
       {/* ── Title ── */}
-      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={stylesheet.fieldHeader}>
-          <Ionicons name="diamond-outline" size={15} color={colors.tint} />
-          <Text style={[stylesheet.fieldLabel, { color: colors.text }]}>Title</Text>
+          <Ionicons name="diamond-outline" size={15} color={theme.colors.G} />
+          <Text style={[stylesheet.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Title</Text>
           <Text style={stylesheet.required}> *</Text>
         </View>
         <TextInput
-          style={[stylesheet.titleInput, { color: colors.text }]}
+          style={[stylesheet.titleInput, { color: theme.colors.TEXT_PRIMARY }]}
           placeholder="e.g. iPhone 15 Pro 256GB"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={theme.colors.MUTED}
           value={values.title}
           onChangeText={t => onChange({ title: t.slice(0, 80) })}
           returnKeyType="next"
           maxLength={80}
         />
-        <Text style={[stylesheet.charCount, { color: colors.textMuted }]}>{values.title.length}/80</Text>
+        <Text style={[stylesheet.charCount, { color: theme.colors.MUTED }]}>{values.title.length}/80</Text>
       </View>
 
       {/* ── Price + Category side by side ── */}
       <View style={stylesheet.row}>
-        <View style={[stylesheet.card, stylesheet.half, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+        <View style={[stylesheet.card, stylesheet.half, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
           <View style={stylesheet.fieldHeader}>
-            <Ionicons name="add-circle-outline" size={15} color={colors.tint} />
-            <Text style={[stylesheet.fieldLabel, { color: colors.text }]}>Price</Text>
+            <Ionicons name="add-circle-outline" size={15} color={theme.colors.G} />
+            <Text style={[stylesheet.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Price</Text>
             <Text style={stylesheet.required}> *</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Text style={[stylesheet.currency, { color: colors.textMuted }]}>₦</Text>
+            <Text style={[stylesheet.currency, { color: theme.colors.MUTED }]}>₦</Text>
             <TextInput
-              style={[stylesheet.priceInput, { color: colors.text }]}
+              style={[stylesheet.priceInput, { color: theme.colors.TEXT_PRIMARY }]}
               placeholder="250,000"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={theme.colors.MUTED}
               value={values.price}
               onChangeText={t => onChange({ price: t.replace(/[^0-9.]/g, '') })}
               keyboardType="numeric"
@@ -324,10 +320,10 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
           </View>
         </View>
 
-        <View style={[stylesheet.card, stylesheet.half, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+        <View style={[stylesheet.card, stylesheet.half, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
           <View style={stylesheet.fieldHeader}>
-            <Ionicons name="grid-outline" size={15} color={colors.tint} />
-            <Text style={[stylesheet.fieldLabel, { color: colors.text }]}>Category</Text>
+            <Ionicons name="grid-outline" size={15} color={theme.colors.G} />
+            <Text style={[stylesheet.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Category</Text>
             <Text style={stylesheet.required}> *</Text>
           </View>
           <Dropdown
@@ -339,40 +335,40 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       </View>
 
       {/* ── Description ── */}
-      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={stylesheet.fieldHeader}>
-          <Ionicons name="document-text-outline" size={15} color={colors.tint} />
-          <Text style={[stylesheet.fieldLabel, { color: colors.text }]}>Description</Text>
+          <Ionicons name="document-text-outline" size={15} color={theme.colors.G} />
+          <Text style={[stylesheet.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Description</Text>
           <Text style={stylesheet.required}> *</Text>
         </View>
         <TextInput
-          style={[stylesheet.descInput, { color: colors.text }]}
+          style={[stylesheet.descInput, { color: theme.colors.TEXT_PRIMARY }]}
           placeholder={"Describe your item, its condition, features and anything buyers should know..."}
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={theme.colors.MUTED}
           value={values.text}
           onChangeText={t => onChange({ text: t.slice(0, 1000) })}
           multiline textAlignVertical="top"
           maxLength={1000}
         />
-        <Text style={[stylesheet.charCount, { color: colors.textMuted }]}>{values.text.length}/1000</Text>
+        <Text style={[stylesheet.charCount, { color: theme.colors.MUTED }]}>{values.text.length}/1000</Text>
       </View>
 
       {/* ── Location (settings row style) ── */}
-      <View style={[stylesheet.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={stylesheet.settingsRow}>
           <View style={[stylesheet.settingsIcon, { backgroundColor: 'rgba(130,219,126,0.12)' }]}>
-            <Ionicons name="location-outline" size={18} color={colors.tint} />
+            <Ionicons name="location-outline" size={18} color={theme.colors.G} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[stylesheet.settingsLabel, { color: colors.text }]}>Location <Text style={stylesheet.required}>*</Text></Text>
-            <Text style={[stylesheet.settingsValue, { color: colors.textMuted }]} numberOfLines={1}>{locationLabel}</Text>
+            <Text style={[stylesheet.settingsLabel, { color: theme.colors.TEXT_PRIMARY }]}>Location <Text style={stylesheet.required}>*</Text></Text>
+            <Text style={[stylesheet.settingsValue, { color: theme.colors.MUTED }]} numberOfLines={1}>{locationLabel}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+          <Ionicons name="chevron-forward" size={16} color={theme.colors.MUTED} />
         </View>
       </View>
 
       {/* ── Condition ── */}
-      <View style={[stylesheet.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.settingsCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <Dropdown
           label="Condition" value={values.condition} placeholder="Select condition"
           options={ITEM_CONDITIONS} icon="shield-checkmark-outline"
@@ -381,12 +377,12 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       </View>
 
       {/* ── Price type ── */}
-      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <View style={stylesheet.fieldHeader}>
-          <Ionicons name="pricetag-outline" size={15} color={colors.tint} />
-          <Text style={[stylesheet.fieldLabel, { color: colors.text }]}>Set Price Type</Text>
+          <Ionicons name="pricetag-outline" size={15} color={theme.colors.G} />
+          <Text style={[stylesheet.fieldLabel, { color: theme.colors.TEXT_PRIMARY }]}>Set Price Type</Text>
         </View>
-        <Text style={[stylesheet.fieldHint, { color: colors.textMuted }]}>Choose how you want to sell this item</Text>
+        <Text style={[stylesheet.fieldHint, { color: theme.colors.MUTED }]}>Choose how you want to sell this item</Text>
         <View style={{ marginTop: 12 }}>
           <PriceTypeSelector value={values.negotiable} onChange={v => onChange({ negotiable: v })} />
         </View>
@@ -395,7 +391,7 @@ export function ForSaleForm({ values, onChange, onAddPhoto, onRemovePhoto, profi
       {/* ── Submit ── */}
       <Animated.View style={{ transform: [{ scale: pressScale }], marginTop: 8, marginBottom: 32 }}>
         <TouchableOpacity
-          style={[stylesheet.submitBtn, { backgroundColor: canSubmit ? colors.tint : colors.tint + '55', shadowColor: colors.tint }]}
+          style={[stylesheet.submitBtn, { backgroundColor: canSubmit ? theme.colors.G : theme.colors.G + '55', shadowColor: theme.colors.G }]}
           disabled={!canSubmit}
           onPress={onSubmit}
           onPressIn={onBtnIn}

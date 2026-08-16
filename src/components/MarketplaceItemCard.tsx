@@ -44,7 +44,7 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
     const { styles: stylesheet, theme } = useStyles(sStylesheet);
 
   const { user } = useAuth();
-  const { colors, isDarkMode } = useAppTheme();
+  const { isDarkMode } = useAppTheme();
   const router = useRouter();
   const isOwner = user?.id === item.user_id;
   const [saved, setSaved] = useState(false);
@@ -73,15 +73,15 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
         onPress={onPress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}
+        style={[stylesheet.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
       >
         {/* Image */}
         <View style={stylesheet.imgWrap}>
           {imageUrl
             ? <Image source={{ uri: StorageService.getOptimizedImageUrl(imageUrl, 400) || imageUrl }} style={stylesheet.img} contentFit="cover" transition={200} />
             : item.video_urls && item.video_urls.length > 0 
-              ? <View style={[stylesheet.imgPlaceholder, { backgroundColor: colors.inputBackground }]}><Ionicons name="play-circle-outline" size={32} color={colors.tint} /></View>
-              : <View style={[stylesheet.imgPlaceholder, { backgroundColor: colors.inputBackground }]}><Ionicons name="bag-outline" size={28} color={colors.tint} /></View>}
+              ? <View style={[stylesheet.imgPlaceholder, { backgroundColor: theme.colors.SURFACE }]}><Ionicons name="play-circle-outline" size={32} color={theme.colors.G} /></View>
+              : <View style={[stylesheet.imgPlaceholder, { backgroundColor: theme.colors.SURFACE }]}><Ionicons name="bag-outline" size={28} color={theme.colors.G} /></View>}
 
           {/* Badge */}
           {badge && (
@@ -101,23 +101,23 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
 
         {/* Info */}
         <View style={stylesheet.info}>
-          <Text style={[stylesheet.title, { color: colors.text }]} numberOfLines={2}>
+          <Text style={[stylesheet.title, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={2}>
             {item.title || item.text || 'Untitled'}
           </Text>
 
           {item.condition && (
-            <Text style={[stylesheet.condition, { color: colors.textMuted }]}>{item.condition}</Text>
+            <Text style={[stylesheet.condition, { color: theme.colors.MUTED }]}>{item.condition}</Text>
           )}
 
-          <Text style={[stylesheet.price, { color: colors.tint }]}>
+          <Text style={[stylesheet.price, { color: theme.colors.G }]}>
             {item.price === 0 ? 'FREE' : formatPrice(item.price || 0)}
           </Text>
 
           {/* Location */}
           {(item.lga || item.state) && (
             <View style={stylesheet.locRow}>
-              <Ionicons name="location-outline" size={10} color={colors.textMuted} />
-              <Text style={[stylesheet.locTxt, { color: colors.textMuted }]} numberOfLines={1}>
+              <Ionicons name="location-outline" size={10} color={theme.colors.MUTED} />
+              <Text style={[stylesheet.locTxt, { color: theme.colors.MUTED }]} numberOfLines={1}>
                 {[item.lga, item.state].filter(Boolean).join(', ')}
               </Text>
             </View>
@@ -133,10 +133,10 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
               url={item.user?.avatar_url}
               name={sellerName}
               size={100}
-              style={[stylesheet.avatar as any, { backgroundColor: colors.tint }]}
+              style={[stylesheet.avatar as any, { backgroundColor: theme.colors.G }]}
               fallbackTextStyle={stylesheet.avatarTxt}
             />
-            <Text style={[stylesheet.sellerName, { color: colors.textSecondary }]} numberOfLines={1}>{sellerName}</Text>
+            <Text style={[stylesheet.sellerName, { color: theme.colors.TEXT_SECONDARY }]} numberOfLines={1}>{sellerName}</Text>
             {(item.user as any)?.phone_verified && (
               <View style={{ marginLeft: 2 }}>
                 <VerifiedBadge size={12} />
@@ -146,17 +146,17 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
 
           {/* Actions */}
           {isOwner ? (
-            <TouchableOpacity style={[stylesheet.editBtn, { borderColor: colors.tint }]} onPress={() => router.push(`/marketplace/edit/${item.id}` as any)}>
-              <Feather name="edit-2" size={12} color={colors.tint} />
-              <Text style={[stylesheet.editTxt, { color: colors.tint }]}>Edit Listing</Text>
+            <TouchableOpacity style={[stylesheet.editBtn, { borderColor: theme.colors.G }]} onPress={() => router.push(`/marketplace/edit/${item.id}` as any)}>
+              <Feather name="edit-2" size={12} color={theme.colors.G} />
+              <Text style={[stylesheet.editTxt, { color: theme.colors.G }]}>Edit Listing</Text>
             </TouchableOpacity>
           ) : (
             <View style={stylesheet.actRow}>
-              <TouchableOpacity style={[stylesheet.chatBtn, { borderColor: colors.borderLight, backgroundColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }]} onPress={() => onMessageSeller?.(item)}>
-                <Ionicons name="chatbubble-ellipses-outline" size={13} color={colors.text} style={{ marginRight: 4 }} />
-                <Text style={[stylesheet.chatTxt, { color: colors.text }]}>Chat</Text>
+              <TouchableOpacity style={[stylesheet.chatBtn, { borderColor: theme.colors.GLASS_BORDER, backgroundColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }]} onPress={() => onMessageSeller?.(item)}>
+                <Ionicons name="chatbubble-ellipses-outline" size={13} color={theme.colors.TEXT_PRIMARY} style={{ marginRight: 4 }} />
+                <Text style={[stylesheet.chatTxt, { color: theme.colors.TEXT_PRIMARY }]}>Chat</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[stylesheet.buyBtn, { backgroundColor: colors.tint }]} onPress={() => onBuyNow?.(item)}>
+              <TouchableOpacity style={[stylesheet.buyBtn, { backgroundColor: theme.colors.G }]} onPress={() => onBuyNow?.(item)}>
                 <Ionicons name="cart-outline" size={13} color="#0B0D0B" style={{ marginRight: 4 }} />
                 <Text style={stylesheet.buyTxt}>{item.price === 0 ? 'Claim' : 'Buy Now'}</Text>
               </TouchableOpacity>

@@ -6,7 +6,6 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppTheme } from '../context/ThemeContext';
 const { width } = Dimensions.get('window');
 const IMG_W = (width - 32 - 24) / 3;
 
@@ -43,8 +42,7 @@ export function GeneralPostForm({
 }: Props) {
   const { styles: stylesheet, theme } = useStyles(sStylesheet);
 
-  const { colors } = useAppTheme();
-  const pressScale = useRef(new Animated.Value(1)).current;
+    const pressScale = useRef(new Animated.Value(1)).current;
   const [menuScale] = useState(new Animated.Value(showCategoryMenu ? 1 : 0));
 
   const locLabel = (profile?.home_lga || profile?.home_ward)
@@ -65,33 +63,33 @@ export function GeneralPostForm({
         <View>
           {profile?.avatar_url
             ? <Image source={{ uri: profile.avatar_url }} style={stylesheet.avatar} contentFit="cover" />
-            : <View style={[stylesheet.avatar, { backgroundColor: colors.tint, justifyContent: 'center', alignItems: 'center' }]}>
+            : <View style={[stylesheet.avatar, { backgroundColor: theme.colors.G, justifyContent: 'center', alignItems: 'center' }]}>
                 <Text style={{ color: theme.colors.TEXT_PRIMARY, fontWeight: '800', fontSize: 18 }}>{(profile?.name || '?').charAt(0)}</Text>
               </View>
           }
-          <View style={[stylesheet.cameraBtn, { backgroundColor: colors.tint }]}>
+          <View style={[stylesheet.cameraBtn, { backgroundColor: theme.colors.G }]}>
             <Ionicons name="camera" size={8} color="#0B0D0B" />
           </View>
         </View>
 
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[stylesheet.name, { color: colors.text }]}>{profile?.name || 'You'}</Text>
+            <Text style={[stylesheet.name, { color: theme.colors.TEXT_PRIMARY }]}>{profile?.name || 'You'}</Text>
             {/* Category pill */}
             <View style={{ position: 'relative', zIndex: 50 }}>
               <TouchableOpacity
-                style={[stylesheet.pill, { backgroundColor: colors.tint + '20', borderColor: colors.tint + '60' }]}
+                style={[stylesheet.pill, { backgroundColor: theme.colors.G + '20', borderColor: theme.colors.G + '60' }]}
                 onPress={onCategoryChange}>
-                <Text style={[stylesheet.pillTxt, { color: colors.tint }]}>General</Text>
-                <Ionicons name="chevron-down" size={11} color={colors.tint} />
+                <Text style={[stylesheet.pillTxt, { color: theme.colors.G }]}>General</Text>
+                <Ionicons name="chevron-down" size={11} color={theme.colors.G} />
               </TouchableOpacity>
               {showCategoryMenu && (
-                <View style={[stylesheet.menu, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+                <View style={[stylesheet.menu, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
                   {categories.map(cat => {
                   const { styles: s } = useStyles(sStylesheet);
                   return (
                                       <TouchableOpacity key={cat} style={stylesheet.menuItem} onPress={() => onSelectCategory(cat)}>
-                                        <Text style={{ color: colors.text, fontSize: 14 }}>{cat}</Text>
+                                        <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 14 }}>{cat}</Text>
                                       </TouchableOpacity>
                                     );
                   })}
@@ -100,32 +98,32 @@ export function GeneralPostForm({
             </View>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}>
-            {!!locLabel && <Text style={[stylesheet.sub, { color: colors.textMuted }]}>{locLabel}</Text>}
-            {!!locLabel && <Text style={[stylesheet.sub, { color: colors.textMuted }]}>·</Text>}
-            <Ionicons name={values.visibility === 'private' ? 'lock-closed-outline' : 'globe-outline'} size={11} color={colors.tint} />
-            <Text style={[stylesheet.sub, { color: colors.tint }]}>{values.visibility === 'private' ? 'Private' : 'Public'}</Text>
+            {!!locLabel && <Text style={[stylesheet.sub, { color: theme.colors.MUTED }]}>{locLabel}</Text>}
+            {!!locLabel && <Text style={[stylesheet.sub, { color: theme.colors.MUTED }]}>·</Text>}
+            <Ionicons name={values.visibility === 'private' ? 'lock-closed-outline' : 'globe-outline'} size={11} color={theme.colors.G} />
+            <Text style={[stylesheet.sub, { color: theme.colors.G }]}>{values.visibility === 'private' ? 'Private' : 'Public'}</Text>
           </View>
         </View>
       </View>
 
       {/* ── Composer card ── */}
-      <View style={[stylesheet.composerCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.composerCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         <TextInput
-          style={[stylesheet.composerInput, { color: colors.text }]}
+          style={[stylesheet.composerInput, { color: theme.colors.TEXT_PRIMARY }]}
           placeholder="What's happening nearby?"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={theme.colors.MUTED}
           value={values.text}
           onChangeText={t => onChange({ text: t.slice(0, 2000) })}
           multiline textAlignVertical="top"
           maxLength={2000}
         />
-        <View style={[stylesheet.composerFooter, { borderTopColor: colors.borderLight }]}>
-          <Text style={[stylesheet.charCount, { color: colors.textMuted, flex: 1, textAlign: 'right' }]}>{values.text.length}/2000</Text>
+        <View style={[stylesheet.composerFooter, { borderTopColor: theme.colors.GLASS_BORDER }]}>
+          <Text style={[stylesheet.charCount, { color: theme.colors.MUTED, flex: 1, textAlign: 'right' }]}>{values.text.length}/2000</Text>
         </View>
       </View>
 
       {/* ── Media toolbar ── */}
-      <View style={[stylesheet.toolbarCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+      <View style={[stylesheet.toolbarCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
         {([
           ['image-outline', 'Photo'],
         ] as [string, string][]).map(([icon, label]) => {
@@ -133,10 +131,10 @@ export function GeneralPostForm({
         return (
                   <TouchableOpacity key={label} style={stylesheet.toolBtn}
                     onPress={label === 'Photo' ? onAddPhoto : undefined}>
-                    <View style={[stylesheet.toolIcon, { borderColor: label === 'Photo' ? colors.tint : colors.borderLight, backgroundColor: label === 'Photo' ? colors.tint + '15' : 'transparent' }]}>
-                      <Ionicons name={icon as any} size={22} color={label === 'Photo' ? colors.tint : colors.textMuted} />
+                    <View style={[stylesheet.toolIcon, { borderColor: label === 'Photo' ? theme.colors.G : theme.colors.GLASS_BORDER, backgroundColor: label === 'Photo' ? theme.colors.G + '15' : 'transparent' }]}>
+                      <Ionicons name={icon as any} size={22} color={label === 'Photo' ? theme.colors.G : theme.colors.MUTED} />
                     </View>
-                    <Text style={[stylesheet.toolLabel, { color: label === 'Photo' ? colors.tint : colors.textMuted }]}>{label}</Text>
+                    <Text style={[stylesheet.toolLabel, { color: label === 'Photo' ? theme.colors.G : theme.colors.MUTED }]}>{label}</Text>
                   </TouchableOpacity>
                 );
         })}
@@ -158,37 +156,37 @@ export function GeneralPostForm({
           })}
           {/* "Add more" slot */}
           <TouchableOpacity onPress={onAddPhoto}
-            style={[stylesheet.addMore, { borderColor: colors.borderLight }]}>
-            <Ionicons name="add" size={24} color={colors.textMuted} />
-            <Text style={[stylesheet.addMoreTxt, { color: colors.textMuted }]}>Add more</Text>
+            style={[stylesheet.addMore, { borderColor: theme.colors.GLASS_BORDER }]}>
+            <Ionicons name="add" size={24} color={theme.colors.MUTED} />
+            <Text style={[stylesheet.addMoreTxt, { color: theme.colors.MUTED }]}>Add more</Text>
           </TouchableOpacity>
         </ScrollView>
       )}
 
       {/* ── Visibility row ── */}
       <TouchableOpacity 
-        style={[stylesheet.rowCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}
+        style={[stylesheet.rowCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
         onPress={() => onChange({ visibility: values.visibility === 'private' ? 'public' : 'private' })}
       >
-        <View style={[stylesheet.visIcon, { borderColor: colors.tint }]}>
-          <Ionicons name={values.visibility === 'private' ? 'lock-closed-outline' : 'globe-outline'} size={18} color={colors.tint} />
+        <View style={[stylesheet.visIcon, { borderColor: theme.colors.G }]}>
+          <Ionicons name={values.visibility === 'private' ? 'lock-closed-outline' : 'globe-outline'} size={18} color={theme.colors.G} />
         </View>
         <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={[stylesheet.rowTitle, { color: colors.text }]}>Who can see this?</Text>
-          <Text style={[stylesheet.rowSub, { color: colors.textMuted }]}>
+          <Text style={[stylesheet.rowTitle, { color: theme.colors.TEXT_PRIMARY }]}>Who can see this?</Text>
+          <Text style={[stylesheet.rowSub, { color: theme.colors.MUTED }]}>
             {values.visibility === 'private' ? 'Only your friends' : 'Anyone on Yrdly'}
           </Text>
         </View>
-        <View style={[stylesheet.visPill, { borderColor: colors.tint }]}>
-          <Text style={[stylesheet.visPillTxt, { color: colors.tint }]}>{values.visibility === 'private' ? 'Private' : 'Public'}</Text>
-          <Ionicons name="swap-vertical" size={12} color={colors.tint} />
+        <View style={[stylesheet.visPill, { borderColor: theme.colors.G }]}>
+          <Text style={[stylesheet.visPillTxt, { color: theme.colors.G }]}>{values.visibility === 'private' ? 'Private' : 'Public'}</Text>
+          <Ionicons name="swap-vertical" size={12} color={theme.colors.G} />
         </View>
       </TouchableOpacity>
 
       {/* ── Post button ── */}
       <Animated.View style={[{ transform: [{ scale: pressScale }] }, stylesheet.submitWrap]}>
         <TouchableOpacity
-          style={[stylesheet.submitBtn, { backgroundColor: canPost ? colors.tint : colors.tint + '50', shadowColor: colors.tint }]}
+          style={[stylesheet.submitBtn, { backgroundColor: canPost ? theme.colors.G : theme.colors.G + '50', shadowColor: theme.colors.G }]}
           disabled={!canPost}
           onPress={onSubmit}
           onPressIn={onBtnIn}

@@ -3,7 +3,6 @@ import React, { useState, forwardRef, useImperativeHandle, useRef, useMemo } fro
 import { View, Text, TouchableOpacity, ActivityIndicator, TextInput, Platform, Keyboard } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppTheme } from '../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export interface CommentInputProps {
@@ -29,8 +28,7 @@ export const CommentInput = forwardRef<CommentInputRef, CommentInputProps>(({
 }, ref) => {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const insets = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const inputRef = useRef<any>(null);
@@ -72,14 +70,14 @@ export const CommentInput = forwardRef<CommentInputRef, CommentInputProps>(({
   };
 
   return (
-    <View style={[stylesheet.container, { borderTopColor: colors.borderLight, backgroundColor: theme.colors.DARK, paddingBottom: keyboardVisible ? (Platform.OS === 'android' ? 12 : 12) : Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 12) }]}>
+    <View style={[stylesheet.container, { borderTopColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.DARK, paddingBottom: keyboardVisible ? (Platform.OS === 'android' ? 12 : 12) : Math.max(insets.bottom, Platform.OS === 'android' ? 24 : 12) }]}>
       {replyingTo && (
         <View style={stylesheet.replyBanner}>
-          <Text style={[stylesheet.replyBannerText, { color: colors.textMuted }]}>
+          <Text style={[stylesheet.replyBannerText, { color: theme.colors.MUTED }]}>
             Replying to <Text style={{ fontWeight: 'bold' }}>{replyingTo.name}</Text>
           </Text>
           <TouchableOpacity onPress={onClearReply} style={stylesheet.clearReplyBtn}>
-            <Ionicons name="close-circle" size={18} color={colors.textMuted} />
+            <Ionicons name="close-circle" size={18} color={theme.colors.MUTED} />
           </TouchableOpacity>
         </View>
       )}
@@ -89,17 +87,17 @@ export const CommentInput = forwardRef<CommentInputRef, CommentInputProps>(({
           {userAvatarSource ? (
             <Image source={avatarSource} style={stylesheet.avatarImg} contentFit="cover" />
           ) : (
-            <View style={[stylesheet.avatarImg, stylesheet.avatarFallback, { backgroundColor: colors.tint }]}>
+            <View style={[stylesheet.avatarImg, stylesheet.avatarFallback, { backgroundColor: theme.colors.G }]}>
               <Text style={stylesheet.avatarFallbackText}>{userInitial}</Text>
             </View>
           )}
         </View>
-        <View style={[stylesheet.inputWrapper, { backgroundColor: colors.inputBackground }]}>
+        <View style={[stylesheet.inputWrapper, { backgroundColor: theme.colors.SURFACE }]}>
           <InputComponent
             ref={inputRef}
-            style={[stylesheet.input, { color: colors.text }]}
+            style={[stylesheet.input, { color: theme.colors.TEXT_PRIMARY }]}
             placeholder={replyingTo ? `Reply to ${replyingTo.name}...` : "Add a comment..."}
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={theme.colors.MUTED}
             value={inputText}
             onChangeText={setInputText}
             multiline
@@ -111,11 +109,11 @@ export const CommentInput = forwardRef<CommentInputRef, CommentInputProps>(({
             disabled={!inputText.trim() || sending}
           >
             {sending ? (
-              <ActivityIndicator size="small" color={colors.tint} />
+              <ActivityIndicator size="small" color={theme.colors.G} />
             ) : (
               <Text style={[
                 stylesheet.sendText,
-                { color: inputText.trim() ? '#82DB7E' : colors.textMuted }
+                { color: inputText.trim() ? '#82DB7E' : theme.colors.MUTED }
               ]}>
                 Post
               </Text>

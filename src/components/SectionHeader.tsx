@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useAppTheme } from '../context/ThemeContext';
+import { useStyles, createStyleSheet } from 'react-native-unistyles';
 
 interface SectionHeaderProps {
   title: string;
@@ -9,16 +9,16 @@ interface SectionHeaderProps {
 }
 
 export function SectionHeader({ title, emoji, count }: SectionHeaderProps) {
-  const { colors } = useAppTheme();
+  const { theme } = useStyles(createStyleSheet(() => ({})));
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>
+      <Text style={[styles.title, { color: theme.colors.TEXT_PRIMARY }]}>
         {emoji ? `${emoji} ` : ''}{title}
       </Text>
       {count !== undefined && (
-        <View style={[styles.badge, { backgroundColor: colors.border }]}>
-          <Text style={[styles.badgeText, { color: colors.textSecondary }]}>
+        <View style={[styles.badge, { backgroundColor: theme.colors.GLASS_BORDER }]}>
+          <Text style={[styles.badgeText, { color: theme.colors.TEXT_SECONDARY }]}>
             {count}
           </Text>
         </View>

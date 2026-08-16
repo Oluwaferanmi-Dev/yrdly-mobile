@@ -8,7 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Post } from '../types';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { useAppTheme } from '../context/ThemeContext';
 import { StorageService } from '../lib/storage-service';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
@@ -69,8 +68,7 @@ function fmtDate(dateStr: string): { day: string; month: string; full: string; t
 export function EventCardCompact({ event, onPress }: EventCardProps) {
     const { styles: c, theme } = useStyles(cStylesheet);
 
-  const { colors } = useAppTheme();
-  const { user } = useAuth();
+    const { user } = useAuth();
   const isOwner = user?.id === event.user_id;
   const pressScale = useRef(new Animated.Value(1)).current;
   const [saved, setSaved] = useState(false);
@@ -117,7 +115,7 @@ export function EventCardCompact({ event, onPress }: EventCardProps) {
     <Animated.View style={{ transform: [{ scale: pressScale }] }}>
       <TouchableOpacity
         activeOpacity={1} onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut}
-        style={[c.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}
+        style={[c.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
       >
         {/* Image */}
         <View style={c.imgWrap}>
@@ -148,40 +146,40 @@ export function EventCardCompact({ event, onPress }: EventCardProps) {
 
         {/* Info */}
         <View style={c.info}>
-          <Text style={[c.title, { color: colors.text }]} numberOfLines={1}>{event.title || event.text || 'Event'}</Text>
+          <Text style={[c.title, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>{event.title || event.text || 'Event'}</Text>
           {event.text && event.title && (
-            <Text style={[c.subtitle, { color: colors.textMuted }]} numberOfLines={1}>{event.text}</Text>
+            <Text style={[c.subtitle, { color: theme.colors.MUTED }]} numberOfLines={1}>{event.text}</Text>
           )}
           {dateInfo && (
             <View style={c.row}>
-              <Ionicons name="calendar-outline" size={11} color={colors.textMuted} />
-              <Text style={[c.meta, { color: colors.textMuted }]}>{dateInfo.full} at {dateInfo.time}</Text>
+              <Ionicons name="calendar-outline" size={11} color={theme.colors.MUTED} />
+              <Text style={[c.meta, { color: theme.colors.MUTED }]}>{dateInfo.full} at {dateInfo.time}</Text>
             </View>
           )}
           {!!location && (
             <View style={c.row}>
-              <Ionicons name="location-outline" size={11} color={colors.textMuted} />
-              <Text style={[c.meta, { color: colors.textMuted }]} numberOfLines={1}>{location}</Text>
+              <Ionicons name="location-outline" size={11} color={theme.colors.MUTED} />
+              <Text style={[c.meta, { color: theme.colors.MUTED }]} numberOfLines={1}>{location}</Text>
             </View>
           )}
           <View style={c.footer}>
-            <Text style={[c.price, { color: event.price ? colors.tint : '#22c55e' }]}>
+            <Text style={[c.price, { color: event.price ? theme.colors.G : '#22c55e' }]}>
               {event.price === 0 || !event.price ? 'Free Entry' : formatPrice(event.price)}
             </Text>
             <View style={c.avatarRow}>
-              <View style={[c.avatar, { backgroundColor: colors.tint }]}>
+              <View style={[c.avatar, { backgroundColor: theme.colors.G }]}>
                 {event.author_image
                   ? <Image source={{ uri: event.author_image }} style={StyleSheet.absoluteFillObject} contentFit="cover" />
                   : <Text style={c.avatarTxt}>{(event.author_name || 'E').charAt(0)}</Text>}
               </View>
               {(event.attendees?.length || 0) > 0 && (
-                <Text style={[c.attendees, { color: colors.textMuted }]}>+{event.attendees?.length}</Text>
+                <Text style={[c.attendees, { color: theme.colors.MUTED }]}>+{event.attendees?.length}</Text>
               )}
             </View>
             <TouchableOpacity
-              style={[c.ctaBtn, { backgroundColor: isOwner ? 'transparent' : colors.tint, borderWidth: isOwner ? 1 : 0, borderColor: colors.tint }]}
+              style={[c.ctaBtn, { backgroundColor: isOwner ? 'transparent' : theme.colors.G, borderWidth: isOwner ? 1 : 0, borderColor: theme.colors.G }]}
               onPress={onPress}>
-              <Ionicons name={isOwner ? 'create-outline' : 'arrow-forward'} size={14} color={isOwner ? colors.tint : '#0B0D0B'} />
+              <Ionicons name={isOwner ? 'create-outline' : 'arrow-forward'} size={14} color={isOwner ? theme.colors.G : '#0B0D0B'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -194,8 +192,7 @@ export function EventCardCompact({ event, onPress }: EventCardProps) {
 export function EventCard({ event, onPress }: EventCardProps) {
     const { styles: f, theme } = useStyles(fStylesheet);
 
-  const { colors } = useAppTheme();
-  const { user } = useAuth();
+    const { user } = useAuth();
   const router = useRouter();
   const isOwner = user?.id === event.user_id;
   const [saved, setSaved] = useState(false);
@@ -254,7 +251,7 @@ export function EventCard({ event, onPress }: EventCardProps) {
     <Animated.View style={[f.wrap, { transform: [{ scale: pressScale }] }]}>
       <TouchableOpacity
         activeOpacity={1} onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut}
-        style={[f.card, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}
+        style={[f.card, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
       >
         {/* Cover */}
         <View style={f.imgWrap}>
@@ -297,24 +294,24 @@ export function EventCard({ event, onPress }: EventCardProps) {
 
         {/* Body */}
         <View style={f.body}>
-          <Text style={[f.title, { color: colors.text }]} numberOfLines={2}>
+          <Text style={[f.title, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={2}>
             {event.title || event.text || 'Untitled Event'}
           </Text>
           {event.text && event.title && (
-            <Text style={[f.tagline, { color: colors.textMuted }]} numberOfLines={1}>{event.text}</Text>
+            <Text style={[f.tagline, { color: theme.colors.MUTED }]} numberOfLines={1}>{event.text}</Text>
           )}
 
           {/* Meta rows */}
           {dateInfo && (
             <View style={f.metaRow}>
-              <Ionicons name="calendar-outline" size={14} color={colors.textMuted} />
-              <Text style={[f.metaTxt, { color: colors.textSecondary }]}>{dateInfo.full} at {dateInfo.time}</Text>
+              <Ionicons name="calendar-outline" size={14} color={theme.colors.MUTED} />
+              <Text style={[f.metaTxt, { color: theme.colors.TEXT_SECONDARY }]}>{dateInfo.full} at {dateInfo.time}</Text>
             </View>
           )}
           {!!location && (
             <View style={f.metaRow}>
-              <Ionicons name="location-outline" size={14} color={colors.textMuted} />
-              <Text style={[f.metaTxt, { color: colors.textSecondary }]} numberOfLines={1}>{location}</Text>
+              <Ionicons name="location-outline" size={14} color={theme.colors.MUTED} />
+              <Text style={[f.metaTxt, { color: theme.colors.TEXT_SECONDARY }]} numberOfLines={1}>{location}</Text>
             </View>
           )}
 
@@ -325,18 +322,18 @@ export function EventCard({ event, onPress }: EventCardProps) {
             </View>
 
             <View style={f.priceWrap}>
-              <Text style={[f.price, { color: event.price ? colors.tint : '#22c55e' }]}>
+              <Text style={[f.price, { color: event.price ? theme.colors.G : '#22c55e' }]}>
                 {event.price === 0 || !event.price ? 'Free Entry' : formatPrice(event.price)}
               </Text>
             </View>
 
             <TouchableOpacity
-              style={[f.cta, { backgroundColor: isOwner ? 'transparent' : colors.tint, borderWidth: isOwner ? 1 : 0, borderColor: colors.tint }]}
+              style={[f.cta, { backgroundColor: isOwner ? 'transparent' : theme.colors.G, borderWidth: isOwner ? 1 : 0, borderColor: theme.colors.G }]}
               onPress={onPress}>
-              <Text style={[f.ctaTxt, { color: isOwner ? colors.tint : '#0B0D0B' }]}>
+              <Text style={[f.ctaTxt, { color: isOwner ? theme.colors.G : '#0B0D0B' }]}>
                 {isOwner ? 'Edit' : 'View Tickets'}
               </Text>
-              <Ionicons name="chevron-forward" size={13} color={isOwner ? colors.tint : '#0B0D0B'} />
+              <Ionicons name="chevron-forward" size={13} color={isOwner ? theme.colors.G : '#0B0D0B'} />
             </TouchableOpacity>
           </View>
         </View>

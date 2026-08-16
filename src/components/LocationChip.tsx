@@ -3,13 +3,11 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useLocation } from '../context/LocationContext';
-import { useAppTheme } from '../context/ThemeContext';
 
 export function LocationChip() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const { displayLabel, activeFilter, setGlobalFilter, userProfileLocation, hasLocation } = useLocation();
+    const { displayLabel, activeFilter, setGlobalFilter, userProfileLocation, hasLocation } = useLocation();
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleSelect = (type: 'all' | 'state' | 'lga') => {
@@ -35,14 +33,14 @@ export function LocationChip() {
   return (
     <>
       <TouchableOpacity 
-        style={[stylesheet.chip, { backgroundColor: colors.inputBackground, borderColor: colors.borderLight }]} 
+        style={[stylesheet.chip, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]} 
         onPress={() => setModalVisible(true)}
       >
-        <Ionicons name="location-sharp" size={14} color={colors.tint} />
-        <Text style={[stylesheet.chipText, { color: colors.text }]} numberOfLines={1}>
+        <Ionicons name="location-sharp" size={14} color={theme.colors.G} />
+        <Text style={[stylesheet.chipText, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>
           {displayLabel}
         </Text>
-        <Feather name="chevron-down" size={14} color={colors.textSecondary} />
+        <Feather name="chevron-down" size={14} color={theme.colors.TEXT_SECONDARY} />
       </TouchableOpacity>
 
       <Modal visible={modalVisible} transparent animationType="fade">
@@ -50,43 +48,43 @@ export function LocationChip() {
           <View style={stylesheet.modalOverlay} />
         </TouchableWithoutFeedback>
         <View style={[stylesheet.modalContent, { backgroundColor: theme.colors.SURFACE }]}>
-          <Text style={[stylesheet.modalTitle, { color: colors.text }]}>View Area</Text>
+          <Text style={[stylesheet.modalTitle, { color: theme.colors.TEXT_PRIMARY }]}>View Area</Text>
           
           <TouchableOpacity 
-            style={[stylesheet.modalOption, { borderBottomColor: colors.borderLight }]}
+            style={[stylesheet.modalOption, { borderBottomColor: theme.colors.GLASS_BORDER }]}
             onPress={() => handleSelect('all')}
           >
-            <Text style={[stylesheet.modalOptionText, { color: colors.text }]}>All Nigeria</Text>
-            {currentType === 'all' && <Feather name="check" size={20} color={colors.tint} />}
+            <Text style={[stylesheet.modalOptionText, { color: theme.colors.TEXT_PRIMARY }]}>All Nigeria</Text>
+            {currentType === 'all' && <Feather name="check" size={20} color={theme.colors.G} />}
           </TouchableOpacity>
 
           {hasLocation && userProfileLocation?.state && (
             <TouchableOpacity 
-              style={[stylesheet.modalOption, { borderBottomColor: colors.borderLight }]}
+              style={[stylesheet.modalOption, { borderBottomColor: theme.colors.GLASS_BORDER }]}
               onPress={() => handleSelect('state')}
             >
-              <Text style={[stylesheet.modalOptionText, { color: colors.text }]}>{userProfileLocation.state} State</Text>
-              {currentType === 'state' && <Feather name="check" size={20} color={colors.tint} />}
+              <Text style={[stylesheet.modalOptionText, { color: theme.colors.TEXT_PRIMARY }]}>{userProfileLocation.state} State</Text>
+              {currentType === 'state' && <Feather name="check" size={20} color={theme.colors.G} />}
             </TouchableOpacity>
           )}
 
           {hasLocation && userProfileLocation?.lga && (
             <TouchableOpacity 
-              style={[stylesheet.modalOption, { borderBottomColor: colors.borderLight }]}
+              style={[stylesheet.modalOption, { borderBottomColor: theme.colors.GLASS_BORDER }]}
               onPress={() => handleSelect('lga')}
             >
-              <Text style={[stylesheet.modalOptionText, { color: colors.text }]}>{userProfileLocation.lga}</Text>
-              {currentType === 'lga' && <Feather name="check" size={20} color={colors.tint} />}
+              <Text style={[stylesheet.modalOptionText, { color: theme.colors.TEXT_PRIMARY }]}>{userProfileLocation.lga}</Text>
+              {currentType === 'lga' && <Feather name="check" size={20} color={theme.colors.G} />}
             </TouchableOpacity>
           )}
 
 
 
           <TouchableOpacity 
-            style={[stylesheet.closeModalButton, { backgroundColor: colors.inputBackground }]}
+            style={[stylesheet.closeModalButton, { backgroundColor: theme.colors.SURFACE }]}
             onPress={() => setModalVisible(false)}
           >
-            <Text style={[stylesheet.closeModalButtonText, { color: colors.text }]}>Cancel</Text>
+            <Text style={[stylesheet.closeModalButtonText, { color: theme.colors.TEXT_PRIMARY }]}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </Modal>

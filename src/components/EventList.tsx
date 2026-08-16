@@ -12,7 +12,6 @@ import { supabase } from '../lib/supabase';
 import { Post } from '../types';
 import { useRouter, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system/legacy';
-import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { AttendeeAvatars } from './AttendeeAvatars';
@@ -38,8 +37,7 @@ const EVENT_CATEGORIES = [
 export function EventList({ searchQuery = '', sortOption = 'newest' }: EventListProps) {
     const { styles: stylesheet, theme } = useStyles(sStylesheet);
 
-  const { colors } = useAppTheme();
-  const { activeFilter } = useLocation();
+    const { activeFilter } = useLocation();
   const router = useRouter();
   const { user } = useAuth();
   const [events, setEvents] = useState<Post[]>([]);
@@ -181,25 +179,25 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
                     featuredRef.current.scrollTo({ x: 0, animated: true });
                   }
                 }}
-                style={[stylesheet.chip, { backgroundColor: active ? colors.tint : colors.card, borderColor: active ? colors.tint : colors.borderLight }]}>
-                <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : colors.textMuted} style={{ marginRight: 4 }} />
-                <Text style={[stylesheet.chipTxt, { color: active ? '#0B0D0B' : colors.textSecondary }]}>{cat.label}</Text>
+                style={[stylesheet.chip, { backgroundColor: active ? theme.colors.G : theme.colors.SURFACE_ALT, borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER }]}>
+                <Ionicons name={cat.icon as any} size={13} color={active ? '#0B0D0B' : theme.colors.MUTED} style={{ marginRight: 4 }} />
+                <Text style={[stylesheet.chipTxt, { color: active ? '#0B0D0B' : theme.colors.TEXT_SECONDARY }]}>{cat.label}</Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
 
         {category !== '' && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.tint + '15', borderRadius: 14, marginHorizontal: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.tint + '40' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: theme.colors.G + '15', borderRadius: 14, marginHorizontal: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.colors.G + '40' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Ionicons name="funnel-outline" size={14} color={colors.tint} />
-              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>
+              <Ionicons name="funnel-outline" size={14} color={theme.colors.G} />
+              <Text style={{ color: theme.colors.TEXT_PRIMARY, fontWeight: '700', fontSize: 13 }}>
                 Showing: {EVENT_CATEGORIES.find(c => c.key === category)?.label || category}
               </Text>
             </View>
-            <TouchableOpacity onPress={() => setCategory('')} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.SURFACE, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: colors.borderLight }}>
-              <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600', marginRight: 4 }}>Clear</Text>
-              <Ionicons name="close" size={14} color={colors.textSecondary} />
+            <TouchableOpacity onPress={() => setCategory('')} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.SURFACE, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER }}>
+              <Text style={{ color: theme.colors.TEXT_SECONDARY, fontSize: 11, fontWeight: '600', marginRight: 4 }}>Clear</Text>
+              <Ionicons name="close" size={14} color={theme.colors.TEXT_SECONDARY} />
             </TouchableOpacity>
           </View>
         )}
@@ -207,7 +205,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         {featured.length > 0 && (
           <View style={stylesheet.section}>
             <View style={stylesheet.sectionHeader}>
-              <Text style={[stylesheet.sectionTitle, { color: colors.text }]}>Upcoming Events</Text>
+              <Text style={[stylesheet.sectionTitle, { color: theme.colors.TEXT_PRIMARY }]}>Upcoming Events</Text>
             </View>
             <ScrollView
               ref={featuredRef}
@@ -274,7 +272,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
             {featured.length > 1 && (
               <View style={stylesheet.dots}>
                 {featured.map((_, i) => (
-                  <View key={i} style={[stylesheet.dot, { backgroundColor: i === featuredIdx ? colors.tint : colors.borderLight }]} />
+                  <View key={i} style={[stylesheet.dot, { backgroundColor: i === featuredIdx ? theme.colors.G : theme.colors.GLASS_BORDER }]} />
                 ))}
               </View>
             )}
@@ -284,7 +282,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         {horizontal.length > 0 && (
           <View style={stylesheet.section}>
             <View style={stylesheet.sectionHeader}>
-              <Text style={[stylesheet.sectionTitle, { color: colors.text }]}>More Events For You</Text>
+              <Text style={[stylesheet.sectionTitle, { color: theme.colors.TEXT_PRIMARY }]}>More Events For You</Text>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
               {horizontal.map(item => (
@@ -295,23 +293,23 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
         )}
 
         <TouchableOpacity
-          style={[stylesheet.createBanner, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}
+          style={[stylesheet.createBanner, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
           onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
           <View style={[stylesheet.createIcon, { backgroundColor: 'rgba(130,219,126,0.1)' }]}>
-            <Ionicons name="calendar-outline" size={24} color={colors.tint} />
+            <Ionicons name="calendar-outline" size={24} color={theme.colors.G} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[stylesheet.createTitle, { color: colors.text }]}>Can't find your event?</Text>
-            <Text style={[stylesheet.createSub, { color: colors.textMuted }]}>Create and share events with your community.</Text>
+            <Text style={[stylesheet.createTitle, { color: theme.colors.TEXT_PRIMARY }]}>Can't find your event?</Text>
+            <Text style={[stylesheet.createSub, { color: theme.colors.MUTED }]}>Create and share events with your community.</Text>
           </View>
-          <TouchableOpacity style={[stylesheet.createCTA, { backgroundColor: colors.tint }]} onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
+          <TouchableOpacity style={[stylesheet.createCTA, { backgroundColor: theme.colors.G }]} onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
             <Text style={stylesheet.createCTATxt}>Create Event</Text>
             <Ionicons name="add-circle-outline" size={14} color="#0B0D0B" style={{ marginLeft: 4 }} />
           </TouchableOpacity>
         </TouchableOpacity>
 
         {rest.length > 0 && (
-          <Text style={[stylesheet.sectionTitle, { color: colors.text, paddingHorizontal: 16, marginBottom: 8 }]}>All Events</Text>
+          <Text style={[stylesheet.sectionTitle, { color: theme.colors.TEXT_PRIMARY, paddingHorizontal: 16, marginBottom: 8 }]}>All Events</Text>
         )}
       </>
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -324,7 +322,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       keyExtractor={i => `rest-${i.id}`}
       ref={listRef}
       showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.G} />}
       contentContainerStyle={stylesheet.listContent}
       ListHeaderComponent={listHeaderElement}
       ListEmptyComponent={
@@ -335,8 +333,8 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
           </View>
         ) : events.length === 0 ? (
           <View style={stylesheet.empty}>
-            <Ionicons name="calendar-outline" size={52} color={colors.textMuted} style={{ opacity: 0.35, marginBottom: 14 }} />
-            <Text style={[stylesheet.emptyTxt, { color: colors.textMuted }]}>
+            <Ionicons name="calendar-outline" size={52} color={theme.colors.MUTED} style={{ opacity: 0.35, marginBottom: 14 }} />
+            <Text style={[stylesheet.emptyTxt, { color: theme.colors.MUTED }]}>
               {searchQuery
                 ? `No events found for "${searchQuery}"`
                 : category
@@ -344,7 +342,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
                 : 'No upcoming events in your area'}
             </Text>
             <TouchableOpacity
-              style={[stylesheet.createBtn, { backgroundColor: colors.tint }]}
+              style={[stylesheet.createBtn, { backgroundColor: theme.colors.G }]}
               onPress={() => router.push({ pathname: '/new-post', params: { category: 'Event' } } as any)}>
               <Ionicons name="add-circle-outline" size={16} color="#0B0D0B" style={{ marginRight: 6 }} />
               <Text style={stylesheet.createBtnTxt}>Create Event</Text>

@@ -9,7 +9,6 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { timeAgo } from '../lib/utils';
-import { useAppTheme } from '../context/ThemeContext';
 import { Post } from '../types';
 import { StorageService } from '../lib/storage-service';
 import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
@@ -30,8 +29,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
   const router = useRouter();
-  const { colors } = useAppTheme();
-  const { user, profile } = useAuth();
+    const { user, profile } = useAuth();
   const insets = useSafeAreaInsets();
   
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -261,11 +259,11 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
               <View style={{ overflow: 'hidden' }}>
                 {isLiquidGlassSupported ? (
                   <LiquidGlassView
-                    {...({ intensity: 80, tint: colors.background === '#000000' ? 'dark' : 'light', fallbackColor: colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
+                    {...({ intensity: 80, tint: theme.colors.DARK === '#000000' ? 'dark' : 'light', fallbackColor: theme.colors.DARK === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
                     style={StyleSheet.absoluteFill}
                   />
                 ) : (
-                  <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' }]} />
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.DARK === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' }]} />
                 )}
                 <CommentInput
                   ref={inputRef}
@@ -280,7 +278,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
             </BottomSheetFooter>
           );
       },
-    [userAvatarSource, user, replyingTo, handleSendComment, colors.background]
+    [userAvatarSource, user, replyingTo, handleSendComment, theme.colors.DARK]
   );
 
   return (
@@ -292,22 +290,22 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       backdropComponent={renderBackdrop}
       footerComponent={renderFooter}
       backgroundStyle={{ backgroundColor: theme.colors.DARK }}
-      handleIndicatorStyle={{ backgroundColor: colors.border }}
+      handleIndicatorStyle={{ backgroundColor: theme.colors.GLASS_BORDER }}
       keyboardBehavior="extend"
       keyboardBlurBehavior="restore"
     >
       <LiquidGlassView
-        {...({ intensity: 80, tint: colors.background === '#000000' ? 'dark' : 'light', fallbackColor: colors.background === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
+        {...({ intensity: 80, tint: theme.colors.DARK === '#000000' ? 'dark' : 'light', fallbackColor: theme.colors.DARK === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
       >
         <View style={stylesheet.header}>
-          <Text style={[stylesheet.headerTitle, { color: colors.text }]}>Comments</Text>
-          <View style={[stylesheet.headerDivider, { backgroundColor: colors.borderLight }]} />
+          <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY }]}>Comments</Text>
+          <View style={[stylesheet.headerDivider, { backgroundColor: theme.colors.GLASS_BORDER }]} />
         </View>
       </LiquidGlassView>
 
       {loading && comments.length === 0 ? (
         <View style={stylesheet.center}>
-          <ActivityIndicator size="small" color={colors.tint} />
+          <ActivityIndicator size="small" color={theme.colors.G} />
         </View>
       ) : (
         <BottomSheetFlatList
@@ -318,8 +316,8 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={stylesheet.emptyContainer}>
-              <Text style={[stylesheet.emptyText, { color: colors.text }]}>No comments yet.</Text>
-              <Text style={[stylesheet.emptyText, { color: colors.textMuted }]}>Start the conversation.</Text>
+              <Text style={[stylesheet.emptyText, { color: theme.colors.TEXT_PRIMARY }]}>No comments yet.</Text>
+              <Text style={[stylesheet.emptyText, { color: theme.colors.MUTED }]}>Start the conversation.</Text>
             </View>
           }
         />

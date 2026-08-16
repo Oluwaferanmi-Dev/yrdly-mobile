@@ -12,7 +12,7 @@ import { VerifiedBadge } from './VerifiedBadge';
 import { Post } from '../types';
 import { timeAgo, formatPrice } from '../lib/utils';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { useAppTheme } from '../context/ThemeContext';
+
 import { supabase } from '../lib/supabase';
 import { StorageService } from '../lib/storage-service';
 import { Avatar } from './Avatar';
@@ -133,7 +133,7 @@ const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted,
 export const PostCard = React.memo(function PostCard({ post, onPress, onLike, onComment, onShare, isVisible, onOpenImageViewer }: PostCardProps) {
   const router = useRouter();
   const { user: currentUser, profile, updateProfile } = useAuth();
-  const { colors } = useAppTheme();
+
 
   const [imageHeights, setImageHeights] = useState<Record<string, number>>({});
   const imageDisplayWidth = width - 64;

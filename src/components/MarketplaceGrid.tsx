@@ -7,7 +7,6 @@ import { supabase } from '../lib/supabase';
 import { Post } from '../types';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
 
 interface MarketplaceGridProps {
@@ -18,8 +17,7 @@ interface MarketplaceGridProps {
 export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: MarketplaceGridProps) {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { user } = useAuth();
   const { activeFilter } = useLocation();
   const [items, setItems] = useState<Post[]>([]);
@@ -135,7 +133,7 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
       <View style={stylesheet.skeletonGrid}>
         {[1, 2, 3, 4, 5, 6].map(key => {
         return (
-                  <View key={key} style={[stylesheet.skeletonCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+                  <View key={key} style={[stylesheet.skeletonCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
                     <Skeleton width="100%" height={160} />
                     <View style={{ padding: 12 }}>
                       <Skeleton width="80%" height={14} style={{ marginBottom: 6 }} />
@@ -152,7 +150,7 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
   if (items.length === 0) {
     return (
       <View style={stylesheet.centerContainer}>
-        <Text style={[stylesheet.emptyText, { color: colors.textMuted }]}>
+        <Text style={[stylesheet.emptyText, { color: theme.colors.MUTED }]}>
           {searchQuery ? `No results for "${searchQuery}"` : "Marketplace is empty"}
         </Text>
       </View>
@@ -164,7 +162,7 @@ export function MarketplaceGrid({ searchQuery = '', sortOption = 'newest' }: Mar
       data={items}
       keyExtractor={(item) => item.id}
       numColumns={2}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.G} />}
       renderItem={({ item }) => (
         <MarketplaceItemCard 
           item={item} 

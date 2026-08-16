@@ -23,7 +23,7 @@ interface CategoryTile {
 export function BusinessHub({ searchQuery }: BusinessHubProps) {
     const { styles: s, theme } = useStyles(sStylesheet);
 
-  const { colors, isDarkMode } = useAppTheme();
+  const { isDarkMode } = useAppTheme();
   const router = useRouter();
   const { activeFilter } = useLocation();
 
@@ -126,7 +126,7 @@ export function BusinessHub({ searchQuery }: BusinessHubProps) {
       <View style={s.skeletonGrid}>
         {[1, 2, 3, 4].map(k => {
         return (
-                  <View key={k} style={[s.skeletonCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}>
+                  <View key={k} style={[s.skeletonCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}>
                     <Skeleton width="100%" height={150} />
                   </View>
                 );
@@ -142,15 +142,15 @@ export function BusinessHub({ searchQuery }: BusinessHubProps) {
           style={s.backBtn}
           onPress={() => setActiveCategory(null)}
         >
-          <Ionicons name="chevron-back" size={18} color={colors.textMuted} />
-          <Text style={[s.backTxt, { color: colors.textMuted }]}>Back to categories</Text>
+          <Ionicons name="chevron-back" size={18} color={theme.colors.MUTED} />
+          <Text style={[s.backTxt, { color: theme.colors.MUTED }]}>Back to categories</Text>
         </TouchableOpacity>
       )}
 
       {!showingList ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.G} />}
           contentContainerStyle={s.contentPad}
         >
           <View style={s.grid}>
@@ -182,12 +182,12 @@ return (
           data={visibleBusinesses}
           keyExtractor={i => i.id}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.G} />}
           contentContainerStyle={s.contentPad}
           ListEmptyComponent={
             <View style={s.empty}>
-              <Ionicons name="storefront-outline" size={48} color={colors.textMuted} style={{ opacity: 0.4, marginBottom: 12 }} />
-              <Text style={[s.emptyTxt, { color: colors.textMuted }]}>
+              <Ionicons name="storefront-outline" size={48} color={theme.colors.MUTED} style={{ opacity: 0.4, marginBottom: 12 }} />
+              <Text style={[s.emptyTxt, { color: theme.colors.MUTED }]}>
                 No businesses found
               </Text>
             </View>
@@ -197,7 +197,7 @@ return (
                       <TouchableOpacity
                         activeOpacity={0.7}
                         onPress={() => router.push(`/businesses/${item.id}` as any)}
-                        style={[s.bizCard, { backgroundColor: theme.colors.SURFACE, borderColor: colors.borderLight }]}
+                        style={[s.bizCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
                       >
                         <View style={[s.bizImgContainer, { backgroundColor: theme.colors.DARK }]}>
                           <Image 
@@ -207,14 +207,14 @@ return (
                           />
                         </View>
                         <View style={s.bizInfo}>
-                          <Text style={[s.bizName, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
-                          <Text style={[s.bizCat, { color: colors.textMuted }]} numberOfLines={1}>{item.category || 'Other'}</Text>
+                          <Text style={[s.bizName, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>{item.name}</Text>
+                          <Text style={[s.bizCat, { color: theme.colors.MUTED }]} numberOfLines={1}>{item.category || 'Other'}</Text>
                           
                           <View style={s.bizMetaRow}>
                             <View style={s.bizRating}>
                               <Ionicons name="star" size={12} color="#FBBF24" />
-                              <Text style={[s.bizRatingTxt, { color: colors.text }]}>{item.rating?.toFixed(1) || '0.0'}</Text>
-                              <Text style={[s.bizReviewCount, { color: colors.textMuted }]}>({item.review_count || 0})</Text>
+                              <Text style={[s.bizRatingTxt, { color: theme.colors.TEXT_PRIMARY }]}>{item.rating?.toFixed(1) || '0.0'}</Text>
+                              <Text style={[s.bizReviewCount, { color: theme.colors.MUTED }]}>({item.review_count || 0})</Text>
                             </View>
                           </View>
                         </View>

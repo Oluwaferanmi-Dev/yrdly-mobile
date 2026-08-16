@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, ViewStyle, DimensionValue } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence } from 'react-native-reanimated';
-import { useAppTheme } from '../context/ThemeContext';
+import { useStyles, createStyleSheet } from 'react-native-unistyles';
 
 interface SkeletonProps {
   width?: DimensionValue;
@@ -11,7 +11,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ width = '100%', height = 20, borderRadius = 4, style }: SkeletonProps) {
-  const { colors } = useAppTheme();
+  const { theme } = useStyles(createStyleSheet(() => ({})));
   const opacity = useSharedValue(0.3);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function Skeleton({ width = '100%', height = 20, borderRadius = 4, style 
           width,
           height,
           borderRadius,
-          backgroundColor: colors.borderLight,
+          backgroundColor: theme.colors.GLASS_BORDER,
         },
         animatedStyle,
         style,
@@ -46,10 +46,10 @@ export function Skeleton({ width = '100%', height = 20, borderRadius = 4, style 
 }
 
 export function PostSkeleton() {
-  const { colors } = useAppTheme();
+  const { theme } = useStyles(createStyleSheet(() => ({})));
   
   return (
-    <View style={[styles.postContainer, { borderBottomColor: colors.borderLight }]}>
+    <View style={[styles.postContainer, { borderBottomColor: theme.colors.GLASS_BORDER }]}>
       <View style={styles.header}>
         <Skeleton width={38} height={38} borderRadius={19} />
         <View style={styles.authorText}>
