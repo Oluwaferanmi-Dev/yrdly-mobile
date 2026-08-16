@@ -51,38 +51,44 @@ export default function CommunityScreen() {
   const fetchFriendsAndRequests = useCallback(async () => {
     if (!currentUser) return;
     try {
-      const { data: reqData } = await supabase
-        .from('friend_requests')
-        .select(`*, from_user:users!friend_requests_from_user_id_fkey(id, name, avatar_url)`)
-        .eq('to_user_id', currentUser.id)
-        .eq('status', 'pending');
-      setRequests(reqData || []);
-
-      const [{ data: sentFriends }, { data: receivedFriends }] = await Promise.all([
+      const [{ data: followingData }, { data: followersData }] = await Promise.all([
         supabase
-          .from('friend_requests')
-          .select(`id, to_user:users!friend_requests_to_user_id_fkey(id, name, avatar_url)`)
-          .eq('from_user_id', currentUser.id)
-          .eq('status', 'accepted'),
+          .from('followers')
+          .select(`following_id, following:users!followers_following_id_fkey(id, name, avatar_url)`)
+          .eq('follower_id', currentUser.id),
         supabase
-          .from('friend_requests')
-          .select(`id, from_user:users!friend_requests_from_user_id_fkey(id, name, avatar_url)`)
-          .eq('to_user_id', currentUser.id)
-          .eq('status', 'accepted'),
+          .from('followers')
+          .select(`follower_id, follower:users!followers_follower_id_fkey(id, name, avatar_url)`)
+          .eq('following_id', currentUser.id),
       ]);
 
-      const friendList = [
-        ...(sentFriends || []).map((r: any) => ({ reqId: r.id, user: r.to_user })),
-        ...(receivedFriends || []).map((r: any) => ({ reqId: r.id, user: r.from_user })),
-      ].filter(f => f.user);
-      setFriends(friendList);
+      const followingList = followingData || [];
+      const followersList = followersData || [];
 
-      const { data: pendingSent } = await supabase
-        .from('friend_requests')
-        .select('to_user_id')
-        .eq('from_user_id', currentUser.id)
-        .eq('status', 'pending');
-      setPendingSentIds((pendingSent || []).map((r: any) => r.to_user_id));
+      const followingIds = new Set(followingList.map(f => f.following_id));
+      const followerIds = new Set(followersList.map(f => f.follower_id));
+
+      const mutualFriends = followersList
+        .filter(f => followingIds.has(f.follower_id))
+        .map(f => ({
+          reqId: f.follower_id,
+          user: f.follower
+        }));
+
+      const incomingRequests = followersList
+        .filter(f => !followingIds.has(f.follower_id))
+        .map(f => ({
+          id: f.follower_id,
+          from_user: f.follower
+        }));
+
+      const sentRequests = followingList
+        .filter(f => !followerIds.has(f.following_id))
+        .map(f => f.following_id);
+
+      setFriends(mutualFriends);
+      setRequests(incomingRequests);
+      setPendingSentIds(sentRequests);
 
     } catch (e) {
       console.error(e);
@@ -188,17 +194,17 @@ export default function CommunityScreen() {
   
   useEffect(() => {
     if (!currentUser) return;
-    const reqSub = supabase.channel('community_friend_requests')
+    const reqSub = supabase.channel('community_followers')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'friend_requests', filter: `to_user_id=eq.${currentUser.id}` },
+        { event: '*', schema: 'public', table: 'followers', filter: `following_id=eq.${currentUser.id}` },
         () => {
           fetchFriendsAndRequests();
         }
       )
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'friend_requests', filter: `from_user_id=eq.${currentUser.id}` },
+        { event: '*', schema: 'public', table: 'followers', filter: `follower_id=eq.${currentUser.id}` },
         () => {
           fetchFriendsAndRequests();
         }
@@ -210,34 +216,43 @@ export default function CommunityScreen() {
     };
   }, [currentUser]);
 
-  const handleRequestAction = async (requestId: string, action: 'accepted' | 'declined') => {
+  const handleRequestAction = async (followerId: string, action: 'accepted' | 'declined') => {
     try {
       if (action === 'accepted') {
-        await supabase.from('friend_requests').update({ status: 'accepted' }).eq('id', requestId);
+        await supabase.from('followers').insert({
+          follower_id: currentUser?.id,
+          following_id: followerId
+        });
       } else {
-        await supabase.from('friend_requests').delete().eq('id', requestId);
+        await supabase.from('followers').delete().match({
+          follower_id: followerId,
+          following_id: currentUser?.id
+        });
       }
-      setRequests(prev => prev.filter(r => r.id !== requestId));
+      setRequests(prev => prev.filter(r => r.id !== followerId));
       if (action === 'accepted') fetchFriendsAndRequests();
     } catch (e) {
       console.error(e);
     }
   };
 
-  const handleRemoveFriend = (reqId: string, friendName: string) => {
+  const handleRemoveFriend = (friendId: string, friendName: string) => {
     Alert.alert(
       'Remove Friend',
-      `Remove ${friendName} from your friends?`,
+      `Remove ${friendName} from your friends? (This unfollows them)`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Remove',
           style: 'destructive',
           onPress: async () => {
-            setRemovingId(reqId);
+            setRemovingId(friendId);
             try {
-              await supabase.from('friend_requests').delete().eq('id', reqId);
-              setFriends(prev => prev.filter(f => f.reqId !== reqId));
+              await supabase.from('followers').delete().match({
+                follower_id: currentUser?.id,
+                following_id: friendId
+              });
+              setFriends(prev => prev.filter(f => f.reqId !== friendId));
             } catch (e) {
               console.error(e);
             } finally {
@@ -291,10 +306,9 @@ export default function CommunityScreen() {
     if (!currentUser) return;
     setActionInProgress(prev => ({ ...prev, [userId]: true }));
     try {
-      await supabase.from('friend_requests').insert({
-        from_user_id: currentUser.id,
-        to_user_id: userId,
-        status: 'pending'
+      await supabase.from('followers').insert({
+        follower_id: currentUser.id,
+        following_id: userId
       });
       // Update local state to show "Requested" instead of removing
       setPendingSentIds(prev => [...prev, userId]);
