@@ -55,3 +55,9 @@ YRDLY NEW DESIGNS/
 
 # Markdown docs / agent files
 *.md
+
+# Recon/scratch files
+recon_output*.txt
+run_recon*.sh
+*.diff.txt
+scratch_*.py
