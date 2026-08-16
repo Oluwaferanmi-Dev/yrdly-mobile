@@ -3,17 +3,15 @@ import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Redirect, Slot } from 'expo-router';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../context/ThemeContext';
 
 export default function AdminLayout() {
   const { profile, loading } = useAuth();
-  const { colors } = useAppTheme();
   const { theme } = useStyles();
 
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.DARK }}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <ActivityIndicator size="large" color={theme.colors.G} />
       </View>
     );
   }

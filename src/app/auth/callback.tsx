@@ -1,9 +1,7 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { View, ActivityIndicator } from 'react-native';
-import { useAppTheme } from '../../context/ThemeContext';
 
 export default function AuthCallback() {
-  const { colors } = useAppTheme();
   const { theme } = useStyles();
   
   // This screen acts as a dummy receiver for the deep link `yrdlymobile://auth/callback`.
@@ -13,7 +11,7 @@ export default function AuthCallback() {
   
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.DARK }}>
-      <ActivityIndicator size="large" color={colors.tint} />
+      <ActivityIndicator size="large" color={theme.colors.G} />
     </View>
   );
 }

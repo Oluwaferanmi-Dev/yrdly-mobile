@@ -10,7 +10,6 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { useAppTheme } from '../context/ThemeContext';
 import { ErrorMessage } from '../components/ErrorMessage';
 
 const { width, height } = Dimensions.get('window');
@@ -19,8 +18,6 @@ const OTP_LENGTH = 6;
 
 export default function VerifyPhoneOtpScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
-
-  const { colors } = useAppTheme();
   const router = useRouter();
   const { phone, initialPinId } = useLocalSearchParams<{ phone: string, initialPinId: string }>();
   const { verifyPhoneOtp, sendPhoneOtp } = useAuth();

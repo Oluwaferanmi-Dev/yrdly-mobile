@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, Dimensions } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { useAppTheme } from '../context/ThemeContext';
 import { Post } from '../types';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { PostCard } from '../components/PostCard';
@@ -16,7 +15,6 @@ export default function BookmarksScreen() {
     const { styles, theme } = useStyles(sStylesheet);
 
   const { user } = useAuth();
-  const { colors } = useAppTheme();
   const router = useRouter();
   
   const [activeTab, setActiveTab] = useState<'posts' | 'events'>('posts');
@@ -124,10 +122,10 @@ export default function BookmarksScreen() {
           data={posts}
           keyExtractor={item => item.id}
           contentContainerStyle={{ paddingBottom: 100 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.G} />}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No saved posts yet.</Text>
+              <Text style={[styles.emptyText, { color: theme.colors.TEXT_SECONDARY }]}>No saved posts yet.</Text>
             </View>
           }
           renderItem={({ item }) => (
@@ -145,10 +143,10 @@ export default function BookmarksScreen() {
           data={events}
           keyExtractor={item => item.id}
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.tint} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.G} />}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No saved events yet.</Text>
+              <Text style={[styles.emptyText, { color: theme.colors.TEXT_SECONDARY }]}>No saved events yet.</Text>
             </View>
           }
           renderItem={({ item }) => (
