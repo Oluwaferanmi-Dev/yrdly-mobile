@@ -731,8 +731,8 @@ function ChatContent() {
     <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.DARK }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
-          <Feather name="chevron-left" size={20} color="#FFF" style={{ marginLeft: -2 }} />
+        <TouchableOpacity onPress={() => router.back()} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}>
+          <Feather name="chevron-left" size={20} color={theme.colors.TEXT_PRIMARY} style={{ marginLeft: -2 }} />
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -762,7 +762,7 @@ function ChatContent() {
 
         {Boolean(meta?.participant_ids?.find((pid: string) => pid !== user?.id)) && (
           <TouchableOpacity 
-            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }}
             onPress={() => {
               Alert.alert(
                 'Options',
@@ -873,7 +873,7 @@ function ChatContent() {
         {/* Input */}
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 16, paddingTop: 12, paddingBottom: keyboardVisible ? 10 : Math.max(insets.bottom, 24), backgroundColor: theme.colors.DARK, borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER, gap: 12 }}>
           <TouchableOpacity 
-            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#111', borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }} 
+            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center' }} 
             onPress={pickMedia} 
             disabled={uploadingMedia}
           >
@@ -907,7 +907,7 @@ function ChatContent() {
           </View>
 
           <TouchableOpacity
-            style={[{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center' }, inputText.trim() ? { backgroundColor: theme.colors.G, borderColor: theme.colors.G } : { backgroundColor: '#111', borderColor: theme.colors.GLASS_BORDER }]}
+            style={[{ width: 40, height: 40, borderRadius: 20, borderWidth: 1, justifyContent: 'center', alignItems: 'center' }, inputText.trim() ? { backgroundColor: theme.colors.G, borderColor: theme.colors.G } : { backgroundColor: theme.colors.SURFACE_ALT, borderColor: theme.colors.GLASS_BORDER }]}
             onPress={sendMessage}
             disabled={!inputText.trim() || sending}
           >

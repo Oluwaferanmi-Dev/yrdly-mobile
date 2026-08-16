@@ -334,7 +334,7 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 8,
-        backgroundColor: 'rgba(255,255,255,0.06)',
+        backgroundColor: theme.colors.SURFACE,
         borderWidth: 1,
         borderColor: theme.colors.GLASS_BORDER,
         alignSelf: 'flex-start',

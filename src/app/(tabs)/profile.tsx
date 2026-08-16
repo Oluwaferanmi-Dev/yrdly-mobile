@@ -301,7 +301,7 @@ export default function ProfileTab() {
           </View>
 
           {!!profile?.bio && (
-            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: 'rgba(255,255,255,0.68)', lineHeight: 22, marginBottom: 16 }}>
+            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.TEXT_SECONDARY, lineHeight: 22, marginBottom: 16 }}>
               {profile.bio}
             </Text>
           )}
@@ -386,7 +386,7 @@ export default function ProfileTab() {
               }}
               style={{ position: 'relative', paddingBottom: 6 }}
             >
-              <Text style={{ fontFamily: activeTab === 'posts' ? 'Outfit-Bold' : 'Outfit-Medium', fontSize: 14, color: activeTab === 'posts' ? '#FFFFFF' : theme.colors.LABEL }}>
+              <Text style={{ fontFamily: activeTab === 'posts' ? 'Outfit-Bold' : 'Outfit-Medium', fontSize: 14, color: activeTab === 'posts' ? theme.colors.TEXT_PRIMARY : theme.colors.LABEL }}>
                 Posts
               </Text>
               {activeTab === 'posts' && (
@@ -401,7 +401,7 @@ export default function ProfileTab() {
               }}
               style={{ position: 'relative', paddingBottom: 6 }}
             >
-              <Text style={{ fontFamily: activeTab === 'saved' ? 'Outfit-Bold' : 'Outfit-Medium', fontSize: 14, color: activeTab === 'saved' ? '#FFFFFF' : theme.colors.LABEL }}>
+              <Text style={{ fontFamily: activeTab === 'saved' ? 'Outfit-Bold' : 'Outfit-Medium', fontSize: 14, color: activeTab === 'saved' ? theme.colors.TEXT_PRIMARY : theme.colors.LABEL }}>
                 Saved
               </Text>
               {activeTab === 'saved' && (

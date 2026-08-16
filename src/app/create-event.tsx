@@ -583,7 +583,7 @@ export default function CreateEventScreen() {
                 <TextInput
                   style={stylesheet.input}
                   placeholder="e.g. VIP Access"
-                  placeholderTextColor="rgba(255,255,255,0.3)"
+                  placeholderTextColor={theme.colors.LABEL}
                   value={t.name}
                   onChangeText={(val) => updateTier(idx, 'name', val)}
                 />
@@ -599,7 +599,7 @@ export default function CreateEventScreen() {
                     <TextInput
                       style={stylesheet.input}
                       placeholder="e.g. 5000"
-                      placeholderTextColor="rgba(255,255,255,0.3)"
+                      placeholderTextColor={theme.colors.LABEL}
                       keyboardType="numeric"
                       value={t.price ? Number(t.price).toLocaleString('en-US') : ''}
                       onChangeText={(val) => updateTier(idx, 'price', val.replace(/[^0-9]/g, ''))}
@@ -611,7 +611,7 @@ export default function CreateEventScreen() {
                 <TextInput
                   style={stylesheet.input}
                   placeholder="e.g. 100"
-                  placeholderTextColor="rgba(255,255,255,0.3)"
+                  placeholderTextColor={theme.colors.LABEL}
                   keyboardType="numeric"
                   value={t.capacity}
                   onChangeText={(val) => updateTier(idx, 'capacity', val)}
@@ -768,7 +768,7 @@ export default function CreateEventScreen() {
                   <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: theme.colors.SURFACE }}>
                     <Text style={{ fontFamily: 'Outfit-SemiBold', fontSize: 16, color: theme.colors.TEXT_PRIMARY, marginBottom: 8 }}>Tickets</Text>
                     {tiers.map((t, idx) => (
-                      <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: 12, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: t.isFree ? theme.colors.G : 'rgba(255,255,255,0.05)' }}>
+                      <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: theme.colors.SURFACE, padding: 12, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: t.isFree ? theme.colors.G : theme.colors.GLASS_BORDER }}>
                         <View>
                           <Text style={{ fontFamily: 'Inter-SemiBold', color: theme.colors.TEXT_PRIMARY, fontSize: 14 }}>{t.name || `Tier ${idx + 1}`}</Text>
                           <Text style={{ fontFamily: 'Inter-Regular', color: theme.colors.LABEL, fontSize: 12, marginTop: 2 }}>{t.capacity || 0} Available</Text>
@@ -977,7 +977,7 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 8,
-        backgroundColor: 'rgba(255,255,255,0.06)',
+        backgroundColor: theme.colors.SURFACE,
         borderWidth: 1,
         borderColor: theme.colors.GLASS_BORDER,
       },

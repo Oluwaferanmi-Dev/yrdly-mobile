@@ -155,6 +155,13 @@ export default function SettingsScreen() {
 
         <SettingSection title="Preferences">
           <SettingRow 
+            icon={<Feather name="moon" size={16} color="#fff" />} 
+            label="Dark Mode" sub="Toggle dark mode theme" 
+            toggle 
+            toggled={isDarkMode} 
+            onToggle={toggleDarkMode} 
+          />
+          <SettingRow 
             icon={<Feather name="bell" size={16} color="#fff" />} 
             label="Notifications" sub="Choose what you want to hear" 
             onPress={() => router.push('/settings/notifications' as any)} 

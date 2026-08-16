@@ -530,7 +530,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
         }}
         style={{ paddingHorizontal: 20, marginBottom: (urls.length > 0 || post.video_urls?.[0]) ? 14 : 0 }}
       >
-        <View style={{ marginBottom: 8, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, backgroundColor: post.category === 'Event' ? 'rgba(130,219,126,0.15)' : post.category === 'For Sale' || post.category === 'Selling' ? 'rgba(255, 171, 0, 0.15)' : post.category === 'Wanted' ? 'rgba(255, 82, 82, 0.15)' : post.category === 'Request' ? 'rgba(68, 138, 255, 0.15)' : post.category === 'Recommendation' ? 'rgba(179, 136, 255, 0.15)' : post.category === 'Giveaway' ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255,255,255,0.08)' }}>
+        <View style={{ marginBottom: 8, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, backgroundColor: post.category === 'Event' ? 'rgba(130,219,126,0.15)' : post.category === 'For Sale' || post.category === 'Selling' ? 'rgba(255, 171, 0, 0.15)' : post.category === 'Wanted' ? 'rgba(255, 82, 82, 0.15)' : post.category === 'Request' ? 'rgba(68, 138, 255, 0.15)' : post.category === 'Recommendation' ? 'rgba(179, 136, 255, 0.15)' : post.category === 'Giveaway' ? 'rgba(0, 230, 118, 0.15)' : theme.colors.SURFACE_ALT }}>
            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 10, color: post.category === 'Event' ? theme.colors.G : post.category === 'For Sale' || post.category === 'Selling' ? '#FFAB00' : post.category === 'Wanted' ? '#FF5252' : post.category === 'Request' ? '#448AFF' : post.category === 'Recommendation' ? '#B388FF' : post.category === 'Giveaway' ? '#00E676' : theme.colors.MUTED, textTransform: 'uppercase' }}>
               {post.category === 'For Sale' ? 'Selling' : post.category || 'General Post'}
            </Text>
@@ -547,7 +547,7 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
           const displayText = isExpanded || !shouldTruncate ? post.text : post.text.slice(0, maxLength) + "…";
           return (
             <View>
-              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 15, color: 'rgba(255,255,255,0.82)', lineHeight: 24 }}>
+              <Text style={{ fontFamily: 'Inter-Regular', fontSize: 15, color: theme.colors.TEXT_PRIMARY, lineHeight: 24 }}>
                 {displayText}
               </Text>
               {shouldTruncate && (

@@ -96,7 +96,7 @@ function CreateMenuOverlay({ visible, onClose, onSelect }: { visible: boolean, o
 
   return (
     <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
-      <BlurView intensity={20} tint="dark" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
+      <BlurView intensity={20} tint={theme.name === 'dark' ? 'dark' : 'light'} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
         <TouchableOpacity style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} activeOpacity={1} onPress={onClose} />
       </BlurView>
       <Animated.View entering={SlideInDown.duration(300).springify()} exiting={SlideOutDown.duration(200)} style={styles.overlayContent}>
@@ -121,7 +121,7 @@ function CreateMenuOverlay({ visible, onClose, onSelect }: { visible: boolean, o
           })}
         </View>
         <TouchableOpacity style={styles.closeBtn} activeOpacity={0.8} onPress={onClose}>
-          <X size={24} color="#FFF" weight="bold" />
+          <X size={24} color={theme.colors.TEXT_PRIMARY} weight="bold" />
         </TouchableOpacity>
       </Animated.View>
     </Animated.View>
@@ -371,7 +371,7 @@ const sStylesheet = createStyleSheet(theme => ({
       optionBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#111',
+        backgroundColor: theme.colors.SURFACE,
         borderWidth: 1,
         borderColor: theme.colors.GLASS_BORDER,
         borderRadius: 16,
@@ -405,7 +405,7 @@ const sStylesheet = createStyleSheet(theme => ({
         width: 52,
         height: 52,
         borderRadius: 26,
-        backgroundColor: '#222',
+        backgroundColor: theme.colors.SURFACE_ALT,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,

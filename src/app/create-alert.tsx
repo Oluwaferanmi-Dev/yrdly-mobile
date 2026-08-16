@@ -99,7 +99,7 @@ export default function CreateAlertScreen() {
         <View style={stylesheet.previewHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <TouchableOpacity onPress={() => setStep('form')} style={stylesheet.backBtn}>
-              <Ionicons name="chevron-back" size={20} color="#fff" />
+              <Ionicons name="chevron-back" size={20} color={theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>
             <Text style={stylesheet.headerTitle}>Preview Alert</Text>
           </View>
@@ -150,7 +150,7 @@ export default function CreateAlertScreen() {
     >
       <View style={stylesheet.header}>
         <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
-          <Ionicons name="close" size={20} color="#fff" />
+          <Ionicons name="close" size={20} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
         <Text style={stylesheet.headerTitle}>Create Safety Alert</Text>
       </View>
@@ -206,7 +206,7 @@ export default function CreateAlertScreen() {
                       }
                     ]}
                   >
-                    <Text style={[stylesheet.typeBtnText, { color: isSelected ? '#fff' : theme.colors.MUTED }]}>{label}</Text>
+                    <Text style={[stylesheet.typeBtnText, { color: isSelected ? theme.colors.TEXT_PRIMARY : theme.colors.MUTED }]}>{label}</Text>
                   </TouchableOpacity>
                 );
               })}
