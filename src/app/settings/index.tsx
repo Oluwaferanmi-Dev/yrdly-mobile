@@ -217,6 +217,12 @@ export default function SettingsScreen() {
               />
               <SettingDivider />
               <SettingRow 
+                icon={<Feather name="shield" size={16} color="#fff" />} 
+                label="Moderation Queue" sub="Review flagged content and users" 
+                onPress={() => router.push('/(admin)/moderation' as any)} 
+              />
+              <SettingDivider />
+              <SettingRow 
                 icon={<Feather name="alert-triangle" size={16} color="#fff" />} 
                 label="Safety Alerts" sub="Create and manage community safety alerts" 
                 onPress={() => router.push('/settings/safety' as any)} 

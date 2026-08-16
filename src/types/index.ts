@@ -143,6 +143,7 @@ export interface Post {
     home_location_geom?: string | null;
     created_at?: string;
   };
+  moderation_status?: 'pending' | 'approved' | 'rejected' | null;
 }
 
 export interface Comment {
