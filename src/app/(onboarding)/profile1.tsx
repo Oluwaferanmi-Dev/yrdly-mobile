@@ -19,6 +19,7 @@ import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
 import { AuthService } from '@/lib/auth-service';
 import { StorageService } from '@/lib/storage-service';
 import { useAuth } from '@/hooks/use-supabase-auth';
+import { ModerationService } from '@/lib/moderation-service';
 import { Ionicons } from '@expo/vector-icons';
 
 const { colors, radii } = ONBOARDING_THEME;
@@ -129,7 +130,15 @@ export default function Profile1Screen() {
             setIsSaving(false);
             return;
           }
-          if (url) finalAvatarUrl = url;
+          if (url) {
+            const imageMod = await ModerationService.checkImages('user-avatars', [url]);
+            if (!imageMod.isSafe) {
+               setFormError('Your profile picture was flagged as inappropriate.');
+               setIsSaving(false);
+               return;
+            }
+            finalAvatarUrl = url;
+          }
         }
 
         await updateProfile({

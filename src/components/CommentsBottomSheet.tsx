@@ -12,6 +12,7 @@ import { timeAgo } from '../lib/utils';
 import { Post } from '../types';
 import { StorageService } from '../lib/storage-service';
 import { LiquidGlassView, isLiquidGlassSupported } from '@callstack/liquid-glass';
+import { ModerationService } from '@/lib/moderation-service';
 
 export interface CommentsBottomSheetProps {
   postId: string | null;
@@ -158,6 +159,12 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
     if (!text.trim() || !user || !postId) return;
 
     try {
+      const textMod = await ModerationService.checkText(text.trim());
+      if (!textMod.isSafe) {
+        Alert.alert('Content Flagged', 'Your comment contains inappropriate language.');
+        return;
+      }
+
       const payload = {
         post_id: postId,
         user_id: user.id,

@@ -10,6 +10,7 @@ import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
 import { StorageService } from '../../lib/storage-service';
 import { AuthService } from '../../lib/auth-service';
+import { ModerationService } from '../../lib/moderation-service';
 
 export default function EditProfileScreen() {
   const { styles: s, theme } = useStyles(sStylesheet);
@@ -63,7 +64,15 @@ export default function EditProfileScreen() {
       if (avatarUri) {
         const file = { uri: avatarUri, name: 'avatar.jpg', type: 'image/jpeg' };
         const { url } = await StorageService.uploadUserAvatar(user.id, file);
-        if (url) finalAvatarUrl = url;
+        if (url) {
+           const imageMod = await ModerationService.checkImages('user-avatars', [url]);
+           if (!imageMod.isSafe) {
+              Alert.alert('Content Flagged', 'Your profile picture was flagged as inappropriate.');
+              setLoading(false);
+              return;
+           }
+           finalAvatarUrl = url;
+        }
       }
 
       await AuthService.updateUserProfile(user.id, {

@@ -172,6 +172,12 @@ function PostDetailContent() {
     Keyboard.dismiss();
 
     try {
+      const textMod = await ModerationService.checkText(text.trim());
+      if (!textMod.isSafe) {
+        Alert.alert('Content Flagged', 'Your comment contains inappropriate language.');
+        return;
+      }
+
       const payload = {
         post_id: id,
         user_id: user.id,

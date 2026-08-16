@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/use-supabase-auth';
 import { supabase } from '@/lib/supabase';
 import { StorageService, MobileFile } from '@/lib/storage-service';
 import { UserActivityService } from '@/lib/user-activity-service';
+import { ModerationService } from '@/lib/moderation-service';
 
 import { Post, Business } from '@/types';
 import { useToast } from './use-toast';
@@ -591,12 +592,32 @@ export const usePosts = (filter?: LocationFilter | null) => {
             }
         };
 
+        // 1. Moderate Text Before Uploading Media
+        const textToModerate = [postData.text, postData.title, postData.description].filter(Boolean).join(' ');
+        if (textToModerate) {
+           const textMod = await ModerationService.checkText(textToModerate);
+           if (!textMod.isSafe) {
+              toast({ variant: 'destructive', title: 'Content Flagged', description: 'Your post contains inappropriate language and was blocked.' });
+              return;
+           }
+        }
+
         // Add new images if any are uploaded
         if (hasImages) {
             const uploadedUrls = await uploadImages(imageFiles, postData.category === 'Event' ? 'event_images' : 'posts', (p) => {
                 imageProgress = p;
                 updateOverallProgress();
             });
+            
+            // Moderate uploaded images
+            if (uploadedUrls.length > 0) {
+              const imageMod = await ModerationService.checkImages('post-images', uploadedUrls);
+              if (!imageMod.isSafe) {
+                 toast({ variant: 'destructive', title: 'Content Flagged', description: 'One or more of your images were flagged as inappropriate.' });
+                 return;
+              }
+            }
+            
             imageUrls = [...imageUrls, ...uploadedUrls];
         }
 
@@ -704,9 +725,29 @@ export const usePosts = (filter?: LocationFilter | null) => {
       }
 
       try {
+        // Moderate Text
+        const textToModerate = [businessData.name, businessData.description].filter(Boolean).join(' ');
+        if (textToModerate) {
+           const textMod = await ModerationService.checkText(textToModerate);
+           if (!textMod.isSafe) {
+              toast({ variant: 'destructive', title: 'Content Flagged', description: 'Your business details contain inappropriate language.' });
+              return;
+           }
+        }
+
         let imageUrls: string[] = businessData.image_urls || [];
         if (imageFiles && imageFiles.length > 0) {
             const uploadedUrls = await uploadImages(imageFiles, 'businesses');
+            
+            // Moderate images
+            if (uploadedUrls.length > 0) {
+              const imageMod = await ModerationService.checkImages('post-images', uploadedUrls);
+              if (!imageMod.isSafe) {
+                 toast({ variant: 'destructive', title: 'Content Flagged', description: 'One or more of your images were flagged as inappropriate.' });
+                 return;
+              }
+            }
+
             imageUrls = businessIdToUpdate ? [...imageUrls, ...uploadedUrls] : uploadedUrls;
         }
 
