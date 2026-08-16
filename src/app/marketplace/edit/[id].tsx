@@ -38,6 +38,7 @@ export default function EditMarketplaceItemScreen() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Form State
   const [title, setTitle] = useState('');
@@ -134,7 +135,7 @@ export default function EditMarketplaceItemScreen() {
           uri: newImages[i],
           type: 'image/jpeg',
           name: `edit_${id}_${Date.now()}_${i}.jpg`
-        });
+        }, (p) => setUploadProgress((i + p) / newImages.length));
         if (url) uploadedUrls.push(url);
       }
 
@@ -166,6 +167,7 @@ export default function EditMarketplaceItemScreen() {
       Alert.alert('Error', e?.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
@@ -229,11 +231,21 @@ export default function EditMarketplaceItemScreen() {
           style={[stylesheet.saveBtn, (!isReady || isSubmitting) && { opacity: 0.5 }]}
         >
           {isSubmitting
-            ? <ActivityIndicator size="small" color={theme.colors.DARK} />
+            ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <ActivityIndicator size="small" color={theme.colors.DARK} />
+                    {uploadProgress > 0 && <Text style={[stylesheet.saveBtnTxt, { fontSize: 11 }]}>{Math.round(uploadProgress * 100)}%</Text>}
+                </View>
+            )
             : <Text style={stylesheet.saveBtnTxt}>Save</Text>
           }
         </TouchableOpacity>
       </View>
+      {isSubmitting && uploadProgress > 0 && (
+          <View style={{ height: 3, backgroundColor: 'rgba(130,219,126,0.2)' }}>
+              <View style={{ height: 3, backgroundColor: theme.colors.G, width: `${Math.round(uploadProgress * 100)}%` }} />
+          </View>
+      )}
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView

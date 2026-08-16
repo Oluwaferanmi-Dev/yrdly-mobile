@@ -23,6 +23,7 @@ export default function CreatePostScreen() {
 
   const [text, setText] = useState('');
   const [posting, setPosting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [posted, setPosted] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<MobileFile[]>([]);
   // Keyed by URI so dims stay correct if the user removes images before posting
@@ -114,14 +115,17 @@ export default function CreatePostScreen() {
         },
         undefined,
         images.length > 0 ? images : undefined,
-        videos.length > 0 ? videos : undefined
+        videos.length > 0 ? videos : undefined,
+        (progress) => setUploadProgress(progress)
       );
 
       setPosting(false);
+      setUploadProgress(0);
       setPosted(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error: any) {
       setPosting(false);
+      setUploadProgress(0);
       Alert.alert('Error', error?.message || 'Failed to create post. Please try again.');
     }
   };
@@ -162,12 +166,20 @@ export default function CreatePostScreen() {
           style={[stylesheet.postButton, { backgroundColor: hasContent ? theme.colors.G : 'rgba(130,219,126,0.25)' }]}
         >
           {posting ? (
-            <ActivityIndicator size="small" color={theme.colors.DARK} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <ActivityIndicator size="small" color={theme.colors.DARK} />
+                {uploadProgress > 0 && <Text style={[stylesheet.postButtonText, { color: theme.colors.DARK, fontSize: 12 }]}>{Math.round(uploadProgress * 100)}%</Text>}
+            </View>
           ) : (
             <Text style={[stylesheet.postButtonText, { color: hasContent ? theme.colors.DARK : 'rgba(130,219,126,0.5)' }]}>Post</Text>
           )}
         </TouchableOpacity>
       </View>
+      {posting && uploadProgress > 0 && (
+          <View style={{ height: 3, backgroundColor: 'rgba(130,219,126,0.2)' }}>
+              <View style={{ height: 3, backgroundColor: theme.colors.G, width: `${Math.round(uploadProgress * 100)}%` }} />
+          </View>
+      )}
 
       <ScrollView contentContainerStyle={stylesheet.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={stylesheet.authorRow}>

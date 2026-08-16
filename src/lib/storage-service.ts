@@ -6,7 +6,7 @@
  * We upload via fetch + FormData so Supabase Storage receives the correct binary.
  */
 
-import { supabase } from './supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from './supabase';
 import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
 export interface MobileFile {
@@ -58,7 +58,8 @@ export class StorageService {
     bucket: string,
     path: string,
     file: MobileFile,
-    options?: { cacheControl?: string; contentType?: string }
+    options?: { cacheControl?: string; contentType?: string },
+    onProgress?: (progress: number) => void
   ): Promise<{ data: any; error: any }> {
     try {
       if (!file?.uri) {
@@ -67,30 +68,54 @@ export class StorageService {
 
       const mimeType = options?.contentType || this.getMimeType(file.name, file.type);
 
-      let fileBody: ArrayBuffer | Blob;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token || supabaseAnonKey;
       
-      if (mimeType.startsWith('video/')) {
-        // Use fetch for large files like videos to avoid Out Of Memory crashes
-        const response = await fetch(file.uri);
-        fileBody = await response.blob();
-      } else {
-        // Read local file as base64 string
-        const base64 = await FileSystem.readAsStringAsync(file.uri, { encoding: 'base64' });
-        // Decode base64 to ArrayBuffer (bulletproof for Supabase RN upload)
-        fileBody = decode(base64);
+      const url = `${supabaseUrl}/storage/v1/object/${bucket}/${path}`;
+      
+      const uploadTask = FileSystem.createUploadTask(
+        url,
+        file.uri,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            apikey: supabaseAnonKey,
+            'Content-Type': mimeType,
+            'x-upsert': 'false',
+            'cache-control': options?.cacheControl || '3600'
+          },
+          httpMethod: 'POST',
+          uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+        },
+        (progressData) => {
+          if (onProgress && progressData.totalBytesExpectedToSend > 0) {
+            const progress = progressData.totalBytesSent / progressData.totalBytesExpectedToSend;
+            onProgress(progress);
+          }
+        }
+      );
+
+      const response = await uploadTask.uploadAsync();
+      
+      if (!response) {
+        return { data: null, error: new Error('No response from upload task') };
       }
 
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(path, fileBody, {
-          cacheControl: options?.cacheControl || '3600',
-          upsert: false,
-          contentType: mimeType,
-        });
-
-      if (error) {
-        console.error('[StorageService] Upload error:', error);
-        return { data: null, error };
+      if (response.status < 200 || response.status >= 300) {
+        let errorMsg = 'Upload failed';
+        try {
+          const parsed = JSON.parse(response.body);
+          errorMsg = parsed.message || parsed.error || errorMsg;
+        } catch (e) {}
+        console.error('[StorageService] Upload error:', errorMsg);
+        return { data: null, error: new Error(errorMsg) };
+      }
+      
+      let data = null;
+      try {
+        data = JSON.parse(response.body);
+      } catch (e) {
+        data = response.body;
       }
 
       return { data, error: null };
@@ -152,14 +177,15 @@ export class StorageService {
   /** Upload a marketplace post image */
   static async uploadPostImage(
     postId: string,
-    file: MobileFile
+    file: MobileFile,
+    onProgress?: (progress: number) => void
   ): Promise<{ url: string | null; error: any }> {
     const ext = file.name.split('.').pop() ?? 'jpg';
     const path = `posts/${postId}/${Date.now()}.${ext}`;
 
     const { data, error } = await this.uploadFile('post-images', path, file, {
       cacheControl: '604800',
-    });
+    }, onProgress);
     if (error || !data) return { url: null, error };
 
     return { url: this.getPublicUrl('post-images', path), error: null };
@@ -229,7 +255,8 @@ export class StorageService {
   /** Upload a post video */
   static async uploadPostVideo(
     userId: string,
-    file: MobileFile
+    file: MobileFile,
+    onProgress?: (progress: number) => void
   ): Promise<{ url: string | null; error: any }> {
     const ext = file.name.split('.').pop() ?? 'mp4';
     const path = `${userId}/${Date.now()}.${ext}`;
@@ -238,7 +265,7 @@ export class StorageService {
     const { data, error } = await this.uploadFile('post-videos', path, file, {
       contentType: mimeType,
       cacheControl: '604800',
-    });
+    }, onProgress);
 
     if (error || !data) return { url: null, error };
     return { url: this.getPublicUrl('post-videos', path), error: null };

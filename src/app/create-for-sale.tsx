@@ -45,6 +45,7 @@ export default function CreateForSaleScreen() {
   // Keyed by URI so dims remain correct if the user changes cover or removes images
   const [imageDimsMap, setImageDimsMap] = useState<Record<string, { w: number; h: number }>>({})
   const [listing, setListing] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [listed, setListed] = useState(false);
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
 
@@ -157,23 +158,50 @@ export default function CreateForSaleScreen() {
           const images = attachedFiles.filter(f => f.type?.startsWith('image/'));
           const videos = attachedFiles.filter(f => f.type?.startsWith('video/'));
 
-          if (images.length > 0) {
+          const hasImages = images.length > 0;
+          const hasVideos = videos.length > 0;
+          
+          const imageProgressWeight = (hasImages && hasVideos) ? 0.5 : 1;
+          const videoProgressWeight = (hasImages && hasVideos) ? 0.5 : 1;
+          
+          let imageProgress = 0;
+          let videoProgress = 0;
+
+          const updateOverallProgress = () => {
+              setUploadProgress(imageProgress * imageProgressWeight + videoProgress * videoProgressWeight);
+          };
+
+          if (hasImages) {
             const filesToUpload = [...images];
             if (coverIndex > 0 && coverIndex < filesToUpload.length) {
               const cover = filesToUpload.splice(coverIndex, 1)[0];
               filesToUpload.unshift(cover);
             }
+            const progressMap = new Map<number, number>();
             const uploadedImages = await Promise.all(
-              filesToUpload.map((file) => StorageService.uploadPostImage(user.id, file))
+              filesToUpload.map((file, index) => StorageService.uploadPostImage(user.id, file, (p) => {
+                  progressMap.set(index, p);
+                  let totalProgress = 0;
+                  progressMap.forEach(v => totalProgress += v);
+                  imageProgress = totalProgress / filesToUpload.length;
+                  updateOverallProgress();
+              }))
             );
             const failedImage = uploadedImages.find(res => res.error);
             if (failedImage) throw new Error('Failed to upload one or more images.');
             imageUrls = uploadedImages.map(res => res.url).filter(Boolean) as string[];
           }
 
-          if (videos.length > 0) {
+          if (hasVideos) {
+            const progressMap = new Map<number, number>();
             const uploadedVideos = await Promise.all(
-              videos.map((file) => StorageService.uploadPostVideo(user.id, file))
+              videos.map((file, index) => StorageService.uploadPostVideo(user.id, file, (p) => {
+                  progressMap.set(index, p);
+                  let totalProgress = 0;
+                  progressMap.forEach(v => totalProgress += v);
+                  videoProgress = totalProgress / videos.length;
+                  updateOverallProgress();
+              }))
             );
             const failedVideo = uploadedVideos.find(res => res.error);
             if (failedVideo) throw new Error('Failed to upload one or more videos.');
@@ -220,6 +248,7 @@ export default function CreateForSaleScreen() {
           });
 
         setListing(false);
+        setUploadProgress(0);
         if (error) {
           Alert.alert('Error', error.message || 'Failed to publish listing.');
         } else {
@@ -228,6 +257,7 @@ export default function CreateForSaleScreen() {
         }
       } catch (err: any) {
         setListing(false);
+        setUploadProgress(0);
         Alert.alert('Error', err?.message || 'Failed to create listing.');
       }
     }
@@ -286,6 +316,11 @@ export default function CreateForSaleScreen() {
       <View style={stylesheet.progressBarBg}>
         <Animated.View style={[stylesheet.progressBarFill, animatedProgressStyle]} />
       </View>
+      {listing && uploadProgress > 0 && (
+          <View style={{ height: 3, backgroundColor: 'rgba(130,219,126,0.2)' }}>
+              <View style={{ height: 3, backgroundColor: theme.colors.G, width: `${Math.round(uploadProgress * 100)}%` }} />
+          </View>
+      )}
 
       <ScrollView contentContainerStyle={stylesheet.scrollContent} keyboardShouldPersistTaps="handled">
         {step === 0 && (
@@ -561,7 +596,10 @@ export default function CreateForSaleScreen() {
           onPress={handleNext}
         >
           {listing ? (
-            <ActivityIndicator size="small" color={theme.colors.DARK} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <ActivityIndicator size="small" color={theme.colors.DARK} />
+              {uploadProgress > 0 && <Text style={[stylesheet.btnPrimaryText, { fontSize: 12 }]}>{Math.round(uploadProgress * 100)}%</Text>}
+            </View>
           ) : (
             <Text style={stylesheet.btnPrimaryText}>
               {step === STEPS.length - 1 ? 'Publish Listing' : 'Continue'}

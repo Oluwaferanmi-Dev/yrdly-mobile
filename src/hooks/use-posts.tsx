@@ -487,7 +487,8 @@ export const usePosts = (filter?: LocationFilter | null) => {
 
   const uploadImages = useCallback(async (
     files: MobileFile[],
-    path: 'posts' | 'event_images' | 'businesses' | 'avatars'
+    path: 'posts' | 'event_images' | 'businesses' | 'avatars',
+    onProgress?: (progress: number) => void
   ): Promise<string[]> => {
     if (!user) return [];
     
@@ -496,15 +497,28 @@ export const usePosts = (filter?: LocationFilter | null) => {
       return [];
     }
     
+    const progressMap = new Map<number, number>();
+    
     const uploadedUrls = await Promise.all(
-        Array.from(files).map(async (file) => {
+        Array.from(files).map(async (file, index) => {
             // Additional check for individual file
             if (!file || !file.uri || !file.name) {
               return null;
             }
             
             try {
-              const { url, error } = await StorageService.uploadPostImage(user.id, file);
+              const { url, error } = await StorageService.uploadPostImage(
+                user.id, 
+                file,
+                (progress) => {
+                  if (onProgress) {
+                    progressMap.set(index, progress);
+                    let totalProgress = 0;
+                    progressMap.forEach(p => totalProgress += p);
+                    onProgress(totalProgress / files.length);
+                  }
+                }
+              );
               if (error) {
                   return null;
               }
@@ -526,7 +540,8 @@ export const usePosts = (filter?: LocationFilter | null) => {
       postData: Partial<Omit<Post, 'id'>>,
       postIdToUpdate?: string,
       imageFiles?: MobileFile[],
-      videoFiles?: MobileFile[]
+      videoFiles?: MobileFile[],
+      onProgress?: (progress: number) => void
     ) => {
       if (!user || !profile) {
         toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in.' });
@@ -552,17 +567,43 @@ export const usePosts = (filter?: LocationFilter | null) => {
           imageUrls = [...postData.image_urls];
         }
         
+        // Split progress between images and videos if both exist
+        const hasImages = imageFiles && imageFiles.length > 0;
+        const hasVideos = videoFiles && videoFiles.length > 0 && !postIdToUpdate;
+        
+        const imageProgressWeight = (hasImages && hasVideos) ? 0.5 : 1;
+        const videoProgressWeight = (hasImages && hasVideos) ? 0.5 : 1;
+        
+        let imageProgress = 0;
+        let videoProgress = 0;
+
+        const updateOverallProgress = () => {
+            if (onProgress) {
+                onProgress(imageProgress * imageProgressWeight + videoProgress * videoProgressWeight);
+            }
+        };
+
         // Add new images if any are uploaded
-        if (imageFiles && imageFiles.length > 0) {
-            const uploadedUrls = await uploadImages(imageFiles, postData.category === 'Event' ? 'event_images' : 'posts');
+        if (hasImages) {
+            const uploadedUrls = await uploadImages(imageFiles, postData.category === 'Event' ? 'event_images' : 'posts', (p) => {
+                imageProgress = p;
+                updateOverallProgress();
+            });
             imageUrls = [...imageUrls, ...uploadedUrls];
         }
 
         // Upload videos if provided (new posts only)
         let videoUrls: string[] = [];
-        if (videoFiles && videoFiles.length > 0 && !postIdToUpdate) {
+        if (hasVideos) {
+          const progressMap = new Map<number, number>();
           const uploadedVideos = await Promise.all(
-            videoFiles.map((file) => StorageService.uploadPostVideo(user.id, file))
+            videoFiles.map((file, index) => StorageService.uploadPostVideo(user.id, file, (p) => {
+                progressMap.set(index, p);
+                let totalProgress = 0;
+                progressMap.forEach(v => totalProgress += v);
+                videoProgress = totalProgress / videoFiles.length;
+                updateOverallProgress();
+            }))
           );
           const failedVideo = uploadedVideos.find(res => res.error);
           if (failedVideo) throw new Error('Failed to upload one or more videos.');
