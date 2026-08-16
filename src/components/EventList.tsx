@@ -314,7 +314,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
       </>
     // eslint-disable-next-line react-hooks/exhaustive-deps
     );
-  }, [featured, horizontal, rest, featuredIdx, category, colors, user]);
+  }, [featured, horizontal, rest, featuredIdx, category, theme, user]);
 
   return (
     <FlatList
