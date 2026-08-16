@@ -10,7 +10,7 @@ import * as Haptics from 'expo-haptics';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { usePosts } from '../hooks/use-posts';
 import { MobileFile } from '../lib/storage-service';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Avatar } from '../components/Avatar';
 
 export default function CreatePostScreen() {

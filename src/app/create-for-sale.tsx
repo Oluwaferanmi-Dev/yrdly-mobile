@@ -16,7 +16,7 @@ import { StorageService, MobileFile } from '../lib/storage-service';
 import { MarketplaceItemCard } from '../components/MarketplaceItemCard';
 import { ImageCarousel } from '../components/ImageCarousel';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { formatPrice } from '../lib/utils';
 import { useCategories } from '../hooks/use-categories';
 
