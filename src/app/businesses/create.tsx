@@ -9,7 +9,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { StorageService } from '../../lib/storage-service';
 import { resolveCoords } from '../../lib/geocoding-service';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { OpeningHoursPicker } from '../../components/OpeningHoursPicker';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
@@ -85,26 +85,40 @@ export default function BusinessEditScreen() {
   }, [id]);
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [16, 9],
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      setCoverUri(result.assets[0].uri);
+    try {
+      const image = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        cropping: true,
+        width: 1600,
+        height: 900,
+        compressImageQuality: 0.8,
+      });
+      if (image) {
+        setCoverUri(image.path);
+      }
+    } catch (e: any) {
+      if (e.message !== 'User cancelled image selection') {
+        console.error('Pick cover error:', e);
+      }
     }
   };
 
   const pickLogo = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      setLogoUri(result.assets[0].uri);
+    try {
+      const image = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        cropping: true,
+        width: 500,
+        height: 500,
+        compressImageQuality: 0.8,
+      });
+      if (image) {
+        setLogoUri(image.path);
+      }
+    } catch (e: any) {
+      if (e.message !== 'User cancelled image selection') {
+        console.error('Pick logo error:', e);
+      }
     }
   };
 

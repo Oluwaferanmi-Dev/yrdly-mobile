@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, ActivityIndicator, Alert, TextInput, Scro
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
@@ -30,19 +30,22 @@ export default function EditProfileScreen() {
   const bioMax = 140;
 
   const pickAvatar = async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert('Permission Denied', 'Camera roll access is required to pick a photo.');
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled && result.assets[0]?.uri) {
-      setAvatarUri(result.assets[0].uri);
+    try {
+      const image = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        cropping: true,
+        width: 500,
+        height: 500,
+        compressImageQuality: 0.8,
+      });
+
+      if (image && image.path) {
+        setAvatarUri(image.path);
+      }
+    } catch (e: any) {
+      if (e.message !== 'User cancelled image selection') {
+        console.error('Pick avatar error:', e);
+      }
     }
   };
 

@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { Image } from 'expo-image';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { supabase } from '../../lib/supabase';
@@ -21,26 +21,28 @@ export default function ReportScreen() {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [image, setImage] = useState<{ uri: string, mime: string, name: string } | null>(null);
 
   const pickImage = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission needed', 'Please grant permission to access your photos.');
-        return;
-      }
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        quality: 0.8,
+      const img = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        cropping: true,
+        freeStyleCropEnabled: true,
+        compressImageQuality: 0.8,
       });
 
-      if (!result.canceled && result.assets[0]) {
-        setImage(result.assets[0]);
+      if (img) {
+        setImage({
+          uri: img.path,
+          mime: img.mime || 'image/jpeg',
+          name: img.filename || `report-${Date.now()}.jpg`
+        });
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      if (e.message !== 'User cancelled image selection') {
+        console.error(e);
+      }
     }
   };
 
@@ -56,8 +58,8 @@ export default function ReportScreen() {
       if (image && user) {
         const file = {
           uri: image.uri,
-          name: image.fileName || `report-${Date.now()}.jpg`,
-          type: image.mimeType || 'image/jpeg',
+          name: image.name,
+          type: image.mime,
         };
         const { url, error: uploadError } = await StorageService.uploadReportImage(user.id, file);
         if (uploadError) {

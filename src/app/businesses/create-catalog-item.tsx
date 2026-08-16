@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { supabase } from '../../lib/supabase';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { StorageService } from '../../lib/storage-service';
 import { useAuth } from '../../hooks/use-supabase-auth';
 const CATS = [
@@ -62,13 +62,20 @@ export default function CreateCatalogItemScreen() {
   }, [itemId, isEditMode]);
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      setImageUris(prev => [...prev, ...result.assets.map(a => a.uri)]);
+    try {
+      const image = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        cropping: true,
+        freeStyleCropEnabled: true,
+        compressImageQuality: 0.8,
+      });
+      if (image) {
+        setImageUris(prev => [...prev, image.path]);
+      }
+    } catch (e: any) {
+      if (e.message !== 'User cancelled image selection') {
+        console.error('Pick image error:', e);
+      }
     }
   };
 

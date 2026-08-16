@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { SceneBg, GlassCard, GlassInput, StepBar, PrimaryBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
 import { AuthService } from '@/lib/auth-service';
@@ -76,23 +76,21 @@ export default function Profile1Screen() {
 
   const handlePickAvatar = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Permission to access photos is required.');
-        return;
-      }
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
+      const image = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        cropping: true,
+        width: 500,
+        height: 500,
+        compressImageQuality: 0.8,
       });
 
-      if (!result.canceled && result.assets[0]?.uri) {
-        setAvatarUri(result.assets[0].uri);
+      if (image && image.path) {
+        setAvatarUri(image.path);
       }
-    } catch (e) {
-      console.log('Error picking image:', e);
+    } catch (e: any) {
+      if (e.message !== 'User cancelled image selection') {
+        console.log('Error picking image:', e);
+      }
     }
   };
 

@@ -7,7 +7,7 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { resolveCoords } from '../lib/geocoding-service';
 import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import * as Haptics from 'expo-haptics';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
 import { supabase } from '../lib/supabase';
@@ -81,25 +81,20 @@ export default function CreateForSaleScreen() {
 
   const pickImages = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission needed', 'Please grant permission to access your photo library.');
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        quality: 0.8,
-        videoMaxDuration: 60,
+      const image = await ImagePicker.openPicker({
+        mediaType: 'any',
+        cropping: true,
+        freeStyleCropEnabled: true,
+        compressImageQuality: 0.8,
       });
 
-      if (!result.canceled && result.assets) {
+      if (image) {
         let validFiles: MobileFile[] = [];
         let videoCount = attachedFiles.filter(f => f.type?.startsWith('video/')).length;
         
-        for (const asset of result.assets) {
-          const type = asset.type === 'video' ? 'video/mp4' : (asset.mimeType || 'image/jpeg');
+        const assets = Array.isArray(image) ? image : [image];
+        for (const asset of assets) {
+          const type = asset.mime || (asset.path.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg');
           
           if (type.startsWith('video/')) {
             videoCount++;
@@ -107,8 +102,8 @@ export default function CreateForSaleScreen() {
               Alert.alert('Limit Reached', 'You can only upload up to 3 videos.');
               continue;
             }
-            if (asset.uri) {
-              const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+            if (asset.path) {
+              const fileInfo = await FileSystem.getInfoAsync(asset.path);
               if (fileInfo.exists && fileInfo.size && fileInfo.size > 40 * 1024 * 1024) {
                 Alert.alert('File too large', 'Each video must be under 40MB.');
                 continue;
@@ -116,21 +111,23 @@ export default function CreateForSaleScreen() {
             }
           }
           
-          validFiles.push({
-            uri: asset.uri,
-            name: asset.fileName || `item_${Date.now()}`,
+          const file: MobileFile = {
+            uri: asset.path,
+            name: asset.filename || `media_${Date.now()}`,
             type,
-          });
+          };
+          validFiles.push(file);
 
-          // Capture dimensions for images; asset.width/height are synchronous from picker
           if (type.startsWith('image/') && asset.width && asset.height) {
-            setImageDimsMap(prev => ({ ...prev, [asset.uri]: { w: asset.width, h: asset.height } }));
+            setImageDimsMap(prev => ({ ...prev, [asset.path]: { w: asset.width, h: asset.height } }));
           }
         }
         setAttachedFiles(prev => [...prev, ...validFiles]);
       }
-    } catch (e) {
-      console.error('Pick image error:', e);
+    } catch (e: any) {
+      if (e.message !== 'User cancelled image selection') {
+        console.error('Pick image error:', e);
+      }
     }
   };
 

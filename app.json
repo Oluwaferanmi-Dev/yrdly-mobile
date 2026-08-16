@@ -124,6 +124,7 @@
       "expo-video",
       "expo-audio",
       "./plugins/withAROptional.js",
+      "./plugins/withImageCropPicker.js",
       "expo-localization",
       [
         "expo-build-properties",

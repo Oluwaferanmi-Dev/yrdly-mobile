@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { Image } from 'expo-image';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
@@ -39,24 +39,22 @@ export default function DisputeScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const pickPhotos = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please allow photo access to attach evidence.');
-      return;
-    }
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        quality: 0.7,
+      const image = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        cropping: true,
+        freeStyleCropEnabled: true,
+        compressImageQuality: 0.7,
       });
-      if (!result.canceled) {
-        const uris = result.assets.map(a => a.uri);
-        uploadPhotos(uris);
+
+      if (image) {
+        uploadPhotos([image.path]);
       }
-    } catch (e) {
-      console.log("ImagePicker error:", e);
-      Alert.alert('Error', 'Could not access the selected photo. Please try another one.');
+    } catch (e: any) {
+      if (e.message !== 'User cancelled image selection') {
+        console.log("ImagePicker error:", e);
+        Alert.alert('Error', 'Could not access the selected photo. Please try another one.');
+      }
     }
   };
 

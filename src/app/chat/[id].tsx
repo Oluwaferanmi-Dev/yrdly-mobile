@@ -10,7 +10,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { useIsFocused } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system/legacy';
 import { decode } from 'base64-arraybuffer';
@@ -395,20 +395,27 @@ function ChatContent() {
   const pickMedia = async () => {
     if (sending || uploadingMedia) return;
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        quality: 0.9,
+      const image = await ImagePicker.openPicker({
+        mediaType: 'any',
+        cropping: true,
+        freeStyleCropEnabled: true,
+        compressImageQuality: 0.9,
       });
-      if (!result.canceled) {
-        uploadAndSendMedia(result.assets[0]);
+
+      if (image) {
+        uploadAndSendMedia({
+          uri: image.path,
+          type: image.mime || (image.path.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg')
+        });
       }
-    } catch (e) {
-      console.log('ImagePicker error:', e);
+    } catch (e: any) {
+      if (e.message !== 'User cancelled image selection') {
+        console.log('ImagePicker error:', e);
+      }
     }
   };
 
-  const uploadAndSendMedia = async (asset: ImagePicker.ImagePickerAsset) => {
+  const uploadAndSendMedia = async (asset: { uri: string, type?: string }) => {
     if (!user || !id) return;
     setUploadingMedia(true);
     try {

@@ -9,7 +9,7 @@ import { Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { usePosts } from '../../../hooks/use-posts';
@@ -87,13 +87,20 @@ export default function EditMarketplaceItemScreen() {
   }, [fetchPost]);
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      setNewImages(prev => [...prev, ...result.assets.map(a => a.uri)]);
+    try {
+      const image = await ImagePicker.openPicker({
+        mediaType: 'photo',
+        cropping: true,
+        freeStyleCropEnabled: true,
+        compressImageQuality: 0.8,
+      });
+      if (image) {
+        setNewImages(prev => [...prev, image.path]);
+      }
+    } catch (e: any) {
+      if (e.message !== 'User cancelled image selection') {
+        console.error('Pick image error:', e);
+      }
     }
   };
 
