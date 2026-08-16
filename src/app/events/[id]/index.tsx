@@ -448,7 +448,7 @@ export default function EventDetailScreen() {
               <Feather name="share" size={20} color={theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleBookmark} style={[stylesheet.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-              <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={20} color={isBookmarked ? theme.colors.G : "#FFF"} />
+              <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={20} color={isBookmarked ? theme.colors.G : theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>
           </View>
         </View>
@@ -494,7 +494,7 @@ export default function EventDetailScreen() {
           {imageUrls.length > 1 && (
             <View style={stylesheet.dotsContainer}>
               {imageUrls.map((_, idx) => (
-                <View key={idx} style={[stylesheet.dot, { backgroundColor: idx === currentImageIndex ? '#FFF' : 'rgba(255,255,255,0.5)' }]} />
+                <View key={idx} style={[stylesheet.dot, { backgroundColor: idx === currentImageIndex ? theme.colors.TEXT_PRIMARY : theme.colors.LABEL }]} />
               ))}
             </View>
           )}
@@ -562,7 +562,7 @@ export default function EventDetailScreen() {
                 onPress={getDirections}
                 activeOpacity={0.8}
               >
-                <Feather name="navigation" size={18} color="#000" style={{ marginRight: 8 }} />
+                <Feather name="navigation" size={18} color={theme.colors.DARK} style={{ marginRight: 8 }} />
                 <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 14, color: theme.colors.DARK }}>Get Directions</Text>
               </TouchableOpacity>
             )}
@@ -646,7 +646,7 @@ export default function EventDetailScreen() {
                     style={[stylesheet.followBtn, { backgroundColor: isFollowingOrganizer ? theme.colors.SURFACE : theme.colors.G }]}
                     onPress={(e) => { e.stopPropagation(); handleFollow(); }}
                   >
-                    <Text style={[stylesheet.followBtnText, { color: isFollowingOrganizer ? theme.colors.TEXT_PRIMARY : '#FFF' }]}>
+                    <Text style={[stylesheet.followBtnText, { color: isFollowingOrganizer ? theme.colors.TEXT_PRIMARY : theme.colors.DARK }]}>
                       {isFollowingOrganizer ? 'Following' : 'Follow'}
                     </Text>
                   </TouchableOpacity>
@@ -805,7 +805,7 @@ export default function EventDetailScreen() {
             else if (event?.ticket_tiers && event.ticket_tiers.length > 0) setSelectedTier(event.ticket_tiers[0]);
           }}
         >
-          <Text style={[stylesheet.bottomPrimaryText, { color: isOwner ? theme.colors.TEXT_PRIMARY : (isExpired || allTicketsSoldOut ? theme.colors.MUTED : '#FFF') }]}>
+          <Text style={[stylesheet.bottomPrimaryText, { color: isOwner ? theme.colors.TEXT_PRIMARY : (isExpired || allTicketsSoldOut ? theme.colors.MUTED : theme.colors.DARK) }]}>
             {isOwner ? 'Manage Event' : isExpired ? 'Event Ended' : allTicketsSoldOut ? 'Sold Out' : userHasTickets ? 'View My Tickets' : 'View Tickets'}
           </Text>
         </TouchableOpacity>

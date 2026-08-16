@@ -193,7 +193,7 @@ export default function TicketScannerScreen() {
               onPress={() => verifyTicketCode(manualCode)}
               disabled={verifying}
             >
-              {verifying ? <ActivityIndicator color="#000" size="small" /> : <Text style={stylesheet.verifyBtnText}>Check</Text>}
+              {verifying ? <ActivityIndicator color={theme.colors.DARK} size="small" /> : <Text style={stylesheet.verifyBtnText}>Check</Text>}
             </TouchableOpacity>
           </View>
         </View>

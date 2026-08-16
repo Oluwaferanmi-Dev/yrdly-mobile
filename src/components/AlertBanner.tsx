@@ -57,7 +57,7 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({ alert, onPress, onDism
           </Text>
         </View>
 
-        <Text style={[stylesheet.title, { color: isResolved ? theme.colors.MUTED : '#FFF' }]} numberOfLines={1}>
+        <Text style={[stylesheet.title, { color: isResolved ? theme.colors.MUTED : theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>
           {alert.title}
         </Text>
 

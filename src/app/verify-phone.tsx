@@ -100,7 +100,7 @@ export default function VerifyPhoneScreen() {
           activeOpacity={0.85}
         >
           {loading ? (
-            <ActivityIndicator color="#000" />
+            <ActivityIndicator color={theme.colors.TEXT_PRIMARY} />
           ) : (
             <Text style={[stylesheet.verifyBtnText, { color: theme.colors.DARK }]}>Send Code</Text>
           )}

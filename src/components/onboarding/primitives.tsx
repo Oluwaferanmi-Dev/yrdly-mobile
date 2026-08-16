@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   },
   glassInputText: {
     flex: 1,
-    color: '#FFFFFF',
+    color: theme.colors.DARK,
     fontSize: 15,
     fontFamily: 'Inter-Regular',
   },
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   socialBtnText: {
-    color: '#FFFFFF',
+    color: theme.colors.DARK,
     fontSize: 14,
     fontFamily: 'Inter-Medium',
   },

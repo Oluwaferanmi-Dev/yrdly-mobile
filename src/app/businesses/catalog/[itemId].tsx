@@ -347,7 +347,7 @@ export default function CatalogItemScreen() {
             style={[sStylesheet.backBtn, { top: insets.top + 10, backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]} 
             onPress={() => router.back()}
           >
-            <Ionicons name="chevron-back" size={26} color={isDarkMode ? '#fff' : '#000'} />
+            <Ionicons name="chevron-back" size={26} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
 
           {/* Indicators */}
@@ -458,7 +458,7 @@ export default function CatalogItemScreen() {
                   onPress={handleBuy}
                   disabled={!item.in_stock}
                 >
-                  <Ionicons name="bag-handle-outline" size={20} color="#000000" style={{ marginRight: 8 }} />
+                  <Ionicons name="bag-handle-outline" size={20} color={theme.colors.TEXT_PRIMARY} style={{ marginRight: 8 }} />
                   <Text style={[sStylesheet.primaryBtnTxt, { color: theme.colors.DARK, fontFamily: 'Outfit' }]}>{item.in_stock ? 'Buy Now' : 'Out of Stock'}</Text>
                 </TouchableOpacity>
               )}

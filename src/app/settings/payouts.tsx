@@ -187,7 +187,7 @@ export default function PayoutsScreen() {
                   onPress={handleRequestPayout}
                   disabled={balance <= 0 || requesting || !bankInfo}
                 >
-                  {requesting ? <ActivityIndicator color="#000" size="small" /> : <Text style={s.withdrawBtnTxt}>Withdraw Funds</Text>}
+                  {requesting ? <ActivityIndicator color={theme.colors.TEXT_PRIMARY} size="small" /> : <Text style={s.withdrawBtnTxt}>Withdraw Funds</Text>}
                 </TouchableOpacity>
               </View>
 

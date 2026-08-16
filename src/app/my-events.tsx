@@ -104,7 +104,7 @@ export default function MyEventsScreen() {
               style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: theme.colors.G, paddingVertical: 8, borderRadius: 12, marginTop: 10 }}
               onPress={() => router.push({ pathname: '/events/scan' as any, params: { eventId: item.id } })}
             >
-              <Ionicons name="qr-code" size={16} color="#000" />
+              <Ionicons name="qr-code" size={16} color={theme.colors.TEXT_PRIMARY} />
               <Text style={stylesheet.scanBtnText}>Scan Attendee Tickets</Text>
             </TouchableOpacity>
         </View>
