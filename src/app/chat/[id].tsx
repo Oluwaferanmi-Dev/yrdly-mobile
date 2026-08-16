@@ -323,6 +323,13 @@ function ChatContent() {
         }
 
         setMessages(prev => prev.map(m => m.id === editingMessage.id ? { ...m, text: newText } : m));
+        
+        // Optimistically update conversation if this was the last message
+        const isLatest = messages.length > 0 && messages[messages.length - 1].id === editingMessage.id;
+        if (isLatest) {
+          supabase.from('conversations').update({ last_message_text: newText }).eq('id', id).then();
+        }
+
         setEditingMessage(null);
         setSending(false);
         return;
@@ -392,13 +399,14 @@ function ChatContent() {
     }
   };
 
-  const pickMedia = async () => {
+  const handlePickMedia = async (type: 'photo' | 'video') => {
     if (sending || uploadingMedia) return;
     try {
+      const isPhoto = type === 'photo';
       const image = await ImagePicker.openPicker({
-        mediaType: 'any',
-        cropping: true,
-        freeStyleCropEnabled: true,
+        mediaType: type,
+        cropping: isPhoto,
+        freeStyleCropEnabled: isPhoto,
         compressImageQuality: 0.9,
       });
 
@@ -409,10 +417,22 @@ function ChatContent() {
         });
       }
     } catch (e: any) {
-      if (e.message !== 'User cancelled image selection') {
+      if (e.message !== 'User cancelled image selection' && e.message !== 'User cancelled') {
         console.log('ImagePicker error:', e);
       }
     }
+  };
+
+  const pickMedia = () => {
+    Alert.alert(
+      'Attach Media',
+      'Choose the type of media to upload',
+      [
+        { text: 'Photo', onPress: () => handlePickMedia('photo') },
+        { text: 'Video', onPress: () => handlePickMedia('video') },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
   };
 
   const uploadAndSendMedia = async (asset: { uri: string, type?: string }) => {
@@ -583,6 +603,11 @@ function ChatContent() {
                 ? { ...m, text: 'This message was deleted', media_url: undefined, media_type: undefined }
                 : m
             ));
+
+            const isLatest = messages.length > 0 && messages[messages.length - 1].id === item.id;
+            if (isLatest) {
+              supabase.from('conversations').update({ last_message_text: 'This message was deleted' }).eq('id', id).then();
+            }
           } catch (e) {
             console.error('Failed to delete message for everyone:', e);
           }

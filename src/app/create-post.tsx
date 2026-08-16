@@ -34,12 +34,13 @@ export default function CreatePostScreen() {
 
   const categories = ['General'];
 
-  const pickImages = async () => {
+  const pickMedia = async (type: 'photo' | 'video') => {
     try {
+      const isPhoto = type === 'photo';
       const image = await ImagePicker.openPicker({
-        mediaType: 'any',
-        cropping: true,
-        freeStyleCropEnabled: true,
+        mediaType: type,
+        cropping: isPhoto,
+        freeStyleCropEnabled: isPhoto,
         compressImageQuality: 0.8,
       });
 
@@ -80,12 +81,23 @@ export default function CreatePostScreen() {
         }
         setAttachedFiles(prev => [...prev, ...validFiles]);
       }
-      }
-    } catch (e: any) {
-      if (e.message !== 'User cancelled image selection') {
-        console.error('Pick image error:', e);
+      } catch (e: any) {
+      if (e.message !== 'User cancelled image selection' && e.message !== 'User cancelled') {
+        Alert.alert('Error', 'Failed to pick media');
       }
     }
+  };
+
+  const pickImages = () => {
+    Alert.alert(
+      'Attach Media',
+      'Choose the type of media to upload',
+      [
+        { text: 'Photo', onPress: () => pickMedia('photo') },
+        { text: 'Video', onPress: () => pickMedia('video') },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
   };
 
   const doPost = async () => {

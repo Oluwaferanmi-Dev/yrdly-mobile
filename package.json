@@ -54,6 +54,7 @@
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-google-places-autocomplete": "^2.6.4",
+    "react-native-image-crop-picker": "^0.51.1",
     "react-native-image-viewing": "^0.2.2",
     "react-native-keyboard-controller": "1.18.5",
     "react-native-map-clustering": "^4.0.0",
