@@ -17,7 +17,6 @@ import { usePosts } from '../../hooks/use-posts';
 import { PostCard } from '../../components/PostCard';
 import { Post } from '../../types';
 import { timeAgo } from '../../lib/utils';
-import { useAppTheme } from '../../context/ThemeContext';
 import { Alert } from 'react-native';
 
 import { StorageService } from '../../lib/storage-service';
@@ -28,8 +27,7 @@ import { ErrorBoundary } from '../../components/ErrorBoundary';
 function PostDetailContent() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { id, focusComments } = useLocalSearchParams<{ id: string; focusComments?: string }>();
   const isFocused = useIsFocused();
   const [hasAutoScrolled, setHasAutoScrolled] = useState(false);

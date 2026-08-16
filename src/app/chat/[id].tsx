@@ -85,7 +85,7 @@ const ChatVideo = React.memo(({ url, width, height, borderRadius, marginBottom, 
 function ChatContent() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors, isDarkMode } = useAppTheme();
+  const { isDarkMode } = useAppTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const id = params.id as string;

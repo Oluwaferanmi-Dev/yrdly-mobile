@@ -6,7 +6,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { AlertService, Alert } from '../lib/alert-service';
 import { AlertBanner } from '../components/AlertBanner';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAppTheme } from '../context/ThemeContext';
 type SeverityFilter = 'all' | 'urgent' | 'caution' | 'information';
 
 const FILTERS: { key: SeverityFilter; label: string; color: string; bg: string }[] = [
@@ -21,8 +20,7 @@ export default function AlertsScreen() {
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { colors } = useAppTheme();
-
+  
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -96,8 +94,8 @@ export default function AlertsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.tint}
-            colors={[colors.tint]}
+            tintColor={theme.colors.G}
+            colors={[theme.colors.G]}
           />
         }
         contentContainerStyle={stylesheet.listContent}

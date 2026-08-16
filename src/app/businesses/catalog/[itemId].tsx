@@ -15,7 +15,7 @@ export default function CatalogItemScreen() {
     const { styles: sStylesheet, theme } = useStyles(stylesheet);
 
   const { itemId } = useLocalSearchParams<{ itemId: string }>();
-  const { colors, isDarkMode } = useAppTheme();
+  const { isDarkMode } = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();

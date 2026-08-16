@@ -4,7 +4,6 @@ import { View, Text, ScrollView, TouchableOpacity, Image, Linking, ActivityIndic
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAppTheme } from '../../context/ThemeContext';
 import { supabase } from '../../lib/supabase';
 import { Alert } from '../../lib/alert-service';
 
@@ -14,8 +13,7 @@ export default function AlertDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { colors } = useAppTheme();
-
+  
   const [alert, setAlert] = useState<Alert | null>(null);
   const [loading, setLoading] = useState(true);
 

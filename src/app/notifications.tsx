@@ -11,7 +11,6 @@ import { Image } from 'expo-image';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { useAppTheme } from '../context/ThemeContext';
 import { AlertBanner } from '../components/AlertBanner';
 import { NotificationService } from '../lib/notification-service';
 import * as SecureStore from 'expo-secure-store';
@@ -55,8 +54,7 @@ function timeAgo(dateString: string) {
 export default function NotificationsScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);

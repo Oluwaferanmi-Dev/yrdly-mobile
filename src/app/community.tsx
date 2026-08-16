@@ -9,7 +9,6 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
 import Animated, { FadeInUp, FadeInDown, Layout } from 'react-native-reanimated';
 type Tab = 'friends' | 'discover';
@@ -19,8 +18,7 @@ const { width } = Dimensions.get('window');
 export default function CommunityScreen() {
   const { styles, theme } = useStyles(stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { user: currentUser, profile } = useAuth();
   const { activeFilter } = useLocation();
 

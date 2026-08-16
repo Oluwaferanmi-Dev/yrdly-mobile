@@ -109,7 +109,7 @@ export default function MapScreen() {
   const { styles: ms } = useStyles(msStylesheet);
 
   const insets = useSafeAreaInsets();
-  const { colors, isDarkMode } = useAppTheme();
+  const { isDarkMode } = useAppTheme();
   const router = useRouter();
   const { user, profile } = useAuth();
   const { activeFilter } = useLocation();
