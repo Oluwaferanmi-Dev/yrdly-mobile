@@ -7,15 +7,13 @@ import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { supabase } from '../../lib/supabase';
-import { useAppTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../hooks/use-supabase-auth';
 
 export default function NetworkScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
   const router = useRouter();
-  const { colors } = useAppTheme();
-  const { id, mode = 'followers' } = useLocalSearchParams<{ id: string; mode: 'followers' | 'following' }>();
+    const { id, mode = 'followers' } = useLocalSearchParams<{ id: string; mode: 'followers' | 'following' }>();
   const { user: currentUser, profile: currentProfile } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'followers' | 'following'>(mode as 'followers' | 'following');

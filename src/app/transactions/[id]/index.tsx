@@ -69,7 +69,7 @@ function fmt(iso: string | null): string {
 export default function TransactionDetailScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors, isDarkMode } = useAppTheme();
+  const { isDarkMode } = useAppTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
@@ -308,7 +308,7 @@ export default function TransactionDetailScreen() {
     );
   }
 
-  const meta = getStatusMeta(tx.status, isDarkMode, colors);
+  const meta = getStatusMeta(tx.status, isDarkMode, theme.colors);
   const currentStepIndex = STATUS_ORDER.indexOf(tx.status);
   const rawThumb = tx.item?.images;
   const thumb = Array.isArray(rawThumb) && rawThumb.length > 0 && typeof rawThumb[0] === 'string'

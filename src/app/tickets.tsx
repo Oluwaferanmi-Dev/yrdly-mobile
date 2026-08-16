@@ -15,7 +15,6 @@ import { useAuth } from '../hooks/use-supabase-auth';
 import { getMyTickets } from '../lib/event-service';
 import { Post } from '../types';
 import { Ticket, Event } from '../types/events';
-import { useAppTheme } from '../context/ThemeContext';
 const getTicketStatusInfo = (ticket: Ticket) => {
   const isActiveOrConfirmed = ticket.status === 'PAID';
   
@@ -37,8 +36,7 @@ const getTicketStatusInfo = (ticket: Ticket) => {
 export default function TicketsScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { user } = useAuth();
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -165,7 +163,7 @@ export default function TicketsScreen() {
         {/* Tear line */}
         <View style={stylesheet.tearLine}>
           <View style={[stylesheet.tearCircleTop, { backgroundColor: theme.colors.DARK }]} />
-          <View style={[stylesheet.tearDashes, { borderLeftColor: colors.border }]} />
+          <View style={[stylesheet.tearDashes, { borderLeftColor: theme.colors.GLASS_BORDER }]} />
           <View style={[stylesheet.tearCircleBottom, { backgroundColor: theme.colors.DARK }]} />
         </View>
 
@@ -228,7 +226,7 @@ export default function TicketsScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.G} />}
           ListEmptyComponent={
             <View style={stylesheet.emptyContainer}>
-              <Feather name="tag" size={72} color={colors.border} />
+              <Feather name="tag" size={72} color={theme.colors.GLASS_BORDER} />
               <Text style={[stylesheet.emptyTitle, { color: theme.colors.TEXT_PRIMARY }]}>No Tickets Yet</Text>
               <Text style={[stylesheet.emptySubtitle, { color: theme.colors.MUTED }]}>Buy tickets to events to see them here.</Text>
               <TouchableOpacity

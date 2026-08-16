@@ -8,7 +8,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { supabase } from '../../../lib/supabase';
-import { useAppTheme } from '../../../context/ThemeContext';
 
 const RED = '#B71C1C';
 
@@ -17,8 +16,7 @@ type ScanResult = { success: true; attendee: string } | { success: false; messag
 export default function ScanTicketScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const { id } = useLocalSearchParams<{ id: string }>();
+    const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(true);

@@ -10,7 +10,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { Post } from '../../types';
-import { useAppTheme } from '../../context/ThemeContext';
 import { useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProfilePostGridItem } from '../../components/ProfilePostGridItem';
@@ -41,8 +40,7 @@ interface UserProfile {
 export default function OtherUserProfileScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user: currentUser, profile: currentProfile, updateProfile } = useAuth();
   const { width: windowWidth } = useWindowDimensions();

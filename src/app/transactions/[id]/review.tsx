@@ -12,7 +12,6 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { ReviewService } from '../../../lib/review-service';
 import { UserReviewService } from '../../../lib/user-review-service';
-import { useAppTheme } from '../../../context/ThemeContext';
 import { Avatar } from '../../../components/Avatar';
 
 interface TxInfo {
@@ -25,8 +24,7 @@ interface TxInfo {
 export default function ReviewScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const { id } = useLocalSearchParams<{ id: string }>();
+    const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -106,7 +104,7 @@ export default function ReviewScreen() {
 
   return (
     <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]}>
-      <View style={[stylesheet.header, { backgroundColor: theme.colors.SURFACE, borderBottomColor: colors.border }]}>
+      <View style={[stylesheet.header, { backgroundColor: theme.colors.SURFACE, borderBottomColor: theme.colors.GLASS_BORDER }]}>
         <TouchableOpacity onPress={() => router.back()} style={stylesheet.backBtn}>
           <Feather name="x" size={24} color={theme.colors.TEXT_PRIMARY} />
         </TouchableOpacity>
@@ -151,7 +149,7 @@ export default function ReviewScreen() {
                 {[1,2,3,4,5].map(s => {
                 return (
                                   <TouchableOpacity key={s} onPress={() => setRating(s)} activeOpacity={0.7}>
-                                    <Feather name={s <= rating ? 'star' : 'star'} size={44} color={s <= rating ? '#FFC107' : colors.border} />
+                                    <Feather name={s <= rating ? 'star' : 'star'} size={44} color={s <= rating ? '#FFC107' : theme.colors.GLASS_BORDER} />
                                   </TouchableOpacity>
                                 );
                 })}
@@ -162,7 +160,7 @@ export default function ReviewScreen() {
             <View style={stylesheet.section}>
               <Text style={[stylesheet.sectionLabel, { color: theme.colors.MUTED }]}>YOUR REVIEW (OPTIONAL)</Text>
               <TextInput
-                style={[stylesheet.textArea, { backgroundColor: theme.colors.SURFACE, borderColor: colors.border, color: theme.colors.TEXT_PRIMARY }]}
+                style={[stylesheet.textArea, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER, color: theme.colors.TEXT_PRIMARY }]}
                 value={comment}
                 onChangeText={setComment}
                 placeholder="Share your experience with this seller..."

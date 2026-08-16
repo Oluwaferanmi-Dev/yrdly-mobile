@@ -21,7 +21,6 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { Post, User } from '../../types';
 import { formatPrice, timeAgo } from '../../lib/utils';
-import { useAppTheme } from '../../context/ThemeContext';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
 import { Avatar } from '../../components/Avatar';
 const { width } = Dimensions.get('window');
@@ -65,8 +64,7 @@ const MarketVideo = React.memo(({ url, shouldPlay }: { url: string, shouldPlay: 
 function MarketplaceDetailContent() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user, profile, updateProfile } = useAuth();
   const isFocused = useIsFocused();

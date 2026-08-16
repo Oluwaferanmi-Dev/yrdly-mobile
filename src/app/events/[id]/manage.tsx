@@ -7,7 +7,6 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../../context/ThemeContext';
 import type { Event, Ticket } from '../../../types/events';
 
 const formatDateTime = (value: string | null) => value
@@ -20,8 +19,7 @@ export default function ManageEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const { colors } = useAppTheme();
-  const [event, setEvent] = useState<Event | null>(null);
+    const [event, setEvent] = useState<Event | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -143,9 +141,9 @@ export default function ManageEventScreen() {
             </View>
           </View>
           <View style={stylesheet.metricsRow}>
-            <Metric label="Sold" value={String(metrics.sold)} colors={colors} />
-            <Metric label="Revenue" value={`₦${metrics.revenue.toLocaleString()}`} colors={colors} />
-            <Metric label="Scanned" value={String(metrics.checkedIn)} colors={colors} />
+            <Metric label="Sold" value={String(metrics.sold)} />
+            <Metric label="Revenue" value={`₦${metrics.revenue.toLocaleString()}`} />
+            <Metric label="Scanned" value={String(metrics.checkedIn)} />
           </View>
           <TouchableOpacity style={[stylesheet.scanButton, { backgroundColor: theme.colors.G }]} onPress={() => router.push(`/events/${id}/scan` as any)}>
             <Ionicons name="qr-code" size={22} color="#000" /><Text style={stylesheet.scanButtonText}>Scan Attendee Tickets</Text>
@@ -158,7 +156,7 @@ export default function ManageEventScreen() {
   );
 }
 
-function Metric({ label, value, colors }: { label: string; value: string; colors: any }) {
+function Metric({ label, value }: { label: string; value: string;}) {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
   return <View style={[stylesheet.metric, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}><Text style={[stylesheet.metricValue, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>{value}</Text><Text style={[stylesheet.metricLabel, { color: theme.colors.MUTED }]}>{label}</Text></View>;

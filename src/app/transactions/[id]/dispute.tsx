@@ -11,7 +11,6 @@ import { Image } from 'expo-image';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { DisputeService } from '../../../lib/dispute-service';
-import { useAppTheme } from '../../../context/ThemeContext';
 
 
 
@@ -27,8 +26,7 @@ const DISPUTE_REASONS = [
 export default function DisputeScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const { id } = useLocalSearchParams<{ id: string }>();
+    const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
 

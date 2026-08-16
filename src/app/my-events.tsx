@@ -9,15 +9,13 @@ import { Image } from 'expo-image';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../hooks/use-supabase-auth';
-import { useAppTheme } from '../context/ThemeContext';
 import { getOrganizerEvents } from '../lib/event-service';
 import type { Event } from '../types/events';
 
 export default function MyEventsScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { user } = useAuth();
 
   const [events, setEvents] = useState<Event[]>([]);
@@ -64,7 +62,7 @@ export default function MyEventsScreen() {
           {imageUrl ? (
             <Image source={{ uri: imageUrl }} style={stylesheet.eventImage} contentFit="cover" />
           ) : (
-            <View style={[stylesheet.eventImage, { backgroundColor: colors.border }]} />
+            <View style={[stylesheet.eventImage, { backgroundColor: theme.colors.GLASS_BORDER }]} />
           )}
           <View style={stylesheet.statusBadge}>
             <Text style={stylesheet.statusText}>{item.status}</Text>
@@ -83,19 +81,19 @@ export default function MyEventsScreen() {
             </Text>
           </View>
 
-          <View style={[stylesheet.statsContainer, { backgroundColor: theme.colors.DARK, borderColor: colors.border }]}>
+          <View style={[stylesheet.statsContainer, { backgroundColor: theme.colors.DARK, borderColor: theme.colors.GLASS_BORDER }]}>
             <View style={stylesheet.statBox}>
               <Text style={[stylesheet.statValue, { color: theme.colors.TEXT_PRIMARY }]}>{totalSold}</Text>
               <Text style={[stylesheet.statLabel, { color: theme.colors.MUTED }]}>Sold</Text>
             </View>
-            <View style={[stylesheet.statDivider, { backgroundColor: colors.border }]} />
+            <View style={[stylesheet.statDivider, { backgroundColor: theme.colors.GLASS_BORDER }]} />
             <View style={stylesheet.statBox}>
               <Text style={[stylesheet.statValue, { color: theme.colors.TEXT_PRIMARY }]}>
                 ₦{totalRevenue.toLocaleString()}
               </Text>
               <Text style={[stylesheet.statLabel, { color: theme.colors.MUTED }]}>Revenue</Text>
             </View>
-            <View style={[stylesheet.statDivider, { backgroundColor: colors.border }]} />
+            <View style={[stylesheet.statDivider, { backgroundColor: theme.colors.GLASS_BORDER }]} />
             <View style={stylesheet.statBox}>
               <Text style={[stylesheet.statValue, { color: theme.colors.TEXT_PRIMARY }]}>{item.attendee_count || 0}</Text>
               <Text style={[stylesheet.statLabel, { color: theme.colors.MUTED }]}>Attendees</Text>
@@ -139,7 +137,7 @@ export default function MyEventsScreen() {
         ListEmptyComponent={
           !loading ? (
             <View style={stylesheet.emptyState}>
-              <Feather name="calendar" size={48} color={colors.border} />
+              <Feather name="calendar" size={48} color={theme.colors.GLASS_BORDER} />
               <Text style={[stylesheet.emptyStateTitle, { color: theme.colors.TEXT_PRIMARY }]}>No Events Yet</Text>
               <Text style={[stylesheet.emptyStateDesc, { color: theme.colors.LABEL }]}>
                 You haven't organized any events yet.

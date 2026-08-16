@@ -15,7 +15,6 @@ import { useAuth } from '../../../hooks/use-supabase-auth';
 import { usePosts } from '../../../hooks/use-posts';
 import { StorageService } from '../../../lib/storage-service';
 import { parseSafePrice } from '../../../lib/utils';
-import { useAppTheme } from '../../../context/ThemeContext';
 import { Post } from '../../../types';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { useCategories } from '../../../hooks/use-categories';
@@ -27,8 +26,7 @@ const CONDITIONS = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
 export default function EditMarketplaceItemScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const insets = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();

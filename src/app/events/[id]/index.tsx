@@ -25,7 +25,6 @@ import { getEventById } from '../../../lib/event-service';
 import { api } from '../../../lib/api';
 import { formatPrice } from '../../../lib/utils';
 import { AttendeeAvatars } from '../../../components/AttendeeAvatars';
-import { useAppTheme } from '../../../context/ThemeContext';
 import { VerifiedBadge } from '../../../components/VerifiedBadge';
 
 const DARK_STYLE = [
@@ -65,8 +64,7 @@ const SkeletonCard = ({ height = 20, width = '100%', style }: any) => {
 export default function EventDetailScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user, profile } = useAuth();
 

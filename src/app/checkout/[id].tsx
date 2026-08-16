@@ -14,7 +14,6 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../hooks/use-supabase-auth';
 import { api } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
@@ -39,8 +38,7 @@ type Stage = 'loading' | 'summary' | 'paying' | 'error';
 export default function CheckoutScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { id, type = 'marketplace_post' } = useLocalSearchParams<{ id: string, type?: string }>();
   const { user, profile } = useAuth();
 

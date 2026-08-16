@@ -8,7 +8,6 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/use-supabase-auth';
-import { useAppTheme } from '../../context/ThemeContext';
 import * as Haptics from 'expo-haptics';
 
 const { width } = Dimensions.get('window');
@@ -16,8 +15,7 @@ const { width } = Dimensions.get('window');
 export default function TicketScannerScreen() {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
-  const { colors } = useAppTheme();
-  const router = useRouter();
+    const router = useRouter();
   const { user } = useAuth();
   const params = useLocalSearchParams<{ eventId?: string }>();
   const eventId = params.eventId;
