@@ -58,7 +58,7 @@ export default function InviteScreen() {
 
         {/* Primary Share Action */}
         <TouchableOpacity style={stylesheet.shareBtn} onPress={handleShare} activeOpacity={0.85}>
-          <Ionicons name="share-social-outline" size={20} color={theme.colors.DARK} />
+          <Ionicons name="share-social-outline" size={20} color="#000" />
           <Text style={stylesheet.shareBtnText}>Share Invite Link</Text>
         </TouchableOpacity>
       </View>
@@ -152,6 +152,6 @@ const _stylesheet = createStyleSheet(theme => ({
       shareBtnText: {
         fontFamily: 'Outfit-Bold',
         fontSize: 16,
-        color: theme.colors.DARK,
+        color: '#000',
       },
     }));

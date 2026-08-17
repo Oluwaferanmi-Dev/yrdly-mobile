@@ -181,9 +181,9 @@ export default function VerifyPhoneOtpScreen() {
           activeOpacity={0.85}
         >
           {loading ? (
-            <ActivityIndicator color={theme.colors.DARK} />
+            <ActivityIndicator color="#000" />
           ) : (
-            <Text style={[stylesheet.verifyBtnText, { color: theme.colors.DARK }]}>Verify</Text>
+            <Text style={[stylesheet.verifyBtnText, { color: '#000' }]}>Verify</Text>
           )}
         </TouchableOpacity>
 

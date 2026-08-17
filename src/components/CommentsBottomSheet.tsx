@@ -266,11 +266,11 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
               <View style={{ overflow: 'hidden' }}>
                 {isLiquidGlassSupported ? (
                   <LiquidGlassView
-                    {...({ intensity: 80, tint: theme.colors.DARK === '#000000' ? 'dark' : 'light', fallbackColor: theme.colors.DARK === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
+                    {...({ intensity: 80, tint: theme.colors.DARK === '#050505' ? 'dark' : 'light', fallbackColor: theme.colors.DARK === '#050505' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
                     style={StyleSheet.absoluteFill}
                   />
                 ) : (
-                  <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.DARK === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' }]} />
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.DARK === '#050505' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' }]} />
                 )}
                 <CommentInput
                   ref={inputRef}
@@ -302,7 +302,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       keyboardBlurBehavior="restore"
     >
       <LiquidGlassView
-        {...({ intensity: 80, tint: theme.colors.DARK === '#000000' ? 'dark' : 'light', fallbackColor: theme.colors.DARK === '#000000' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
+        {...({ intensity: 80, tint: theme.colors.DARK === '#050505' ? 'dark' : 'light', fallbackColor: theme.colors.DARK === '#050505' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)' } as any)}
       >
         <View style={stylesheet.header}>
           <Text style={[stylesheet.headerTitle, { color: theme.colors.TEXT_PRIMARY }]}>Comments</Text>

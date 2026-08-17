@@ -5,6 +5,7 @@ import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { Post } from '../types';
 import { StorageService } from '../lib/storage-service';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useStyles, createStyleSheet } from 'react-native-unistyles';
 
 interface ProfilePostGridItemProps {
   post: Post;
@@ -15,6 +16,7 @@ interface ProfilePostGridItemProps {
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridItemProps) {
+  const { styles, theme } = useStyles(sStylesheet);
   
   const hasImages = post.image_urls && post.image_urls.length > 0;
   const imageUrl = hasImages ? post.image_urls![0] : post.image_url || post.video_thumbnail_url;
@@ -85,7 +87,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
   );
 }
 
-const styles = StyleSheet.create({
+const sStylesheet = createStyleSheet(theme => ({
   container: {
     borderRadius: 16,
     overflow: 'hidden',
@@ -102,12 +104,12 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 8,
+    gap: 4
   },
   textSnippet: {
     fontSize: 12,
     textAlign: 'center',
-    color: '#FFFFFF'
+    color: theme.colors.TEXT_PRIMARY
   },
   iconOverlay: {
     position: 'absolute',
@@ -131,4 +133,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   }
-});
+}));

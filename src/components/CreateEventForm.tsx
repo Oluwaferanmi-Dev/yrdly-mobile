@@ -416,7 +416,7 @@ const sStylesheet = createStyleSheet(theme => ({
       pillTxt: { fontSize: 11, fontWeight: '800' },
       fieldLabel: { fontSize: 14, fontWeight: '700' },
       hint: { fontSize: 12 },
-      menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: theme.colors.DARK, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
+      menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
       menuItem: { paddingVertical: 10, paddingHorizontal: 16 },
       req: { color: '#ef4444', fontWeight: '700' },
       charCount: { fontSize: 11, textAlign: 'right', marginTop: 6 },

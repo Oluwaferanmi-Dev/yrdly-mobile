@@ -276,7 +276,7 @@ export default function CatalogItemScreen() {
         <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 18, fontWeight: '600', fontFamily: 'Outfit', marginBottom: 8 }}>Item not found</Text>
         <Text style={{ color: theme.colors.MUTED, fontSize: 14, fontFamily: 'Inter', textAlign: 'center', marginBottom: 24 }}>The item you&apos;re looking for doesn&apos;t exist or has been removed.</Text>
         <TouchableOpacity style={{ backgroundColor: theme.colors.G, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 25 }} onPress={() => router.back()}>
-          <Text style={{ color: theme.colors.DARK, fontWeight: '700' }}>Go Back</Text>
+          <Text style={{ color: '#000', fontWeight: '700' }}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -459,7 +459,7 @@ export default function CatalogItemScreen() {
                   disabled={!item.in_stock}
                 >
                   <Ionicons name="bag-handle-outline" size={20} color="#000000" style={{ marginRight: 8 }} />
-                  <Text style={[sStylesheet.primaryBtnTxt, { color: theme.colors.DARK, fontFamily: 'Outfit' }]}>{item.in_stock ? 'Buy Now' : 'Out of Stock'}</Text>
+                  <Text style={[sStylesheet.primaryBtnTxt, { color: '#000', fontFamily: 'Outfit' }]}>{item.in_stock ? 'Buy Now' : 'Out of Stock'}</Text>
                 </TouchableOpacity>
               )}
 

@@ -148,7 +148,7 @@ const _stylesheet = createStyleSheet(theme => ({
       primaryBtnText: {
         fontFamily: 'Outfit-Bold',
         fontSize: 16,
-        color: theme.colors.DARK,
+        color: '#000',
       },
       secondaryBtn: {
         width: '100%',

@@ -231,7 +231,7 @@ export default function EditMarketplaceItemScreen() {
           {isSubmitting
             ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <ActivityIndicator size="small" color={theme.colors.DARK} />
+                    <ActivityIndicator size="small" color="#000" />
                     {uploadProgress > 0 && <Text style={[stylesheet.saveBtnTxt, { fontSize: 11 }]}>{Math.round(uploadProgress * 100)}%</Text>}
                 </View>
             )
@@ -476,9 +476,9 @@ export default function EditMarketplaceItemScreen() {
             disabled={isSubmitting || !isReady}
           >
             {isSubmitting
-              ? <ActivityIndicator size="small" color={theme.colors.DARK} />
+              ? <ActivityIndicator size="small" color="#000" />
               : <>
-                  <Feather name="check" size={18} color={theme.colors.DARK} />
+                  <Feather name="check" size={18} color="#000" />
                   <Text style={stylesheet.saveBottomTxt}>Save Changes</Text>
                 </>
             }
@@ -509,7 +509,7 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingHorizontal: 18, paddingVertical: 9,
         borderRadius: 14, backgroundColor: theme.colors.G,
       },
-      saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
+      saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#000' },
 
       scrollContent: { padding: 20, paddingBottom: 60, zIndex: 1 },
 
@@ -574,5 +574,5 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: theme.colors.G, borderRadius: 18,
         paddingVertical: 16, marginBottom: 8,
       },
-      saveBottomTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      saveBottomTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#000' },
     }));

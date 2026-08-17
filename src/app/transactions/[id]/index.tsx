@@ -440,7 +440,7 @@ export default function TransactionDetailScreen() {
               <View key={step.status} style={stylesheet.timelineRow}>
                 <View style={stylesheet.timelineLeft}>
                   <View style={[stylesheet.timelineDot, { borderColor: theme.colors.GLASS_BORDER, backgroundColor: theme.colors.SURFACE }, done && [stylesheet.timelineDotDone, { backgroundColor: theme.colors.G, borderColor: theme.colors.G }]]}>
-                    {done && <Feather name="check" size={12} color={theme.colors.DARK} />}
+                    {done && <Feather name="check" size={12} color="#000" />}
                   </View>
                   {i < TIMELINE_STEPS.length - 1 && (
                     <View style={[stylesheet.timelineLine, { backgroundColor: theme.colors.GLASS_BORDER }, done && [stylesheet.timelineLineDone, { backgroundColor: theme.colors.G }]]} />
@@ -480,11 +480,11 @@ export default function TransactionDetailScreen() {
             activeOpacity={0.85}
           >
             {actionLoading ? (
-              <ActivityIndicator color={theme.colors.DARK} />
+              <ActivityIndicator color="#000" />
             ) : (
               <>
-                <Feather name="box" size={20} color={theme.colors.DARK} style={{ marginRight: 8 }} />
-                <Text style={[stylesheet.primaryActionText, { color: theme.colors.DARK }]}>Mark Item as Sent</Text>
+                <Feather name="box" size={20} color="#000" style={{ marginRight: 8 }} />
+                <Text style={[stylesheet.primaryActionText, { color: '#000' }]}>Mark Item as Sent</Text>
               </>
             )}
           </TouchableOpacity>
@@ -498,11 +498,11 @@ export default function TransactionDetailScreen() {
             activeOpacity={0.85}
           >
             {actionLoading ? (
-              <ActivityIndicator color={theme.colors.DARK} />
+              <ActivityIndicator color="#000" />
             ) : (
               <>
-                <Feather name="check-circle" size={20} color={theme.colors.DARK} style={{ marginRight: 8 }} />
-                <Text style={[stylesheet.primaryActionText, { color: theme.colors.DARK }]}>Confirm I Received the Item</Text>
+                <Feather name="check-circle" size={20} color="#000" style={{ marginRight: 8 }} />
+                <Text style={[stylesheet.primaryActionText, { color: '#000' }]}>Confirm I Received the Item</Text>
               </>
             )}
           </TouchableOpacity>

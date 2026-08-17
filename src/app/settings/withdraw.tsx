@@ -125,7 +125,7 @@ export default function WithdrawScreen() {
 
         <View style={s.footerBtnWrap}>
           <TouchableOpacity style={s.footerBtn} onPress={handleWithdraw} disabled={confirming}>
-            {confirming ? <ActivityIndicator color={theme.colors.DARK} /> : <Text style={s.footerBtnTxt}>Confirm — Withdraw ₦{numAmount.toLocaleString()}</Text>}
+            {confirming ? <ActivityIndicator color="#000" /> : <Text style={s.footerBtnTxt}>Confirm — Withdraw ₦{numAmount.toLocaleString()}</Text>}
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -261,7 +261,7 @@ const sStylesheet = createStyleSheet(theme => ({
 
       footerBtnWrap: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 34, borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER },
       footerBtn: { width: '100%', paddingVertical: 16, borderRadius: 18, backgroundColor: theme.colors.G, alignItems: 'center' },
-      footerBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      footerBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#000' },
 
       confirmRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: theme.colors.SURFACE_ALT, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },
       confirmRowL: { fontFamily: 'Inter', fontSize: 13, color: theme.colors.LABEL },

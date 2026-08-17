@@ -259,7 +259,7 @@ const sStylesheet = createStyleSheet(theme => ({
       verifiedTxt: { fontFamily: 'Outfit-Bold', fontSize: 10, color: theme.colors.G },
 
       withdrawBtn: { width: '100%', paddingVertical: 14, borderRadius: 16, backgroundColor: theme.colors.G, alignItems: 'center', justifyContent: 'center' },
-      withdrawBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      withdrawBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#000' },
 
       historyHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 32, marginBottom: 12 },
       historyTitle: { fontFamily: 'Inter-Bold', fontSize: 11, color: theme.colors.LABEL, letterSpacing: 1 },

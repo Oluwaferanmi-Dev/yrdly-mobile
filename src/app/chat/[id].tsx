@@ -414,9 +414,10 @@ function ChatContent() {
       const image = await ImagePicker.openPicker(options);
 
       if (image) {
+        const selected = image as any;
         uploadAndSendMedia({
-          uri: image.path,
-          type: image.mime || (image.path.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg')
+          uri: selected.path,
+          type: selected.mime || (selected.path.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg')
         });
       }
     } catch (e: any) {
@@ -912,8 +913,8 @@ function ChatContent() {
             disabled={!inputText.trim() || sending}
           >
             {sending
-              ? <ActivityIndicator size="small" color={inputText.trim() ? theme.colors.DARK : theme.colors.MUTED} />
-              : <Feather name="send" size={16} color={inputText.trim() ? theme.colors.DARK : theme.colors.MUTED} style={{ marginLeft: -2, marginTop: 2 }} />
+              ? <ActivityIndicator size="small" color={inputText.trim() ? '#000' : theme.colors.MUTED} />
+              : <Feather name="send" size={16} color={inputText.trim() ? '#000' : theme.colors.MUTED} style={{ marginLeft: -2, marginTop: 2 }} />
             }
           </TouchableOpacity>
         </View>

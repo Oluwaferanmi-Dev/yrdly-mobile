@@ -220,7 +220,7 @@ export default function DisputeScreen() {
           disabled={!selectedReason || submitting}
         >
           {submitting
-            ? <ActivityIndicator size="small" color={theme.colors.DARK} />
+            ? <ActivityIndicator size="small" color="#000" />
             : <Text style={stylesheet.submitBtnText}>Open Dispute</Text>
           }
         </TouchableOpacity>

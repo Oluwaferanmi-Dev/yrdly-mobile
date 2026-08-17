@@ -90,5 +90,5 @@ const sStylesheet = createStyleSheet(theme => ({
       rowR: { fontFamily: 'Inter-SemiBold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
 
       doneBtn: { width: '100%', paddingVertical: 16, borderRadius: 16, backgroundColor: theme.colors.G, alignItems: 'center' },
-      doneBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 15, color: theme.colors.DARK },
+      doneBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#000' },
     }));

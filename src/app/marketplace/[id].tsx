@@ -603,7 +603,7 @@ function MarketplaceDetailContent() {
               disabled={post.is_sold}
               onPress={() => router.push({ pathname: '/checkout/[id]', params: { id: post.id, type: 'marketplace' } })}
               style={{ flex: 1, height: 52, borderRadius: 16, backgroundColor: post.is_sold ? theme.colors.SURFACE : theme.colors.G, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: post.is_sold ? theme.colors.LABEL : theme.colors.DARK, fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16 }}>{post.is_sold ? 'Item Sold' : 'Buy Now'}</Text>
+              <Text style={{ color: post.is_sold ? theme.colors.LABEL : '#000', fontFamily: 'Outfit-Bold', fontWeight: '700', fontSize: 16 }}>{post.is_sold ? 'Item Sold' : 'Buy Now'}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={handleMessageSeller}

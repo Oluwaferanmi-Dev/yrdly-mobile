@@ -213,11 +213,11 @@ export function SocialRow({ onGooglePress, onApplePress }: { onGooglePress?: () 
   return (
     <View style={styles.socialRow}>
       <TouchableOpacity activeOpacity={0.8} onPress={onGooglePress} style={styles.socialBtn}>
-        <Ionicons name="logo-google" size={18} color={theme.colors.TEXT_PRIMARY} style={{ marginRight: 6 }} />
+        <Ionicons name="logo-google" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
         <Text style={styles.socialBtnText}>Google</Text>
       </TouchableOpacity>
       <TouchableOpacity activeOpacity={0.8} onPress={onApplePress} style={styles.socialBtn}>
-        <Ionicons name="logo-apple" size={18} color={theme.colors.TEXT_PRIMARY} style={{ marginRight: 6 }} />
+        <Ionicons name="logo-apple" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
         <Text style={styles.socialBtnText}>Apple</Text>
       </TouchableOpacity>
     </View>

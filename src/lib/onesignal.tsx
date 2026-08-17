@@ -64,7 +64,7 @@ export function OneSignalVerificationDialog() {
     };
 
     // Check immediate state
-    const currentId = OneSignal.User.pushSubscription.id;
+    const currentId = (OneSignal.User.pushSubscription as any).id;
     checkSubscription(currentId);
 
     // Check on change

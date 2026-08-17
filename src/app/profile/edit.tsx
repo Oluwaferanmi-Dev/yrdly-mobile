@@ -283,7 +283,7 @@ const sStylesheet = createStyleSheet(theme => ({
       backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
       headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.TEXT_PRIMARY },
       saveBtn: { height: 36, paddingHorizontal: 18, borderRadius: 18, backgroundColor: theme.colors.G, alignItems: 'center', justifyContent: 'center' },
-      saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
+      saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#000' },
 
       avatarSection: { alignItems: 'center', paddingTop: 12, paddingBottom: 28, borderBottomWidth: 1, borderBottomColor: theme.colors.GLASS_BORDER },
       avatarWrap: { position: 'relative', marginBottom: 12 },
@@ -317,5 +317,5 @@ const sStylesheet = createStyleSheet(theme => ({
       verifiedHint: { fontFamily: 'Inter', fontSize: 12, color: theme.colors.LABEL, marginTop: 4, paddingLeft: 4, lineHeight: 18 },
 
       footerBtn: { width: '100%', height: 56, borderRadius: 18, backgroundColor: theme.colors.G, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-      footerBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      footerBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#000' },
     }));

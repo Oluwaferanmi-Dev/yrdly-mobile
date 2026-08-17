@@ -168,7 +168,7 @@ export default function BusinessProfileScreen() {
         <Text style={{ color: theme.colors.TEXT_PRIMARY, fontSize: 20, fontWeight: '700', marginBottom: 8, textAlign: 'center' }}>Business No Longer Active</Text>
         <Text style={{ color: theme.colors.MUTED, fontSize: 15, textAlign: 'center', lineHeight: 22 }}>This business has been deactivated by the owner and is no longer available.</Text>
         <TouchableOpacity style={{ marginTop: 28, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24, backgroundColor: theme.colors.G }} onPress={() => router.back()}>
-          <Text style={{ color: theme.colors.DARK, fontWeight: '700', fontSize: 15 }}>Go Back</Text>
+          <Text style={{ color: '#000', fontWeight: '700', fontSize: 15 }}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );

@@ -416,12 +416,12 @@ export default function CreateForSaleScreen() {
                   style={[stylesheet.photoBox, i === coverIndex && { borderWidth: 2, borderColor: theme.colors.G }]}
                 >
                   <Image source={{ uri: file.uri }} style={stylesheet.photoImg} />
-                  {file.type?.startsWith('video/') && !posting && (
+                  {file.type?.startsWith('video/') && !listing && (
                     <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)'}}>
                       <Ionicons name="play-circle" size={32} color={theme.colors.TEXT_PRIMARY} />
                     </View>
                   )}
-                  {posting && (
+                  {listing && (
                     <View style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12}}>
                       <ActivityIndicator size="small" color={theme.colors.TEXT_PRIMARY} />
                     </View>
@@ -431,7 +431,7 @@ export default function CreateForSaleScreen() {
                       <Text style={stylesheet.coverBadgeText}>COVER</Text>
                     </View>
                   )}
-                  {!posting && (
+                  {!listing && (
                     <TouchableOpacity 
                       style={stylesheet.removePhoto}
                       onPress={() => {
@@ -678,7 +678,7 @@ export default function CreateForSaleScreen() {
         >
           {listing ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <ActivityIndicator size="small" color={theme.colors.DARK} />
+              <ActivityIndicator size="small" color="#000" />
               {uploadProgress > 0 && <Text style={[stylesheet.btnPrimaryText, { fontSize: 12 }]}>{Math.round(uploadProgress * 100)}%</Text>}
             </View>
           ) : (
@@ -756,7 +756,7 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 6,
         backgroundColor: theme.colors.G,
       },
-      coverBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 9, color: theme.colors.DARK },
+      coverBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 9, color: '#000' },
       removePhoto: {
         position: 'absolute',
         top: 6,
@@ -929,7 +929,7 @@ const _stylesheet = createStyleSheet(theme => ({
         justifyContent: 'center',
       },
       btnDisabled: { opacity: 0.4 },
-      btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#000' },
       btnText: { fontFamily: 'Inter-Medium', fontSize: 14, color: theme.colors.LABEL, textAlign: 'center', marginTop: 12 },
       successContainer: {
         flex: 1,

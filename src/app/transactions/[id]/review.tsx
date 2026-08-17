@@ -178,7 +178,7 @@ export default function ReviewScreen() {
               onPress={handleSubmit}
               disabled={rating === 0 || submitting}
             >
-              {submitting ? <ActivityIndicator size="small" color={theme.colors.DARK} /> : <Text style={stylesheet.submitText}>Submit Review</Text>}
+              {submitting ? <ActivityIndicator size="small" color="#000" /> : <Text style={stylesheet.submitText}>Submit Review</Text>}
             </TouchableOpacity>
           </>
         )}
@@ -195,7 +195,7 @@ const _stylesheet = createStyleSheet(theme => ({
       backBtn: { width: 40, justifyContent: 'center', alignItems: 'flex-start' },
       headerTitle: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold' },
       scroll: { padding: 16 },
-      card: { flexDirection: 'row', borderRadius: 14, padding: 14, marginBottom: 20, gap: 14, shadowColor: theme.colors.DARK, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+      card: { flexDirection: 'row', borderRadius: 14, padding: 14, marginBottom: 20, gap: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
       itemImage: { width: 72, height: 72, borderRadius: 10 },
       imgPlaceholder: { justifyContent: 'center', alignItems: 'center' },
       cardInfo: { flex: 1, justifyContent: 'center', gap: 8 },
@@ -213,7 +213,7 @@ const _stylesheet = createStyleSheet(theme => ({
       charCount: { fontSize: 11, textAlign: 'right', marginTop: 4 },
       submitBtn: { borderRadius: 14, paddingVertical: 16, alignItems: 'center' },
       submitBtnDisabled: { backgroundColor: '#BDBDBD' },
-      submitText: { color: theme.colors.DARK, fontSize: 16, fontWeight: 'bold' },
+      submitText: { color: '#000', fontSize: 16, fontWeight: 'bold' },
       alreadyBox: { alignItems: 'center', paddingTop: 48, gap: 12 },
       alreadyTitle: { fontSize: 22, fontWeight: 'bold' },
       alreadySub: { fontSize: 15, textAlign: 'center' },

@@ -563,7 +563,7 @@ export default function EventDetailScreen() {
                 activeOpacity={0.8}
               >
                 <Feather name="navigation" size={18} color="#000" style={{ marginRight: 8 }} />
-                <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 14, color: theme.colors.DARK }}>Get Directions</Text>
+                <Text style={{ fontFamily: 'Outfit', fontWeight: '800', fontSize: 14, color: '#000' }}>Get Directions</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -1004,7 +1004,7 @@ const _stylesheet = createStyleSheet(theme => ({
       followBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginLeft: 12 },
       followBtnText: { fontWeight: 'bold', fontSize: 14 },
       
-      mapMarker: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', shadowColor: theme.colors.DARK, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3, elevation: 5 },
+      mapMarker: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3, elevation: 5 },
       
       tierCard: { 
         flexDirection: 'row', alignItems: 'center', 

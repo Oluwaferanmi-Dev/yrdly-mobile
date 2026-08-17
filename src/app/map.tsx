@@ -77,7 +77,7 @@ function getDistanceStr(lat1: number, lon1: number, lat2: number, lon2: number) 
 }
 
 const FriendMarker = React.memo(function FriendMarker({ avatar_url }: { avatar_url?: string }) {
-  const { styles: ms } = useStyles(msStylesheet);
+  const { styles: ms, theme } = useStyles(msStylesheet);
   return (
     <View style={ms.fMarker}>
       <View style={ms.fRing}>
@@ -492,7 +492,7 @@ const sStylesheet = createStyleSheet(theme => ({
       previewTitle: { color:theme.colors.TEXT_PRIMARY, fontSize:16, fontFamily: 'Outfit-Bold', marginBottom:3 },
       previewSub: { color:theme.colors.LABEL, fontSize:12, fontFamily: 'Inter-Regular' },
       previewActionBtn: { marginTop:16, width:'100%', paddingVertical:13, borderRadius:14, backgroundColor:theme.colors.G, alignItems:'center' },
-      previewActionTxt: { color:theme.colors.DARK, fontSize:15, fontFamily: 'Outfit-ExtraBold' }
+      previewActionTxt: { color: "#000", fontSize:15, fontFamily: 'Outfit-ExtraBold' }
     }));
 
 const msStylesheet = createStyleSheet(theme => ({

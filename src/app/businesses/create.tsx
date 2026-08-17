@@ -219,7 +219,7 @@ export default function BusinessEditScreen() {
             <Text style={sStylesheet.headerTitle}>{id ? 'Edit Business' : 'Create Business'}</Text>
           </View>
           <TouchableOpacity onPress={handleSave} style={sStylesheet.saveBtn} disabled={loading}>
-            {loading ? <ActivityIndicator size="small" color={theme.colors.DARK} /> : (
+            {loading ? <ActivityIndicator size="small" color="#000" /> : (
               <Text style={sStylesheet.saveBtnTxt}>{saved ? '✓ Saved' : (id ? 'Save' : 'Create')}</Text>
             )}
           </TouchableOpacity>
@@ -338,8 +338,8 @@ export default function BusinessEditScreen() {
                       borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER 
                     }]}
                   >
-                    <Ionicons name={c.icon as any} size={18} color={active ? theme.colors.DARK : theme.colors.MUTED} style={{ marginRight: 6 }} />
-                    <Text style={[sStylesheet.catTxt, { color: active ? theme.colors.DARK : theme.colors.MUTED, fontFamily: active ? 'Inter-SemiBold' : 'Inter' }]}>{c.name}</Text>
+                    <Ionicons name={c.icon as any} size={18} color={active ? '#000' : theme.colors.MUTED} style={{ marginRight: 6 }} />
+                    <Text style={[sStylesheet.catTxt, { color: active ? '#000' : theme.colors.MUTED, fontFamily: active ? 'Inter-SemiBold' : 'Inter' }]}>{c.name}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -371,7 +371,7 @@ const stylesheet = createStyleSheet(theme => ({
       backBtn: { width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.SURFACE, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
       headerTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
       saveBtn: { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 12, backgroundColor: theme.colors.G },
-      saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
+      saveBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#000' },
       
       contentPad: { paddingHorizontal: 20, paddingVertical: 20, gap: 24 },
       coverContainer: { position: 'relative', height: 140, borderRadius: 20, overflow: 'hidden', backgroundColor: theme.colors.SURFACE_ALT, borderWidth: 1, borderColor: theme.colors.GLASS_BORDER },

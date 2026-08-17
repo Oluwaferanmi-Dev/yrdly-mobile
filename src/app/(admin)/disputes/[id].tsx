@@ -403,5 +403,5 @@ const stylesheet = createStyleSheet(theme => ({
         alignItems: 'center', justifyContent: 'center',
         marginTop: 8,
       },
-      resolveBtnText: { fontSize: 15, fontWeight: '700', color: theme.colors.DARK },
+      resolveBtnText: { fontSize: 15, fontWeight: '700', color: '#000' },
     }));

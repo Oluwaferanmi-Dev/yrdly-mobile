@@ -274,7 +274,7 @@ export default function OtherUserProfileScreen() {
               }
             }}
           >
-            <Text style={{ color: theme.colors.DARK, fontFamily: 'Inter-SemiBold', fontSize: 14 }}>Unblock</Text>
+            <Text style={{ color: '#000', fontFamily: 'Inter-SemiBold', fontSize: 14 }}>Unblock</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -386,11 +386,11 @@ export default function OtherUserProfileScreen() {
                 disabled={followLoading}
               >
                 {followLoading ? (
-                  <ActivityIndicator size="small" color={isFollowing ? theme.colors.TEXT_PRIMARY : theme.colors.DARK} />
+                  <ActivityIndicator size="small" color={isFollowing ? theme.colors.TEXT_PRIMARY : '#000'} />
                 ) : (
                   <>
                     {isFollowing && <Ionicons name="checkmark" size={16} color={theme.colors.TEXT_PRIMARY} style={{ marginRight: 6 }} />}
-                    <Text style={[stylesheet.btnActionTxt, { color: isFollowing ? theme.colors.TEXT_PRIMARY : theme.colors.DARK }]}>
+                    <Text style={[stylesheet.btnActionTxt, { color: isFollowing ? theme.colors.TEXT_PRIMARY : '#000' }]}>
                       {isFollowing ? 'Following' : isFollower ? 'Follow Back' : 'Follow'}
                     </Text>
                   </>
@@ -506,7 +506,7 @@ const _stylesheet = createStyleSheet(theme => ({
       avatarWrap: { position: 'relative' },
       avatarImg: { width: 80, height: 80, borderRadius: 40, borderWidth: 2.5, borderColor: theme.colors.GLASS_BORDER },
       avatarFallback: { backgroundColor: theme.colors.G, alignItems: 'center', justifyContent: 'center' },
-      avatarFallbackTxt: { fontSize: 32, fontFamily: 'Outfit-Bold', color: theme.colors.DARK },
+      avatarFallbackTxt: { fontSize: 32, fontFamily: 'Outfit-Bold', color: '#000' },
       onlineDot: { position: 'absolute', bottom: 3, right: 3, width: 14, height: 14, borderRadius: 7, backgroundColor: theme.colors.G, borderWidth: 2, borderColor: theme.colors.DARK },
       heroInfo: { flex: 1, justifyContent: 'center' },
       nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },

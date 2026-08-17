@@ -200,5 +200,5 @@ const _stylesheet = createStyleSheet(theme => ({
       clearBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: theme.colors.SURFACE, alignItems: 'center' },
       clearBtnTxt: { color: theme.colors.TEXT_PRIMARY, fontWeight: '600', fontSize: 15 },
       saveBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: theme.colors.G, alignItems: 'center' },
-      saveBtnTxt: { color: theme.colors.DARK, fontWeight: '600', fontSize: 15 },
+      saveBtnTxt: { color: '#000', fontWeight: '600', fontSize: 15 },
     }));

@@ -442,7 +442,7 @@ const _stylesheet = createStyleSheet(theme => ({
       payBtnText: {
         fontFamily: 'Outfit-Bold',
         fontSize: 16,
-        color: theme.colors.DARK,
+        color: '#000',
       },
 
       payingIconContainer: {

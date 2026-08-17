@@ -426,7 +426,7 @@ const sStylesheet = createStyleSheet(theme => ({
       sellerName: { fontSize: 16, fontWeight: '800' },
       forSalePill: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
       forSaleLabel: { fontSize: 11, fontWeight: '800' },
-      menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: theme.colors.DARK, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
+      menu: { position: 'absolute', top: 30, left: 0, width: 140, borderRadius: 12, borderWidth: 1, zIndex: 100, paddingVertical: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 10 },
       menuItem: { paddingVertical: 10, paddingHorizontal: 16 },
       sellerLocation: { fontSize: 12 },
       fieldHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
@@ -489,7 +489,7 @@ const ddStylesheet = createStyleSheet(theme => ({
       menu: {
         borderRadius: 12, borderWidth: 1, overflow: 'hidden',
         marginTop: 4, zIndex: 999,
-        shadowColor: theme.colors.DARK, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 10, elevation: 8,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 10, elevation: 8,
       },
       item: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
       itemTxt: { fontSize: 14 },

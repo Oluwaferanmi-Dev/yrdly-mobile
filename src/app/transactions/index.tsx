@@ -194,7 +194,7 @@ export default function TransactionsScreen() {
                 style={[s.roleTab, active && s.roleTabActive]}
                 onPress={() => setTab(t)}
               >
-                <Text style={[s.roleTabTxt, { color: active ? theme.colors.DARK : theme.colors.MUTED }]}>
+                <Text style={[s.roleTabTxt, { color: active ? '#000' : theme.colors.MUTED }]}>
                   {t}
                 </Text>
               </TouchableOpacity>
@@ -218,7 +218,7 @@ export default function TransactionsScreen() {
                 }]}
               >
                 <Text style={[s.filterPillTxt, { 
-                  color: active ? theme.colors.DARK : theme.colors.MUTED,
+                  color: active ? '#000' : theme.colors.MUTED,
                   fontWeight: active ? '700' : '500'
                 }]}>
                   {f.label}

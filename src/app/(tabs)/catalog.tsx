@@ -965,7 +965,7 @@ export default function CatalogTab() {
                 onPress={handleApplyLocation}
                 disabled={!tempLoc.state}
               >
-                <Text style={[sStylesheet.modalBtnText, { color: theme.colors.DARK, opacity: tempLoc.state ? 1 : 0.5 }]}>Apply Filter</Text>
+                <Text style={[sStylesheet.modalBtnText, { color: '#000', opacity: tempLoc.state ? 1 : 0.5 }]}>Apply Filter</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1021,7 +1021,7 @@ const stylesheet = createStyleSheet(theme => ({
       },
       sectionPillSelected: { backgroundColor: theme.colors.G, borderColor: theme.colors.G },
       sectionPillText: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL },
-      sectionPillTextSelected: { fontFamily: 'Inter-Bold', color: theme.colors.DARK },
+      sectionPillTextSelected: { fontFamily: 'Inter-Bold', color: '#000' },
       
       sectionContainer: { flex: 1 },
 
@@ -1089,7 +1089,7 @@ const stylesheet = createStyleSheet(theme => ({
       },
       marketplaceCatBtnActive: { backgroundColor: theme.colors.G, borderColor: theme.colors.G },
       marketplaceCatText: { fontFamily: 'Inter-Regular', fontSize: 12, color: theme.colors.LABEL },
-      marketplaceCatTextActive: { fontFamily: 'Inter-Bold', color: theme.colors.DARK },
+      marketplaceCatTextActive: { fontFamily: 'Inter-Bold', color: '#000' },
       filterBtn: {
         width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.SURFACE,
         borderWidth: 1, borderColor: theme.colors.GLASS_BORDER, justifyContent: 'center', alignItems: 'center',
@@ -1179,5 +1179,5 @@ const stylesheet = createStyleSheet(theme => ({
       sheetTitle: { fontFamily: 'Outfit-Bold', fontSize: 18, color: theme.colors.TEXT_PRIMARY },
       sheetReset: { fontFamily: 'Inter-Regular', fontSize: 13, color: theme.colors.LABEL },
       applyBtn: { backgroundColor: theme.colors.G, borderRadius: 16, height: 50, justifyContent: 'center', alignItems: 'center' },
-      applyBtnText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      applyBtnText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#000' },
     }));

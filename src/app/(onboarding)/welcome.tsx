@@ -46,7 +46,7 @@ export default function WelcomeScreen() {
           <PrimaryBtn 
             label="Get Started" 
             onClick={() => router.push('/(onboarding)/tour')} 
-            icon={<Ionicons name="arrow-forward" size={18} color={theme.colors.DARK} />}
+            icon={<Ionicons name="arrow-forward" size={18} color="#000" />}
           />
           <SecondaryBtn label="Already have an account? Sign in" onClick={() => router.push('/(auth)/login')} />
         </View>
@@ -74,10 +74,10 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   logoText: {
-    fontSize: 32,
     fontFamily: 'Outfit-ExtraBold',
+    fontSize: 48,
     color: '#FFFFFF',
-    letterSpacing: 1.5,
+    letterSpacing: -1.5,
   },
   tagline: {
     fontSize: 16,

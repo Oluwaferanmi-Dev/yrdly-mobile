@@ -57,7 +57,7 @@ export function DiscoverUserCard({ user, context, mutualCount, onPress }: Discov
           size={100}
           style={[stylesheet.avatar as any, { backgroundColor: theme.colors.DARK }]}
           fallbackStyle={{ backgroundColor: theme.colors.G }}
-          fallbackTextStyle={{ color: theme.colors.DARK, fontSize: 20, fontWeight: '800' }}
+          fallbackTextStyle={{ color: '#000', fontSize: 20, fontWeight: '800' }}
         />
         
         <View style={stylesheet.content}>

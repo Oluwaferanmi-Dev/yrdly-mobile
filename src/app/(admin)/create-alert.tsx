@@ -328,7 +328,7 @@ const _stylesheet = createStyleSheet(theme => ({
         color: '#4b5563',
       },
       typeTextActive: {
-        color: '#ffffff',
+        color: theme.colors.TEXT_PRIMARY,
       },
       mapContainer: {
         height: 200,
@@ -353,7 +353,7 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
         padding: 10,
         borderRadius: 8,
-        shadowColor: theme.colors.DARK,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -377,6 +377,6 @@ const _stylesheet = createStyleSheet(theme => ({
       submitButtonText: {
         fontFamily: 'Inter-Bold',
         fontSize: 16,
-        color: '#ffffff',
+        color: theme.colors.TEXT_PRIMARY,
       },
     }));

@@ -242,8 +242,8 @@ export default function CreateCatalogItemScreen() {
                       borderColor: active ? theme.colors.G : theme.colors.GLASS_BORDER 
                     }]}
                   >
-                    <Ionicons name={c.icon as any} size={18} color={active ? theme.colors.DARK : theme.colors.MUTED} style={{ marginRight: 6 }} />
-                    <Text style={[sStylesheet.catTxt, { color: active ? theme.colors.DARK : theme.colors.MUTED, fontFamily: active ? 'Inter-SemiBold' : 'Inter' }]}>{c.name}</Text>
+                    <Ionicons name={c.icon as any} size={18} color={active ? '#000' : theme.colors.MUTED} style={{ marginRight: 6 }} />
+                    <Text style={[sStylesheet.catTxt, { color: active ? '#000' : theme.colors.MUTED, fontFamily: active ? 'Inter-SemiBold' : 'Inter' }]}>{c.name}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -288,8 +288,8 @@ export default function CreateCatalogItemScreen() {
             onPress={handleSave} 
             disabled={!hasData || loading}
           >
-            {loading ? <ActivityIndicator size="small" color={hasData ? theme.colors.DARK : 'rgba(130,219,126,0.4)'} /> : (
-              <Text style={[sStylesheet.submitBtnTxt, { color: hasData ? theme.colors.DARK : 'rgba(130,219,126,0.4)' }]}>
+            {loading ? <ActivityIndicator size="small" color={hasData ? '#000' : 'rgba(130,219,126,0.4)'} /> : (
+              <Text style={[sStylesheet.submitBtnTxt, { color: hasData ? '#000' : 'rgba(130,219,126,0.4)' }]}>
                 {isEditMode ? 'Save Changes' : 'Add to Storefront'}
               </Text>
             )}
@@ -340,5 +340,5 @@ const stylesheet = createStyleSheet(theme => ({
       addedTitle: { fontFamily: 'Outfit-Bold', fontSize: 22, color: theme.colors.TEXT_PRIMARY },
       addedSubtitle: { fontFamily: 'Inter', fontSize: 14, color: theme.colors.MUTED, textAlign: 'center' },
       addedBtn: { marginTop: 8, paddingHorizontal: 32, paddingVertical: 13, borderRadius: 14, backgroundColor: theme.colors.G },
-      addedBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
+      addedBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#000' },
     }));

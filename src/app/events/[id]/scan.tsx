@@ -111,7 +111,7 @@ export default function ScanTicketScreen() {
         <Feather name="camera" size={60} color={theme.colors.MUTED} />
         <Text style={[stylesheet.permText, { color: theme.colors.LABEL }]}>Camera access is required to scan tickets.</Text>
         <TouchableOpacity style={[stylesheet.permBtn, { backgroundColor: theme.colors.G }]} onPress={requestPermission}>
-          <Text style={[stylesheet.permBtnText, { color: theme.colors.DARK }]}>Grant Permission</Text>
+          <Text style={[stylesheet.permBtnText, { color: '#000' }]}>Grant Permission</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );

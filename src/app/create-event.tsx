@@ -57,6 +57,8 @@ export default function CreateEventScreen() {
   
   const [attachedFiles, setAttachedFiles] = useState<MobileFile[]>([]);
   const [coverIndex, setCoverIndex] = useState(0);
+  const [posting, setPosting] = useState(false);
+  const [imageDimsMap, setImageDimsMap] = useState<{ [uri: string]: { w: number, h: number } }>({});
   
   const [tiers, setTiers] = useState<Array<{ name: string; price: string; isFree: boolean; capacity: string }>>([
     { name: 'Standard Ticket', price: '0', isFree: true, capacity: '100' }
@@ -853,7 +855,7 @@ export default function CreateEventScreen() {
         >
           {publishing ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <ActivityIndicator size="small" color={theme.colors.DARK} />
+              <ActivityIndicator size="small" color="#000" />
               {uploadProgress > 0 && <Text style={[stylesheet.btnPrimaryText, { fontSize: 12 }]}>{Math.round(uploadProgress * 100)}%</Text>}
             </View>
           ) : (
@@ -989,7 +991,7 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 6,
         backgroundColor: theme.colors.G,
       },
-      coverBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 9, color: theme.colors.DARK },
+      coverBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 9, color: '#000' },
       removePhoto: {
         position: 'absolute',
         top: 6,
@@ -1071,7 +1073,7 @@ const _stylesheet = createStyleSheet(theme => ({
         justifyContent: 'center',
       },
       btnDisabled: { opacity: 0.4 },
-      btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#000' },
       successContainer: {
         flex: 1,
         justifyContent: 'center',

@@ -102,7 +102,7 @@ export default function VerifyPhoneScreen() {
           {loading ? (
             <ActivityIndicator color="#000" />
           ) : (
-            <Text style={[stylesheet.verifyBtnText, { color: theme.colors.DARK }]}>Send Code</Text>
+            <Text style={[stylesheet.verifyBtnText, { color: '#000' }]}>Send Code</Text>
           )}
         </TouchableOpacity>
       </View>

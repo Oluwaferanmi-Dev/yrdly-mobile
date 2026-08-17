@@ -283,7 +283,7 @@ export default function MessagesTab() {
                 style={[stylesheet.headerIconBtn, { backgroundColor: theme.colors.G, borderWidth: 0 }]}
                 onPress={() => router.push('/community')}
               >
-                <Ionicons name="create-outline" size={18} color={theme.colors.DARK} />
+                <Ionicons name="create-outline" size={18} color="#000" />
               </TouchableOpacity>
             </View>
           </>
@@ -426,7 +426,7 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingVertical: 2,
         borderRadius: 10,
       },
-      totalBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 11, color: theme.colors.DARK },
+      totalBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 11, color: '#000' },
       headerIconBtn: {
         width: 36,
         height: 36,
@@ -529,7 +529,7 @@ const _stylesheet = createStyleSheet(theme => ({
         alignItems: 'center',
         paddingHorizontal: 5,
       },
-      unreadBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 10, color: theme.colors.DARK },
+      unreadBadgeText: { fontFamily: 'Outfit-Bold', fontSize: 10, color: '#000' },
       listingContextPill: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -563,7 +563,7 @@ const _stylesheet = createStyleSheet(theme => ({
         paddingVertical: 12,
         borderRadius: 22,
       },
-      startBtnText: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
+      startBtnText: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#000' },
       deleteAction: {
         backgroundColor: '#ef4444',
         justifyContent: 'center',

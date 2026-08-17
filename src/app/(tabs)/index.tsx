@@ -100,7 +100,7 @@ const QuickPostBox = memo(() => {
       </Text>
 
       <View style={{ height: 32, paddingHorizontal: 14, borderRadius: 16, backgroundColor: theme.colors.G, justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
-        <Text style={{ color: theme.colors.DARK, fontWeight: '700', fontSize: 13, fontFamily: 'Outfit-Bold' }}>Post</Text>
+        <Text style={{ color: '#000', fontWeight: '700', fontSize: 13, fontFamily: 'Outfit-Bold' }}>Post</Text>
       </View>
     </TouchableOpacity>
   );

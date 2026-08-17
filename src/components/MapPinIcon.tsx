@@ -111,7 +111,7 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: PIN_SIZE / 2,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: theme.colors.DARK,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.35,
         shadowRadius: 4,
@@ -128,7 +128,7 @@ const _stylesheet = createStyleSheet(theme => ({
         marginTop: -1,
       },
       priceLabel: {
-        color: theme.colors.DARK,
+        color: '#000',
         fontFamily: 'Outfit',
         fontSize: 8,
         fontWeight: '800',

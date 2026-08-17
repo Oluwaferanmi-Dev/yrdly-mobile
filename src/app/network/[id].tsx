@@ -334,7 +334,7 @@ const _stylesheet = createStyleSheet(theme => ({
         backgroundColor: theme.colors.G,
       },
       avatarFallbackText: {
-        color: theme.colors.DARK,
+        color: '#000',
         fontFamily: 'Outfit-Bold',
         fontSize: 18,
       },

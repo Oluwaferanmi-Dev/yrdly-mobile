@@ -413,7 +413,7 @@ const _stylesheet = createStyleSheet(theme => ({
         alignItems: 'center',
       },
       continueBtnDisabled: { backgroundColor: 'rgba(130,219,126,0.2)' },
-      continueBtnText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      continueBtnText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#000' },
       continueBtnTextDisabled: { color: 'rgba(130,219,126,0.4)' },
 
       successContainer: {
@@ -442,7 +442,7 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 14,
         backgroundColor: theme.colors.G,
       },
-      btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 14, color: theme.colors.DARK },
+      btnPrimaryText: { fontFamily: 'Outfit-Bold', fontSize: 14, color: '#000' },
       btnText: { fontFamily: 'Inter-Regular', fontSize: 14, color: theme.colors.LABEL },
 
       sectionLabel: {

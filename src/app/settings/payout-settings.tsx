@@ -274,7 +274,7 @@ export default function PayoutSettingsScreen() {
           {step === 'confirmed' && (
             <View style={s.footerBtnWrap}>
               <TouchableOpacity style={s.saveFinalBtn} onPress={handleSave} disabled={saving}>
-                {saving ? <ActivityIndicator color={theme.colors.DARK} /> : <Text style={s.saveFinalBtnTxt}>Save Bank Account</Text>}
+                {saving ? <ActivityIndicator color="#000" /> : <Text style={s.saveFinalBtnTxt}>Save Bank Account</Text>}
               </TouchableOpacity>
             </View>
           )}
@@ -333,5 +333,5 @@ const sStylesheet = createStyleSheet(theme => ({
 
       footerBtnWrap: { position: 'absolute', bottom: 34, left: 20, right: 20, borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER, paddingTop: 14 },
       saveFinalBtn: { width: '100%', paddingVertical: 16, borderRadius: 18, backgroundColor: theme.colors.G, alignItems: 'center' },
-      saveFinalBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      saveFinalBtnTxt: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#000' },
     }));

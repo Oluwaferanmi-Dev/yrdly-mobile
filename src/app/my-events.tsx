@@ -178,7 +178,7 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 16,
         marginBottom: 16,
         overflow: 'hidden',
-        shadowColor: theme.colors.DARK,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 8,
@@ -243,5 +243,5 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 24,
       },
       createButtonText: { color: theme.colors.TEXT_PRIMARY, fontFamily: 'Outfit-Bold', fontSize: 16 },
-      scanBtnText: { color: theme.colors.DARK, fontFamily: 'Outfit-ExtraBold', fontSize: 13 },
+      scanBtnText: { color: '#000', fontFamily: 'Outfit-ExtraBold', fontSize: 13 },
     }));

@@ -76,7 +76,7 @@ export default function TourScreen() {
             <PrimaryBtn 
               label={currentSlide.cta} 
               onClick={advance} 
-              icon={<Ionicons name={isLast ? 'home' : 'arrow-forward'} size={18} color={theme.colors.DARK} />}
+              icon={<Ionicons name={isLast ? 'home' : 'arrow-forward'} size={18} color="#000" />}
             />
           </View>
         </View>

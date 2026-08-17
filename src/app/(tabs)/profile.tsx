@@ -275,7 +275,7 @@ export default function ProfileTab() {
                 onPress={() => router.push('/profile/edit')}
                 style={{ position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: theme.colors.G, borderWidth: 2, borderColor: theme.colors.DARK, justifyContent: 'center', alignItems: 'center' }}
               >
-                <Ionicons name="camera-outline" size={12} color={theme.colors.DARK} />
+                <Ionicons name="camera-outline" size={12} color="#000" />
               </TouchableOpacity>
             </View>
 
@@ -514,6 +514,6 @@ const _stylesheet = createStyleSheet(theme => ({
       createBtnText: {
         fontFamily: 'Outfit-Bold',
         fontSize: 14,
-        color: theme.colors.DARK,
+        color: '#000',
       },
     }));

@@ -202,11 +202,11 @@ export default function CreatePostScreen() {
         >
           {posting ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <ActivityIndicator size="small" color={theme.colors.DARK} />
-                {uploadProgress > 0 && <Text style={[stylesheet.postButtonText, { color: theme.colors.DARK, fontSize: 12 }]}>{Math.round(uploadProgress * 100)}%</Text>}
+                <ActivityIndicator size="small" color="#000" />
+                {uploadProgress > 0 && <Text style={[stylesheet.postButtonText, { color: '#000', fontSize: 12 }]}>{Math.round(uploadProgress * 100)}%</Text>}
             </View>
           ) : (
-            <Text style={[stylesheet.postButtonText, { color: hasContent ? theme.colors.DARK : 'rgba(130,219,126,0.5)' }]}>Post</Text>
+            <Text style={[stylesheet.postButtonText, { color: hasContent ? '#000' : 'rgba(130,219,126,0.5)' }]}>Post</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -345,7 +345,7 @@ const _stylesheet = createStyleSheet(theme => ({
         height: 44,
         borderRadius: 22,
       },
-      avatarText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: theme.colors.DARK },
+      avatarText: { fontFamily: 'Outfit-Bold', fontSize: 16, color: '#000' },
       authorName: { fontFamily: 'Outfit-Bold', fontSize: 15, color: theme.colors.TEXT_PRIMARY, marginBottom: 2 },
       areaPill: {
         flexDirection: 'row',
@@ -459,5 +459,5 @@ const _stylesheet = createStyleSheet(theme => ({
         borderRadius: 16,
         backgroundColor: theme.colors.G,
       },
-      backButtonText: { fontFamily: 'Outfit-Bold', fontSize: 15, color: theme.colors.DARK },
+      backButtonText: { fontFamily: 'Outfit-Bold', fontSize: 15, color: '#000' },
     }));
