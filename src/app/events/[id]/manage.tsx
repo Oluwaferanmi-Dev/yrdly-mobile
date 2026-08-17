@@ -146,7 +146,7 @@ export default function ManageEventScreen() {
             <Metric label="Scanned" value={String(metrics.checkedIn)} />
           </View>
           <TouchableOpacity style={[stylesheet.scanButton, { backgroundColor: theme.colors.G }]} onPress={() => router.push(`/events/${id}/scan` as any)}>
-            <Ionicons name="qr-code" size={22} color="#000" /><Text style={stylesheet.scanButtonText}>Scan Attendee Tickets</Text>
+            <Ionicons name="qr-code" size={22} color={theme.colors.DARK} /><Text style={stylesheet.scanButtonText}>Scan Attendee Tickets</Text>
           </TouchableOpacity>
           <Text style={[stylesheet.sectionTitle, { color: theme.colors.TEXT_PRIMARY }]}>Ticket buyers ({metrics.sold})</Text>
         </>}

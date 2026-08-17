@@ -121,7 +121,7 @@ export default function AlertDetailsScreen() {
             </View>
             <Text style={stylesheet.timeText}>{new Date(alert.created_at).toLocaleDateString()}</Text>
           </View>
-          <Text style={[stylesheet.title, { color: isResolved ? theme.colors.MUTED : '#FFF' }]}>{alert.title}</Text>
+          <Text style={[stylesheet.title, { color: isResolved ? theme.colors.MUTED : theme.colors.TEXT_PRIMARY }]}>{alert.title}</Text>
           <View style={stylesheet.heroBottomRow}>
             <Text style={stylesheet.areaText}>📍 {alert.last_seen_address || alert.area || 'Unknown Location'}</Text>
           </View>
@@ -256,7 +256,7 @@ const _stylesheet = createStyleSheet(theme => ({
       descText: {
         fontFamily: 'Inter-Regular',
         fontSize: 15,
-        color: 'rgba(255,255,255,0.8)',
+        color: theme.colors.TEXT_SECONDARY,
         lineHeight: 25,
       },
       detailsCard: {

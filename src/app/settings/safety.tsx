@@ -229,5 +229,5 @@ const sStylesheet = createStyleSheet(theme => ({
   btnReject: { backgroundColor: 'transparent', borderColor: theme.colors.GLASS_BORDER },
   btnApprove: { backgroundColor: theme.colors.G, borderColor: theme.colors.G },
   btnTextReject: { fontFamily: 'Outfit-SemiBold', fontSize: 14, color: theme.colors.TEXT_PRIMARY },
-  btnTextApprove: { fontFamily: 'Outfit-SemiBold', fontSize: 14, color: '#000' }
+  btnTextApprove: { fontFamily: 'Outfit-SemiBold', fontSize: 14, color: theme.colors.DARK }
 }));

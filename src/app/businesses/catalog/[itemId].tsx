@@ -347,7 +347,7 @@ export default function CatalogItemScreen() {
             style={[sStylesheet.backBtn, { top: insets.top + 10, backgroundColor: isDarkMode ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]} 
             onPress={() => router.back()}
           >
-            <Ionicons name="chevron-back" size={26} color={isDarkMode ? '#fff' : '#000'} />
+            <Ionicons name="chevron-back" size={26} color={theme.colors.TEXT_PRIMARY} />
           </TouchableOpacity>
 
           {/* Indicators */}

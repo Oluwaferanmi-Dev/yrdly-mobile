@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
   },
   title: {
-    color: '#FFFFFF',
+    color: theme.colors.TEXT_PRIMARY,
     fontSize: 16,
     fontFamily: 'Outfit-Bold',
   },

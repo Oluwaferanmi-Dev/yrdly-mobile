@@ -281,7 +281,7 @@ const _stylesheet = createStyleSheet(theme => ({
       headerTitle: {
         fontFamily: 'Inter-Bold',
         fontSize: 20,
-        color: '#111827',
+        color: theme.colors.TEXT_PRIMARY,
       },
       label: {
         fontFamily: 'Inter-SemiBold',
@@ -298,7 +298,7 @@ const _stylesheet = createStyleSheet(theme => ({
         padding: 12,
         fontSize: 16,
         fontFamily: 'Inter-Regular',
-        color: '#111827',
+        color: theme.colors.TEXT_PRIMARY,
       },
       textArea: {
         height: 100,

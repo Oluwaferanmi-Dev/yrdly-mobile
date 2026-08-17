@@ -438,7 +438,7 @@ function MarketplaceSection({ currentLoc, search }: { currentLoc: Location.Locat
                         <Text style={sStylesheet.marketplaceCardPrice}>{formatPrice(item.price || 0)}</Text>
                         <View style={sStylesheet.marketplaceCardSeller}>
                           <View style={sStylesheet.marketplaceCardAvatarWrap}>
-                            {item.user?.avatar_url ? <Image source={{ uri: item.user.avatar_url }} style={sStylesheet.marketplaceCardAvatar} contentFit="cover" /> : <View style={[sStylesheet.marketplaceCardAvatar, { backgroundColor: theme.colors.G, justifyContent: 'center', alignItems: 'center' }]}><Text style={{ color: '#000', fontSize: 10, fontWeight: '700' }}>{((item.user?.name || item.author_name || 'S').charAt(0).toUpperCase())}</Text></View>}
+                            {item.user?.avatar_url ? <Image source={{ uri: item.user.avatar_url }} style={sStylesheet.marketplaceCardAvatar} contentFit="cover" /> : <View style={[sStylesheet.marketplaceCardAvatar, { backgroundColor: theme.colors.G, justifyContent: 'center', alignItems: 'center' }]}><Text style={{ color: theme.colors.DARK, fontSize: 10, fontWeight: '700' }}>{((item.user?.name || item.author_name || 'S').charAt(0).toUpperCase())}</Text></View>}
                           </View>
                           <Text style={sStylesheet.marketplaceCardArea} numberOfLines={1}>{item.user?.home_lga || (typeof item.user?.location === 'object' ? item.user?.location?.lga : null) || 'Lagos'}</Text>
                         </View>

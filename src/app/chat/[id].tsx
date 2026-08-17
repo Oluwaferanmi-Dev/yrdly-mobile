@@ -700,7 +700,7 @@ function ChatContent() {
             </TouchableOpacity>
           )}
           {!!msgText && (
-            <Text style={[stylesheet.bubbleText, { color: isMine ? '#000' : theme.colors.TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 14, fontWeight: isMine ? '600' : '400' }, hasMedia && { paddingHorizontal: 6 }]}>
+            <Text style={[stylesheet.bubbleText, { color: isMine ? theme.colors.DARK : theme.colors.TEXT_PRIMARY, fontFamily: 'Inter', fontSize: 14, fontWeight: isMine ? '600' : '400' }, hasMedia && { paddingHorizontal: 6 }]}>
               {msgText}
             </Text>
           )}
@@ -713,7 +713,7 @@ function ChatContent() {
                 <Ionicons 
                   name={item.is_read ? 'checkmark-done' : 'checkmark'} 
                   size={14} 
-                  color={item.is_read ? '#000' : 'rgba(0,0,0,0.4)'} 
+                  color={item.is_read ? theme.colors.TEXT_PRIMARY : theme.colors.LABEL} 
                   style={{ marginLeft: 4 }} 
                 />
               )}

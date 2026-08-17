@@ -340,7 +340,7 @@ export default function AdminDisputeDetailScreen() {
                 ]}
               >
                 {resolving
-                  ? <ActivityIndicator size="small" color="#000" />
+                  ? <ActivityIndicator size="small" color={theme.colors.TEXT_PRIMARY} />
                   : <Text style={sStylesheet.resolveBtnText}>Apply Resolution</Text>
                 }
               </TouchableOpacity>
