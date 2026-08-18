@@ -6,10 +6,11 @@ import {
   TouchableOpacity, RefreshControl
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../hooks/use-supabase-auth';
 import { getOrganizerEvents } from '../lib/event-service';
+import { supabase } from '../lib/supabase';
 import type { Event } from '../types/events';
 
 export default function MyEventsScreen() {
@@ -21,6 +22,7 @@ export default function MyEventsScreen() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
 
   const fetchEvents = useCallback(async () => {
     if (!user) return;
@@ -38,8 +40,17 @@ export default function MyEventsScreen() {
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
   const onRefresh = useCallback(() => { setRefreshing(true); fetchEvents(); }, [fetchEvents]);
 
-  const renderEvent = ({ item }: { item: Event }) => {
+  const handleArchiveEvent = async (eventId: string) => {
+    try {
+      const { error } = await supabase.from('events').update({ is_archived: true }).eq('id', eventId);
+      if (error) throw error;
+      setEvents(prev => prev.map(e => e.id === eventId ? { ...e, is_archived: true } : e));
+    } catch (e) {
+      console.error('Failed to archive event:', e);
+    }
+  };
 
+  const renderEvent = ({ item }: { item: Event }) => {
     const imageUrl = item.cover_image_url;
     const formattedDate = item.start_time
       ? new Date(item.start_time).toLocaleDateString('en-US', {
@@ -100,17 +111,32 @@ export default function MyEventsScreen() {
             </View>
           </View>
 
-            <TouchableOpacity
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: theme.colors.G, paddingVertical: 8, borderRadius: 12, marginTop: 10 }}
-              onPress={() => router.push({ pathname: '/events/scan' as any, params: { eventId: item.id } })}
-            >
-              <Ionicons name="qr-code" size={16} color={theme.colors.TEXT_PRIMARY} />
-              <Text style={stylesheet.scanBtnText}>Scan Attendee Tickets</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+              <TouchableOpacity
+                style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: theme.colors.G, paddingVertical: 8, borderRadius: 12 }}
+                onPress={() => router.push({ pathname: '/events/scan' as any, params: { eventId: item.id } })}
+              >
+                <Ionicons name="qr-code" size={16} color={theme.colors.TEXT_PRIMARY} />
+                <Text style={stylesheet.scanBtnText}>Scan Attendee Tickets</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: theme.colors.SURFACE, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: '#EF4444' }}
+                onPress={() => handleArchiveEvent(item.id)}
+              >
+                <Feather name="trash-2" size={16} color="#EF4444" />
+                <Text style={{ color: '#EF4444', fontFamily: 'Outfit-Bold', fontSize: 13 }}>{item.is_archived ? 'Deleted' : 'Delete'}</Text>
+              </TouchableOpacity>
+            </View>
         </View>
       </TouchableOpacity>
     );
   };
+
+  const filteredEvents = events.filter(e => {
+    if (activeTab === 'active') return !e.is_archived;
+    return e.is_archived;
+  });
 
   return (
     <SafeAreaView style={[stylesheet.container, { backgroundColor: theme.colors.DARK }]} edges={['top', 'left', 'right']}>
@@ -126,8 +152,24 @@ export default function MyEventsScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Tabs */}
+      <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 8, gap: 12 }}>
+        <TouchableOpacity
+          style={[stylesheet.tabButton, activeTab === 'active' && { backgroundColor: theme.colors.G }]}
+          onPress={() => setActiveTab('active')}
+        >
+          <Text style={[stylesheet.tabText, activeTab === 'active' && { color: theme.colors.TEXT_PRIMARY }]}>Active</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[stylesheet.tabButton, activeTab === 'past' && { backgroundColor: theme.colors.G }]}
+          onPress={() => setActiveTab('past')}
+        >
+          <Text style={[stylesheet.tabText, activeTab === 'past' && { color: theme.colors.TEXT_PRIMARY }]}>Past / Archived</Text>
+        </TouchableOpacity>
+      </View>
+
       <FlatList
-        data={events}
+        data={filteredEvents}
         keyExtractor={(item) => item.id}
         renderItem={renderEvent}
         contentContainerStyle={stylesheet.listContainer}
@@ -172,6 +214,19 @@ const _stylesheet = createStyleSheet(theme => ({
       },
       backButton: { width: 40, alignItems: 'flex-start' },
       headerTitle: { fontSize: 18, fontFamily: 'Outfit-Bold' },
+      tabButton: {
+        paddingVertical: 6,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        backgroundColor: theme.colors.SURFACE,
+        borderWidth: 1,
+        borderColor: theme.colors.GLASS_BORDER,
+      },
+      tabText: {
+        color: theme.colors.MUTED,
+        fontFamily: 'Outfit-Bold',
+        fontSize: 14,
+      },
       listContainer: { padding: 16, flexGrow: 1 },
       loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
       eventCard: {

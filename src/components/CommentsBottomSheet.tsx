@@ -16,6 +16,7 @@ import { ModerationService } from '@/lib/moderation-service';
 
 export interface CommentsBottomSheetProps {
   postId: string | null;
+  onCommentAdded?: () => void;
 }
 
 export type CommentsBottomSheetRef = {
@@ -26,7 +27,7 @@ export type CommentsBottomSheetRef = {
 import { CommentItem, CommentType } from './CommentItem';
 import { CommentInput, CommentInputRef } from './CommentInput';
 
-export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBottomSheetProps>(({ postId }, ref) => {
+export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBottomSheetProps>(({ postId, onCommentAdded }, ref) => {
     const { styles: stylesheet, theme } = useStyles(_stylesheet);
 
   const router = useRouter();
@@ -189,6 +190,8 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       // Trigger notification
       const { NotificationTriggers } = await import('../lib/notification-triggers');
       await NotificationTriggers.onPostCommented(postId, user.id, text.trim());
+      
+      onCommentAdded?.();
 
     } catch (e) {
       console.error('Post comment error:', e);

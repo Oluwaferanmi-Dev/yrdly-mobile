@@ -110,7 +110,7 @@ const _stylesheet = createStyleSheet(theme => ({
       },
       modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0,0,0,0.85)',
       },
       modalContent: {
         position: 'absolute',

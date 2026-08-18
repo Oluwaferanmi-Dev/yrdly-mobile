@@ -243,19 +243,19 @@ export default function EditProfileScreen() {
             {/* Read-only Verified Fields */}
             <View style={s.verifiedSection}>
               <Text style={[s.label, { marginBottom: 12 }]}>VERIFIED INFO</Text>
-              <View style={s.verifiedCard}>
-                <Text style={{ fontSize: 16 }}>🇳🇬</Text>
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={s.verifiedLabel}>PHONE</Text>
-                  <Text style={s.verifiedValue}>{(profile as any)?.phone || user?.phone || ''}</Text>
-                </View>
-                { (profile as any)?.phone_verified && (
+              {((profile as any)?.phone || user?.phone) && (
+                <View style={s.verifiedCard}>
+                  <Text style={{ fontSize: 16 }}>🇳🇬</Text>
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={s.verifiedLabel}>PHONE</Text>
+                    <Text style={s.verifiedValue}>{(profile as any)?.phone || user?.phone}</Text>
+                  </View>
                   <View style={s.verifiedBadge}>
                     <Feather name="check" size={12} color={theme.colors.G} />
                     <Text style={s.verifiedBadgeTxt}>Verified</Text>
                   </View>
-                )}
-              </View>
+                </View>
+              )}
               <View style={s.verifiedCard}>
                 <Feather name="mail" size={16} color={theme.colors.LABEL} />
                 <View style={{ flex: 1, marginLeft: 12 }}>

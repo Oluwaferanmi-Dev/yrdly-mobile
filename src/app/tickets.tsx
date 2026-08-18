@@ -82,7 +82,7 @@ export default function TicketsScreen() {
   };
 
   const displayedTickets = tickets.filter(t => 
-    activeTab === 'active' ? !isTicketPast(t) : isTicketPast(t)
+    !t.is_archived && (activeTab === 'active' ? !isTicketPast(t) : isTicketPast(t))
   );
 
   const handleDeleteTicket = (ticketId: string) => {
@@ -97,8 +97,8 @@ export default function TicketsScreen() {
           onPress: async () => {
             setDeletingId(ticketId);
             try {
-              await supabase.from('tickets').delete().eq('id', ticketId).eq('buyer_id', user!.id);
-              setTickets(prev => prev.filter(t => t.id !== ticketId));
+              await supabase.from('tickets').update({ is_archived: true }).eq('id', ticketId).eq('buyer_id', user!.id);
+              setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, is_archived: true } : t));
             } catch (e) {
               console.error('Delete ticket error:', e);
               Alert.alert('Error', 'Could not delete ticket.');

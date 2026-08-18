@@ -78,7 +78,7 @@ export default function ProfileTab() {
         .from('posts')
         .select('*')
         .eq('user_id', user.id)
-        .neq('moderation_status', 'rejected')
+        .eq('moderation_status', 'approved')
         .order('timestamp', { ascending: false });
 
       if (error) throw error;
@@ -111,7 +111,7 @@ export default function ProfileTab() {
     if (!user) return;
     setLoadingSaved(true);
     try {
-      const [postRes, eventRes] = await Promise.all([
+      const [postRes, eventRes, businessRes] = await Promise.all([
         supabase
           .from('post_bookmarks')
           .select(`
@@ -127,11 +127,20 @@ export default function ProfileTab() {
             created_at,
             events (*)
           `)
+          .eq('user_id', user.id),
+        supabase
+          .from('business_favorites')
+          .select(`
+            business_id,
+            created_at,
+            businesses (*)
+          `)
           .eq('user_id', user.id)
       ]);
 
       if (postRes.error) throw postRes.error;
       if (eventRes.error) throw eventRes.error;
+      if (businessRes.error) throw businessRes.error;
       
       const extractedPosts = postRes.data
         .filter(item => item.posts != null && (item.posts as any).moderation_status !== 'rejected')
@@ -151,7 +160,21 @@ export default function ProfileTab() {
           };
         });
         
-      const allSaved = [...extractedPosts, ...extractedEvents].sort((a, b) => {
+      const extractedBusinesses = businessRes.data
+        .filter(item => item.businesses != null)
+        .map(item => {
+          const biz = item.businesses as any;
+          return {
+            id: biz.id,
+            title: biz.name,
+            image_urls: biz.logo || biz.cover_image || biz.image_urls?.[0] ? [biz.logo || biz.cover_image || biz.image_urls?.[0]] : [],
+            category: 'Business',
+            event_link: `/businesses/${biz.id}`, // using event_link to navigate to business
+            bookmark_created_at: item.created_at,
+          };
+        });
+        
+      const allSaved = [...extractedPosts, ...extractedEvents, ...extractedBusinesses].sort((a, b) => {
         return new Date(b.bookmark_created_at).getTime() - new Date(a.bookmark_created_at).getTime();
       });
       
@@ -420,7 +443,7 @@ export default function ProfileTab() {
   const isLoading = activeTab === 'posts' ? loadingPosts : loadingSaved;
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.DARK, paddingTop: insets.top }}>
+    <View style={[stylesheet.root, { paddingTop: insets.top }]}>
       <FlatList
         key={numColumns}
         data={activeData}
@@ -481,6 +504,10 @@ export default function ProfileTab() {
 }
 
 const _stylesheet = createStyleSheet(theme => ({
+      root: {
+        flex: 1,
+        backgroundColor: theme.colors.DARK,
+      },
       headerContainer: {
         backgroundColor: theme.colors.DARK,
       },

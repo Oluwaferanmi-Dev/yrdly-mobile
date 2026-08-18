@@ -38,6 +38,7 @@ export interface Event {
   attendee_count: number;
   created_at: string;
   updated_at: string;
+  is_archived: boolean;
   // Joined fields
   organizer?: {
     id: string;
@@ -84,6 +85,7 @@ export interface Ticket {
   scanned_by: string | null;
   created_at: string;
   updated_at: string;
+  is_archived: boolean;
   // Joined fields
   event?: Pick<Event, 'id' | 'title' | 'cover_image_url' | 'start_time' | 'location_address' | 'state'>;
   tier?: Pick<TicketTier, 'id' | 'name' | 'price'>;

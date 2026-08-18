@@ -383,8 +383,12 @@ export const PostCard = React.memo(function PostCard({ post, onPress, onLike, on
       { text: 'Delete', style: 'destructive', onPress: async () => {
         if (!currentUser) return;
         try {
-          await supabase.from('posts').delete().eq('id', post.id);
-          Alert.alert('Success', 'Post deleted.');
+          if (onDelete) {
+            onDelete(post.id);
+          } else {
+            await supabase.from('posts').delete().eq('id', post.id);
+            Alert.alert('Success', 'Post deleted.');
+          }
         } catch (e: any) {
           Alert.alert('Error', e.message || 'Failed to delete post.');
         }

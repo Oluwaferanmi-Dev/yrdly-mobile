@@ -37,13 +37,15 @@ const FeedPostItem = memo(({
   isVisible, 
   onPress, 
   onComment, 
-  onOpenImageViewer 
+  onOpenImageViewer,
+  onDelete
 }: { 
   item: Post; 
   isVisible: boolean; 
   onPress: (item: Post) => void; 
   onComment: (item: Post) => void; 
   onOpenImageViewer: (images: { uri: string }[], index: number) => void; 
+  onDelete?: (postId: string) => void;
 }) => {
   return (
     <PostCard 
@@ -52,6 +54,7 @@ const FeedPostItem = memo(({
       onPress={() => onPress(item)}
       onComment={() => onComment(item)}
       onOpenImageViewer={onOpenImageViewer}
+      onDelete={onDelete}
     />
   );
 }, (prevProps, nextProps) => {
@@ -114,7 +117,7 @@ export default function HomeTab() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { activeFilter } = useLocation();
-  const { posts: allPosts, loading, refreshPosts, hasMore, isFetchingMore, fetchMore } = usePosts(activeFilter);
+  const { posts: allPosts, loading, refreshPosts, hasMore, isFetchingMore, fetchMore, optimisticUpdatePost, deletePost } = usePosts(activeFilter);
   const [refreshing, setRefreshing] = useState(false);
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
   const [activePostId, setActivePostId] = useState<string | null>(null);
@@ -156,6 +159,15 @@ export default function HomeTab() {
     bottomSheetRef.current?.present();
   }, []);
 
+  const handleCommentAdded = useCallback(() => {
+    if (activeCommentPostId) {
+      const targetPost = allPosts.find(p => p.id === activeCommentPostId);
+      if (targetPost) {
+        optimisticUpdatePost(activeCommentPostId, { comment_count: (targetPost.comment_count || 0) + 1 });
+      }
+    }
+  }, [activeCommentPostId, allPosts, optimisticUpdatePost]);
+
   const handleOpenImageViewer = useCallback((images: { uri: string }[], index: number) => {
     setViewerImages(images);
     setViewerIndex(index);
@@ -170,9 +182,10 @@ export default function HomeTab() {
         onPress={handlePostPress}
         onComment={handleCommentPress}
         onOpenImageViewer={handleOpenImageViewer}
+        onDelete={deletePost}
       />
     );
-  }, [isFocused, activePostId, handlePostPress, handleCommentPress, handleOpenImageViewer]);
+  }, [isFocused, activePostId, handlePostPress, handleCommentPress, handleOpenImageViewer, deletePost]);
 
   const scrollY = useSharedValue(0);
   const lastScrollY = useSharedValue(0);
@@ -384,7 +397,11 @@ export default function HomeTab() {
           ) : null
         }
       />
-      <CommentsBottomSheet ref={bottomSheetRef} postId={activeCommentPostId} />
+      <CommentsBottomSheet 
+        ref={bottomSheetRef} 
+        postId={activeCommentPostId} 
+        onCommentAdded={handleCommentAdded}
+      />
       <ImageViewing
         images={viewerImages}
         imageIndex={viewerIndex}

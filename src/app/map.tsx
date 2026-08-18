@@ -197,7 +197,8 @@ export default function MapScreen() {
     // Events from posts table (legacy)
     let qPostEvts = supabase.from('posts')
       .select('id,title,event_location,lat,lng')
-      .eq('category','Event');
+      .eq('category','Event')
+      .gte('event_date', new Date().toISOString());
     if (activeFilter?.lga) qPostEvts = qPostEvts.eq('lga', activeFilter.lga);
     else if (activeFilter?.state) qPostEvts = qPostEvts.eq('state', activeFilter.state);
     const { data: postEvts } = await qPostEvts.limit(30);
@@ -210,6 +211,7 @@ export default function MapScreen() {
     let qNewEvts = supabase.from('events')
       .select('id,title,location_address,lat,lng')
       .eq('status','PUBLISHED')
+      .gte('start_time', new Date().toISOString())
       .not('lat','is',null)
       .not('lng','is',null);
     if (activeFilter?.lga) qNewEvts = qNewEvts.eq('lga', activeFilter.lga);

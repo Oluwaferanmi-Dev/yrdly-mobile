@@ -905,6 +905,10 @@ export const usePosts = (filter?: LocationFilter | null) => {
             toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to delete a post.' });
             return;
         }
+        
+        // Optimistically remove from UI
+        setPosts(prev => prev.filter(p => p.id !== postId));
+
         try {
             let table = 'posts';
             // First, get the post to retrieve image and video URLs
@@ -1058,5 +1062,9 @@ export const usePosts = (filter?: LocationFilter | null) => {
     await fetchPosts(0, false);
   }, [fetchPosts]);
 
-  return { posts, loading, hasMore, isFetchingMore, fetchMore, createPost, createBusiness, deletePost, deleteBusiness, refreshPosts };
+  const optimisticUpdatePost = useCallback((postId: string, updates: Partial<Post>) => {
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, ...updates } : p));
+  }, []);
+
+  return { posts, loading, hasMore, isFetchingMore, fetchMore, createPost, createBusiness, deletePost, deleteBusiness, refreshPosts, optimisticUpdatePost };
 };

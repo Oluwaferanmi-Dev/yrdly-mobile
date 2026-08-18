@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { StorageService } from '../lib/storage-service';
 import { Avatar } from './Avatar';
 import { VerifiedBadge } from './VerifiedBadge';
+import { supabase } from '../lib/supabase';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -47,20 +48,40 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
   const { isDarkMode } = useAppTheme();
   const router = useRouter();
   const isOwner = user?.id === item.user_id;
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(user ? (item.liked_by || []).includes(user.id) : false);
   const heartScale = useRef(new Animated.Value(1)).current;
   const pressScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    setSaved(user ? (item.liked_by || []).includes(user.id) : false);
+  }, [item.liked_by, user]);
 
   const imageUrl = item.image_urls?.[0] || item.image_url || item.video_thumbnail_url;
   const sellerName = item.user?.name || item.author_name || 'Seller';
   const badge = getBadge(item);
 
-  const toggleSaved = () => {
-    setSaved(s => !s);
+  const toggleSaved = async () => {
+    if (!user) return;
+    const currentLikedBy = item.liked_by || [];
+    const isCurrentlyLiked = currentLikedBy.includes(user.id);
+    const newSaved = !isCurrentlyLiked;
+    
+    setSaved(newSaved);
     Animated.sequence([
       Animated.spring(heartScale, { toValue: 1.4, useNativeDriver: true, speed: 40 }),
       Animated.spring(heartScale, { toValue: 1.0, useNativeDriver: true, speed: 40 }),
     ]).start();
+
+    const newLikedBy = newSaved 
+      ? [...currentLikedBy, user.id]
+      : currentLikedBy.filter(id => id !== user.id);
+
+    try {
+      await supabase.from('posts').update({ liked_by: newLikedBy }).eq('id', item.id);
+    } catch (err) {
+      console.error('Failed to toggle like', err);
+      setSaved(!newSaved);
+    }
   };
 
   const onPressIn = () => Animated.spring(pressScale, { toValue: 0.97, useNativeDriver: true, speed: 50 }).start();

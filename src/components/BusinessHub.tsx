@@ -1,6 +1,6 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Alert, RefreshControl, Animated } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,6 +9,7 @@ import { useAppTheme } from '../context/ThemeContext';
 import { useLocation } from '../context/LocationContext';
 import { Skeleton } from './Skeleton';
 import type { Business } from '../types';
+import { useAuth } from '../hooks/use-supabase-auth';
 
 interface BusinessHubProps {
   searchQuery: string;
@@ -26,6 +27,7 @@ export function BusinessHub({ searchQuery }: BusinessHubProps) {
   const { isDarkMode } = useAppTheme();
   const router = useRouter();
   const { activeFilter } = useLocation();
+  const { user } = useAuth();
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,6 +137,77 @@ export function BusinessHub({ searchQuery }: BusinessHubProps) {
     );
   }
 
+  const BusinessCard = ({ item }: { item: Business }) => {
+    const [saved, setSaved] = useState(false);
+    const heartScale = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+      if (user && item.id) {
+        supabase.from('business_favorites')
+          .select('id')
+          .eq('business_id', item.id)
+          .eq('user_id', user.id)
+          .maybeSingle()
+          .then(({ data }) => setSaved(!!data));
+      }
+    }, [user, item.id]);
+
+    const toggleSave = async (e?: any) => {
+      if (e && e.stopPropagation) {
+        e.stopPropagation();
+      }
+      if (!user) return;
+      const newSaved = !saved;
+      setSaved(newSaved);
+      Animated.sequence([
+        Animated.spring(heartScale, { toValue: 1.4, useNativeDriver: true, speed: 40 }),
+        Animated.spring(heartScale, { toValue: 1.0, useNativeDriver: true, speed: 40 }),
+      ]).start();
+
+      if (newSaved) {
+        const { error } = await supabase.from('business_favorites').insert({ business_id: item.id, user_id: user.id });
+        if (error) setSaved(false);
+      } else {
+        const { error } = await supabase.from('business_favorites').delete().match({ business_id: item.id, user_id: user.id });
+        if (error) setSaved(true);
+      }
+    };
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => router.push(`/businesses/${item.id}` as any)}
+        style={[s.bizCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
+      >
+        <View style={[s.bizImgContainer, { backgroundColor: theme.colors.DARK }]}>
+          <Image 
+            source={{ uri: item.logo || item.cover_image || item.image_urls?.[0] || 'https://via.placeholder.com/150' }} 
+            style={s.bizImg} 
+            contentFit="cover" 
+          />
+        </View>
+        <View style={s.bizInfo}>
+          <Text style={[s.bizName, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>{item.name}</Text>
+          <Text style={[s.bizCat, { color: theme.colors.MUTED }]} numberOfLines={1}>{item.category || 'Other'}</Text>
+          
+          <View style={s.bizMetaRow}>
+            <View style={s.bizRating}>
+              <Ionicons name="star" size={12} color="#FBBF24" />
+              <Text style={[s.bizRatingTxt, { color: theme.colors.TEXT_PRIMARY }]}>{item.rating?.toFixed(1) || '0.0'}</Text>
+              <Text style={[s.bizReviewCount, { color: theme.colors.MUTED }]}>({item.review_count || 0})</Text>
+            </View>
+          </View>
+        </View>
+        
+        <TouchableOpacity style={{ padding: 8 }} onPress={(e) => toggleSave(e)}>
+          <Animated.View style={{ transform: [{ scale: heartScale }] }}>
+            <Ionicons name={saved ? 'heart' : 'heart-outline'} size={22} color={saved ? '#ff4d6d' : theme.colors.MUTED} />
+          </Animated.View>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={s.container}>
       {activeCategory && !searchQuery.trim() && (
@@ -192,35 +265,7 @@ return (
               </Text>
             </View>
           }
-          renderItem={({ item }) => {
-          return (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() => router.push(`/businesses/${item.id}` as any)}
-                        style={[s.bizCard, { backgroundColor: theme.colors.SURFACE, borderColor: theme.colors.GLASS_BORDER }]}
-                      >
-                        <View style={[s.bizImgContainer, { backgroundColor: theme.colors.DARK }]}>
-                          <Image 
-                            source={{ uri: item.logo || item.cover_image || item.image_urls?.[0] || 'https://via.placeholder.com/150' }} 
-                            style={s.bizImg} 
-                            contentFit="cover" 
-                          />
-                        </View>
-                        <View style={s.bizInfo}>
-                          <Text style={[s.bizName, { color: theme.colors.TEXT_PRIMARY }]} numberOfLines={1}>{item.name}</Text>
-                          <Text style={[s.bizCat, { color: theme.colors.MUTED }]} numberOfLines={1}>{item.category || 'Other'}</Text>
-                          
-                          <View style={s.bizMetaRow}>
-                            <View style={s.bizRating}>
-                              <Ionicons name="star" size={12} color="#FBBF24" />
-                              <Text style={[s.bizRatingTxt, { color: theme.colors.TEXT_PRIMARY }]}>{item.rating?.toFixed(1) || '0.0'}</Text>
-                              <Text style={[s.bizReviewCount, { color: theme.colors.MUTED }]}>({item.review_count || 0})</Text>
-                            </View>
-                          </View>
-                        </View>
-                      </TouchableOpacity>
-                    );
-          }}
+          renderItem={({ item }) => <BusinessCard item={item} />}
         />
       )}
     </View>

@@ -574,7 +574,7 @@ function MarketplaceDetailContent() {
       </Animated.ScrollView>
 
       {/* Bottom Action Bar */}
-      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 20, paddingBottom: 32, paddingTop: 16, backgroundColor: 'rgba(5,5,5,0.95)', borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER, flexDirection: 'row', gap: 12 }}>
+      <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 20, paddingBottom: 32, paddingTop: 16, backgroundColor: theme.colors.DARK, borderTopWidth: 1, borderTopColor: theme.colors.GLASS_BORDER, flexDirection: 'row', gap: 12 }}>
         {isOwner ? (
           <>
             <TouchableOpacity 
