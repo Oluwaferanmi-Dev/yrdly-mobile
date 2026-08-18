@@ -47,7 +47,7 @@ export function LocationChip() {
         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={stylesheet.modalOverlay} />
         </TouchableWithoutFeedback>
-        <View style={[stylesheet.modalContent, { backgroundColor: theme.colors.SURFACE }]}>
+        <View style={[stylesheet.modalContent, { backgroundColor: theme.colors.DARK }]}>
           <Text style={[stylesheet.modalTitle, { color: theme.colors.TEXT_PRIMARY }]}>View Area</Text>
           
           <TouchableOpacity 
@@ -81,7 +81,7 @@ export function LocationChip() {
 
 
           <TouchableOpacity 
-            style={[stylesheet.closeModalButton, { backgroundColor: theme.colors.SURFACE }]}
+            style={[stylesheet.closeModalButton, { backgroundColor: theme.colors.SURFACE_ALT }]}
             onPress={() => setModalVisible(false)}
           >
             <Text style={[stylesheet.closeModalButtonText, { color: theme.colors.TEXT_PRIMARY }]}>Cancel</Text>

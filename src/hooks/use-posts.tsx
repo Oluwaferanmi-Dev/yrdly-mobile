@@ -982,6 +982,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
                 }
             }
 
+            setPosts(prev => prev.filter(p => p.id !== postId));
             toast({ title: 'Success', description: 'Post deleted successfully.' });
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete post.' });

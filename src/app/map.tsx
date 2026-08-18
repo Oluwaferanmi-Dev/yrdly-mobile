@@ -1,9 +1,6 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import {
-  View, Text, TouchableOpacity, TextInput, Animated,
-  PanResponder, FlatList, Dimensions, ActivityIndicator, Linking, Platform, Image, Alert
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Animated, PanResponder, Platform, Linking, Alert, TextInput, KeyboardAvoidingView, SafeAreaView, DeviceEventEmitter, FlatList, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Marker, Region } from 'react-native-maps';
 import MapView from 'react-native-map-clustering';
@@ -174,6 +171,22 @@ export default function MapScreen() {
       }
       await Promise.all([fetchMarkers(), fetchActivity(l || undefined)]);
     })();
+
+    const delSub = DeviceEventEmitter.addListener('postDeleted', (postId) => {
+      setAllMarkers(prev => prev.filter(m => m.targetId !== postId));
+      setActivity(prev => prev.filter(a => !(a.route.includes(postId))));
+    });
+    const updateSub = DeviceEventEmitter.addListener('postUpdated', (updated) => {
+      if (updated.is_sold || updated.is_archived) {
+        setAllMarkers(prev => prev.filter(m => m.targetId !== updated.id));
+        setActivity(prev => prev.filter(a => !(a.route.includes(updated.id))));
+      }
+    });
+    
+    return () => {
+      delSub.remove();
+      updateSub.remove();
+    };
   }, [user, activeFilter?.lga, activeFilter?.state]);
 
   const fetchMarkers = async () => {
@@ -211,6 +224,7 @@ export default function MapScreen() {
     let qNewEvts = supabase.from('events')
       .select('id,title,location_address,lat,lng')
       .eq('status','PUBLISHED')
+      .neq('is_archived', true)
       .gte('start_time', new Date().toISOString())
       .not('lat','is',null)
       .not('lng','is',null);
@@ -265,7 +279,7 @@ export default function MapScreen() {
     if (activeFilter?.lga) qPostEvts = qPostEvts.eq('lga', activeFilter.lga);
     else if (activeFilter?.state) qPostEvts = qPostEvts.eq('state', activeFilter.state);
     
-    let qNewEvts = supabase.from('events').select('id,title,start_time,location_address,lat,lng,cover_image_url,attendee_count').eq('status','PUBLISHED').gte('start_time', new Date().toISOString()).order('start_time',{ascending:true});
+    let qNewEvts = supabase.from('events').select('id,title,start_time,location_address,lat,lng,cover_image_url,attendee_count').eq('status','PUBLISHED').neq('is_archived', true).gte('start_time', new Date().toISOString()).order('start_time',{ascending:true});
     if (activeFilter?.lga) qNewEvts = qNewEvts.eq('lga', activeFilter.lga);
     else if (activeFilter?.state) qNewEvts = qNewEvts.eq('state', activeFilter.state);
     

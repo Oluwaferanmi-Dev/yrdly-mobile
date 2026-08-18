@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, FlatList, TextInput,
   TouchableOpacity, Platform,
-  ActivityIndicator, Keyboard,
+  ActivityIndicator, Keyboard, DeviceEventEmitter, Alert
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
@@ -198,6 +198,7 @@ function PostDetailContent() {
         const newCount = (post.comment_count || 0) + 1;
         await supabase.from('posts').update({ comment_count: newCount }).eq('id', id);
         setPost({ ...post, comment_count: newCount });
+        DeviceEventEmitter.emit('post_updated', { postId: id, updates: { comment_count: newCount } });
       }
 
       // Trigger notification
@@ -250,6 +251,7 @@ function PostDetailContent() {
           onPress: async () => {
             if (id) {
               await deletePost(id);
+              DeviceEventEmitter.emit('post_deleted', id);
               router.back();
             }
           }

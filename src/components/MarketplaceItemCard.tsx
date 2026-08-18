@@ -1,6 +1,6 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
-import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Animated, Dimensions, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { Post } from '../types';
@@ -113,11 +113,11 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
           )}
 
           {/* Heart */}
-          <TouchableOpacity style={stylesheet.heart} onPress={toggleSaved} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Pressable style={stylesheet.heart} onPress={(e) => { e.stopPropagation(); toggleSaved(); }} hitSlop={8}>
             <Animated.View style={{ transform: [{ scale: heartScale }] }}>
               <Ionicons name={saved ? 'heart' : 'heart-outline'} size={20} color={saved ? '#ff4d6d' : '#fff'} />
             </Animated.View>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* Info */}

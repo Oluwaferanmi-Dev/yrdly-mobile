@@ -2,7 +2,7 @@ import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert
+  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, DeviceEventEmitter
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
@@ -181,7 +181,8 @@ export default function EditMarketplaceItemScreen() {
           onPress: async () => {
             if (id) {
               await deletePost(id);
-              router.replace('/');
+              DeviceEventEmitter.emit('post_deleted', id);
+              router.replace('/(tabs)/');
             }
           }
         }

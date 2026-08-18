@@ -261,8 +261,7 @@ export default function ProfileTab() {
     }
   }, [user, profile?.phone_verified, router]);
 
-  const listHeader = useMemo(() => {
-  return (
+  const listHeader = (
       <View style={stylesheet.headerContainer}>
         
         {/* ── Nav bar (YRDLY New Designs matching) ── */}
@@ -437,7 +436,6 @@ export default function ProfileTab() {
 
       </View>
     );
-  }, [avatarUri, profile, user, posts.length, followersCount, followingCount, formattedLocation, handleManageStore, router, activeTab]);
 
   const activeData = activeTab === 'posts' ? posts : savedPosts;
   const isLoading = activeTab === 'posts' ? loadingPosts : loadingSaved;
@@ -449,6 +447,7 @@ export default function ProfileTab() {
         data={activeData}
         keyExtractor={(item) => item.id}
         numColumns={numColumns}
+        extraData={theme}
         ListHeaderComponent={listHeader}
         renderItem={({ item }) => {
         return (

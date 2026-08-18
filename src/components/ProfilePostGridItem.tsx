@@ -49,16 +49,16 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
           <Image source={{ uri: StorageService.getOptimizedImageUrl(imageUrl, 300) || imageUrl }} style={styles.image} contentFit="cover" />
           {hasImages && post.image_urls!.length > 1 && !hasVideo && (
             <View style={styles.iconOverlay}>
-              <Feather name="layers" size={14} color={theme.colors.TEXT_PRIMARY} />
+              <Feather name="layers" size={14} color="#FFF" />
             </View>
           )}
         </>
       ) : hasVideo ? (
-        <View style={[styles.placeholder, { backgroundColor: '#161616' }]}>
-          <Feather name="video" size={32} color="#A1A1AA" />
+        <View style={[styles.placeholder, { backgroundColor: theme.colors.SURFACE_ALT }]}>
+          <Feather name="video" size={32} color={theme.colors.MUTED} />
         </View>
       ) : (
-        <View style={[styles.placeholder, { backgroundColor: theme.colors.SURFACE }]}>
+        <View style={[styles.placeholder, { backgroundColor: theme.colors.SURFACE_ALT }]}>
           <Text style={styles.textSnippet} numberOfLines={3}>
             {post.title || post.text || 'Post'}
           </Text>
@@ -68,7 +68,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
       <View style={styles.badgeContainer}>
         {post.category === 'For Sale' && (
           <View style={styles.badge}>
-            <MaterialIcons name="storefront" size={12} color={theme.colors.TEXT_PRIMARY} />
+            <MaterialIcons name="storefront" size={12} color="#FFF" />
           </View>
         )}
         {post.category === 'Event' && (
@@ -80,7 +80,7 @@ export function ProfilePostGridItem({ post, onPress, width }: ProfilePostGridIte
 
       {hasVideo && imageUrl && (
         <View style={styles.iconOverlay}>
-          <Feather name="play" size={16} color={theme.colors.TEXT_PRIMARY} />
+          <Feather name="play" size={16} color="#FFF" />
         </View>
       )}
     </AnimatedTouchable>
@@ -91,9 +91,9 @@ const sStylesheet = createStyleSheet(theme => ({
   container: {
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#161616',
+    backgroundColor: theme.colors.SURFACE_ALT,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)'
+    borderColor: theme.colors.GLASS_BORDER
   },
   image: {
     width: '100%',

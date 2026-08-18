@@ -163,8 +163,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
   const rest = events.slice(9);
 
   // ── ListHeader MUST be defined before any conditional returns ──
-  const listHeaderElement = useMemo(() => {
-  return (
+  const listHeaderElement = (
       <>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={stylesheet.chipsScroll} contentContainerStyle={stylesheet.chipsContent}>
           {EVENT_CATEGORIES.map(cat => {
@@ -312,9 +311,7 @@ export function EventList({ searchQuery = '', sortOption = 'newest' }: EventList
           <Text style={[stylesheet.sectionTitle, { color: theme.colors.TEXT_PRIMARY, paddingHorizontal: 16, marginBottom: 8 }]}>All Events</Text>
         )}
       </>
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     );
-  }, [featured, horizontal, rest, featuredIdx, category, theme, user]);
 
   return (
     <FlatList

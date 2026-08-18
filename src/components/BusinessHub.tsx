@@ -1,6 +1,6 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Alert, RefreshControl, Animated } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Alert, RefreshControl, Animated, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -199,11 +199,11 @@ export function BusinessHub({ searchQuery }: BusinessHubProps) {
           </View>
         </View>
         
-        <TouchableOpacity style={{ padding: 8 }} onPress={(e) => toggleSave(e)}>
+        <Pressable style={{ padding: 8 }} onPress={(e) => { e.stopPropagation(); toggleSave(); }}>
           <Animated.View style={{ transform: [{ scale: heartScale }] }}>
             <Ionicons name={saved ? 'heart' : 'heart-outline'} size={22} color={saved ? '#ff4d6d' : theme.colors.MUTED} />
           </Animated.View>
-        </TouchableOpacity>
+        </Pressable>
       </TouchableOpacity>
     );
   };

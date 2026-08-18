@@ -2,7 +2,7 @@ import { createStyleSheet, useStyles } from "react-native-unistyles";
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView,
-  TouchableOpacity, Dimensions, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, Share, Linking
+  TouchableOpacity, Dimensions, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, Share, DeviceEventEmitter, Linking
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
@@ -284,6 +284,30 @@ export default function EventDetailScreen() {
     }
   };
 
+  const handleDeleteEvent = () => {
+    Alert.alert(
+      'Delete Event',
+      'Are you sure you want to delete this event? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await supabase.from('events').update({ is_archived: true }).eq('id', event!.id).eq('organizer_id', user!.id);
+              DeviceEventEmitter.emit('post_deleted', event!.id);
+              router.back();
+            } catch (e) {
+              console.error('Delete event error:', e);
+              Alert.alert('Error', 'Could not delete event.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handlePurchase = async () => {
     if (!event || !selectedTier) return;
     if (!attendeeName.trim() || !attendeeEmail.trim()) {
@@ -444,6 +468,11 @@ export default function EventDetailScreen() {
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
           <View style={stylesheet.headerRightActions}>
+            {isOwner && isExpired && (
+              <TouchableOpacity onPress={handleDeleteEvent} style={[stylesheet.iconBtn, { backgroundColor: 'rgba(229, 57, 53, 0.2)', marginRight: 8 }]}>
+                <Feather name="trash-2" size={20} color="#E53935" />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity onPress={handleShare} style={[stylesheet.iconBtn, { backgroundColor: 'rgba(0,0,0,0.4)', marginRight: 8 }]}>
               <Feather name="share" size={20} color={theme.colors.TEXT_PRIMARY} />
             </TouchableOpacity>

@@ -181,6 +181,21 @@ export default function EditProfileScreen() {
               </View>
             </View>
 
+            {/* Phone */}
+            {user?.phone && (
+              <View style={[s.fieldGroup, { opacity: 0.7 }]}>
+                <Text style={s.label}>PHONE NUMBER <Text style={s.labelOpt}>(VERIFIED)</Text></Text>
+                <View style={[s.inputWrap, { backgroundColor: 'rgba(0,0,0,0.02)' }]}>
+                  <Feather name="phone" size={18} color={theme.colors.MUTED} style={s.inputIcon} />
+                  <TextInput
+                    value={user.phone}
+                    editable={false}
+                    style={[s.input, { color: theme.colors.MUTED }]}
+                  />
+                </View>
+              </View>
+            )}
+
             {/* Handle */}
             <View style={s.fieldGroup}>
               <Text style={s.label}>USERNAME</Text>
@@ -243,12 +258,12 @@ export default function EditProfileScreen() {
             {/* Read-only Verified Fields */}
             <View style={s.verifiedSection}>
               <Text style={[s.label, { marginBottom: 12 }]}>VERIFIED INFO</Text>
-              {((profile as any)?.phone || user?.phone) && (
+              {(profile?.phone_verified || (profile as any)?.phone || user?.phone) && (
                 <View style={s.verifiedCard}>
                   <Text style={{ fontSize: 16 }}>🇳🇬</Text>
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={s.verifiedLabel}>PHONE</Text>
-                    <Text style={s.verifiedValue}>{(profile as any)?.phone || user?.phone}</Text>
+                    <Text style={s.verifiedValue}>{(profile as any)?.phone || user?.phone || 'Verified Number'}</Text>
                   </View>
                   <View style={s.verifiedBadge}>
                     <Feather name="check" size={12} color={theme.colors.G} />

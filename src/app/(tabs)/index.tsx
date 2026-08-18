@@ -1,6 +1,6 @@
 import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
-import { View, Text, RefreshControl, TouchableOpacity, Platform, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, RefreshControl, TouchableOpacity, Platform, Modal, ActivityIndicator, DeviceEventEmitter } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
 import { PostCard } from '../../components/PostCard';
@@ -133,6 +133,19 @@ export default function HomeTab() {
   const STALE_AFTER_MS = 30_000; // only re-fetch if data is older than 30s
   const scrollOffsetShared = useSharedValue(0);
 
+  useEffect(() => {
+    const postDeletedSub = DeviceEventEmitter.addListener('post_deleted', (postId) => {
+      // Optimitically mark it as hidden if we don't have a direct remove function
+      optimisticUpdatePost(postId, { category: 'DELETED' } as any);
+    });
+    const postUpdatedSub = DeviceEventEmitter.addListener('post_updated', ({ postId, updates }) => {
+      optimisticUpdatePost(postId, updates);
+    });
+    return () => {
+      postDeletedSub.remove();
+      postUpdatedSub.remove();
+    };
+  }, [optimisticUpdatePost]);
   
   useScrollToTop(flashListRef);
   
@@ -220,6 +233,7 @@ export default function HomeTab() {
 
   const posts = useMemo(() => {
     return allPosts.filter(post => {
+      if (post.category === 'DELETED') return false;
       if (post.category === 'Event' && post.event_date) {
         return new Date(post.event_date).getTime() >= Date.now();
       }
