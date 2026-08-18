@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '800',
-    color: theme.colors.DARK,
+    color: '#FFFFFF',
     marginTop: 20,
     marginBottom: 6,
     textAlign: 'center',
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
   },
   btnText: {
-    color: theme.colors.DARK,
+    color: '#050505',
     fontSize: 16,
     fontWeight: '700',
   },
