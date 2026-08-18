@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontFamily: 'Outfit-ExtraBold',
     fontSize: 48,
-    color: theme.colors.TEXT_PRIMARY,
+    color: '#FFFFFF',
     letterSpacing: -1.5,
   },
   tagline: {

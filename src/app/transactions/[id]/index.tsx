@@ -38,7 +38,7 @@ interface TxDetail {
 
 const getStatusMeta = (status: EscrowStatus, isDarkMode: boolean, colors: any) => {
   const meta: Record<EscrowStatus, { label: string; color: string; bg: string; icon: string }> = {
-    pending:   { label: 'Awaiting Payment', color: theme.colors.WARNING, bg: theme.colors.SURFACE, icon: 'clock' },
+    pending:   { label: 'Awaiting Payment', color: colors.WARNING, bg: colors.SURFACE, icon: 'clock' },
     paid:      { label: 'Paid — Awaiting Handover', color: colors.G, bg: isDarkMode ? colors.SURFACE : '#E3F2FD', icon: 'box' },
     shipped:   { label: 'Item Sent / Handed Over', color: isDarkMode ? '#CE93D8' : '#6A1B9A', bg: isDarkMode ? '#311B92' : '#F3E5F5', icon: 'truck' },
     delivered: { label: 'Delivered', color: isDarkMode ? '#81C784' : '#2E7D32', bg: isDarkMode ? '#1B5E20' : '#E8F5E9', icon: 'check-circle' },
