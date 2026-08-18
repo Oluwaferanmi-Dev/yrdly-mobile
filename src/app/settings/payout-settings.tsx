@@ -46,8 +46,7 @@ export default function PayoutSettingsScreen() {
 
   const fetchBanks = useCallback(async () => {
     try {
-      const res = await fetch('https://api.paystack.co/bank?currency=NGN');
-      const data = await res.json();
+      const data = await api.get('/api/paystack/banks');
       if (data.status) {
         setBanks(data.data);
       }
@@ -71,22 +70,20 @@ export default function PayoutSettingsScreen() {
     setStep('verifying');
     setResolvedName('');
     try {
-      const res = await fetch(`https://api.paystack.co/bank/resolve?account_number=${acctNum}&bank_code=${bankCode}`, {
-        headers: {
-          Authorization: `Bearer ${process.env.EXPO_PUBLIC_PAYSTACK_SECRET_KEY}`
-        }
+      const data = await api.post('/api/paystack/resolve-account', {
+        accountNumber: acctNum,
+        bankCode
       });
-      const data = await res.json();
-      if (data.status) {
-        setResolvedName(data.data.account_name);
+      if (data.success) {
+        setResolvedName(data.accountName);
         setTimeout(() => setStep('confirmed'), 1000);
       } else {
         setStep('account');
         Alert.alert('Verification Failed', 'Could not verify this account number.');
       }
-    } catch (e) {
+    } catch (e: any) {
       setStep('account');
-      Alert.alert('Error', 'An error occurred while verifying the account.');
+      Alert.alert('Verification Failed', e.message || 'An error occurred while verifying the account.');
     }
   };
 
