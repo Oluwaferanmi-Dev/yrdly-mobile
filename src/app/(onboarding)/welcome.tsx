@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Logo, SceneBg, PrimaryBtn, SecondaryBtn } from '@/components/onboarding/primitives';
+import { Logo, PrimaryBtn, SceneBg, SecondaryBtn } from '@/components/onboarding/primitives';
 import { ONBOARDING_THEME } from '@/constants/onboarding-theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { colors } = ONBOARDING_THEME;
 
@@ -32,7 +32,7 @@ export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
       <SceneBg photoId="1594538756542-8c88bda491c5" pos="center 40%" gradientStart="30%" />
-      
+
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centerContent}>
           <Animated.View style={[styles.floatContainer, { transform: [{ translateY: floatAnim }] }]}>
@@ -42,10 +42,11 @@ export default function WelcomeScreen() {
           </Animated.View>
         </View>
 
+
         <View style={styles.bottomActions}>
-          <PrimaryBtn 
-            label="Get Started" 
-            onClick={() => router.push('/(onboarding)/tour')} 
+          <PrimaryBtn
+            label="Get Started"
+            onClick={() => router.push('/(onboarding)/tour')}
             icon={<Ionicons name="arrow-forward" size={18} color="#000" />}
           />
           <SecondaryBtn label="Already have an account? Sign in" onClick={() => router.push('/(auth)/login')} />
