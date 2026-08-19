@@ -18,7 +18,6 @@ import { usePosts } from '../../hooks/use-posts';
 import { PostCard } from '../../components/PostCard';
 import { Post } from '../../types';
 import { timeAgo } from '../../lib/utils';
-import { Alert } from 'react-native';
 
 import { StorageService } from '../../lib/storage-service';
 import { CommentItem, CommentType } from '../../components/CommentItem';
