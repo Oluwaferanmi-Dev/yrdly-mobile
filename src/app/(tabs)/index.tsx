@@ -233,7 +233,7 @@ export default function HomeTab() {
 
   const posts = useMemo(() => {
     return allPosts.filter(post => {
-      if (post.category === 'DELETED') return false;
+      if ((post.category as any) === 'DELETED') return false;
       if (post.category === 'Event' && post.event_date) {
         return new Date(post.event_date).getTime() >= Date.now();
       }

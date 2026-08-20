@@ -130,7 +130,7 @@ const PostVideo = React.memo(function PostVideo({ post, isVisible, isVideoMuted,
   );
 });
 
-export const PostCard = React.memo(function PostCard({ post, onPress, onLike, onComment, onShare, isVisible, onOpenImageViewer }: PostCardProps) {
+export const PostCard = React.memo(function PostCard({ post, onPress, onLike, onComment, onShare, isVisible, onOpenImageViewer, onDelete }: PostCardProps) {
   const router = useRouter();
   const { user: currentUser, profile, updateProfile } = useAuth();
 

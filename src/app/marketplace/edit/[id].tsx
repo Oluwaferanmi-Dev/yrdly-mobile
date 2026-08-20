@@ -182,7 +182,7 @@ export default function EditMarketplaceItemScreen() {
             if (id) {
               await deletePost(id);
               DeviceEventEmitter.emit('post_deleted', id);
-              router.replace('/(tabs)/');
+              router.replace('/');
             }
           }
         }

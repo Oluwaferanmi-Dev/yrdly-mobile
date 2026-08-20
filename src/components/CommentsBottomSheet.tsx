@@ -163,7 +163,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       const textMod = await ModerationService.checkText(text.trim());
       if (!textMod.isSafe) {
         Alert.alert('Content Flagged', 'Your comment contains inappropriate language.');
-        return;
+        throw new Error('Content flagged');
       }
 
       const payload = {
@@ -282,7 +282,6 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
                   replyingTo={replyingTo}
                   onClearReply={() => setReplyingTo(null)}
                   onSubmit={handleSendComment}
-                  InputComponent={BottomSheetTextInput}
                 />
               </View>
             </BottomSheetFooter>
@@ -301,7 +300,7 @@ export const CommentsBottomSheet = forwardRef<CommentsBottomSheetRef, CommentsBo
       footerComponent={renderFooter}
       backgroundStyle={{ backgroundColor: theme.colors.DARK }}
       handleIndicatorStyle={{ backgroundColor: theme.colors.GLASS_BORDER }}
-      keyboardBehavior="extend"
+      keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
       <LiquidGlassView
