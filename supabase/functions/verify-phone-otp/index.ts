@@ -77,6 +77,28 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    const { data: existingUsers, error: checkError } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('phone', data.msisdn)
+      .eq('phone_verified', true)
+      .neq('id', user.id)
+      .limit(1)
+
+    if (checkError) {
+      return new Response(JSON.stringify({ error: checkError.message }), { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    if (existingUsers && existingUsers.length > 0) {
+      return new Response(JSON.stringify({ error: 'This phone number is already verified on another account.' }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const { error: updateError } = await supabaseAdmin.from('users')
       .update({ phone: data.msisdn, phone_verified: true })
       .eq('id', user.id)

@@ -48,6 +48,33 @@ serve(async (req) => {
       })
     }
 
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const { data: existingUsers, error: checkError } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('phone', normalized)
+      .eq('phone_verified', true)
+      .neq('id', user.id)
+      .limit(1)
+
+    if (checkError) {
+      return new Response(JSON.stringify({ error: checkError.message }), { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    if (existingUsers && existingUsers.length > 0) {
+      return new Response(JSON.stringify({ error: 'This phone number is already verified on another account.' }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const termiiUrl = Deno.env.get('TERMII_BASE_URL') || 'https://v4.api.termii.com'
 
     const res = await fetch(`${termiiUrl}/api/sms/otp/send`, {

@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   },
   glassInputText: {
     flex: 1,
-    color: '#050505',
+    color: '#fff',
     fontSize: 15,
     fontFamily: 'Inter-Regular',
   },
