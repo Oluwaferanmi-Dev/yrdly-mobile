@@ -22,9 +22,6 @@ export default function PhoneScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
           <View style={styles.topBar}>
             <BackBtn onClick={() => router.back()} light />
-            <TouchableOpacity onPress={() => router.push({ pathname: '/(onboarding)/profile', params: { phoneSkipped: 'true' } } as any)}>
-              <Text style={styles.skipText}>Skip for now</Text>
-            </TouchableOpacity>
           </View>
 
           <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>

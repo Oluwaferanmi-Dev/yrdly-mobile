@@ -157,8 +157,17 @@ export default function CheckoutScreen() {
         setStage('summary');
       }
     } catch (e: any) {
+      if (e?.message === 'PHONE_VERIFICATION_REQUIRED') {
+        router.push('/(auth)/phone' as any);
+        return;
+      }
+      
       setStage('error');
-      setErrorMsg(e?.message ?? 'Could not initialize payment.');
+      let msg = e?.message ?? 'Could not initialize payment.';
+      if (msg === 'SELLER_PHONE_UNVERIFIED') {
+        msg = 'The seller has not verified their phone number. Payment cannot proceed.';
+      }
+      setErrorMsg(msg);
     }
   };
 
