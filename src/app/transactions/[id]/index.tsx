@@ -15,6 +15,7 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../hooks/use-supabase-auth';
 import { formatPrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
+import { MARKETPLACE_CONSTANTS } from '../../../lib/constants';
 
 import { api } from '../../../lib/api';
 
@@ -331,7 +332,11 @@ export default function TransactionDetailScreen() {
           onPress: async () => {
             setActionLoading(true);
             try {
-              await api.post('/api/payluk/claim-funds', { transactionId: tx.id });
+              if (tx.payment_provider === 'payluk') {
+                await api.post('/api/payluk/claim-funds', { transactionId: tx.id });
+              } else {
+                await api.post(`/api/transactions/${tx.id}/claim`, {});
+              }
               await fetchTx();
               Alert.alert('✅ Claimed!', 'Your funds have been released to your wallet.');
             } catch (e: any) {
@@ -374,8 +379,13 @@ export default function TransactionDetailScreen() {
 
   const canMarkSent = isSeller && tx.status === 'paid';
   const canConfirmReceipt = isBuyer && (tx.status === 'shipped' || tx.status === 'delivered');
-  // Claim funds: seller-only, Payluk transactions only, when buyer hasn't confirmed after receiving item
-  const canClaimFunds = isSeller && tx.payment_provider === 'payluk' && tx.status === 'paid';
+  
+  // Claim funds: seller-only, after item is shipped and 48 hours have passed
+  const shippedTime = tx.shipped_at ? new Date(tx.shipped_at).getTime() : 0;
+  const hoursSinceShipped = (Date.now() - shippedTime) / (1000 * 60 * 60);
+  const canClaimFunds = isSeller && 
+                        (tx.status === 'shipped' || tx.status === 'delivered') && 
+                        hoursSinceShipped >= MARKETPLACE_CONSTANTS.AUTO_RELEASE_HOURS;
   const canDispute = (isBuyer || isSeller) && ['paid', 'shipped', 'delivered'].includes(tx.status);
   const canReview = isBuyer && tx.status === 'completed';
 
