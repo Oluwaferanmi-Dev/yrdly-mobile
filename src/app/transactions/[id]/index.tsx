@@ -16,6 +16,8 @@ import { useAuth } from '../../../hooks/use-supabase-auth';
 import { formatPrice } from '../../../lib/utils';
 import { useAppTheme } from '../../../context/ThemeContext';
 
+import { api } from '../../../lib/api';
+
 type EscrowStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled';
 
 interface TxDetail {
@@ -24,6 +26,8 @@ interface TxDetail {
   commission: number;
   seller_amount: number;
   status: EscrowStatus;
+  payment_provider: string | null;
+  payluk_tx_ref: string | null;
   created_at: string;
   paid_at: string | null;
   shipped_at: string | null;
@@ -123,6 +127,7 @@ export default function TransactionDetailScreen() {
         .from('escrow_transactions')
         .select(`
           id, item_id, item_type, amount, commission, seller_amount, status,
+          payment_provider, payluk_tx_ref,
           created_at, paid_at, shipped_at, delivered_at, completed_at,
           buyer_id, seller_id,
           post_item:posts(id, title, text, image_urls, image_url, price),
@@ -279,16 +284,66 @@ export default function TransactionDetailScreen() {
           onPress: async () => {
             setActionLoading(true);
             try {
-              const { error } = await supabase
-                .from('escrow_transactions')
-                .update({ status: 'completed', completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-                .eq('id', tx.id)
-                .eq('buyer_id', user.id);
-              if (error) throw error;
+              if (tx.payment_provider === 'payluk') {
+                // Payluk path: call backend which will call Payluk's confirm-payment API
+                await api.post('/api/payluk/confirm-delivery', { transactionId: tx.id });
+              } else {
+                // Paystack / legacy path: direct DB update (existing behaviour)
+                const { error } = await supabase
+                  .from('escrow_transactions')
+                  .update({ status: 'completed', completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+                  .eq('id', tx.id)
+                  .eq('buyer_id', user.id);
+                if (error) throw error;
+              }
               await fetchTx();
               Alert.alert('🎉 Done!', 'Funds have been released to the seller. Thank you!');
-            } catch {
-              Alert.alert('Error', 'Could not confirm receipt. Please try again.');
+            } catch (e: any) {
+              const msg: string = e?.message ?? '';
+              if (msg === 'DELIVERY_RECORDED_FAILED') {
+                Alert.alert(
+                  'Action Completed',
+                  'Delivery was confirmed with the payment provider, but our records are still updating. Please contact support if this persists.',
+                );
+              } else {
+                Alert.alert('Error', msg || 'Could not confirm receipt. Please try again.');
+              }
+            } finally {
+              setActionLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // ── Seller: claim funds after delivery window ───────────────
+  const handleClaimFunds = async () => {
+    if (!tx || !user) return;
+    Alert.alert(
+      'Claim Funds?',
+      'Request release of your funds. This is only allowed after the buyer\'s confirmation window has elapsed.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Claim Funds',
+          style: 'default',
+          onPress: async () => {
+            setActionLoading(true);
+            try {
+              await api.post('/api/payluk/claim-funds', { transactionId: tx.id });
+              await fetchTx();
+              Alert.alert('✅ Claimed!', 'Your funds have been released to your wallet.');
+            } catch (e: any) {
+              const msg: string = e?.message ?? '';
+              if (msg === 'CLAIM_RECORDED_FAILED') {
+                Alert.alert(
+                  'Action Completed',
+                  'Funds were claimed from the payment provider, but our records are still updating. Contact support if needed.',
+                );
+              } else {
+                Alert.alert('Cannot Claim Yet', msg || 'Funds cannot be claimed yet. The buyer\'s confirmation window may not have elapsed.');
+              }
             } finally {
               setActionLoading(false);
             }
@@ -318,7 +373,9 @@ export default function TransactionDetailScreen() {
     : null;
 
   const canMarkSent = isSeller && tx.status === 'paid';
-  const canConfirmReceipt = isBuyer && (tx.status === 'shipped' || tx.status === 'delivered');
+  const canConfirmReceipt = isBuyer && (tx.status === 'shipped' || tx.status === 'delivered' || tx.status === 'paid');
+  // Claim funds: seller-only, Payluk transactions only, when buyer hasn't confirmed after receiving item
+  const canClaimFunds = isSeller && tx.payment_provider === 'payluk' && tx.status === 'paid';
   const canDispute = (isBuyer || isSeller) && ['paid', 'shipped', 'delivered'].includes(tx.status);
   const canReview = isBuyer && tx.status === 'completed';
 
@@ -503,6 +560,24 @@ export default function TransactionDetailScreen() {
               <>
                 <Feather name="check-circle" size={20} color="#000" style={{ marginRight: 8 }} />
                 <Text style={[stylesheet.primaryActionText, { color: '#000' }]}>Confirm I Received the Item</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {canClaimFunds && (
+          <TouchableOpacity
+            style={[stylesheet.primaryAction, { backgroundColor: '#1565C0', shadowColor: '#1565C0' }]}
+            onPress={handleClaimFunds}
+            disabled={actionLoading}
+            activeOpacity={0.85}
+          >
+            {actionLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Feather name="download" size={20} color="#fff" style={{ marginRight: 8 }} />
+                <Text style={[stylesheet.primaryActionText, { color: '#fff' }]}>Claim My Funds</Text>
               </>
             )}
           </TouchableOpacity>
