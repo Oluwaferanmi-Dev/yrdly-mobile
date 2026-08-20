@@ -7,7 +7,7 @@ export const ONBOARDING_THEME = {
     GLASS_BG: 'rgba(8,8,8,0.74)',
     GLASS_BORDER: 'rgba(255,255,255,0.09)',
     SURFACE: 'rgba(255,255,255,0.055)',
-    LABEL: 'rgba(255,255,255,0.38)',
+    LABEL: 'rgba(255,255,255,0.65)',
     MUTED: 'rgba(255,255,255,0.55)',
     TEXT_PRIMARY: '#FFFFFF',
     TEXT_SECONDARY: '#A0A0A0',
