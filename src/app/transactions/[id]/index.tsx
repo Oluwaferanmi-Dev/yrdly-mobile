@@ -373,7 +373,7 @@ export default function TransactionDetailScreen() {
     : null;
 
   const canMarkSent = isSeller && tx.status === 'paid';
-  const canConfirmReceipt = isBuyer && (tx.status === 'shipped' || tx.status === 'delivered' || tx.status === 'paid');
+  const canConfirmReceipt = isBuyer && (tx.status === 'shipped' || tx.status === 'delivered');
   // Claim funds: seller-only, Payluk transactions only, when buyer hasn't confirmed after receiving item
   const canClaimFunds = isSeller && tx.payment_provider === 'payluk' && tx.status === 'paid';
   const canDispute = (isBuyer || isSeller) && ['paid', 'shipped', 'delivered'].includes(tx.status);
