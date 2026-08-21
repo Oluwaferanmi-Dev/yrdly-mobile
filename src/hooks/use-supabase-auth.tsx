@@ -193,7 +193,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (event === 'TOKEN_REFRESH_FAILED') {
-        console.warn('[Yrdly Auth] Token refresh failed, keeping current user state.');
+        const netInfo = await NetInfo.fetch();
+        if (netInfo.isConnected) {
+          console.warn('[Yrdly Auth] Token refresh failed while online. Logging out.');
+          FileSystem.deleteAsync(PROFILE_CACHE_FILE, { idempotent: true }).catch(() => {});
+          if (posthog) {
+            posthog.capture('user_signed_out_forcefully');
+            posthog.reset();
+          }
+          oneSignalService.logout();
+          setUser(null);
+          setProfile(null);
+          supabase.auth.signOut().catch(() => {});
+        } else {
+          console.warn('[Yrdly Auth] Token refresh failed but offline, keeping current user state.');
+        }
         return;
       }
 
