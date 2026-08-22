@@ -355,8 +355,8 @@ export default function CheckoutScreen() {
             <Feather name="credit-card" size={28} color={theme.colors.G} />
         </View>
         <View style={{ alignItems: 'center' }}>
-            <Text style={stylesheet.payingTitle}>Redirecting to Paystack</Text>
-            <Text style={stylesheet.payingSubtitle}>Your payment is being processed securely.</Text>
+            <Text style={stylesheet.payingTitle}>Initializing Secure Payment</Text>
+            <Text style={stylesheet.payingSubtitle}>Please wait while we set up your transaction.</Text>
         </View>
       </SafeAreaView>
     );

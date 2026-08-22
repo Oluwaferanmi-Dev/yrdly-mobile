@@ -393,8 +393,8 @@ export default function CreateEventScreen() {
           <TouchableOpacity 
             style={stylesheet.btnPrimary}
             onPress={() => {
-              if (router.canDismiss()) router.dismissAll();
-              router.push('/(tabs)/catalog');
+               
+              router.replace('/(tabs)/');
             }}
           >
             <Text style={stylesheet.btnPrimaryText}>Explore Events</Text>
@@ -413,8 +413,8 @@ export default function CreateEventScreen() {
         <TouchableOpacity 
           style={stylesheet.btnPrimary}
           onPress={() => {
-            if (router.canDismiss()) router.dismissAll();
-            router.push('/(tabs)/catalog');
+             
+            router.replace('/(tabs)/');
           }}
         >
           <Text style={stylesheet.btnPrimaryText}>Explore Events</Text>
