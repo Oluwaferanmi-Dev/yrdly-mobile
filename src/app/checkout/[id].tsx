@@ -3,8 +3,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
-import { makeRedirectUri } from 'expo-auth-session';
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -38,7 +37,7 @@ interface InitializeResponse {
   success: boolean;
   transactionId: string;
   totalAmount: number;          // Server-authoritative; use instead of recomputing locally
-  paymentLink?: string;         // Present when Paystack is active
+  paymentLink?: string;         // Undefined for Payluk and free items
   paylukEscrowId?: string;     // Present when Payluk is active
   paylukPaymentToken?: string;
 }
@@ -63,7 +62,7 @@ interface VirtualAccountResponse {
 type Stage =
   | 'loading'
   | 'summary'
-  | 'paying'          // Paystack redirect in progress
+
   | 'payluk_checking' // Fetching wallet balance after initialize
   | 'payluk_confirm'  // Wallet has enough — show "Pay from wallet" button
   | 'payluk_fund'     // Balance insufficient — show virtual account + polling
@@ -269,10 +268,9 @@ export default function CheckoutScreen() {
       return;
     }
 
-    setStage('paying');
+    setStage('loading');
     setErrorMsg('');
     try {
-      const callbackUrl = makeRedirectUri({ path: 'payment-verify' });
       const result = await api.post<InitializeResponse>(
         '/api/payment/initialize',
         {
@@ -284,7 +282,6 @@ export default function CheckoutScreen() {
           buyerName: profile?.name ?? user.user_metadata?.name ?? 'Yrdly User',
           itemTitle: item.title,
           sellerName: item.seller?.name ?? 'Seller',
-          callbackUrl,
           itemType: type,
         }
       );
@@ -304,20 +301,10 @@ export default function CheckoutScreen() {
         return;
       }
 
-      // ── Paystack path ──
-      const browserResult = await WebBrowser.openAuthSessionAsync(result.paymentLink, callbackUrl);
+      // ── Fallback error ──
+      setStage('error');
+      setErrorMsg('Unexpected response from server. Please try again.');
 
-      if (browserResult.type === 'success' && browserResult.url) {
-        // Mock verification step — Paystack real-time confirmation out of scope
-        setTimeout(() => {
-            router.replace({
-                pathname: '/checkout/success',
-                params: { transactionId: result.transactionId, itemTitle: item.title, amount: String(item.price) },
-            } as any);
-        }, 1500);
-      } else {
-        setStage('summary');
-      }
     } catch (e: any) {
       if (e?.message === 'PHONE_VERIFICATION_REQUIRED') {
         router.push('/(auth)/phone' as any);
@@ -347,20 +334,6 @@ export default function CheckoutScreen() {
     );
   }
 
-  // ── Paystack redirect in progress ────────────────────────────
-  if (stage === 'paying') {
-    return (
-      <SafeAreaView style={[stylesheet.center, { backgroundColor: theme.colors.DARK, gap: 18 }]}>
-        <View style={stylesheet.payingIconContainer}>
-            <Feather name="credit-card" size={28} color={theme.colors.G} />
-        </View>
-        <View style={{ alignItems: 'center' }}>
-            <Text style={stylesheet.payingTitle}>Initializing Secure Payment</Text>
-            <Text style={stylesheet.payingSubtitle}>Please wait while we set up your transaction.</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   // ── Payluk: checking wallet balance ──────────────────────────
   if (stage === 'payluk_checking') {
