@@ -388,7 +388,7 @@ export default function CreateEventScreen() {
             style={stylesheet.btnPrimary}
             onPress={() => {
                
-              router.replace('/(tabs)/');
+              router.replace('/');
             }}
           >
             <Text style={stylesheet.btnPrimaryText}>Explore Events</Text>
@@ -408,7 +408,7 @@ export default function CreateEventScreen() {
           style={stylesheet.btnPrimary}
           onPress={() => {
              
-            router.replace('/(tabs)/');
+            router.replace('/');
           }}
         >
           <Text style={stylesheet.btnPrimaryText}>Explore Events</Text>
