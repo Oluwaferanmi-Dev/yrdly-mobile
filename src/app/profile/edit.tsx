@@ -76,14 +76,7 @@ export default function EditProfileScreen() {
         const file = { uri: avatarUri, name: 'avatar.jpg', type: 'image/jpeg' };
         const { url } = await StorageService.uploadUserAvatar(user.id, file);
         if (url) {
-           const imageMod = await ModerationService.checkImages('user-avatars', [url]);
-           if (!imageMod.isSafe) {
-              avatarModerationStatus = 'pending';
-              avatarModerationReason = imageMod.reason || 'Flagged image content';
-              finalAvatarUrl = url; // keep original url for queue insertion
-           } else {
-              finalAvatarUrl = imageMod.urls && imageMod.urls.length > 0 ? imageMod.urls[0] : url;
-           }
+           finalAvatarUrl = url;
         }
       }
 

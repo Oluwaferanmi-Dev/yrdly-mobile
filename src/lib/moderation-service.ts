@@ -24,28 +24,5 @@ export class ModerationService {
     }
   }
 
-  /**
-   * Check if an array of uploaded images is safe
-   * @param bucket The Supabase storage bucket the images are stored in
-   * @param paths The array of paths in the bucket, or public URLs
-   */
-  static async checkImages(bucket: string, paths: string[]): Promise<{ isSafe: boolean; reason?: string; urls?: string[] }> {
-    if (!paths || paths.length === 0) return { isSafe: true, urls: [] };
 
-    try {
-      const { data, error } = await supabase.functions.invoke('moderate-content', {
-        body: { type: 'image', bucket, content: paths },
-      });
-
-      if (error) {
-        console.error('[ModerationService] Error checking images:', error);
-        return { isSafe: false, reason: 'moderation_error', urls: paths };
-      }
-
-      return data;
-    } catch (e) {
-      console.error('[ModerationService] Exception checking images:', e);
-      return { isSafe: false, reason: 'moderation_error', urls: paths };
-    }
-  }
 }

@@ -48,14 +48,6 @@ export class CatalogService {
           let imageUrls: string[] = [];
           if (imageFiles && imageFiles.length > 0) {
             imageUrls = await this.uploadImages(businessId, imageFiles);
-            const imageMod = await ModerationService.checkImages('catalog-items', imageUrls);
-            if (!imageMod.isSafe) {
-               moderationStatus = 'pending';
-               moderationReason = imageMod.reason || 'Flagged image content';
-            }
-            if (imageMod.urls && imageMod.urls.length > 0) {
-              imageUrls = imageMod.urls;
-            }
           }
 
           // Insert catalog item
@@ -152,14 +144,6 @@ export class CatalogService {
           let newImageUrls: string[] = [];
           if (newImageFiles && newImageFiles.length > 0) {
             newImageUrls = await this.uploadImages(businessId, newImageFiles);
-            const imageMod = await ModerationService.checkImages('catalog-items', newImageUrls);
-            if (!imageMod.isSafe) {
-               moderationStatus = 'pending';
-               moderationReason = imageMod.reason || 'Flagged image content';
-            }
-            if (imageMod.urls && imageMod.urls.length > 0) {
-              newImageUrls = imageMod.urls;
-            }
           }
 
           // Combine existing and new images

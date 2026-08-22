@@ -274,13 +274,7 @@ export default function CreateEventScreen() {
         }
         
         // Moderate uploaded images
-        if (imageUrls.length > 0) {
-          const imageMod = await ModerationService.checkImages('post-images', imageUrls);
-          if (!imageMod.isSafe) {
-             modStatus = 'pending';
-             modReason = imageMod.reason || 'Flagged image content';
-          }
-        }
+
 
         const { data: newEvent, error: eventErr } = await supabase
           .from('events')

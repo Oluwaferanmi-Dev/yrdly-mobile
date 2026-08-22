@@ -249,13 +249,7 @@ export default function CreateForSaleScreen() {
         }
         
         // Moderate uploaded images
-        if (imageUrls.length > 0) {
-          const imageMod = await ModerationService.checkImages('post-images', imageUrls);
-          if (!imageMod.isSafe) {
-             modStatus = 'pending';
-             modReason = imageMod.reason || 'Flagged image content';
-          }
-        }
+
 
         const { data: newPost, error } = await supabase
           .from('posts')

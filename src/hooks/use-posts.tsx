@@ -624,17 +624,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
             
             // Moderate uploaded images
             if (uploadedUrls.length > 0) {
-              const imageMod = await ModerationService.checkImages('post-images', uploadedUrls);
-              if (!imageMod.isSafe) {
-                 moderationStatus = 'pending';
-                 moderationReason = imageMod.reason || 'Flagged image content';
-              }
-              
-              if (imageMod.urls && imageMod.urls.length > 0) {
-                  imageUrls = [...imageUrls, ...imageMod.urls];
-              } else {
-                  imageUrls = [...imageUrls, ...uploadedUrls];
-              }
+              imageUrls = [...imageUrls, ...uploadedUrls];
             }
         }
 
@@ -804,13 +794,7 @@ export const usePosts = (filter?: LocationFilter | null) => {
             
             // Moderate images
             if (uploadedUrls.length > 0) {
-              const imageMod = await ModerationService.checkImages('post-images', uploadedUrls);
-              if (!imageMod.isSafe) {
-                 moderationStatus = 'pending';
-                 moderationReason = imageMod.reason || 'Flagged image content';
-              }
-              const finalUrls = imageMod.urls && imageMod.urls.length > 0 ? imageMod.urls : uploadedUrls;
-              imageUrls = businessIdToUpdate ? [...imageUrls, ...finalUrls] : finalUrls;
+              imageUrls = businessIdToUpdate ? [...imageUrls, ...uploadedUrls] : uploadedUrls;
             }
         }
 
