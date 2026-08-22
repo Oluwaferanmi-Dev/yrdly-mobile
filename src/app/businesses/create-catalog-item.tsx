@@ -67,7 +67,7 @@ export default function CreateCatalogItemScreen() {
         mediaType: 'photo',
         cropping: true,
         freeStyleCropEnabled: true,
-        compressImageQuality: 0.8,
+        compressImageQuality: 1,
       });
       if (image) {
         setImageUris(prev => [...prev, image.path]);

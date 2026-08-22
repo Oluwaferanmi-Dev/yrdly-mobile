@@ -37,7 +37,7 @@ export default function EditProfileScreen() {
         cropping: true,
         width: 500,
         height: 500,
-        compressImageQuality: 0.8,
+        compressImageQuality: 1,
       });
 
       if (image && image.path) {
@@ -55,6 +55,15 @@ export default function EditProfileScreen() {
     if (!name.trim()) {
       Alert.alert('Validation Error', 'Name is required.');
       return;
+    }
+
+    const cleanHandle = handle.trim();
+    if (cleanHandle) {
+      const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+      if (!usernameRegex.test(cleanHandle)) {
+        Alert.alert('Validation Error', 'Username must be 3-20 characters long and can only contain letters, numbers, and underscores.');
+        return;
+      }
     }
 
     setLoading(true);

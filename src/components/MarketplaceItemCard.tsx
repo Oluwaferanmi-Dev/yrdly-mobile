@@ -113,11 +113,11 @@ export function MarketplaceItemCard({ item, onPress, onMessageSeller, onBuyNow }
           )}
 
           {/* Heart */}
-          <Pressable style={stylesheet.heart} onPress={(e) => { e.stopPropagation(); toggleSaved(); }} hitSlop={8}>
+          <TouchableOpacity style={stylesheet.heart} onPress={(e) => { e.stopPropagation(); toggleSaved(); }} hitSlop={8}>
             <Animated.View style={{ transform: [{ scale: heartScale }] }}>
               <Ionicons name={saved ? 'heart' : 'heart-outline'} size={20} color={saved ? '#ff4d6d' : '#fff'} />
             </Animated.View>
-          </Pressable>
+          </TouchableOpacity>
         </View>
 
         {/* Info */}
@@ -196,7 +196,7 @@ const sStylesheet = createStyleSheet(theme => ({
       imgPlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center' },
       badge: { position: 'absolute', top: 8, left: 8, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 7, paddingVertical: 3, borderRadius: 20 },
       badgeTxt: { fontSize: 9, fontWeight: '800', letterSpacing: 0.3 },
-      heart: { position: 'absolute', top: 8, right: 8, width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', alignItems: 'center' },
+      heart: { position: 'absolute', top: 8, right: 8, width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', alignItems: 'center', zIndex: 10, elevation: 10 },
       info: { padding: 10 },
       title: { fontSize: 13, fontWeight: '700', lineHeight: 18, marginBottom: 2 },
       condition: { fontSize: 11, marginBottom: 4 },

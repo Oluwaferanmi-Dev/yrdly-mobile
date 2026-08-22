@@ -42,7 +42,7 @@ export default function DisputeScreen() {
         mediaType: 'photo',
         cropping: true,
         freeStyleCropEnabled: true,
-        compressImageQuality: 0.7,
+        compressImageQuality: 1,
       });
 
       if (image) {

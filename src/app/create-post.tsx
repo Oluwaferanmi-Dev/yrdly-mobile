@@ -43,7 +43,7 @@ export default function CreatePostScreen() {
       if (isPhoto) {
         options.cropping = true;
         options.freeStyleCropEnabled = true;
-        options.compressImageQuality = 0.8;
+        options.compressImageQuality = 1;
       }
       
       const image = await ImagePicker.openPicker(options);

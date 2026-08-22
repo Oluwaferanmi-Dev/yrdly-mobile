@@ -183,12 +183,12 @@ export class StorageService {
     const ext = file.name.split('.').pop() ?? 'jpg';
     const path = `posts/${postId}/${Date.now()}.${ext}`;
 
-    const { data, error } = await this.uploadFile('pending-moderation', path, file, {
+    const { data, error } = await this.uploadFile('post-images', path, file, {
       cacheControl: '604800',
     }, onProgress);
     if (error || !data) return { url: null, error };
 
-    return { url: this.getPublicUrl('pending-moderation', path), error: null };
+    return { url: this.getPublicUrl('post-images', path), error: null };
   }
 
   /** Upload a chat image */
@@ -216,7 +216,7 @@ export class StorageService {
     const path = `avatars/${userId}/${Date.now()}.${ext}`;
     const mimeType = this.getMimeType(file.name, file.type);
 
-    const { data, error } = await this.uploadFile('pending-moderation', path, file, {
+    const { data, error } = await this.uploadFile('user-avatars', path, file, {
       contentType: mimeType,
     });
 
@@ -226,14 +226,14 @@ export class StorageService {
       const arrayBufferRetry = decode(base64Retry);
       
       const { data: d2, error: e2 } = await supabase.storage
-        .from('pending-moderation')
+        .from('user-avatars')
         .upload(path, arrayBufferRetry, { cacheControl: '3600', upsert: true, contentType: mimeType });
 
       if (e2) return { url: null, error: e2 };
-      return { url: this.getPublicUrl('pending-moderation', d2?.path ?? path), error: null };
+      return { url: this.getPublicUrl('user-avatars', d2?.path ?? path), error: null };
     }
 
-    return { url: this.getPublicUrl('pending-moderation', path), error: null };
+    return { url: this.getPublicUrl('user-avatars', path), error: null };
   }
 
   /** Upload dispute evidence */
@@ -298,7 +298,7 @@ export class StorageService {
     const path = `businesses/${businessId}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${safeName}`;
     const mimeType = this.getMimeType(file.name, file.type);
 
-    const { data, error } = await this.uploadFile('pending-moderation', path, file, {
+    const { data, error } = await this.uploadFile('post-images', path, file, {
       contentType: mimeType,
       cacheControl: '604800',
     });
@@ -310,16 +310,16 @@ export class StorageService {
         const base64 = await FileSystem.readAsStringAsync(file.uri, { encoding: 'base64' });
         const arrayBuffer = decode(base64);
         const { data: d2, error: e2 } = await supabase.storage
-          .from('pending-moderation')
+          .from('post-images')
           .upload(path, arrayBuffer, { cacheControl: '604800', upsert: true, contentType: mimeType });
         if (e2) return { url: null, error: e2 };
-        return { url: this.getPublicUrl('pending-moderation', d2?.path ?? path), error: null };
+        return { url: this.getPublicUrl('post-images', d2?.path ?? path), error: null };
       } catch (err) {
         return { url: null, error: err };
       }
     }
 
-    return { url: this.getPublicUrl('pending-moderation', path), error: null };
+    return { url: this.getPublicUrl('post-images', path), error: null };
   }
 
   /** Upload a report image */

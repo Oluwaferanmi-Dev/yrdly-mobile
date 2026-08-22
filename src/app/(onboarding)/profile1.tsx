@@ -55,7 +55,19 @@ export default function Profile1Screen() {
       const clean = handle.replace(/^@/, '').trim();
       const existing = (profile?.username || user?.user_metadata?.username || '').replace(/^@/, '').trim();
       
-      if (!clean || clean.toLowerCase() === existing.toLowerCase()) {
+      if (!clean) {
+        setUsernameError('');
+        return;
+      }
+
+      // Check username rules
+      const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+      if (!usernameRegex.test(clean)) {
+        setUsernameError('Username must be 3-20 characters long and can only contain letters, numbers, and underscores.');
+        return;
+      }
+      
+      if (clean.toLowerCase() === existing.toLowerCase()) {
         setUsernameError('');
         return;
       }
@@ -82,7 +94,7 @@ export default function Profile1Screen() {
         cropping: true,
         width: 500,
         height: 500,
-        compressImageQuality: 0.8,
+        compressImageQuality: 1,
       });
 
       if (image && image.path) {
@@ -104,6 +116,12 @@ export default function Profile1Screen() {
 
     const clean = handle.replace(/^@/, '').trim();
     const existing = (profile?.username || user?.user_metadata?.username || '').replace(/^@/, '').trim();
+
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    if (!usernameRegex.test(clean)) {
+      setFormError('Username must be 3-20 characters long and can only contain letters, numbers, and underscores.');
+      return;
+    }
 
     if (clean && clean.toLowerCase() !== existing.toLowerCase()) {
       setUsernameError('');

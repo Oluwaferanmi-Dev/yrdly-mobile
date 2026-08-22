@@ -91,7 +91,7 @@ export default function BusinessEditScreen() {
         cropping: true,
         width: 1600,
         height: 900,
-        compressImageQuality: 0.8,
+        compressImageQuality: 1,
       });
       if (image) {
         setCoverUri(image.path);
@@ -110,7 +110,7 @@ export default function BusinessEditScreen() {
         cropping: true,
         width: 500,
         height: 500,
-        compressImageQuality: 0.8,
+        compressImageQuality: 1,
       });
       if (image) {
         setLogoUri(image.path);

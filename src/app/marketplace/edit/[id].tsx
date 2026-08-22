@@ -91,7 +91,7 @@ export default function EditMarketplaceItemScreen() {
         mediaType: 'photo',
         cropping: true,
         freeStyleCropEnabled: true,
-        compressImageQuality: 0.8,
+        compressImageQuality: 1,
       });
       if (image) {
         setNewImages(prev => [...prev, image.path]);

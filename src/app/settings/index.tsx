@@ -101,7 +101,8 @@ export default function SettingsScreen() {
             icon={<Text style={{ fontSize: 16 }}>🇳🇬</Text>} 
             label="Phone Number" 
             sub={profile?.phone_verified ? `${profile?.phone || 'Phone'} · Verified` : 'Verify phone number'} 
-            onPress={() => router.push('/verify-phone' as any)} 
+            onPress={profile?.phone_verified ? undefined : () => router.push('/verify-phone' as any)} 
+            chevron={!profile?.phone_verified}
           />
           <SettingDivider />
           <SettingRow 
